@@ -15,6 +15,7 @@ export default function PetForm({ status }) {
   const [photoFile, setPhotoFile] = useState(null);
   const [preview, setPreview] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+  const [statusMsg, setStatusMsg] = useState('');
   const [done, setDone] = useState(false);
   const [error, setError] = useState(null);
 
@@ -33,8 +34,9 @@ export default function PetForm({ status }) {
     e.preventDefault();
     setSubmitting(true);
     setError(null);
+    setStatusMsg('Илгээж байна...');
     try {
-      await createPetReport({ ...form, status, photoFile });
+      await createPetReport({ ...form, status, photoFile }, setStatusMsg);
       setDone(true);
       setForm({ name: '', type: 'Нохой', color: '', place: '', district: DISTRICTS[0], phone: '' });
       setPhotoFile(null);
@@ -44,6 +46,7 @@ export default function PetForm({ status }) {
       setError('Алдаа гарлаа. Дахин оролдоно уу. (Firebase тохиргоо шалгах хэрэгтэй байж болно)');
     } finally {
       setSubmitting(false);
+      setStatusMsg('');
     }
   }
 
@@ -91,8 +94,13 @@ export default function PetForm({ status }) {
       {error && <p className="error">{error}</p>}
 
       <button type="submit" disabled={submitting} className="btn btn-primary">
-        {submitting ? 'Илгээж байна...' : status === 'lost' ? 'Алдсан мэдэгдэл нийтлэх' : 'Олдсон мэдэгдэл нийтлэх'}
+        {submitting ? statusMsg || 'Илгээж байна...' : status === 'lost' ? 'Алдсан мэдэгдэл нийтлэх' : 'Олдсон мэдэгдэл нийтлэх'}
       </button>
+      {submitting && statusMsg.includes('AI') && (
+        <p style={{ fontSize: 12, color: '#6B7680', marginTop: 6 }}>
+          Анхны хүсэлт 10-20 секунд удааширч болно, түр хүлээгээрэй...
+        </p>
+      )}
 
       <style jsx>{`
         .pet-form { display: flex; flex-direction: column; gap: 4px; max-width: 420px; }

@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { fetchPets, rankBySimilarity } from '../../lib/petService';
-import { getImageColorSignature } from '../../lib/similarity';
+import { getImageEmbedding } from '../../lib/similarity';
 import PetCard from '../../components/PetCard';
 
 const DISTRICTS = [
@@ -15,6 +15,8 @@ export default function ListingsPage() {
   const [pets, setPets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [matchFile, setMatchFile] = useState(null);
+  const [matching, setMatching] = useState(false);
+  const [matchError, setMatchError] = useState(null);
 
   useEffect(() => {
     load();
@@ -40,8 +42,16 @@ export default function ListingsPage() {
     const file = e.target.files[0];
     if (!file) return;
     setMatchFile(file);
-    const sig = await getImageColorSignature(file);
-    setPets((prev) => rankBySimilarity(sig, prev));
+    setMatching(true);
+    setMatchError(null);
+    try {
+      const embedding = await getImageEmbedding(file);
+      setPets((prev) => rankBySimilarity(embedding, prev));
+    } catch (err) {
+      setMatchError(err.message || 'Төстэй байдал тооцоход алдаа гарлаа. Дахин оролдоно уу.');
+    } finally {
+      setMatching(false);
+    }
   }
 
   return (
@@ -66,8 +76,10 @@ export default function ListingsPage() {
         <label style={{ fontSize: 13, fontWeight: 600, color: '#1F4B5C' }}>
           Өөрийн зурагтай төстэйгээр эрэмбэлэх (туршилт):{' '}
         </label>
-        <input type="file" accept="image/*" onChange={handleMatchUpload} />
-        {matchFile && <span style={{ fontSize: 12, color: '#6B7680' }}> — эрэмбэлэгдлээ</span>}
+        <input type="file" accept="image/*" onChange={handleMatchUpload} disabled={matching} />
+        {matching && <span style={{ fontSize: 12, color: '#6B7680' }}> — AI шинжилж байна (эхний удаа 10-20 сек)...</span>}
+        {matchFile && !matching && !matchError && <span style={{ fontSize: 12, color: '#6B7680' }}> — эрэмбэлэгдлээ</span>}
+        {matchError && <span style={{ fontSize: 12, color: '#C6473B' }}> — {matchError}</span>}
       </div>
 
       {loading ? (
