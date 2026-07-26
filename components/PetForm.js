@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { createPetReport } from '../lib/petService';
+import ShareButtons from './ShareButtons';
 
 const DISTRICTS = [
   'Баянзүрх', 'Хан-Уул', 'Сүхбаатар', 'Чингэлтэй', 'Баянгол',
@@ -17,6 +18,7 @@ export default function PetForm({ status }) {
   const [submitting, setSubmitting] = useState(false);
   const [statusMsg, setStatusMsg] = useState('');
   const [done, setDone] = useState(false);
+  const [newPetId, setNewPetId] = useState(null);
   const [error, setError] = useState(null);
 
   function handleChange(e) {
@@ -36,7 +38,8 @@ export default function PetForm({ status }) {
     setError(null);
     setStatusMsg('Илгээж байна...');
     try {
-      await createPetReport({ ...form, status, photoFile }, setStatusMsg);
+      const id = await createPetReport({ ...form, status, photoFile }, setStatusMsg);
+      setNewPetId(id);
       setDone(true);
       setForm({ name: '', type: 'Нохой', color: '', place: '', district: DISTRICTS[0], phone: '' });
       setPhotoFile(null);
@@ -51,10 +54,12 @@ export default function PetForm({ status }) {
   }
 
   if (done) {
+    const petUrl = typeof window !== 'undefined' ? `${window.location.origin}/pets/${newPetId}` : '';
     return (
       <div className="success-box">
-        <p>✅ Амжилттай нийтлэгдлээ! Жагсаалт хэсгээс харагдана.</p>
-        <button onClick={() => setDone(false)} className="btn">Дахин нэмэх</button>
+        <p>✅ Амжилттай нийтлэгдлээ! Илүү олон хүн харахын тулд хуваалцаарай:</p>
+        <ShareButtons url={petUrl} title={status === 'lost' ? 'Алдсан амьтан' : 'Олдсон амьтан'} />
+        <button onClick={() => setDone(false)} className="btn" style={{ marginTop: 16 }}>Дахин нэмэх</button>
       </div>
     );
   }

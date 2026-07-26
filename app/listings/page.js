@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { fetchPets, rankBySimilarity } from '../../lib/petService';
 import { getImageEmbedding } from '../../lib/similarity';
 import PetCard from '../../components/PetCard';
+import NotifySubscribe from '../../components/NotifySubscribe';
 
 const DISTRICTS = [
   '', 'Баянзүрх', 'Хан-Уул', 'Сүхбаатар', 'Чингэлтэй', 'Баянгол',
@@ -76,6 +77,8 @@ export default function ListingsPage() {
           ))}
         </select>
       </div>
+
+      {district && <NotifySubscribe district={district} />}
 
       <div style={{ marginBottom: 20 }}>
         <label style={{ fontSize: 13, fontWeight: 600, color: '#1F4B5C' }}>

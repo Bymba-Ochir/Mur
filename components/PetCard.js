@@ -1,6 +1,11 @@
+'use client';
+import { useRouter } from 'next/navigation';
+
 export default function PetCard({ pet }) {
+  const router = useRouter();
+
   return (
-    <div className="pet-card">
+    <div className="pet-card" onClick={() => router.push(`/pets/${pet.id}`)}>
       <div className="thumb">
         <span className={`badge ${pet.status}`}>
           {pet.status === 'lost' ? 'АЛДСАН' : 'ОЛДСОН'}
@@ -18,14 +23,21 @@ export default function PetCard({ pet }) {
         <h4>{pet.name || pet.type}</h4>
         <p>{pet.type}{pet.color ? `, ${pet.color}` : ''}</p>
         <p className="place">📍 {pet.district} — {pet.place}</p>
-        <a href={`tel:${pet.phone}`} className="phone">☎ {pet.phone}</a>
+        <a
+          href={`tel:${pet.phone}`}
+          className="phone"
+          onClick={(e) => e.stopPropagation()}
+        >
+          ☎ {pet.phone}
+        </a>
       </div>
 
       <style jsx>{`
         .pet-card {
           background: #fff; border: 1px solid #E1E4DF; border-radius: 14px;
-          overflow: hidden;
+          overflow: hidden; cursor: pointer; transition: box-shadow .15s;
         }
+        .pet-card:hover { box-shadow: 0 6px 18px rgba(0,0,0,0.08); }
         .thumb {
           height: 150px; background: #DCE4DD; position: relative;
           display: flex; align-items: center; justify-content: center;

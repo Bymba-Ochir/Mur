@@ -50,3 +50,23 @@ create policy "Authenticated photo upload"
   on storage.objects for insert
   to authenticated
   with check (bucket_id = 'pet-photos');
+
+-- 8. Push мэдэгдэлд бүртгүүлсэн хэрэглэгчдийн хүснэгт (Nearby Alert)
+create table if not exists push_subscriptions (
+  id uuid primary key default gen_random_uuid(),
+  district text not null,
+  endpoint text not null unique,
+  keys jsonb not null,
+  created_at timestamptz default now()
+);
+
+alter table push_subscriptions enable row level security;
+
+-- Хэн ч өөрийн дугаарлалтаа бүртгүүлж болно (нэвтрэх шаардлагагүй, зөвхөн browser push endpoint)
+drop policy if exists "Anyone can subscribe" on push_subscriptions;
+create policy "Anyone can subscribe"
+  on push_subscriptions for insert
+  with check (true);
+
+-- Уншихыг зөвшөөрөхгүй (зөвхөн server-side service_role key-ээр л жагсаалт татна)
+-- энэ нь өөр хэрэглэгчийн push endpoint-ыг нээлттэй болгохоос сэргийлнэ
