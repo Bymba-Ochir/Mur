@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { fetchPetById } from '../../../lib/petService';
 import ShareButtons from '../../../components/ShareButtons';
+import LocationMap from '../../../components/LocationMap';
 
 export default function PetDetailPage({ params }) {
   const [pet, setPet] = useState(null);
@@ -42,6 +43,15 @@ export default function PetDetailPage({ params }) {
           ☎ {pet.phone}
         </a>
       </div>
+
+      {pet.lat != null && pet.lng != null && (
+        <div style={{ marginTop: 16 }}>
+          <p style={{ fontSize: 13, fontWeight: 600, color: '#1F4B5C', marginBottom: 8 }}>
+            📍 Сүүлд харагдсан байршил
+          </p>
+          <LocationMap lat={pet.lat} lng={pet.lng} />
+        </div>
+      )}
 
       <ShareButtons url={url} title={title} />
 

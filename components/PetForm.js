@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { createPetReport } from '../lib/petService';
 import ShareButtons from './ShareButtons';
+import LocationMap from './LocationMap';
 
 const DISTRICTS = [
   'Баянзүрх', 'Хан-Уул', 'Сүхбаатар', 'Чингэлтэй', 'Баянгол',
@@ -13,6 +14,7 @@ export default function PetForm({ status }) {
   const [form, setForm] = useState({
     name: '', type: 'Нохой', color: '', place: '', district: DISTRICTS[0], phone: '',
   });
+  const [coords, setCoords] = useState(null); // { lat, lng } — заавал биш
   const [photoFile, setPhotoFile] = useState(null);
   const [preview, setPreview] = useState(null);
   const [submitting, setSubmitting] = useState(false);
@@ -38,10 +40,14 @@ export default function PetForm({ status }) {
     setError(null);
     setStatusMsg('Илгээж байна...');
     try {
-      const id = await createPetReport({ ...form, status, photoFile }, setStatusMsg);
+      const id = await createPetReport(
+        { ...form, status, photoFile, lat: coords?.lat, lng: coords?.lng },
+        setStatusMsg
+      );
       setNewPetId(id);
       setDone(true);
       setForm({ name: '', type: 'Нохой', color: '', place: '', district: DISTRICTS[0], phone: '' });
+      setCoords(null);
       setPhotoFile(null);
       setPreview(null);
     } catch (err) {
@@ -92,6 +98,16 @@ export default function PetForm({ status }) {
 
       <label>{status === 'lost' ? 'Сүүлд харагдсан газар' : 'Олдсон газар'}</label>
       <input name="place" value={form.place} onChange={handleChange} placeholder="жишээ: 3-р хороо, дэлгүүрийн ойролцоо" required />
+
+      <label>
+        Газрын зураг дээр байршил тэмдэглэх <span style={{ fontWeight: 400, color: '#6B7680' }}>(заавал биш)</span>
+      </label>
+      <LocationMap editable onPick={setCoords} />
+      {coords && (
+        <p style={{ fontSize: 12, color: '#6B7680', marginTop: 4 }}>
+          📍 Байршил сонгогдлоо ({coords.lat.toFixed(4)}, {coords.lng.toFixed(4)})
+        </p>
+      )}
 
       <label>Утасны дугаар</label>
       <input name="phone" value={form.phone} onChange={handleChange} placeholder="99112233" required />

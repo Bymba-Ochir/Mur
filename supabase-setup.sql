@@ -14,8 +14,14 @@ create table if not exists pets (
   phone text default '',
   photo_url text,
   color_signature jsonb,
+  lat double precision,
+  lng double precision,
   created_at timestamptz default now()
 );
+
+-- Хуучин төсөлд lat/lng багана байхгүй бол нэмнэ (аюулгүй, дахин ажиллуулж болно)
+alter table pets add column if not exists lat double precision;
+alter table pets add column if not exists lng double precision;
 
 -- 2. Row Level Security идэвхжүүлэх
 alter table pets enable row level security;

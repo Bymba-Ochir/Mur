@@ -140,6 +140,7 @@ components/
   PetCard.js           — Жагсаалтын карт (дарахад дэлгэрэнгүй рүү орно)
   ShareButtons.js       — Facebook/native share/холбоос хуулах товчнууд
   NotifySubscribe.js    — "Nearby Alert" push мэдэгдэлд бүртгүүлэх товч
+  LocationMap.js        — OpenStreetMap + Leaflet газрын зураг (сонгох/харах)
 lib/
   supabase.js          — Supabase client тохиргоо
   useAuth.js            — Auth hook
@@ -155,6 +156,6 @@ supabase-setup.sql      — Өгөгдлийн сан, RLS дүрэм, Storage b
 - [x] `lib/similarity.js`-г CLIP embedding-тэй солих ✅ (browser-based, `@huggingface/transformers`, CDN)
 - [x] Facebook/Messenger руу Share товч нэмэх ✅ (`ShareButtons.js`, `/pets/[id]` дэлгэрэнгүй хуудас)
 - [x] Push мэдэгдэл (Nearby Alert) ✅ (`lib/push.js`, `public/sw.js`, `/api/notify` + Supabase Webhook)
-- [ ] Сүүлд харагдсан газрын зураг (OpenStreetMap + Leaflet)
+- [x] Сүүлд харагдсан газрын зураг ✅ (`components/LocationMap.js`, OpenStreetMap + Leaflet.js — API key шаардахгүй)
 - [ ] Вакцины сануулга feature (retention)
 - [ ] React Native апп (iOS/Android)
