@@ -1,0 +1,22 @@
+# dependencies
+/node_modules
+
+# next.js build output
+/.next/
+/out/
+
+# environment variables (НУУЦ - GitHub-д хэзээ ч бүү оруул)
+.env*.local
+.env
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# vercel
+.vercel
