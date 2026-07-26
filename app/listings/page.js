@@ -17,6 +17,7 @@ export default function ListingsPage() {
   const [matchFile, setMatchFile] = useState(null);
   const [matching, setMatching] = useState(false);
   const [matchError, setMatchError] = useState(null);
+  const [matchedCount, setMatchedCount] = useState(null);
 
   useEffect(() => {
     load();
@@ -46,7 +47,11 @@ export default function ListingsPage() {
     setMatchError(null);
     try {
       const embedding = await getImageEmbedding(file, (msg) => setMatching(msg));
-      setPets((prev) => rankBySimilarity(embedding, prev));
+      setPets((prev) => {
+        const ranked = rankBySimilarity(embedding, prev);
+        setMatchedCount(ranked.length);
+        return ranked;
+      });
     } catch (err) {
       setMatchError(err.message || 'Төстэй байдал тооцоход алдаа гарлаа. Дахин оролдоно уу.');
     } finally {
@@ -78,7 +83,15 @@ export default function ListingsPage() {
         </label>
         <input type="file" accept="image/*" onChange={handleMatchUpload} disabled={!!matching} />
         {matching && <span style={{ fontSize: 12, color: '#6B7680' }}> — {typeof matching === 'string' ? matching : 'AI шинжилж байна (эхний удаа 10-30 сек)...'}</span>}
-        {matchFile && !matching && !matchError && <span style={{ fontSize: 12, color: '#6B7680' }}> — эрэмбэлэгдлээ</span>}
+        {matchFile && !matching && !matchError && matchedCount === 0 && (
+          <span style={{ fontSize: 12, color: '#C6473B' }}>
+            {' '}— Харьцуулах боломжтой бичлэг олдсонгүй (хуучин бичлэгүүд өөр
+            embedding-тэй байж болзошгүй — шинээр бүртгэсэн 2 бичлэгээр туршина уу).
+          </span>
+        )}
+        {matchFile && !matching && !matchError && matchedCount > 0 && (
+          <span style={{ fontSize: 12, color: '#6B7680' }}> — {matchedCount} бичлэгтэй харьцуулж эрэмбэлэгдлээ</span>
+        )}
         {matchError && <span style={{ fontSize: 12, color: '#C6473B' }}> — {matchError}</span>}
       </div>
 
