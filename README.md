@@ -7,9 +7,11 @@
 
 - **Next.js 14** (App Router) — зөвхөн вэб (PWA), React Native-г Үе шат 2-т
 - **Supabase** — Postgres DB + Auth (имэйл magic link) + Storage, **карт шаардахгүй үнэгүй tier**
-- **Энгийн зурган төстэй байдал** — CLIP embedding биш, өнгөний histogram-д суурилсан
-  түр зуурын шийдэл (`lib/similarity.js`). Үе шат 2-т CLIP руу шилжихдээ зөвхөн энэ
-  файлыг сольно, бусад код өөрчлөгдөхгүй байхаар зохион байгуулсан.
+- **CLIP embedding — шууд БРАУЗЕР дотор ажиллана** (`@huggingface/transformers`,
+  CDN-ээс ачаална). Hugging Face-ийн серверийн Inference API 2025-2026 онд
+  архитектурын хувьд байнга өөрчлөгдөж (endpoint, эрх, дэмжигдэх загвар) тогтворгүй
+  болсон тул үүнээс бүрэн ангид, серверийн зардал/токен/rate-limit шаардахгүй
+  клиент талын шийдэл рүү шилжсэн. Дэлгэрэнгүй: `lib/similarity.js`.
 
 ## Яагаад Firebase биш Supabase вэ?
 
@@ -65,25 +67,7 @@ cp .env.local.example .env.local
 # дараа нь дээрх 2 утгыг бичиж хадгал
 ```
 
-### 4. Hugging Face токен авах (CLIP embedding-д зориулж)
-
-1. https://huggingface.co → бүртгүүлэх (карт хэрэггүй)
-2. Profile → **Settings → Access Tokens**
-3. **"New token"** → Type: **"Read"** сонго → нэр өг → **"Generate"**
-4. Гарч ирэх токен (`hf_...`)-г хуулж `.env.local`-д бич:
-
-```
-HUGGINGFACE_API_TOKEN=hf_...
-```
-
-**Анхаарах зүйл:** Энэ токеныг `NEXT_PUBLIC_` угтваргүйгээр бичсэн тул зөвхөн серверийн
-код (`app/api/embed/route.js`) дотор ашиглагдана, browser-т цацагдахгүй — аюулгүй.
-
-Загвар (`sentence-transformers/clip-ViT-B-32`) эхний удаа дуудахад "cold start" болж
-10-20 секунд удаашрах боломжтой (`/api/embed` route дотор 503 үед автоматаар дахин
-оролддог тул хэрэглэгчид зөвхөн жаахан удаан мэт санагдана).
-
-### 5. Имэйл нэвтрэлт тохируулах (анхдагчаар аль хэдийн идэвхтэй)
+### 4. Имэйл нэвтрэлт тохируулах (анхдагчаар аль хэдийн идэвхтэй)
 
 Supabase-д имэйл magic-link нэвтрэлт **анхдагчаар идэвхжсэн байдаг** тул нэмэлт
 тохиргоо хийх шаардлагагүй. Хэрэв "Confirm email" шаардлагатай эсэхийг өөрчлөх бол
@@ -130,7 +114,7 @@ supabase-setup.sql      — Өгөгдлийн сан, RLS дүрэм, Storage b
 
 ## Дараагийн алхмууд (Үе шат 2)
 
-- [x] `lib/similarity.js`-г CLIP embedding API-тай солих ✅ (Hugging Face, `/api/embed`)
+- [x] `lib/similarity.js`-г CLIP embedding-тэй солих ✅ (browser-based, `@huggingface/transformers`, CDN)
 - [ ] Facebook/Messenger руу Share товч нэмэх
 - [ ] Push мэдэгдэл (Nearby Alert)
 - [ ] Сүүлд харагдсан газрын зураг (OpenStreetMap + Leaflet)

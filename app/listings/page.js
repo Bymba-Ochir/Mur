@@ -45,7 +45,7 @@ export default function ListingsPage() {
     setMatching(true);
     setMatchError(null);
     try {
-      const embedding = await getImageEmbedding(file);
+      const embedding = await getImageEmbedding(file, (msg) => setMatching(msg));
       setPets((prev) => rankBySimilarity(embedding, prev));
     } catch (err) {
       setMatchError(err.message || 'Төстэй байдал тооцоход алдаа гарлаа. Дахин оролдоно уу.');
@@ -76,8 +76,8 @@ export default function ListingsPage() {
         <label style={{ fontSize: 13, fontWeight: 600, color: '#1F4B5C' }}>
           Өөрийн зурагтай төстэйгээр эрэмбэлэх (туршилт):{' '}
         </label>
-        <input type="file" accept="image/*" onChange={handleMatchUpload} disabled={matching} />
-        {matching && <span style={{ fontSize: 12, color: '#6B7680' }}> — AI шинжилж байна (эхний удаа 10-20 сек)...</span>}
+        <input type="file" accept="image/*" onChange={handleMatchUpload} disabled={!!matching} />
+        {matching && <span style={{ fontSize: 12, color: '#6B7680' }}> — {typeof matching === 'string' ? matching : 'AI шинжилж байна (эхний удаа 10-30 сек)...'}</span>}
         {matchFile && !matching && !matchError && <span style={{ fontSize: 12, color: '#6B7680' }}> — эрэмбэлэгдлээ</span>}
         {matchError && <span style={{ fontSize: 12, color: '#C6473B' }}> — {matchError}</span>}
       </div>
