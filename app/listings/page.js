@@ -13,6 +13,7 @@ const DISTRICTS = [
 export default function ListingsPage() {
   const [status, setStatus] = useState('');
   const [district, setDistrict] = useState('');
+  const [search, setSearch] = useState('');
   const [pets, setPets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [matchFile, setMatchFile] = useState(null);
@@ -21,9 +22,11 @@ export default function ListingsPage() {
   const [matchedCount, setMatchedCount] = useState(null);
 
   useEffect(() => {
-    load();
+    // Хайлтын текст бичих бүрд шууд дуудахгүй, 400мс хүлээгээд дуудна (debounce)
+    const timer = setTimeout(load, 400);
+    return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [status, district]);
+  }, [status, district, search]);
 
   async function load() {
     setLoading(true);
@@ -31,6 +34,7 @@ export default function ListingsPage() {
       const data = await fetchPets({
         status: status || undefined,
         district: district || undefined,
+        search: search || undefined,
       });
       setPets(data);
     } catch (err) {
@@ -66,6 +70,14 @@ export default function ListingsPage() {
       <h1 style={{ fontSize: 26, marginBottom: 16 }}>Алдсан ба олдсон амьтад</h1>
 
       <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 8 }}>
+        <input
+          type="text"
+          placeholder="🔍 Нэр, өнгө, байршлаар хайх..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="filter"
+          style={{ flex: '1 1 220px', minWidth: 180 }}
+        />
         <select className="filter" value={status} onChange={(e) => setStatus(e.target.value)}>
           <option value="">Бүгд</option>
           <option value="lost">Алдсан</option>

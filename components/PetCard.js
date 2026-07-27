@@ -1,8 +1,11 @@
 'use client';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { maskPhone } from '../lib/utils';
 
 export default function PetCard({ pet }) {
   const router = useRouter();
+  const [revealed, setRevealed] = useState(false);
 
   return (
     <div className="pet-card" onClick={() => router.push(`/pets/${pet.id}`)}>
@@ -23,13 +26,22 @@ export default function PetCard({ pet }) {
         <h4>{pet.name || pet.type}</h4>
         <p>{pet.type}{pet.color ? `, ${pet.color}` : ''}</p>
         <p className="place">📍 {pet.district} — {pet.place}</p>
-        <a
-          href={`tel:${pet.phone}`}
-          className="phone"
-          onClick={(e) => e.stopPropagation()}
-        >
-          ☎ {pet.phone}
-        </a>
+        {revealed ? (
+          <a
+            href={`tel:${pet.phone}`}
+            className="phone"
+            onClick={(e) => e.stopPropagation()}
+          >
+            ☎ {pet.phone}
+          </a>
+        ) : (
+          <button
+            className="phone reveal-btn"
+            onClick={(e) => { e.stopPropagation(); setRevealed(true); }}
+          >
+            ☎ {maskPhone(pet.phone)} · Дугаар харах
+          </button>
+        )}
       </div>
 
       <style jsx>{`
@@ -58,6 +70,7 @@ export default function PetCard({ pet }) {
         h4 { font-size: 14.5px; margin-bottom: 2px; color: #1F4B5C; }
         p { font-size: 12.5px; color: #6B7680; margin: 2px 0; }
         .phone { display: block; margin-top: 6px; font-size: 13px; color: #1F4B5C; font-weight: 600; text-decoration: none; }
+        .reveal-btn { background: none; border: none; padding: 0; cursor: pointer; font-family: inherit; text-align: left; }
       `}</style>
     </div>
   );
