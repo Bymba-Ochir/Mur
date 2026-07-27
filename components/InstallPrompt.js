@@ -71,7 +71,7 @@ export default function InstallPrompt() {
       <style jsx>{`
         .install-banner {
           position: fixed; bottom: 0; left: 0; right: 0; z-index: 200;
-          background: #1F4B5C; color: #fff; padding: 14px 18px;
+          background: var(--brand); color: #fff; padding: 14px 18px;
           display: flex; align-items: center; justify-content: space-between; gap: 12px;
           flex-wrap: wrap; box-shadow: 0 -4px 16px rgba(0,0,0,0.15);
         }
@@ -80,7 +80,7 @@ export default function InstallPrompt() {
         .install-content p { font-size: 12.5px; color: #C9DCE2; margin-top: 2px; }
         .install-actions { display: flex; gap: 8px; }
         .install-btn { padding: 8px 14px; border-radius: 8px; border: none; font-weight: 600; font-size: 13px; cursor: pointer; }
-        .primary { background: #E8A33D; color: #1F4B5C; }
+        .primary { background: var(--accent); color: var(--primary); }
         .ghost { background: transparent; color: #DCE9EC; border: 1px solid rgba(255,255,255,0.3); }
       `}</style>
     </div>

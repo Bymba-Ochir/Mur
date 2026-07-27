@@ -95,21 +95,21 @@ export default function ListingsPage() {
       {district && <NotifySubscribe district={district} />}
 
       <div style={{ marginBottom: 20 }}>
-        <label style={{ fontSize: 13, fontWeight: 600, color: '#1F4B5C' }}>
+        <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--primary)' }}>
           Өөрийн зурагтай төстэйгээр эрэмбэлэх (туршилт):{' '}
         </label>
         <input type="file" accept="image/*" onChange={handleMatchUpload} disabled={!!matching} />
-        {matching && <span style={{ fontSize: 12, color: '#6B7680' }}> — {typeof matching === 'string' ? matching : 'AI шинжилж байна (эхний удаа 10-30 сек)...'}</span>}
+        {matching && <span style={{ fontSize: 12, color: 'var(--muted)' }}> — {typeof matching === 'string' ? matching : 'AI шинжилж байна (эхний удаа 10-30 сек)...'}</span>}
         {matchFile && !matching && !matchError && matchedCount === 0 && (
-          <span style={{ fontSize: 12, color: '#C6473B' }}>
+          <span style={{ fontSize: 12, color: 'var(--alert)' }}>
             {' '}— Харьцуулах боломжтой бичлэг олдсонгүй (хуучин бичлэгүүд өөр
             embedding-тэй байж болзошгүй — шинээр бүртгэсэн 2 бичлэгээр туршина уу).
           </span>
         )}
         {matchFile && !matching && !matchError && matchedCount > 0 && (
-          <span style={{ fontSize: 12, color: '#6B7680' }}> — {matchedCount} бичлэгтэй харьцуулж эрэмбэлэгдлээ</span>
+          <span style={{ fontSize: 12, color: 'var(--muted)' }}> — {matchedCount} бичлэгтэй харьцуулж эрэмбэлэгдлээ</span>
         )}
-        {matchError && <span style={{ fontSize: 12, color: '#C6473B' }}> — {matchError}</span>}
+        {matchError && <span style={{ fontSize: 12, color: 'var(--alert)' }}> — {matchError}</span>}
       </div>
 
       {loading ? (
@@ -118,14 +118,14 @@ export default function ListingsPage() {
         </div>
       ) : pets.length === 0 ? (
         <div style={{
-          textAlign: 'center', padding: '48px 20px', background: '#fff',
-          border: '1px dashed #E1E4DF', borderRadius: 16, marginTop: 8,
+          textAlign: 'center', padding: '48px 20px', background: 'var(--card)',
+          border: '1px dashed var(--line)', borderRadius: 16, marginTop: 8,
         }}>
           <div style={{ fontSize: 46, marginBottom: 10 }}>🐾</div>
-          <p style={{ fontWeight: 600, color: '#1F4B5C', marginBottom: 4 }}>
+          <p style={{ fontWeight: 600, color: 'var(--primary)', marginBottom: 4 }}>
             {search || district || status ? 'Хайлтад тохирох бичлэг олдсонгүй' : 'Одоогоор бичлэг алга'}
           </p>
-          <p style={{ color: '#6B7680', fontSize: 13.5, marginBottom: 18 }}>
+          <p style={{ color: 'var(--muted)', fontSize: 13.5, marginBottom: 18 }}>
             {search || district || status
               ? 'Шүүлтүүрээ өөрчилж эсвэл цэвэрлээд дахин үзнэ үү.'
               : 'Хамгийн эхний мэдэгдлийг та нийтэлж болно.'}

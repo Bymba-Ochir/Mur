@@ -3,11 +3,13 @@ import { useEffect, useState } from 'react';
 import { fetchPetById, markResolved, updatePet, deletePet } from '../../../lib/petService';
 import { useAuth } from '../../../lib/useAuth';
 import { maskPhone } from '../../../lib/utils';
+import { relativeTime } from '../../../lib/relativeTime';
 import { DISTRICTS } from '../../../lib/districts';
 import { useRouter } from 'next/navigation';
 import ShareButtons from '../../../components/ShareButtons';
 import LocationMap from '../../../components/LocationMap';
 import ReportButton from '../../../components/ReportButton';
+import PetIcon from '../../../components/PetIcon';
 import { useToast } from '../../../components/Toast';
 
 export default function PetDetailClient({ id }) {
@@ -79,8 +81,8 @@ export default function PetDetailClient({ id }) {
     }
   }
 
-  if (error) return <p style={{ color: '#C6473B' }}>Бичлэг олдсонгүй эсвэл устсан байна.</p>;
-  if (!pet) return <p style={{ color: '#6B7680' }}>Ачааллаж байна...</p>;
+  if (error) return <p style={{ color: 'var(--alert)' }}>Бичлэг олдсонгүй эсвэл устсан байна.</p>;
+  if (!pet) return <p style={{ color: 'var(--muted)' }}>Ачааллаж байна...</p>;
 
   const title = `${pet.status === 'lost' ? 'Алдсан' : 'Олдсон'} ${pet.type}${pet.name ? ' — ' + pet.name : ''}`;
   const isOwner = user && pet.createdBy && user.id === pet.createdBy;
@@ -88,70 +90,73 @@ export default function PetDetailClient({ id }) {
   return (
     <div style={{ maxWidth: 480 }}>
       <div className="eyebrow">{pet.status === 'lost' ? '🚨 Алдсан амьтан' : '👀 Олдсон амьтан'}</div>
-      <h1 style={{ fontSize: 24, marginBottom: 12 }}>{title}</h1>
+      <h1 style={{ fontSize: 24, marginBottom: 4 }}>{title}</h1>
+      {pet.createdAt && (
+        <p style={{ fontSize: 12.5, color: 'var(--muted)', marginBottom: 12 }}>🕓 {relativeTime(pet.createdAt)}</p>
+      )}
 
       {pet.resolved && (
-        <div style={{ background: '#F0F6F1', border: '1.5px solid #4C8C6B', borderRadius: 10, padding: '8px 14px', marginBottom: 14, color: '#2F6B4A', fontSize: 13.5, fontWeight: 600 }}>
+        <div style={{ background: 'var(--success-bg)', border: '1.5px solid var(--success)', borderRadius: 10, padding: '8px 14px', marginBottom: 14, color: 'var(--success-text)', fontSize: 13.5, fontWeight: 600 }}>
           ✅ Энэ амьтан олдсон гэж тэмдэглэгдсэн байна
         </div>
       )}
 
       <div style={{
-        borderRadius: 14, overflow: 'hidden', background: '#DCE4DD', height: 260,
+        borderRadius: 14, overflow: 'hidden', background: 'var(--thumb-bg)', height: 260,
         display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16,
         opacity: pet.resolved ? 0.6 : 1,
       }}>
         {pet.photoURL ? (
           <img src={pet.photoURL} alt={pet.type} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
         ) : (
-          <span style={{ fontSize: 60 }}>{pet.type === 'Муур' ? '🐈' : '🐕'}</span>
+          <span style={{ color: 'var(--muted)' }}><PetIcon type={pet.type} size={64} /></span>
         )}
       </div>
 
       {!editing ? (
-        <div style={{ background: '#fff', border: '1px solid #E1E4DF', borderRadius: 14, padding: 18 }}>
+        <div style={{ background: 'var(--card)', border: '1px solid var(--line)', borderRadius: 14, padding: 18 }}>
           <p style={{ marginBottom: 6 }}><b>Төрөл:</b> {pet.type}{pet.color ? `, ${pet.color}` : ''}</p>
           <p style={{ marginBottom: 6 }}><b>Дүүрэг:</b> {pet.district}</p>
           <p style={{ marginBottom: 6 }}><b>Байршил:</b> {pet.place}</p>
           {revealed ? (
-            <a href={`tel:${pet.phone}`} style={{ display: 'inline-block', marginTop: 8, fontWeight: 700, color: '#1F4B5C' }}>
+            <a href={`tel:${pet.phone}`} style={{ display: 'inline-block', marginTop: 8, fontWeight: 700, color: 'var(--primary)' }}>
               ☎ {pet.phone}
             </a>
           ) : (
             <button
               onClick={() => setRevealed(true)}
-              style={{ display: 'inline-block', marginTop: 8, fontWeight: 700, color: '#1F4B5C', background: 'none', border: 'none', cursor: 'pointer', fontSize: 15, padding: 0 }}
+              style={{ display: 'inline-block', marginTop: 8, fontWeight: 700, color: 'var(--primary)', background: 'none', border: 'none', cursor: 'pointer', fontSize: 15, padding: 0 }}
             >
               ☎ {maskPhone(pet.phone)} · Дугаар харах
             </button>
           )}
         </div>
       ) : (
-        <div style={{ background: '#fff', border: '1px solid #E1E4DF', borderRadius: 14, padding: 18, display: 'flex', flexDirection: 'column', gap: 8 }}>
-          <label style={{ fontSize: 12.5, fontWeight: 600, color: '#1F4B5C' }}>Нэр</label>
+        <div style={{ background: 'var(--card)', border: '1px solid var(--line)', borderRadius: 14, padding: 18, display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <label style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--primary)' }}>Нэр</label>
           <input value={editForm.name} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-            style={{ padding: 9, borderRadius: 8, border: '1.5px solid #E1E4DF' }} />
-          <label style={{ fontSize: 12.5, fontWeight: 600, color: '#1F4B5C' }}>Өнгө</label>
+            style={{ padding: 9, borderRadius: 8, border: '1.5px solid var(--line)' }} />
+          <label style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--primary)' }}>Өнгө</label>
           <input value={editForm.color} onChange={(e) => setEditForm({ ...editForm, color: e.target.value })}
-            style={{ padding: 9, borderRadius: 8, border: '1.5px solid #E1E4DF' }} />
-          <label style={{ fontSize: 12.5, fontWeight: 600, color: '#1F4B5C' }}>Дүүрэг</label>
+            style={{ padding: 9, borderRadius: 8, border: '1.5px solid var(--line)' }} />
+          <label style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--primary)' }}>Дүүрэг</label>
           <select value={editForm.district} onChange={(e) => setEditForm({ ...editForm, district: e.target.value })}
-            style={{ padding: 9, borderRadius: 8, border: '1.5px solid #E1E4DF' }}>
+            style={{ padding: 9, borderRadius: 8, border: '1.5px solid var(--line)' }}>
             {DISTRICTS.map((d) => <option key={d}>{d}</option>)}
           </select>
-          <label style={{ fontSize: 12.5, fontWeight: 600, color: '#1F4B5C' }}>Байршил</label>
+          <label style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--primary)' }}>Байршил</label>
           <input value={editForm.place} onChange={(e) => setEditForm({ ...editForm, place: e.target.value })}
-            style={{ padding: 9, borderRadius: 8, border: '1.5px solid #E1E4DF' }} />
-          <label style={{ fontSize: 12.5, fontWeight: 600, color: '#1F4B5C' }}>Утас</label>
+            style={{ padding: 9, borderRadius: 8, border: '1.5px solid var(--line)' }} />
+          <label style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--primary)' }}>Утас</label>
           <input value={editForm.phone} onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
-            style={{ padding: 9, borderRadius: 8, border: '1.5px solid #E1E4DF' }} />
+            style={{ padding: 9, borderRadius: 8, border: '1.5px solid var(--line)' }} />
           <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
             <button onClick={handleSaveEdit} disabled={saving} className="btn"
-              style={{ background: '#1F4B5C', color: '#fff', flex: 1, justifyContent: 'center' }}>
+              style={{ background: 'var(--brand)', color: '#fff', flex: 1, justifyContent: 'center' }}>
               {saving ? 'Хадгалж байна...' : 'Хадгалах'}
             </button>
             <button onClick={() => setEditing(false)} className="btn"
-              style={{ background: '#E9EFE9', color: '#1F4B5C', flex: 1, justifyContent: 'center' }}>
+              style={{ background: 'var(--eyebrow-bg)', color: 'var(--primary)', flex: 1, justifyContent: 'center' }}>
               Цуцлах
             </button>
           </div>
@@ -161,11 +166,11 @@ export default function PetDetailClient({ id }) {
       {isOwner && !editing && (
         <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
           <button onClick={() => setEditing(true)} className="btn"
-            style={{ background: '#E9EFE9', color: '#1F4B5C', flex: 1, justifyContent: 'center', fontSize: 13 }}>
+            style={{ background: 'var(--eyebrow-bg)', color: 'var(--primary)', flex: 1, justifyContent: 'center', fontSize: 13 }}>
             ✏️ Засах
           </button>
           <button onClick={handleDelete} disabled={deleting} className="btn"
-            style={{ background: '#fff', color: '#C6473B', border: '1.5px solid #C6473B', flex: 1, justifyContent: 'center', fontSize: 13 }}>
+            style={{ background: 'var(--card)', color: 'var(--alert)', border: '1.5px solid var(--alert)', flex: 1, justifyContent: 'center', fontSize: 13 }}>
             {deleting ? 'Устгаж байна...' : '🗑 Устгах'}
           </button>
         </div>
@@ -176,7 +181,7 @@ export default function PetDetailClient({ id }) {
           onClick={handleResolve}
           disabled={resolving}
           className="btn"
-          style={{ marginTop: 10, background: '#4C8C6B', color: '#fff', width: '100%', justifyContent: 'center' }}
+          style={{ marginTop: 10, background: 'var(--success)', color: '#fff', width: '100%', justifyContent: 'center' }}
         >
           {resolving ? 'Тэмдэглэж байна...' : '✅ Амьтан олдлоо'}
         </button>
@@ -184,7 +189,7 @@ export default function PetDetailClient({ id }) {
 
       {pet.lat != null && pet.lng != null && (
         <div style={{ marginTop: 16 }}>
-          <p style={{ fontSize: 13, fontWeight: 600, color: '#1F4B5C', marginBottom: 8 }}>
+          <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--primary)', marginBottom: 8 }}>
             📍 Сүүлд харагдсан байршил
           </p>
           <LocationMap lat={pet.lat} lng={pet.lng} />
@@ -193,7 +198,7 @@ export default function PetDetailClient({ id }) {
 
       <ShareButtons url={url} title={title} />
 
-      <p style={{ fontSize: 12, color: '#6B7680', marginTop: 12 }}>
+      <p style={{ fontSize: 12, color: 'var(--muted)', marginTop: 12 }}>
         📱 Messenger, Viber зэрэгт шууд хуваалцахын тулд "Хуваалцах" товчийг ашиглана уу
         (гар утсан дээр систем өөрөө боломжит апп-уудыг жагсаана).
       </p>

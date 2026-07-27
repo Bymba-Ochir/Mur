@@ -63,27 +63,27 @@ export default function Onboarding() {
 
       <style jsx>{`
         .onb-overlay {
-          position: fixed; inset: 0; background: rgba(28,43,51,0.6);
+          position: fixed; inset: 0; background: var(--overlay);
           display: flex; align-items: center; justify-content: center; z-index: 400; padding: 20px;
         }
         .onb-card {
-          background: #fff; border-radius: 20px; padding: 32px 28px; max-width: 340px; width: 100%;
+          background: var(--card); border-radius: 20px; padding: 32px 28px; max-width: 340px; width: 100%;
           text-align: center; position: relative; animation: pop 0.2s ease-out;
         }
         @keyframes pop { from { transform: scale(0.94); opacity: 0; } to { transform: scale(1); opacity: 1; } }
         .onb-skip {
           position: absolute; top: 14px; right: 16px; background: none; border: none;
-          color: #6B7680; font-size: 12.5px; cursor: pointer;
+          color: var(--muted); font-size: 12.5px; cursor: pointer;
         }
         .onb-icon { font-size: 52px; margin-bottom: 14px; }
-        h2 { font-size: 19px; color: #1F4B5C; margin-bottom: 8px; font-family: inherit; }
-        p { font-size: 13.5px; color: #6B7680; margin-bottom: 20px; line-height: 1.5; }
+        h2 { font-size: 19px; color: var(--primary); margin-bottom: 8px; font-family: inherit; }
+        p { font-size: 13.5px; color: var(--muted); margin-bottom: 20px; line-height: 1.5; }
         .onb-dots { display: flex; justify-content: center; gap: 6px; margin-bottom: 20px; }
-        .onb-dot { width: 7px; height: 7px; border-radius: 50%; background: #E1E4DF; transition: all 0.2s; }
-        .onb-dot.active { background: #E8A33D; width: 20px; border-radius: 4px; }
+        .onb-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--line); transition: all 0.2s; }
+        .onb-dot.active { background: var(--accent); width: 20px; border-radius: 4px; }
         .onb-next {
           width: 100%; padding: 12px; border-radius: 10px; border: none;
-          background: #1F4B5C; color: #fff; font-weight: 600; cursor: pointer; font-size: 14px;
+          background: var(--brand); color: #fff; font-weight: 600; cursor: pointer; font-size: 14px;
         }
       `}</style>
     </div>

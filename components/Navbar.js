@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '../lib/useAuth';
+import ThemeToggle from './ThemeToggle';
 
 export default function Navbar() {
   const { user, loginWithEmail, logout } = useAuth();
@@ -32,6 +33,7 @@ export default function Navbar() {
         <Link href="/report-found">Олдсон</Link>
         <Link href="/listings">Жагсаалт</Link>
         <Link href="/my-pets">Миний амьтад</Link>
+        <ThemeToggle />
         {user ? (
           <button onClick={logout} className="link-btn">Гарах ({user.email})</button>
         ) : (
@@ -64,11 +66,11 @@ export default function Navbar() {
       <style jsx>{`
         .navbar {
           display: flex; justify-content: space-between; align-items: center;
-          padding: 16px 24px; background: #1F4B5C; color: #fff;
+          padding: 16px 24px; background: var(--brand); color: #fff;
         }
         .brand { display: flex; align-items: center; gap: 8px; color: #fff; text-decoration: none; font-weight: 700; font-size: 18px; }
         .brand-mark {
-          width: 30px; height: 30px; border-radius: 8px; background: #E8A33D; color: #1F4B5C;
+          width: 30px; height: 30px; border-radius: 8px; background: var(--accent); color: var(--brand);
           display: flex; align-items: center; justify-content: center; font-weight: 700;
         }
         nav { display: flex; gap: 18px; align-items: center; }
@@ -78,21 +80,21 @@ export default function Navbar() {
         }
         nav :global(a:hover), .link-btn:hover { color: #fff; }
         .overlay {
-          position: fixed; inset: 0; background: rgba(28,43,51,0.55);
+          position: fixed; inset: 0; background: var(--overlay);
           display: flex; align-items: center; justify-content: center; z-index: 100;
         }
-        .modal { background: #fff; border-radius: 16px; padding: 24px; max-width: 320px; width: 90%; color: #1C2B33; }
-        .modal label { font-size: 13px; font-weight: 600; color: #1F4B5C; display: block; margin-bottom: 6px; }
+        .modal { background: var(--card); border-radius: 16px; padding: 24px; max-width: 320px; width: 90%; color: var(--ink); }
+        .modal label { font-size: 13px; font-weight: 600; color: var(--primary); display: block; margin-bottom: 6px; }
         .modal input {
-          width: 100%; padding: 10px 12px; border: 1.5px solid #E1E4DF; border-radius: 9px;
+          width: 100%; padding: 10px 12px; border: 1.5px solid var(--line); border-radius: 9px;
           font-size: 14px; margin-bottom: 12px;
         }
         .btn-primary {
           width: 100%; padding: 11px; border-radius: 9px; border: none;
-          background: #1F4B5C; color: #fff; font-weight: 600; cursor: pointer;
+          background: var(--brand); color: #fff; font-weight: 600; cursor: pointer;
         }
-        .err { color: #C6473B; font-size: 12.5px; margin-bottom: 8px; }
-        .close { margin-top: 12px; background: none; border: none; color: #6B7680; font-size: 12.5px; cursor: pointer; }
+        .err { color: var(--alert); font-size: 12.5px; margin-bottom: 8px; }
+        .close { margin-top: 12px; background: none; border: none; color: var(--muted); font-size: 12.5px; cursor: pointer; }
       `}</style>
     </header>
   );

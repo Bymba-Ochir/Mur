@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { createPetReport } from '../lib/petService';
 import { nearestDistrict } from '../lib/districtCoords';
+import { compressImage } from '../lib/imageCompress';
 import { useToast } from './Toast';
 import ShareButtons from './ShareButtons';
 import LocationMap from './LocationMap';
@@ -24,6 +25,7 @@ export default function PetForm({ status }) {
   const [locating, setLocating] = useState(false);
   const [photoFile, setPhotoFile] = useState(null);
   const [preview, setPreview] = useState(null);
+  const [compressing, setCompressing] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [statusMsg, setStatusMsg] = useState('');
   const [done, setDone] = useState(false);
@@ -34,11 +36,25 @@ export default function PetForm({ status }) {
     setForm({ ...form, [e.target.name]: e.target.value });
   }
 
-  function handlePhoto(e) {
+  async function handlePhoto(e) {
     const file = e.target.files[0];
     if (!file) return;
-    setPhotoFile(file);
-    setPreview(URL.createObjectURL(file));
+    setCompressing(true);
+    try {
+      const originalKB = Math.round(file.size / 1024);
+      const compressed = await compressImage(file);
+      const newKB = Math.round(compressed.size / 1024);
+      setPhotoFile(compressed);
+      setPreview(URL.createObjectURL(compressed));
+      if (originalKB > newKB + 20) {
+        showToast(`Зураг оновчлогдлоо: ${originalKB}KB → ${newKB}KB`, 'success');
+      }
+    } catch (err) {
+      setPhotoFile(file);
+      setPreview(URL.createObjectURL(file));
+    } finally {
+      setCompressing(false);
+    }
   }
 
   function handleUseLocation() {
@@ -124,10 +140,16 @@ export default function PetForm({ status }) {
       {step === 0 && (
         <>
           <label>Зураг</label>
-          <div className="upload-zone" onClick={() => document.getElementById('photo-input').click()}>
-            {preview ? <img src={preview} alt="preview" /> : <span>📷 Зураг оруулах (заавал биш)</span>}
+          <div className="upload-zone" onClick={() => !compressing && document.getElementById('photo-input').click()}>
+            {compressing ? (
+              <span>⏳ Зураг оновчлож байна...</span>
+            ) : preview ? (
+              <img src={preview} alt="preview" />
+            ) : (
+              <span>📷 Зураг оруулах (заавал биш)</span>
+            )}
           </div>
-          <input id="photo-input" type="file" accept="image/*" onChange={handlePhoto} style={{ display: 'none' }} />
+          <input id="photo-input" type="file" accept="image/*" onChange={handlePhoto} style={{ display: 'none' }} disabled={compressing} />
         </>
       )}
 
@@ -165,11 +187,11 @@ export default function PetForm({ status }) {
           <input name="place" value={form.place} onChange={handleChange} placeholder="жишээ: 3-р хороо, дэлгүүрийн ойролцоо" required />
 
           <label>
-            Газрын зураг дээр байршил тэмдэглэх <span style={{ fontWeight: 400, color: '#6B7680' }}>(заавал биш)</span>
+            Газрын зураг дээр байршил тэмдэглэх <span style={{ fontWeight: 400, color: 'var(--muted)' }}>(заавал биш)</span>
           </label>
           <LocationMap lat={coords?.lat} lng={coords?.lng} editable onPick={setCoords} />
           {coords && (
-            <p style={{ fontSize: 12, color: '#6B7680', marginTop: 4 }}>
+            <p style={{ fontSize: 12, color: 'var(--muted)', marginTop: 4 }}>
               📍 Байршил сонгогдлоо ({coords.lat.toFixed(4)}, {coords.lng.toFixed(4)})
             </p>
           )}
@@ -188,7 +210,7 @@ export default function PetForm({ status }) {
             {submitting ? statusMsg || 'Илгээж байна...' : status === 'lost' ? 'Алдсан мэдэгдэл нийтлэх' : 'Олдсон мэдэгдэл нийтлэх'}
           </button>
           {submitting && statusMsg.includes('AI') && (
-            <p style={{ fontSize: 12, color: '#6B7680', marginTop: 6 }}>
+            <p style={{ fontSize: 12, color: 'var(--muted)', marginTop: 6 }}>
               Анхны хүсэлт 10-30 секунд удааширч болно, түр хүлээгээрэй...
             </p>
           )}
@@ -214,43 +236,43 @@ export default function PetForm({ status }) {
 
       <style jsx>{`
         .pet-form { display: flex; flex-direction: column; gap: 4px; max-width: 420px; }
-        label { font-size: 13px; font-weight: 600; color: #1F4B5C; margin-top: 12px; }
+        label { font-size: 13px; font-weight: 600; color: var(--primary); margin-top: 12px; }
         label:first-child { margin-top: 0; }
-        input, select { padding: 10px 12px; border: 1.5px solid #E1E4DF; border-radius: 9px; font-size: 14px; }
+        input, select { padding: 10px 12px; border: 1.5px solid var(--line); border-radius: 9px; font-size: 14px; }
         .upload-zone {
-          border: 2px dashed #E1E4DF; border-radius: 12px; padding: 20px;
-          text-align: center; cursor: pointer; color: #6B7680; background: #FBFBFA;
+          border: 2px dashed var(--line); border-radius: 12px; padding: 20px;
+          text-align: center; cursor: pointer; color: var(--muted); background: var(--bg);
         }
         .upload-zone img { max-width: 140px; border-radius: 10px; }
         .btn {
           padding: 12px; border-radius: 10px; border: none;
           font-weight: 600; cursor: pointer; font-size: 14.5px;
         }
-        .btn-primary { background: #1F4B5C; color: #fff; width: 100%; margin-top: 18px; }
+        .btn-primary { background: var(--brand); color: #fff; width: 100%; margin-top: 18px; }
         .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
-        .error { color: #C6473B; font-size: 13px; margin-top: 8px; }
-        .success-box { padding: 24px; background: #F0F6F1; border-radius: 12px; text-align: center; }
+        .error { color: var(--alert); font-size: 13px; margin-top: 8px; }
+        .success-box { padding: 24px; background: var(--success-bg); border-radius: 12px; text-align: center; }
 
         .progress-row { display: flex; justify-content: space-between; margin-bottom: 4px; }
         .progress-step { display: flex; flex-direction: column; align-items: center; flex: 1; gap: 4px; }
         .progress-dot {
-          width: 26px; height: 26px; border-radius: 50%; background: #E1E4DF; color: #6B7680;
+          width: 26px; height: 26px; border-radius: 50%; background: var(--line); color: var(--muted);
           display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700;
         }
-        .progress-step.active .progress-dot { background: #E8A33D; color: #1F4B5C; }
-        .progress-step.done .progress-dot { background: #4C8C6B; color: #fff; }
-        .progress-label { font-size: 10.5px; color: #6B7680; text-align: center; }
-        .progress-text { font-size: 12.5px; color: #6B7680; margin-bottom: 14px; text-align: center; }
+        .progress-step.active .progress-dot { background: var(--accent); color: var(--primary); }
+        .progress-step.done .progress-dot { background: var(--success); color: #fff; }
+        .progress-label { font-size: 10.5px; color: var(--muted); text-align: center; }
+        .progress-text { font-size: 12.5px; color: var(--muted); margin-bottom: 14px; text-align: center; }
 
         .locate-btn {
-          padding: 10px 14px; border-radius: 9px; border: 1.5px solid #1F4B5C;
-          background: #fff; color: #1F4B5C; font-weight: 600; cursor: pointer; font-size: 13px; margin-bottom: 8px;
+          padding: 10px 14px; border-radius: 9px; border: 1.5px solid var(--primary);
+          background: var(--card); color: var(--primary); font-weight: 600; cursor: pointer; font-size: 13px; margin-bottom: 8px;
         }
         .locate-btn:disabled { opacity: 0.6; }
 
         .nav-row { display: flex; gap: 10px; margin-top: 20px; }
-        .nav-back { background: #E9EFE9; color: #1F4B5C; flex: 1; }
-        .nav-next { background: #E8A33D; color: #1F4B5C; flex: 1; }
+        .nav-back { background: var(--eyebrow-bg); color: var(--primary); flex: 1; }
+        .nav-next { background: var(--accent); color: var(--primary); flex: 1; }
         .nav-next:disabled { opacity: 0.5; cursor: not-allowed; }
       `}</style>
     </form>

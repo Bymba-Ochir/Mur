@@ -74,7 +74,7 @@ export default function LocationMap({ lat, lng, editable = false, onPick }) {
   return (
     <div
       ref={containerRef}
-      style={{ height: 260, borderRadius: 14, overflow: 'hidden', border: '1px solid #E1E4DF' }}
+      style={{ height: 260, borderRadius: 14, overflow: 'hidden', border: '1px solid var(--line)' }}
     />
   );
 }

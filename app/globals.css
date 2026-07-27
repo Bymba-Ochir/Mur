@@ -1,9 +1,49 @@
+/* ===== Theme variables ===== */
+:root {
+  --bg: #F6F7F4;
+  --ink: #1C2B33;
+  --primary: #1F4B5C;
+  --primary-light: #2E6A80;
+  --brand: #1F4B5C;
+  --accent: #E8A33D;
+  --alert: #C6473B;
+  --success: #4C8C6B;
+  --success-bg: #F0F6F1;
+  --success-text: #2F6B4A;
+  --muted: #6B7680;
+  --card: #FFFFFF;
+  --line: #E1E4DF;
+  --thumb-bg: #DCE4DD;
+  --eyebrow-bg: #E9EFE9;
+  --overlay: rgba(28,43,51,0.6);
+}
+
+[data-theme="dark"] {
+  --bg: #101A20;
+  --ink: #E7EDF0;
+  --primary: #6FB4CE;
+  --primary-light: #8CC7DC;
+  --brand: #16323D;
+  --accent: #F0B85C;
+  --alert: #E17164;
+  --success: #6FBF93;
+  --success-bg: #16241C;
+  --success-text: #8FDCB0;
+  --muted: #93A0A7;
+  --card: #182229;
+  --line: #2A3840;
+  --thumb-bg: #223038;
+  --eyebrow-bg: #1C2B33;
+  --overlay: rgba(0,0,0,0.7);
+}
+
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-  background: #F6F7F4;
-  color: #1C2B33;
+  background: var(--bg);
+  color: var(--ink);
   font-family: 'Segoe UI', Arial, sans-serif;
+  transition: background 0.15s, color 0.15s;
 }
 
 main {
@@ -12,15 +52,15 @@ main {
   padding: 32px 20px 60px;
 }
 
-h1, h2, h3 { color: #1F4B5C; }
+h1, h2, h3 { color: var(--primary); }
 
 a { color: inherit; }
 
 .eyebrow {
   display: inline-block;
   font-size: 12px;
-  color: #1F4B5C;
-  background: #E9EFE9;
+  color: var(--primary);
+  background: var(--eyebrow-bg);
   padding: 5px 12px;
   border-radius: 20px;
   margin-bottom: 14px;
@@ -43,12 +83,14 @@ a { color: inherit; }
   text-decoration: none;
   display: inline-block;
 }
-.btn-primary { background: #1F4B5C; color: #fff; }
-.btn-accent { background: #E8A33D; color: #1F4B5C; }
+.btn-primary { background: var(--brand); color: #fff; }
+.btn-accent { background: var(--accent); color: var(--primary); }
 
-select.filter {
+select.filter, input.filter {
   padding: 8px 12px;
   border-radius: 9px;
-  border: 1.5px solid #E1E4DF;
+  border: 1.5px solid var(--line);
   margin-bottom: 8px;
+  background: var(--card);
+  color: var(--ink);
 }

@@ -42,9 +42,9 @@ export default function ShareButtons({ url, title }) {
           padding: 9px 14px; border-radius: 9px; border: none; cursor: pointer;
           font-size: 13px; font-weight: 600; text-decoration: none; display: inline-block;
         }
-        .native { background: #1F4B5C; color: #fff; }
+        .native { background: var(--brand); color: #fff; }
         .fb { background: #1877F2; color: #fff; }
-        .copy { background: #E9EFE9; color: #1F4B5C; }
+        .copy { background: var(--eyebrow-bg); color: var(--primary); }
       `}</style>
     </div>
   );

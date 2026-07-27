@@ -10,13 +10,13 @@ export default function SkeletonCard() {
 
       <style jsx>{`
         .skeleton-card {
-          background: #fff; border: 1px solid #E1E4DF; border-radius: 14px; overflow: hidden;
+          background: var(--card); border: 1px solid var(--line); border-radius: 14px; overflow: hidden;
         }
-        .skeleton-thumb { height: 150px; background: #E1E4DF; }
+        .skeleton-thumb { height: 150px; background: var(--line); }
         .skeleton-info { padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; }
-        .skeleton-line { height: 11px; border-radius: 4px; background: #E1E4DF; }
+        .skeleton-line { height: 11px; border-radius: 4px; background: var(--line); }
         .shimmer {
-          background: linear-gradient(90deg, #E1E4DF 25%, #EEF0EC 37%, #E1E4DF 63%);
+          background: linear-gradient(90deg, var(--line) 25%, var(--card) 37%, var(--line) 63%);
           background-size: 400% 100%;
           animation: shimmer 1.4s ease infinite;
         }

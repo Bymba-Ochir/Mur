@@ -36,13 +36,13 @@ export function ToastProvider({ children }) {
           width: 92%; max-width: 380px; pointer-events: none;
         }
         .toast {
-          background: #1C2B33; color: #fff; padding: 12px 16px; border-radius: 10px;
+          background: var(--ink); color: #fff; padding: 12px 16px; border-radius: 10px;
           font-size: 13.5px; box-shadow: 0 6px 20px rgba(0,0,0,0.2); cursor: pointer;
           pointer-events: auto; animation: slideUp 0.25s ease-out;
         }
-        .toast-error { background: #C6473B; }
-        .toast-success { background: #2F6B4A; }
-        .toast-info { background: #1F4B5C; }
+        .toast-error { background: var(--alert); }
+        .toast-success { background: var(--success-text); }
+        .toast-info { background: var(--brand); }
         @keyframes slideUp {
           from { opacity: 0; transform: translateY(12px); }
           to { opacity: 1; transform: translateY(0); }

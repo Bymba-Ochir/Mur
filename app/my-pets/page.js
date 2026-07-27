@@ -8,10 +8,10 @@ import { subscribeToVaccineReminders, isSubscribed } from '../../lib/push';
 import { useToast } from '../../components/Toast';
 
 const STATUS_LABEL = {
-  overdue: { text: '⚠️ Хугацаа хэтэрсэн', color: '#C6473B' },
-  soon: { text: '🔔 Удахгүй болно', color: '#E8A33D' },
-  ok: { text: '✅ Хэвийн', color: '#4C8C6B' },
-  none: { text: 'Огноо тохируулаагүй', color: '#6B7680' },
+  overdue: { text: '⚠️ Хугацаа хэтэрсэн', color: 'var(--alert)' },
+  soon: { text: '🔔 Удахгүй болно', color: 'var(--accent)' },
+  ok: { text: '✅ Хэвийн', color: 'var(--success)' },
+  none: { text: 'Огноо тохируулаагүй', color: 'var(--muted)' },
 };
 
 export default function MyPetsPage() {
@@ -75,14 +75,14 @@ export default function MyPetsPage() {
     }
   }
 
-  if (loading) return <p style={{ color: '#6B7680' }}>Ачааллаж байна...</p>;
+  if (loading) return <p style={{ color: 'var(--muted)' }}>Ачааллаж байна...</p>;
 
   if (!user) {
     return (
       <div>
         <div className="eyebrow">💉 Миний амьтад</div>
         <h1 style={{ fontSize: 24, marginBottom: 12 }}>Вакцины сануулга</h1>
-        <p style={{ color: '#6B7680' }}>
+        <p style={{ color: 'var(--muted)' }}>
           Энэ функцийг ашиглахын тулд эхлээд навигац дээрх "Нэвтрэх" товчоор нэвтэрнэ үү.
         </p>
       </div>
@@ -93,43 +93,43 @@ export default function MyPetsPage() {
     <div style={{ maxWidth: 520 }}>
       <div className="eyebrow">💉 Миний амьтад</div>
       <h1 style={{ fontSize: 24, marginBottom: 8 }}>Вакцины сануулга</h1>
-      <p style={{ color: '#6B7680', marginBottom: 16, fontSize: 13.5 }}>
+      <p style={{ color: 'var(--muted)', marginBottom: 16, fontSize: 13.5 }}>
         Амьтныхаа дараагийн вакцины огноог тэмдэглэ — хугацаа дөхөхөд push мэдэгдэл авна.
       </p>
 
       {!subscribed ? (
-        <div style={{ background: '#F0F6F1', padding: 14, borderRadius: 12, marginBottom: 20 }}>
-          <button onClick={handleSubscribe} className="btn" style={{ background: '#1F4B5C', color: '#fff' }}>
+        <div style={{ background: 'var(--success-bg)', padding: 14, borderRadius: 12, marginBottom: 20 }}>
+          <button onClick={handleSubscribe} className="btn" style={{ background: 'var(--brand)', color: '#fff' }}>
             🔔 Сануулгын мэдэгдэл идэвхжүүлэх
           </button>
-          {notifyError && <p style={{ color: '#C6473B', fontSize: 12, marginTop: 6 }}>{notifyError}</p>}
+          {notifyError && <p style={{ color: 'var(--alert)', fontSize: 12, marginTop: 6 }}>{notifyError}</p>}
         </div>
       ) : (
-        <p style={{ fontSize: 13, color: '#4C8C6B', marginBottom: 16 }}>🔔 Сануулгын мэдэгдэл идэвхтэй</p>
+        <p style={{ fontSize: 13, color: 'var(--success)', marginBottom: 16 }}>🔔 Сануулгын мэдэгдэл идэвхтэй</p>
       )}
 
       <form onSubmit={handleAdd} style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 24 }}>
         <input
           value={name} onChange={(e) => setName(e.target.value)}
           placeholder="Амьтны нэр" required
-          style={{ flex: '1 1 140px', padding: 10, borderRadius: 9, border: '1.5px solid #E1E4DF' }}
+          style={{ flex: '1 1 140px', padding: 10, borderRadius: 9, border: '1.5px solid var(--line)' }}
         />
         <select value={type} onChange={(e) => setType(e.target.value)}
-          style={{ padding: 10, borderRadius: 9, border: '1.5px solid #E1E4DF' }}>
+          style={{ padding: 10, borderRadius: 9, border: '1.5px solid var(--line)' }}>
           <option>Нохой</option>
           <option>Муур</option>
         </select>
         <input
           type="date" value={date} onChange={(e) => setDate(e.target.value)}
-          style={{ padding: 10, borderRadius: 9, border: '1.5px solid #E1E4DF' }}
+          style={{ padding: 10, borderRadius: 9, border: '1.5px solid var(--line)' }}
         />
-        <button type="submit" disabled={busy} className="btn" style={{ background: '#E8A33D', color: '#1F4B5C' }}>
+        <button type="submit" disabled={busy} className="btn" style={{ background: 'var(--accent)', color: 'var(--primary)' }}>
           + Нэмэх
         </button>
       </form>
 
       {pets.length === 0 ? (
-        <p style={{ color: '#6B7680' }}>Одоогоор амьтан бүртгээгүй байна.</p>
+        <p style={{ color: 'var(--muted)' }}>Одоогоор амьтан бүртгээгүй байна.</p>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {pets.map((p) => {
@@ -137,12 +137,12 @@ export default function MyPetsPage() {
             const label = STATUS_LABEL[st];
             return (
               <div key={p.id} style={{
-                background: '#fff', border: '1px solid #E1E4DF', borderRadius: 12,
+                background: 'var(--card)', border: '1px solid var(--line)', borderRadius: 12,
                 padding: 14, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap',
               }}>
                 <div>
-                  <b style={{ color: '#1F4B5C' }}>{p.name}</b>
-                  <span style={{ color: '#6B7680', fontSize: 13 }}> — {p.type}</span>
+                  <b style={{ color: 'var(--primary)' }}>{p.name}</b>
+                  <span style={{ color: 'var(--muted)', fontSize: 13 }}> — {p.type}</span>
                   <div style={{ fontSize: 12.5, color: label.color, marginTop: 2 }}>{label.text}</div>
                 </div>
                 <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
@@ -150,10 +150,10 @@ export default function MyPetsPage() {
                     type="date"
                     defaultValue={p.nextVaccineDate || ''}
                     onChange={(e) => handleDateChange(p.id, e.target.value)}
-                    style={{ padding: 6, borderRadius: 8, border: '1.5px solid #E1E4DF', fontSize: 13 }}
+                    style={{ padding: 6, borderRadius: 8, border: '1.5px solid var(--line)', fontSize: 13 }}
                   />
                   <button onClick={() => handleDelete(p.id)} style={{
-                    background: 'none', border: 'none', color: '#C6473B', cursor: 'pointer', fontSize: 13,
+                    background: 'none', border: 'none', color: 'var(--alert)', cursor: 'pointer', fontSize: 13,
                   }}>
                     Устгах
                   </button>

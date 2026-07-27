@@ -24,7 +24,7 @@ export default function ReportButton({ petId }) {
   }
 
   if (sent) {
-    return <p style={{ fontSize: 12, color: '#6B7680', marginTop: 8 }}>✅ Мэдээлэл хүлээн авлаа, баярлалаа.</p>;
+    return <p style={{ fontSize: 12, color: 'var(--muted)', marginTop: 8 }}>✅ Мэдээлэл хүлээн авлаа, баярлалаа.</p>;
   }
 
   return (
@@ -32,13 +32,13 @@ export default function ReportButton({ petId }) {
       {!open ? (
         <button
           onClick={() => setOpen(true)}
-          style={{ background: 'none', border: 'none', color: '#6B7680', fontSize: 12, cursor: 'pointer', textDecoration: 'underline' }}
+          style={{ background: 'none', border: 'none', color: 'var(--muted)', fontSize: 12, cursor: 'pointer', textDecoration: 'underline' }}
         >
           🚩 Энэ бичлэгийг мэдээлэх
         </button>
       ) : (
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
-          <span style={{ fontSize: 12, color: '#6B7680' }}>Шалтгаан:</span>
+          <span style={{ fontSize: 12, color: 'var(--muted)' }}>Шалтгаан:</span>
           {REASONS.map((r) => (
             <button
               key={r}
@@ -46,7 +46,7 @@ export default function ReportButton({ petId }) {
               onClick={() => handleReport(r)}
               style={{
                 fontSize: 11.5, padding: '4px 9px', borderRadius: 7,
-                border: '1px solid #E1E4DF', background: '#fff', cursor: 'pointer', color: '#1F4B5C',
+                border: '1px solid var(--line)', background: 'var(--card)', cursor: 'pointer', color: 'var(--primary)',
               }}
             >
               {r}
