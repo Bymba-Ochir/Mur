@@ -113,8 +113,7 @@ create policy "Users manage own pets"
 alter table push_subscriptions add column if not exists user_id uuid references auth.users(id) on delete cascade;
 alter table push_subscriptions alter column district drop not null;
 
--- 11. Буруу/spam/hoax бичлэгийг мэдээлэх (модерацид зориулсан, шүүлт хараахан
--- автоматгүй, Table Editor-с гараар шалгана)
+-- 11. Буруу/spam/hoax бичлэгийг мэдээлэх (модерацид зориулсан)
 create table if not exists reports (
   id uuid primary key default gen_random_uuid(),
   pet_id uuid references pets(id) on delete cascade,
@@ -128,3 +127,77 @@ drop policy if exists "Anyone can report" on reports;
 create policy "Anyone can report"
   on reports for insert
   with check (true);
+
+-- 12. Admin — модератор эрхтэй хэрэглэгчид
+create table if not exists admins (
+  user_id uuid primary key references auth.users(id) on delete cascade
+);
+
+alter table admins enable row level security;
+
+-- Хэрэглэгч зөвхөн өөрийгөө admin эсэхийг шалгаж болно (UI-д харуулах/нуухад ашиглана)
+drop policy if exists "Users can check own admin status" on admins;
+create policy "Users can check own admin status"
+  on admins for select
+  to authenticated
+  using (auth.uid() = user_id);
+
+-- Admin-ууд reports хүснэгтийг унших, устгаж болно
+drop policy if exists "Admins can read reports" on reports;
+create policy "Admins can read reports"
+  on reports for select
+  to authenticated
+  using (auth.uid() in (select user_id from admins));
+
+drop policy if exists "Admins can delete reports" on reports;
+create policy "Admins can delete reports"
+  on reports for delete
+  to authenticated
+  using (auth.uid() in (select user_id from admins));
+
+-- Admin-ууд аль ч pet бичлэгийг устгах/шинэчлэх боломжтой (зохиогчоос үл хамааран)
+drop policy if exists "Admins can update any pet" on pets;
+create policy "Admins can update any pet"
+  on pets for update
+  to authenticated
+  using (auth.uid() in (select user_id from admins))
+  with check (auth.uid() in (select user_id from admins));
+
+drop policy if exists "Admins can delete any pet" on pets;
+create policy "Admins can delete any pet"
+  on pets for delete
+  to authenticated
+  using (auth.uid() in (select user_id from admins));
+
+-- ЗААВАЛ: Өөрийгөө admin болгохын тулд SQL Editor-с дараах командыг ажиллуул
+-- (имэйлээ солиод):
+--   insert into admins (user_id)
+--   select id from auth.users where email = 'таны@имэйл.com';
+
+-- 13. Spam хамгаалалт — нэг утасны дугаар 1 цагт хэт олон удаа бичлэг нийтлэхээс сэргийлнэ
+-- Клиент талаас тойрч болохгүй, өгөгдлийн сангийн түвшинд хэрэгждэг
+create or replace function check_pet_rate_limit()
+returns trigger
+language plpgsql
+security definer
+as $$
+declare
+  recent_count int;
+begin
+  select count(*) into recent_count
+  from pets
+  where phone = new.phone
+    and created_at > now() - interval '1 hour';
+
+  if recent_count >= 5 then
+    raise exception 'RATE_LIMIT: Хэт олон удаа мэдээлэл илгээлээ. 1 цагийн дараа дахин оролдоно уу.';
+  end if;
+
+  return new;
+end;
+$$;
+
+drop trigger if exists trg_pet_rate_limit on pets;
+create trigger trg_pet_rate_limit
+  before insert on pets
+  for each row execute function check_pet_rate_limit();

@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { createPetReport } from '../lib/petService';
 import { nearestDistrict } from '../lib/districtCoords';
 import { compressImage } from '../lib/imageCompress';
+import { checkImageContent } from '../lib/contentModeration';
 import { useToast } from './Toast';
 import ShareButtons from './ShareButtons';
 import LocationMap from './LocationMap';
@@ -26,6 +27,7 @@ export default function PetForm({ status }) {
   const [photoFile, setPhotoFile] = useState(null);
   const [preview, setPreview] = useState(null);
   const [compressing, setCompressing] = useState(false);
+  const [compressStatus, setCompressStatus] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [statusMsg, setStatusMsg] = useState('');
   const [done, setDone] = useState(false);
@@ -44,6 +46,17 @@ export default function PetForm({ status }) {
       const originalKB = Math.round(file.size / 1024);
       const compressed = await compressImage(file);
       const newKB = Math.round(compressed.size / 1024);
+
+      const check = await checkImageContent(compressed, setCompressStatus);
+      if (!check.ok) {
+        showToast(check.reason, 'error');
+        e.target.value = '';
+        return;
+      }
+      if (check.warning) {
+        showToast(check.warning, 'info');
+      }
+
       setPhotoFile(compressed);
       setPreview(URL.createObjectURL(compressed));
       if (originalKB > newKB + 20) {
@@ -54,6 +67,7 @@ export default function PetForm({ status }) {
       setPreview(URL.createObjectURL(file));
     } finally {
       setCompressing(false);
+      setCompressStatus('');
     }
   }
 
@@ -105,7 +119,9 @@ export default function PetForm({ status }) {
       setStep(0);
     } catch (err) {
       console.error(err);
-      setError('Алдаа гарлаа. Дахин оролдоно уу.');
+      setError(err.message && err.message.includes('олон удаа')
+        ? err.message
+        : 'Алдаа гарлаа. Дахин оролдоно уу.');
     } finally {
       setSubmitting(false);
       setStatusMsg('');
@@ -142,7 +158,7 @@ export default function PetForm({ status }) {
           <label>Зураг</label>
           <div className="upload-zone" onClick={() => !compressing && document.getElementById('photo-input').click()}>
             {compressing ? (
-              <span>⏳ Зураг оновчлож байна...</span>
+              <span>⏳ {compressStatus || 'Зураг оновчлож байна...'}</span>
             ) : preview ? (
               <img src={preview} alt="preview" />
             ) : (

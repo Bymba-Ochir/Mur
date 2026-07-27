@@ -1,7 +1,8 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '../lib/useAuth';
+import { isAdmin } from '../lib/adminService';
 import ThemeToggle from './ThemeToggle';
 
 export default function Navbar() {
@@ -10,6 +11,12 @@ export default function Navbar() {
   const [email, setEmail] = useState('');
   const [sent, setSent] = useState(false);
   const [err, setErr] = useState(null);
+  const [admin, setAdmin] = useState(false);
+
+  useEffect(() => {
+    if (user) isAdmin().then(setAdmin);
+    else setAdmin(false);
+  }, [user]);
 
   async function handleSend(e) {
     e.preventDefault();
@@ -33,6 +40,7 @@ export default function Navbar() {
         <Link href="/report-found" className="nav-link-desktop">Олдсон</Link>
         <Link href="/listings" className="nav-link-desktop">Жагсаалт</Link>
         <Link href="/my-pets" className="nav-link-desktop">Миний амьтад</Link>
+        {admin && <Link href="/admin" className="nav-link-desktop" style={{ color: 'var(--accent)' }}>🛡️ Админ</Link>}
         <ThemeToggle />
         {user ? (
           <button onClick={logout} className="link-btn">Гарах ({user.email})</button>

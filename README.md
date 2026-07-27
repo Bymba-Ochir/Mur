@@ -158,6 +158,28 @@ Vercel Hobby (үнэгүй) план дээр **`vercel.json`-д тохируу�
 "Гэрийн дэлгэц рүү нэмэх" санал автоматаар харагдана. Android/Chrome дээр
 шууд "Нэмэх" товчтой, iOS Safari дээр гарын авлага заавартай харагдана.
 
+### 9. Admin dashboard тохируулах
+
+1. `supabase-setup.sql`-ийг дахин ажиллуулсны дараа, **өөрийгөө admin болгох**:
+   - Эхлээд танай апп дээр нэвтэрч (имэйл magic link) байгаа эсэхээ шалга
+   - SQL Editor дээр (имэйлээ солиод):
+   ```sql
+   insert into admins (user_id)
+   select id from auth.users where email = 'таны@имэйл.com';
+   ```
+2. Navbar дээр **"🛡️ Админ"** линк харагдана (зөвхөн admin хэрэглэгчид)
+3. `/admin` хуудсанд мэдээлэгдсэн бичлэгүүдийг **"Үл хэрэгсэх"** (report арилгах) эсвэл
+   **"Бичлэг устгах"** (pet + report хоёуланг нь устгах) хийж болно
+
+### 10. Spam хамгаалалт, agуулгын шүүлт
+
+- **Rate limiting**: Постгресийн trigger-ээр хэрэгжсэн (`check_pet_rate_limit`) — нэг
+  утасны дугаар 1 цагт 5-аас олон удаа бичлэг нийтэлж чадахгүй. Клиент талаас
+  тойрч болохгүй, `supabase-setup.sql`-ийг дахин ажиллуулахад автоматаар идэвхжинэ.
+- **AI зурган шүүлт**: `lib/contentModeration.js`, CLIP-ийн zero-shot classification
+  ашиглан зохисгүй агуулга эсвэл нохой/муур бус зургийг илрүүлж, анхааруулга/хориг
+  өгнө. Нэмэлт тохиргоо шаардахгүй, `similarity.js`-тэй адил CDN-ээс ачаална.
+
 ## Файлын бүтэц
 
 ```
@@ -213,4 +235,7 @@ supabase-setup.sql      — Өгөгдлийн сан, RLS дүрэм, Storage b
 - [x] SVG icon (нохой/муур, emoji-ийн оронд) ✅ (`components/PetIcon.js`)
 - [x] Зураг compress хийх (upload-аас өмнө) ✅ (`lib/imageCompress.js`, 1200px хүртэл)
 - [x] Bottom navigation ✅ (`components/BottomNav.js`, ≤640px дэлгэцэнд харагдана, SVG icon)
+- [x] Admin/Модератор dashboard ✅ (`/admin`, `admins` хүснэгт, RLS-ээр хамгаалагдсан)
+- [x] Rate limiting (spam хамгаалалт) ✅ (Postgres trigger, клиентээс тойрч болохгүй)
+- [x] AI зурган шүүлт (зохисгүй/хамааралгүй агуулга) ✅ (`lib/contentModeration.js`, CLIP zero-shot)
 - [ ] React Native апп (iOS/Android)
