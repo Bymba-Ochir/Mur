@@ -1,10 +1,12 @@
 'use client';
 import { useState } from 'react';
 import { reportPet } from '../lib/petService';
+import { useToast } from './Toast';
 
 const REASONS = ['Хуурамч мэдээлэл', 'Спам', 'Зохисгүй агуулга', 'Дахин нийтэлсэн', 'Бусад'];
 
 export default function ReportButton({ petId }) {
+  const showToast = useToast();
   const [open, setOpen] = useState(false);
   const [sent, setSent] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -15,7 +17,7 @@ export default function ReportButton({ petId }) {
       await reportPet(petId, reason);
       setSent(true);
     } catch (err) {
-      alert('Алдаа гарлаа: ' + err.message);
+      showToast('Алдаа гарлаа: ' + err.message, 'error');
     } finally {
       setBusy(false);
     }

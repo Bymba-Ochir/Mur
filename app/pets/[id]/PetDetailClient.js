@@ -8,10 +8,12 @@ import { useRouter } from 'next/navigation';
 import ShareButtons from '../../../components/ShareButtons';
 import LocationMap from '../../../components/LocationMap';
 import ReportButton from '../../../components/ReportButton';
+import { useToast } from '../../../components/Toast';
 
 export default function PetDetailClient({ id }) {
   const { user } = useAuth();
   const router = useRouter();
+  const showToast = useToast();
   const [pet, setPet] = useState(null);
   const [error, setError] = useState(null);
   const [url, setUrl] = useState('');
@@ -45,7 +47,7 @@ export default function PetDetailClient({ id }) {
       await markResolved(id);
       await load();
     } catch (err) {
-      alert('Алдаа гарлаа: ' + err.message);
+      showToast('Алдаа гарлаа: ' + err.message, 'error');
     } finally {
       setResolving(false);
     }
@@ -57,8 +59,9 @@ export default function PetDetailClient({ id }) {
       await updatePet(id, editForm);
       setEditing(false);
       await load();
+      showToast('Мэдээлэл хадгалагдлаа', 'success');
     } catch (err) {
-      alert('Алдаа гарлаа: ' + err.message);
+      showToast('Алдаа гарлаа: ' + err.message, 'error');
     } finally {
       setSaving(false);
     }
@@ -71,7 +74,7 @@ export default function PetDetailClient({ id }) {
       await deletePet(id);
       router.push('/listings');
     } catch (err) {
-      alert('Алдаа гарлаа: ' + err.message);
+      showToast('Алдаа гарлаа: ' + err.message, 'error');
       setDeleting(false);
     }
   }

@@ -5,6 +5,7 @@ import {
   createMyPet, fetchMyPets, updateVaccineDate, deleteMyPet, vaccineStatus,
 } from '../../lib/vaccineService';
 import { subscribeToVaccineReminders, isSubscribed } from '../../lib/push';
+import { useToast } from '../../components/Toast';
 
 const STATUS_LABEL = {
   overdue: { text: '⚠️ Хугацаа хэтэрсэн', color: '#C6473B' },
@@ -15,6 +16,7 @@ const STATUS_LABEL = {
 
 export default function MyPetsPage() {
   const { user, loading } = useAuth();
+  const showToast = useToast();
   const [pets, setPets] = useState([]);
   const [name, setName] = useState('');
   const [type, setType] = useState('Нохой');
@@ -44,8 +46,9 @@ export default function MyPetsPage() {
       await createMyPet({ name, type, nextVaccineDate: date || null });
       setName(''); setDate('');
       await load();
+      showToast('Амьтан бүртгэгдлээ', 'success');
     } catch (err) {
-      alert(err.message);
+      showToast(err.message, 'error');
     } finally {
       setBusy(false);
     }

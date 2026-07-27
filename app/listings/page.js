@@ -4,6 +4,8 @@ import { fetchPets, rankBySimilarity } from '../../lib/petService';
 import { getImageEmbedding } from '../../lib/similarity';
 import PetCard from '../../components/PetCard';
 import NotifySubscribe from '../../components/NotifySubscribe';
+import SkeletonCard from '../../components/SkeletonCard';
+import Link from 'next/link';
 
 const DISTRICTS = [
   '', 'Баянзүрх', 'Хан-Уул', 'Сүхбаатар', 'Чингэлтэй', 'Баянгол',
@@ -111,9 +113,28 @@ export default function ListingsPage() {
       </div>
 
       {loading ? (
-        <p style={{ color: '#6B7680' }}>Ачааллаж байна...</p>
+        <div className="grid">
+          {Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)}
+        </div>
       ) : pets.length === 0 ? (
-        <p style={{ color: '#6B7680' }}>Одоогоор бүртгэл алга.</p>
+        <div style={{
+          textAlign: 'center', padding: '48px 20px', background: '#fff',
+          border: '1px dashed #E1E4DF', borderRadius: 16, marginTop: 8,
+        }}>
+          <div style={{ fontSize: 46, marginBottom: 10 }}>🐾</div>
+          <p style={{ fontWeight: 600, color: '#1F4B5C', marginBottom: 4 }}>
+            {search || district || status ? 'Хайлтад тохирох бичлэг олдсонгүй' : 'Одоогоор бичлэг алга'}
+          </p>
+          <p style={{ color: '#6B7680', fontSize: 13.5, marginBottom: 18 }}>
+            {search || district || status
+              ? 'Шүүлтүүрээ өөрчилж эсвэл цэвэрлээд дахин үзнэ үү.'
+              : 'Хамгийн эхний мэдэгдлийг та нийтэлж болно.'}
+          </p>
+          <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
+            <Link href="/report-lost" className="btn btn-accent">🐾 Алдсан мэдэгдэх</Link>
+            <Link href="/report-found" className="btn btn-primary">👀 Олсон зурагтай</Link>
+          </div>
+        </div>
       ) : (
         <div className="grid">
           {pets.map((p) => <PetCard key={p.id} pet={p} />)}

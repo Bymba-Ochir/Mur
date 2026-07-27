@@ -1,5 +1,6 @@
 import Navbar from '../components/Navbar';
 import InstallPrompt from '../components/InstallPrompt';
+import { ToastProvider } from '../components/Toast';
 import './globals.css';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://mur-chi.vercel.app';
@@ -32,9 +33,11 @@ export default function RootLayout({ children }) {
         />
       </head>
       <body>
-        <Navbar />
-        <main>{children}</main>
-        <InstallPrompt />
+        <ToastProvider>
+          <Navbar />
+          <main>{children}</main>
+          <InstallPrompt />
+        </ToastProvider>
       </body>
     </html>
   );
