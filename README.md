@@ -177,4 +177,8 @@ supabase-setup.sql      — Өгөгдлийн сан, RLS дүрэм, Storage b
 - [x] Push мэдэгдэл (Nearby Alert) ✅ (`lib/push.js`, `public/sw.js`, `/api/notify` + Supabase Webhook)
 - [x] Сүүлд харагдсан газрын зураг ✅ (`components/LocationMap.js`, OpenStreetMap + Leaflet.js — API key шаардахгүй)
 - [x] Вакцины сануулга feature (retention) ✅ (`/my-pets`, Vercel Cron + push мэдэгдэл)
+- [x] "Олдлоо" товч ✅ (зохиогч л тэмдэглэж чадна, RLS-ээр хамгаалагдсан)
+- [x] Facebook/Messenger share-д зурган preview (og:image) ✅ (`generateMetadata`, server component)
+- [x] Мэдээлэх (report) товч ✅ (`ReportButton.js`, `reports` хүснэгт)
 - [ ] React Native апп (iOS/Android)
+- [ ] Rate limiting / бичлэг засах-устгах / текстээр хайх / утас хэсэгчлэн нуух / SEO sitemap / PWA install сануулга (тэмдэглэсэн санаанууд, дараагийн ээлжинд)

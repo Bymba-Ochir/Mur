@@ -23,6 +23,11 @@ create table if not exists pets (
 alter table pets add column if not exists lat double precision;
 alter table pets add column if not exists lng double precision;
 
+-- "Олдлоо" товч, зохиогчийг тэмдэглэх багана
+alter table pets add column if not exists created_by uuid references auth.users(id);
+alter table pets alter column created_by set default auth.uid();
+alter table pets add column if not exists resolved boolean not null default false;
+
 -- 2. Row Level Security идэвхжүүлэх
 alter table pets enable row level security;
 
@@ -39,7 +44,15 @@ create policy "Authenticated users can insert"
   to authenticated
   with check (true);
 
--- 5. Storage bucket үүсгэх (зурган файлд зориулсан)
+-- 5. Зохиогч өөрийн бичлэгээ засах боломжтой (жишээ нь "Олдлоо" гэж тэмдэглэх)
+drop policy if exists "Owner can update own pet" on pets;
+create policy "Owner can update own pet"
+  on pets for update
+  to authenticated
+  using (auth.uid() = created_by)
+  with check (auth.uid() = created_by);
+
+-- 6. Storage bucket үүсгэх (зурган файлд зориулсан)
 insert into storage.buckets (id, name, public)
 values ('pet-photos', 'pet-photos', true)
 on conflict (id) do nothing;
@@ -99,3 +112,19 @@ create policy "Users manage own pets"
 -- тус бүрт зориулагдсан байх ёстой, дүүргээр биш)
 alter table push_subscriptions add column if not exists user_id uuid references auth.users(id) on delete cascade;
 alter table push_subscriptions alter column district drop not null;
+
+-- 11. Буруу/spam/hoax бичлэгийг мэдээлэх (модерацид зориулсан, шүүлт хараахан
+-- автоматгүй, Table Editor-с гараар шалгана)
+create table if not exists reports (
+  id uuid primary key default gen_random_uuid(),
+  pet_id uuid references pets(id) on delete cascade,
+  reason text not null,
+  created_at timestamptz default now()
+);
+
+alter table reports enable row level security;
+
+drop policy if exists "Anyone can report" on reports;
+create policy "Anyone can report"
+  on reports for insert
+  with check (true);
