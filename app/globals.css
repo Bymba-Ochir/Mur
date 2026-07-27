@@ -52,6 +52,12 @@ main {
   padding: 32px 20px 60px;
 }
 
+@media (max-width: 640px) {
+  main {
+    padding-bottom: 84px; /* доод цэс (BottomNav)-тэй давхцахгүй байхаар зай үлдээнэ */
+  }
+}
+
 h1, h2, h3 { color: var(--primary); }
 
 a { color: inherit; }

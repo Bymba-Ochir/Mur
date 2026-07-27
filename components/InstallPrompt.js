@@ -70,10 +70,13 @@ export default function InstallPrompt() {
 
       <style jsx>{`
         .install-banner {
-          position: fixed; bottom: 0; left: 0; right: 0; z-index: 200;
+          position: fixed; bottom: 0; left: 0; right: 0; z-index: 140;
           background: var(--brand); color: #fff; padding: 14px 18px;
           display: flex; align-items: center; justify-content: space-between; gap: 12px;
           flex-wrap: wrap; box-shadow: 0 -4px 16px rgba(0,0,0,0.15);
+        }
+        @media (max-width: 640px) {
+          .install-banner { bottom: 58px; }
         }
         .install-content { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 200px; }
         .install-icon { font-size: 26px; }

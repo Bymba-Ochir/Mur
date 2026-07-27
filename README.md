@@ -212,5 +212,5 @@ supabase-setup.sql      — Өгөгдлийн сан, RLS дүрэм, Storage b
 - [x] Dark mode ✅ (`ThemeToggle.js`, CSS variables, localStorage хадгалалттай)
 - [x] SVG icon (нохой/муур, emoji-ийн оронд) ✅ (`components/PetIcon.js`)
 - [x] Зураг compress хийх (upload-аас өмнө) ✅ (`lib/imageCompress.js`, 1200px хүртэл)
+- [x] Bottom navigation ✅ (`components/BottomNav.js`, ≤640px дэлгэцэнд харагдана, SVG icon)
 - [ ] React Native апп (iOS/Android)
-- [ ] Bottom navigation (дараагийн ээлжинд)

@@ -29,10 +29,10 @@ export default function Navbar() {
         <span>МӨР</span>
       </Link>
       <nav>
-        <Link href="/report-lost">Алдсан</Link>
-        <Link href="/report-found">Олдсон</Link>
-        <Link href="/listings">Жагсаалт</Link>
-        <Link href="/my-pets">Миний амьтад</Link>
+        <Link href="/report-lost" className="nav-link-desktop">Алдсан</Link>
+        <Link href="/report-found" className="nav-link-desktop">Олдсон</Link>
+        <Link href="/listings" className="nav-link-desktop">Жагсаалт</Link>
+        <Link href="/my-pets" className="nav-link-desktop">Миний амьтад</Link>
         <ThemeToggle />
         {user ? (
           <button onClick={logout} className="link-btn">Гарах ({user.email})</button>
@@ -74,6 +74,9 @@ export default function Navbar() {
           display: flex; align-items: center; justify-content: center; font-weight: 700;
         }
         nav { display: flex; gap: 18px; align-items: center; }
+        @media (max-width: 640px) {
+          .nav-link-desktop { display: none; }
+        }
         nav :global(a), .link-btn {
           color: #DCE9EC; text-decoration: none; font-size: 14px;
           background: none; border: none; cursor: pointer; font-family: inherit;
