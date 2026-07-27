@@ -14,12 +14,14 @@ export default function LocationMap({ lat, lng, editable = false, onPick }) {
   const containerRef = useRef(null);
   const mapRef = useRef(null);
   const markerRef = useRef(null);
+  const LRef = useRef(null);
 
   useEffect(() => {
     let cancelled = false;
 
     import('leaflet').then((L) => {
       if (cancelled || !containerRef.current || mapRef.current) return;
+      LRef.current = L;
 
       const center = lat != null && lng != null ? [lat, lng] : UB_CENTER;
       const map = L.map(containerRef.current).setView(center, lat != null ? 15 : 11);
@@ -56,6 +58,18 @@ export default function LocationMap({ lat, lng, editable = false, onPick }) {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Гаднаас (жишээ нь geolocation товч) lat/lng өөрчлөгдөхөд газрын зургийг шинэчилнэ
+  useEffect(() => {
+    if (!mapRef.current || !LRef.current || lat == null || lng == null) return;
+    const L = LRef.current;
+    mapRef.current.setView([lat, lng], 15);
+    if (markerRef.current) {
+      markerRef.current.setLatLng([lat, lng]);
+    } else {
+      markerRef.current = L.marker([lat, lng]).addTo(mapRef.current);
+    }
+  }, [lat, lng]);
 
   return (
     <div

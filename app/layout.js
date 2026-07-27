@@ -1,5 +1,6 @@
 import Navbar from '../components/Navbar';
 import InstallPrompt from '../components/InstallPrompt';
+import Onboarding from '../components/Onboarding';
 import { ToastProvider } from '../components/Toast';
 import './globals.css';
 
@@ -37,6 +38,7 @@ export default function RootLayout({ children }) {
           <Navbar />
           <main>{children}</main>
           <InstallPrompt />
+          <Onboarding />
         </ToastProvider>
       </body>
     </html>
