@@ -31,6 +31,7 @@ export default function Navbar() {
         <Link href="/report-lost">Алдсан</Link>
         <Link href="/report-found">Олдсон</Link>
         <Link href="/listings">Жагсаалт</Link>
+        <Link href="/my-pets">Миний амьтад</Link>
         {user ? (
           <button onClick={logout} className="link-btn">Гарах ({user.email})</button>
         ) : (

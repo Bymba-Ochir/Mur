@@ -124,6 +124,23 @@ npx web-push generate-vapid-keys
 ажиллах ч бодит push ирэхгүй байж болно (Chrome dev тохиолдолд `localhost`-ыг
 тусгайлан HTTPS мэт үзнэ, ажиллах ёстой).
 
+### 7. Вакцины сануулга (retention feature) тохируулах
+
+**А. Vercel дээр `CRON_SECRET` нэмэх:**
+1. Дурын нууц урт мөр зохио (жишээ: `openssl rand -hex 16`)
+2. Vercel Dashboard → Settings → Environment Variables → `CRON_SECRET` нэрээр нэм
+3. Redeploy хий
+
+Vercel Hobby (үнэгүй) план дээр **`vercel.json`-д тохируулсан cron job** (`/api/vaccine-reminders`, өдөр бүр 02:00 UTC) автоматаар ажиллана — нэмэлт тохиргоо хийх шаардлагагүй, зөвхөн deploy хийхэд л идэвхждэг.
+
+**Б. Хэрэглээ:**
+1. Хэрэглэгч нэвтэрч, **"Миний амьтад"** цэс рүү орно
+2. **"Сануулгын мэдэгдэл идэвхжүүлэх"** дараад push зөвшөөрөл өгнө
+3. Амьтныхаа нэр, төрөл, дараагийн вакцины огноог бүртгэнэ
+4. Тухайн огноо болмогц (эсвэл хэтэрвэл), Vercel Cron өдөр бүр шалгаж push мэдэгдэл илгээнэ
+
+**Анхаарах зүйл:** Vercel Hobby план дээр Cron Job-ууд **өдөрт нэг удаа** ажиллах хугацааны нарийвчлалтай (яг тухайн минутад биш, ойролцоогоор ажиллаж болно) — энэ бол үнэгүй tier-ийн хязгаарлалт, вакцины сануулгад хангалттай.
+
 ## Файлын бүтэц
 
 ```
@@ -147,8 +164,10 @@ lib/
   petService.js        — Supabase CRUD
   similarity.js        — Зурган төстэй байдал (CLIP, browser-based, CDN-ээс ачаалдаг)
   push.js              — Push мэдэгдэлд бүртгүүлэх клиент функцууд
+  vaccineService.js    — "Миний амьтад" вакцины сануулгын CRUD
 public/sw.js            — Push мэдэгдэл хүлээн авах Service Worker
-supabase-setup.sql      — Өгөгдлийн сан, RLS дүрэм, Storage bucket, push_subscriptions
+vercel.json             — Vercel Cron Job тохиргоо (вакцины сануулга)
+supabase-setup.sql      — Өгөгдлийн сан, RLS дүрэм, Storage bucket, push_subscriptions, my_pets
 ```
 
 ## Дараагийн алхмууд (Үе шат 2)
@@ -157,5 +176,5 @@ supabase-setup.sql      — Өгөгдлийн сан, RLS дүрэм, Storage b
 - [x] Facebook/Messenger руу Share товч нэмэх ✅ (`ShareButtons.js`, `/pets/[id]` дэлгэрэнгүй хуудас)
 - [x] Push мэдэгдэл (Nearby Alert) ✅ (`lib/push.js`, `public/sw.js`, `/api/notify` + Supabase Webhook)
 - [x] Сүүлд харагдсан газрын зураг ✅ (`components/LocationMap.js`, OpenStreetMap + Leaflet.js — API key шаардахгүй)
-- [ ] Вакцины сануулга feature (retention)
+- [x] Вакцины сануулга feature (retention) ✅ (`/my-pets`, Vercel Cron + push мэдэгдэл)
 - [ ] React Native апп (iOS/Android)

@@ -74,5 +74,28 @@ create policy "Anyone can subscribe"
   on push_subscriptions for insert
   with check (true);
 
--- Уншихыг зөвшөөрөхгүй (зөвхөн server-side service_role key-ээр л жагсаалт татна)
--- энэ нь өөр хэрэглэгчийн push endpoint-ыг нээлттэй болгохоос сэргийлнэ
+-- 9. "Миний амьтад" — хэрэглэгчийн өөрийн бүртгэлтэй амьтад, вакцины хугацаа
+create table if not exists my_pets (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  name text not null,
+  type text not null,
+  photo_url text,
+  next_vaccine_date date,
+  last_notified_date date,
+  created_at timestamptz default now()
+);
+
+alter table my_pets enable row level security;
+
+drop policy if exists "Users manage own pets" on my_pets;
+create policy "Users manage own pets"
+  on my_pets for all
+  to authenticated
+  using (auth.uid() = user_id)
+  with check (auth.uid() = user_id);
+
+-- 10. push_subscriptions-д хэрэглэгчийн ID нэмнэ (вакцины сануулга хэрэглэгч
+-- тус бүрт зориулагдсан байх ёстой, дүүргээр биш)
+alter table push_subscriptions add column if not exists user_id uuid references auth.users(id) on delete cascade;
+alter table push_subscriptions alter column district drop not null;
