@@ -108,19 +108,22 @@ export default function MyPetsPage() {
         <p style={{ fontSize: 13, color: 'var(--success)', marginBottom: 16 }}>🔔 Сануулгын мэдэгдэл идэвхтэй</p>
       )}
 
-      <form onSubmit={handleAdd} style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 24 }}>
+      <form onSubmit={handleAdd} style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 24 }} aria-label="Шинэ амьтан нэмэх">
         <input
           value={name} onChange={(e) => setName(e.target.value)}
           placeholder="Амьтны нэр" required
+          aria-label="Амьтны нэр"
           style={{ flex: '1 1 140px', padding: 10, borderRadius: 9, border: '1.5px solid var(--line)' }}
         />
         <select value={type} onChange={(e) => setType(e.target.value)}
+          aria-label="Амьтны төрөл"
           style={{ padding: 10, borderRadius: 9, border: '1.5px solid var(--line)' }}>
           <option>Нохой</option>
           <option>Муур</option>
         </select>
         <input
           type="date" value={date} onChange={(e) => setDate(e.target.value)}
+          aria-label="Дараагийн вакцины огноо"
           style={{ padding: 10, borderRadius: 9, border: '1.5px solid var(--line)' }}
         />
         <button type="submit" disabled={busy} className="btn" style={{ background: 'var(--accent)', color: 'var(--primary)' }}>
@@ -150,9 +153,10 @@ export default function MyPetsPage() {
                     type="date"
                     defaultValue={p.nextVaccineDate || ''}
                     onChange={(e) => handleDateChange(p.id, e.target.value)}
+                    aria-label={`${p.name}-ийн дараагийн вакцины огноо`}
                     style={{ padding: 6, borderRadius: 8, border: '1.5px solid var(--line)', fontSize: 13 }}
                   />
-                  <button onClick={() => handleDelete(p.id)} style={{
+                  <button onClick={() => handleDelete(p.id)} aria-label={`${p.name}-ийг устгах`} style={{
                     background: 'none', border: 'none', color: 'var(--alert)', cursor: 'pointer', fontSize: 13,
                   }}>
                     Устгах

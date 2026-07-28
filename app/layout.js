@@ -50,9 +50,10 @@ export default function RootLayout({ children }) {
         />
       </head>
       <body>
+        <a href="#main-content" className="skip-link">Үндсэн агуулга руу шилжих</a>
         <ToastProvider>
           <Navbar />
-          <main>{children}</main>
+          <main id="main-content">{children}</main>
           <InstallPrompt />
           <Onboarding />
           <BottomNav />

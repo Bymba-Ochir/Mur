@@ -51,9 +51,9 @@ export default function InstallPrompt() {
   if (!visible) return null;
 
   return (
-    <div className="install-banner">
+    <div className="install-banner" role="region" aria-label="Аппыг суулгах санал">
       <div className="install-content">
-        <span className="install-icon">🐾</span>
+        <span className="install-icon" aria-hidden="true">🐾</span>
         <div>
           <b>МӨР-ийг гэрийн дэлгэц рүү нэмэх</b>
           {isIOS ? (
@@ -65,7 +65,7 @@ export default function InstallPrompt() {
       </div>
       <div className="install-actions">
         {!isIOS && <button onClick={handleInstall} className="install-btn primary">Нэмэх</button>}
-        <button onClick={dismiss} className="install-btn ghost">Хаах</button>
+        <button onClick={dismiss} className="install-btn ghost" aria-label="Аппыг суулгах саналыг хаах">Хаах</button>
       </div>
 
       <style jsx>{`

@@ -134,22 +134,22 @@ export default function PetDetailClient({ id }) {
         </div>
       ) : (
         <div style={{ background: 'var(--card)', border: '1px solid var(--line)', borderRadius: 14, padding: 18, display: 'flex', flexDirection: 'column', gap: 8 }}>
-          <label style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--primary)' }}>Нэр</label>
-          <input value={editForm.name} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+          <label htmlFor="edit-name" style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--primary)' }}>Нэр</label>
+          <input id="edit-name" value={editForm.name} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
             style={{ padding: 9, borderRadius: 8, border: '1.5px solid var(--line)' }} />
-          <label style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--primary)' }}>Өнгө</label>
-          <input value={editForm.color} onChange={(e) => setEditForm({ ...editForm, color: e.target.value })}
+          <label htmlFor="edit-color" style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--primary)' }}>Өнгө</label>
+          <input id="edit-color" value={editForm.color} onChange={(e) => setEditForm({ ...editForm, color: e.target.value })}
             style={{ padding: 9, borderRadius: 8, border: '1.5px solid var(--line)' }} />
-          <label style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--primary)' }}>Дүүрэг</label>
-          <select value={editForm.district} onChange={(e) => setEditForm({ ...editForm, district: e.target.value })}
+          <label htmlFor="edit-district" style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--primary)' }}>Дүүрэг</label>
+          <select id="edit-district" value={editForm.district} onChange={(e) => setEditForm({ ...editForm, district: e.target.value })}
             style={{ padding: 9, borderRadius: 8, border: '1.5px solid var(--line)' }}>
             {DISTRICTS.map((d) => <option key={d}>{d}</option>)}
           </select>
-          <label style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--primary)' }}>Байршил</label>
-          <input value={editForm.place} onChange={(e) => setEditForm({ ...editForm, place: e.target.value })}
+          <label htmlFor="edit-place" style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--primary)' }}>Байршил</label>
+          <input id="edit-place" value={editForm.place} onChange={(e) => setEditForm({ ...editForm, place: e.target.value })}
             style={{ padding: 9, borderRadius: 8, border: '1.5px solid var(--line)' }} />
-          <label style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--primary)' }}>Утас</label>
-          <input value={editForm.phone} onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
+          <label htmlFor="edit-phone" style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--primary)' }}>Утас</label>
+          <input id="edit-phone" value={editForm.phone} onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
             style={{ padding: 9, borderRadius: 8, border: '1.5px solid var(--line)' }} />
           <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
             <button onClick={handleSaveEdit} disabled={saving} className="btn"

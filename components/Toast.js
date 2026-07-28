@@ -21,9 +21,17 @@ export function ToastProvider({ children }) {
   return (
     <ToastContext.Provider value={showToast}>
       {children}
-      <div className="toast-stack">
+      <div className="toast-stack" role="status" aria-live="polite" aria-atomic="false">
         {toasts.map((t) => (
-          <div key={t.id} className={`toast toast-${t.type}`} onClick={() => dismiss(t.id)}>
+          <div
+            key={t.id}
+            className={`toast toast-${t.type}`}
+            onClick={() => dismiss(t.id)}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') dismiss(t.id); }}
+            aria-label="Мэдэгдлийг хаах"
+          >
             {t.type === 'error' ? '⚠️' : t.type === 'success' ? '✅' : 'ℹ️'} {t.message}
           </div>
         ))}
@@ -40,6 +48,7 @@ export function ToastProvider({ children }) {
           font-size: 13.5px; box-shadow: 0 6px 20px rgba(0,0,0,0.2); cursor: pointer;
           pointer-events: auto; animation: slideUp 0.25s ease-out;
         }
+        .toast:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
         .toast-error { background: var(--alert); }
         .toast-success { background: var(--success-text); }
         .toast-info { background: var(--brand); }

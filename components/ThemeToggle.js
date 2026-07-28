@@ -19,8 +19,8 @@ export default function ThemeToggle() {
   }
 
   return (
-    <button onClick={toggle} className="theme-btn" aria-label="Theme toggle">
-      {theme === 'dark' ? '☀️' : '🌙'}
+    <button onClick={toggle} className="theme-btn" aria-label={theme === 'dark' ? 'Цайвар горим руу сэлгэх' : 'Бараан горим руу сэлгэх'}>
+      <span aria-hidden="true">{theme === 'dark' ? '☀️' : '🌙'}</span>
       <style jsx>{`
         .theme-btn {
           background: none; border: none; cursor: pointer; font-size: 16px;

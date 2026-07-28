@@ -65,12 +65,14 @@ export default function SightingsList({ petId }) {
             placeholder="жишээ: Өчигдөр орой 8 цагийн үед 3-р хорооллын ойролцоо харсан..."
             required
             rows={3}
+            aria-label="Харсан тухай мэдээлэл"
             style={{ padding: 10, borderRadius: 9, border: '1.5px solid var(--line)', fontFamily: 'inherit', fontSize: 13.5, resize: 'vertical', background: 'var(--card)', color: 'var(--ink)' }}
           />
           <input
             value={place}
             onChange={(e) => setPlace(e.target.value)}
             placeholder="Байршил (заавал биш)"
+            aria-label="Харсан байршил"
             style={{ padding: 9, borderRadius: 9, border: '1.5px solid var(--line)', fontSize: 13.5, background: 'var(--card)', color: 'var(--ink)' }}
           />
           <button type="submit" disabled={submitting} className="btn" style={{ background: 'var(--brand)', color: '#fff', fontSize: 13 }}>

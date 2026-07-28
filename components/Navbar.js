@@ -18,6 +18,15 @@ export default function Navbar() {
     else setAdmin(false);
   }, [user]);
 
+  useEffect(() => {
+    if (!showLogin) return;
+    function handleKey(e) {
+      if (e.key === 'Escape') setShowLogin(false);
+    }
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [showLogin]);
+
   async function handleSend(e) {
     e.preventDefault();
     setErr(null);
@@ -31,11 +40,11 @@ export default function Navbar() {
 
   return (
     <header className="navbar">
-      <Link href="/" className="brand">
-        <span className="brand-mark">М</span>
+      <Link href="/" className="brand" aria-label="МӨР — Нүүр хуудас">
+        <span className="brand-mark" aria-hidden="true">М</span>
         <span>МӨР</span>
       </Link>
-      <nav>
+      <nav aria-label="Үндсэн цэс">
         <Link href="/report-lost" className="nav-link-desktop">Алдсан</Link>
         <Link href="/report-found" className="nav-link-desktop">Олдсон</Link>
         <Link href="/listings" className="nav-link-desktop">Жагсаалт</Link>
@@ -51,22 +60,31 @@ export default function Navbar() {
 
       {showLogin && (
         <div className="overlay" onClick={() => setShowLogin(false)}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
+          <div
+            className="modal"
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="login-modal-title"
+          >
+            <h2 id="login-modal-title" style={{ fontSize: 16, marginBottom: 12 }}>Нэвтрэх</h2>
             {sent ? (
-              <p>✅ Нэвтрэх холбоос имэйл рүү тань илгээгдлээ. Имэйлээ шалгаарай.</p>
+              <p role="status">✅ Нэвтрэх холбоос имэйл рүү тань илгээгдлээ. Имэйлээ шалгаарай.</p>
             ) : (
               <form onSubmit={handleSend}>
-                <label>Имэйл хаяг</label>
+                <label htmlFor="login-email">Имэйл хаяг</label>
                 <input
+                  id="login-email"
                   type="email" required value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="ta@jishee.mn"
+                  aria-describedby={err ? 'login-error' : undefined}
                 />
-                {err && <p className="err">{err}</p>}
+                {err && <p id="login-error" className="err" role="alert">{err}</p>}
                 <button type="submit" className="btn-primary">Нэвтрэх холбоос авах</button>
               </form>
             )}
-            <button className="close" onClick={() => setShowLogin(false)}>Хаах</button>
+            <button className="close" onClick={() => setShowLogin(false)} aria-label="Цонхыг хаах">Хаах</button>
           </div>
         </div>
       )}
@@ -90,6 +108,9 @@ export default function Navbar() {
           background: none; border: none; cursor: pointer; font-family: inherit;
         }
         nav :global(a:hover), .link-btn:hover { color: #fff; }
+        :global(a:focus-visible), .link-btn:focus-visible {
+          outline: 2px solid #fff; outline-offset: 2px; border-radius: 4px;
+        }
         .overlay {
           position: fixed; inset: 0; background: var(--overlay);
           display: flex; align-items: center; justify-content: center; z-index: 100;

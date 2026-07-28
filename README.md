@@ -260,4 +260,6 @@ supabase-setup.sql      — Өгөгдлийн сан, RLS дүрэм, Storage b
 - [x] Error tracking ✅ (Sentry, үнэгүй tier, DSN тохируулаагүй ч апп эвдэрдэггүй)
 - [x] "Би харсан" сэтгэгдэл ✅ (`sightings` хүснэгт, `SightingsList.js`, нэвтрэлт шаардахгүй)
 - [x] Сайн дурын сүлжээ ✅ (`volunteers` хүснэгт, `VolunteerBadge.js`, дүүрэг бүрийн тоог харуулна)
+- [x] Screen reader дэмжлэг (a11y) ✅ (keyboard navigation, aria-label, htmlFor/id, skip-link, focus states)
 - [ ] React Native апп (iOS/Android)
+- [ ] Англи хэл сонголт, хандивын товч (дараагийн ээлжинд)

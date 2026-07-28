@@ -79,14 +79,15 @@ export default function ListingsPage() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="filter"
+          aria-label="Нэр, өнгө, байршлаар хайх"
           style={{ flex: '1 1 220px', minWidth: 180 }}
         />
-        <select className="filter" value={status} onChange={(e) => setStatus(e.target.value)}>
+        <select className="filter" value={status} onChange={(e) => setStatus(e.target.value)} aria-label="Статусаар шүүх">
           <option value="">Бүгд</option>
           <option value="lost">Алдсан</option>
           <option value="found">Олдсон</option>
         </select>
-        <select className="filter" value={district} onChange={(e) => setDistrict(e.target.value)}>
+        <select className="filter" value={district} onChange={(e) => setDistrict(e.target.value)} aria-label="Дүүргээр шүүх">
           {DISTRICTS.map((d) => (
             <option key={d} value={d}>{d || 'Бүх дүүрэг'}</option>
           ))}
@@ -100,7 +101,7 @@ export default function ListingsPage() {
         <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--primary)' }}>
           Өөрийн зурагтай төстэйгээр эрэмбэлэх (туршилт):{' '}
         </label>
-        <input type="file" accept="image/*" onChange={handleMatchUpload} disabled={!!matching} />
+        <input type="file" accept="image/*" onChange={handleMatchUpload} disabled={!!matching} aria-label="Төстэй байдлаар эрэмбэлэх зураг сонгох" />
         {matching && <span style={{ fontSize: 12, color: 'var(--muted)' }}> — {typeof matching === 'string' ? matching : 'AI шинжилж байна (эхний удаа 10-30 сек)...'}</span>}
         {matchFile && !matching && !matchError && matchedCount === 0 && (
           <span style={{ fontSize: 12, color: 'var(--alert)' }}>

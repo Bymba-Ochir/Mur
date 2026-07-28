@@ -6,7 +6,7 @@ export default function PetIcon({ type, size = 40 }) {
 
   if (isCat) {
     return (
-      <svg width={size} height={size} viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <svg width={size} height={size} viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
         <path d="M14 10L10 4L16 8" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
         <path d="M34 10L38 4L32 8" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
         <circle cx="24" cy="26" r="16" stroke="currentColor" strokeWidth="2.2" />
@@ -19,7 +19,7 @@ export default function PetIcon({ type, size = 40 }) {
   }
 
   return (
-    <svg width={size} height={size} viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg width={size} height={size} viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
       <path d="M14 12C11 10 7 11 6 15C5 19 8 22 12 21" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
       <path d="M34 12C37 10 41 11 42 15C43 19 40 22 36 21" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
       <ellipse cx="24" cy="27" rx="15" ry="13" stroke="currentColor" strokeWidth="2.2" />
