@@ -4,6 +4,7 @@ import { fetchPets, rankBySimilarity } from '../../lib/petService';
 import { getImageEmbedding } from '../../lib/similarity';
 import PetCard from '../../components/PetCard';
 import NotifySubscribe from '../../components/NotifySubscribe';
+import VolunteerBadge from '../../components/VolunteerBadge';
 import SkeletonCard from '../../components/SkeletonCard';
 import Link from 'next/link';
 
@@ -92,6 +93,7 @@ export default function ListingsPage() {
         </select>
       </div>
 
+      {district && <VolunteerBadge district={district} />}
       {district && <NotifySubscribe district={district} />}
 
       <div style={{ marginBottom: 20 }}>

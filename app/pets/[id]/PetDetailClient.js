@@ -9,6 +9,7 @@ import { useRouter } from 'next/navigation';
 import ShareButtons from '../../../components/ShareButtons';
 import LocationMap from '../../../components/LocationMap';
 import ReportButton from '../../../components/ReportButton';
+import SightingsList from '../../../components/SightingsList';
 import PetIcon from '../../../components/PetIcon';
 import { useToast } from '../../../components/Toast';
 
@@ -204,6 +205,8 @@ export default function PetDetailClient({ id }) {
       </p>
 
       <ReportButton petId={pet.id} />
+
+      <SightingsList petId={pet.id} />
     </div>
   );
 }

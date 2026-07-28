@@ -201,3 +201,48 @@ drop trigger if exists trg_pet_rate_limit on pets;
 create trigger trg_pet_rate_limit
   before insert on pets
   for each row execute function check_pet_rate_limit();
+
+-- 14. "Би харсан" сэтгэгдэл — олон нийт хамтдаа хайлтад тусалдаг
+create table if not exists sightings (
+  id uuid primary key default gen_random_uuid(),
+  pet_id uuid not null references pets(id) on delete cascade,
+  message text not null,
+  place text,
+  created_at timestamptz default now()
+);
+
+alter table sightings enable row level security;
+
+drop policy if exists "Public read sightings" on sightings;
+create policy "Public read sightings"
+  on sightings for select
+  using (true);
+
+drop policy if exists "Anyone can add sighting" on sightings;
+create policy "Anyone can add sighting"
+  on sightings for insert
+  with check (true);
+
+-- 15. Сайн дурын идэвхтэн — тухайн дүүрэгт идэвхтэй хайлтад туслахаар бүртгүүлсэн хэрэглэгч
+create table if not exists volunteers (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  district text not null,
+  created_at timestamptz default now(),
+  unique (user_id, district)
+);
+
+alter table volunteers enable row level security;
+
+-- Тоог нийтэд харуулах зорилгоор select нээлттэй (зөвхөн district+id, PII биш)
+drop policy if exists "Public read volunteers" on volunteers;
+create policy "Public read volunteers"
+  on volunteers for select
+  using (true);
+
+drop policy if exists "Users manage own volunteer status" on volunteers;
+create policy "Users manage own volunteer status"
+  on volunteers for all
+  to authenticated
+  using (auth.uid() = user_id)
+  with check (auth.uid() = user_id);

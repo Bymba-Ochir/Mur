@@ -258,4 +258,6 @@ supabase-setup.sql      — Өгөгдлийн сан, RLS дүрэм, Storage b
 - [x] AI зурган шүүлт (зохисгүй/хамааралгүй агуулга) ✅ (`lib/contentModeration.js`, CLIP zero-shot)
 - [x] Analytics ✅ (Vercel Analytics + Speed Insights, карт шаардахгүй)
 - [x] Error tracking ✅ (Sentry, үнэгүй tier, DSN тохируулаагүй ч апп эвдэрдэггүй)
+- [x] "Би харсан" сэтгэгдэл ✅ (`sightings` хүснэгт, `SightingsList.js`, нэвтрэлт шаардахгүй)
+- [x] Сайн дурын сүлжээ ✅ (`volunteers` хүснэгт, `VolunteerBadge.js`, дүүрэг бүрийн тоог харуулна)
 - [ ] React Native апп (iOS/Android)
