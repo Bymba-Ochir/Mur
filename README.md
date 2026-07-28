@@ -180,6 +180,24 @@ Vercel Hobby (үнэгүй) план дээр **`vercel.json`-д тохируу�
   ашиглан зохисгүй агуулга эсвэл нохой/муур бус зургийг илрүүлж, анхааруулга/хориг
   өгнө. Нэмэлт тохиргоо шаардахгүй, `similarity.js`-тэй адил CDN-ээс ачаална.
 
+### 11. Analytics болон Error tracking тохируулах
+
+**А. Vercel Analytics + Speed Insights (нэмэлт тохиргоо бараг хэрэггүй):**
+1. Vercel Dashboard → project → **"Analytics"** таб → **"Enable"**
+2. Vercel Dashboard → project → **"Speed Insights"** таб → **"Enable"**
+3. Код дотор аль хэдийн холбогдсон (`<Analytics />`, `<SpeedInsights />`) — deploy хийхэд л ажиллана
+
+**Б. Sentry (error tracking):**
+1. https://sentry.io → бүртгүүлэх (карт хэрэггүй)
+2. **"Create Project"** → platform: **Next.js** сонго
+3. Гарч ирэх **DSN**-г хуулж `.env.local`-ийн `NEXT_PUBLIC_SENTRY_DSN`-д бич, мөн
+   Vercel Dashboard → Environment Variables-д мөн адил нэм
+4. (Заавал биш, зөвхөн source map upload-д хэрэгтэй) Sentry → Settings → Auth Tokens-с
+   token үүсгээд `SENTRY_AUTH_TOKEN`, мөн `SENTRY_ORG`, `SENTRY_PROJECT`-ыг бөглөх
+
+**DSN тохируулаагүй үед ч апп хэвийн ажиллана** — Sentry автоматаар idle горимд орно,
+build алдаа өгөхгүй.
+
 ## Файлын бүтэц
 
 ```
@@ -238,4 +256,6 @@ supabase-setup.sql      — Өгөгдлийн сан, RLS дүрэм, Storage b
 - [x] Admin/Модератор dashboard ✅ (`/admin`, `admins` хүснэгт, RLS-ээр хамгаалагдсан)
 - [x] Rate limiting (spam хамгаалалт) ✅ (Postgres trigger, клиентээс тойрч болохгүй)
 - [x] AI зурган шүүлт (зохисгүй/хамааралгүй агуулга) ✅ (`lib/contentModeration.js`, CLIP zero-shot)
+- [x] Analytics ✅ (Vercel Analytics + Speed Insights, карт шаардахгүй)
+- [x] Error tracking ✅ (Sentry, үнэгүй tier, DSN тохируулаагүй ч апп эвдэрдэггүй)
 - [ ] React Native апп (iOS/Android)
