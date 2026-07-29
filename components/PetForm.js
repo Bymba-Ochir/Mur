@@ -5,6 +5,7 @@ import { nearestDistrict } from '../lib/districtCoords';
 import { compressImage } from '../lib/imageCompress';
 import { checkImageContent } from '../lib/contentModeration';
 import { useToast } from './Toast';
+import { useLanguage } from '../lib/i18n';
 import ShareButtons from './ShareButtons';
 import LocationMap from './LocationMap';
 
@@ -13,10 +14,14 @@ const DISTRICTS = [
   'Сонгинохайрхан', 'Налайх', 'Багануур', 'Багахангай',
 ];
 
-const STEPS = ['Зураг', 'Мэдээлэл', 'Байршил', 'Холбоо барих'];
+// Дотоод утга (DB-д хадгалагдах) үргэлж Монгол хэвээр — зөвхөн харагдац орчуулагдана
+const TYPE_VALUES = ['Нохой', 'Муур', 'Бусад'];
 
 export default function PetForm({ status }) {
   const showToast = useToast();
+  const { t } = useLanguage();
+  const STEPS = [t('form_step_photo'), t('form_step_info'), t('form_step_location'), t('form_step_contact')];
+  const TYPE_LABELS = { 'Нохой': t('type_dog'), 'Муур': t('type_cat'), 'Бусад': t('type_other') };
   const [step, setStep] = useState(0);
 
   const [form, setForm] = useState({
@@ -105,9 +110,9 @@ export default function PetForm({ status }) {
   }
 
   const canNext = [
-    true, // Зураг — заавал биш
-    !!form.color, // Мэдээлэл — өнгө заавал
-    !!form.place, // Байршил — газар заавал
+    true,
+    !!form.color,
+    !!form.place,
     true,
   ][step];
 
@@ -115,7 +120,7 @@ export default function PetForm({ status }) {
     e.preventDefault();
     setSubmitting(true);
     setError(null);
-    setStatusMsg('Илгээж байна...');
+    setStatusMsg(t('submitting'));
     try {
       const id = await createPetReport(
         { ...form, status, photoFile, lat: coords?.lat, lng: coords?.lng },
@@ -143,16 +148,15 @@ export default function PetForm({ status }) {
     const petUrl = typeof window !== 'undefined' ? `${window.location.origin}/pets/${newPetId}` : '';
     return (
       <div className="success-box" role="status">
-        <p>✅ Амжилттай нийтлэгдлээ! Илүү олон хүн харахын тулд хуваалцаарай:</p>
+        <p>{t('success_msg')}</p>
         <ShareButtons url={petUrl} title={status === 'lost' ? 'Алдсан амьтан' : 'Олдсон амьтан'} />
-        <button onClick={() => setDone(false)} className="btn" style={{ marginTop: 16 }}>Дахин нэмэх</button>
+        <button onClick={() => setDone(false)} className="btn" style={{ marginTop: 16 }}>{t('add_another')}</button>
       </div>
     );
   }
 
   return (
     <form onSubmit={handleSubmit} className="pet-form" aria-label={status === 'lost' ? 'Алдсан амьтан мэдэгдэх форм' : 'Олдсон амьтан мэдэгдэх форм'}>
-      {/* Явцын заагч */}
       <div className="progress-row" role="list" aria-label="Формын алхмууд">
         {STEPS.map((label, i) => (
           <div
@@ -168,10 +172,9 @@ export default function PetForm({ status }) {
       </div>
       <p className="progress-text" aria-live="polite">{step + 1}/{STEPS.length}: {STEPS[step]}</p>
 
-      {/* Алхам 0 — Зураг */}
       {step === 0 && (
         <>
-          <label id="photo-label">Зураг</label>
+          <label id="photo-label">{t('photo_label')}</label>
           <div
             className="upload-zone"
             onClick={openFilePicker}
@@ -184,76 +187,71 @@ export default function PetForm({ status }) {
             {compressing ? (
               <span role="status">⏳ {compressStatus || 'Зураг оновчлож байна...'}</span>
             ) : preview ? (
-              <img src={preview} alt="Сонгосон зургийн урьдчилсан харагдац" />
+              <img src={preview} alt={t('photo_preview_alt')} />
             ) : (
-              <span id="photo-hint">📷 Зураг оруулах (заавал биш)</span>
+              <span id="photo-hint">{t('photo_hint')}</span>
             )}
           </div>
           <input
             id="photo-input" type="file" accept="image/*" onChange={handlePhoto}
             style={{ display: 'none' }} disabled={compressing}
-            aria-label="Зураг сонгох"
+            aria-label={t('photo_label')}
           />
         </>
       )}
 
-      {/* Алхам 1 — Мэдээлэл */}
       {step === 1 && (
         <>
-          <label htmlFor="pet-name">Нэр (мэдэх бол)</label>
-          <input id="pet-name" name="name" value={form.name} onChange={handleChange} placeholder="жишээ: Богино" />
+          <label htmlFor="pet-name">{t('name_label')}</label>
+          <input id="pet-name" name="name" value={form.name} onChange={handleChange} placeholder={t('name_placeholder')} />
 
-          <label htmlFor="pet-type">Төрөл</label>
+          <label htmlFor="pet-type">{t('type_label')}</label>
           <select id="pet-type" name="type" value={form.type} onChange={handleChange}>
-            <option>Нохой</option>
-            <option>Муур</option>
-            <option>Бусад</option>
+            {TYPE_VALUES.map((v) => <option key={v} value={v}>{TYPE_LABELS[v]}</option>)}
           </select>
 
-          <label htmlFor="pet-color">Өнгө *</label>
-          <input id="pet-color" name="color" value={form.color} onChange={handleChange} placeholder="жишээ: хар халзан" required />
+          <label htmlFor="pet-color">{t('color_label')}</label>
+          <input id="pet-color" name="color" value={form.color} onChange={handleChange} placeholder={t('color_placeholder')} required />
         </>
       )}
 
-      {/* Алхам 2 — Байршил */}
       {step === 2 && (
         <>
           <button type="button" onClick={handleUseLocation} disabled={locating} className="locate-btn">
-            {locating ? '📍 Тодорхойлж байна...' : '📍 Миний байршлыг ашиглах'}
+            {locating ? t('locate_loading') : t('locate_btn')}
           </button>
 
-          <label htmlFor="pet-district">Дүүрэг</label>
+          <label htmlFor="pet-district">{t('district_label')}</label>
           <select id="pet-district" name="district" value={form.district} onChange={handleChange}>
             {DISTRICTS.map((d) => <option key={d}>{d}</option>)}
           </select>
 
-          <label htmlFor="pet-place">{status === 'lost' ? 'Сүүлд харагдсан газар *' : 'Олдсон газар *'}</label>
-          <input id="pet-place" name="place" value={form.place} onChange={handleChange} placeholder="жишээ: 3-р хороо, дэлгүүрийн ойролцоо" required />
+          <label htmlFor="pet-place">{status === 'lost' ? t('place_label_lost') : t('place_label_found')}</label>
+          <input id="pet-place" name="place" value={form.place} onChange={handleChange} placeholder={t('place_placeholder')} required />
 
           <label id="map-label">
-            Газрын зураг дээр байршил тэмдэглэх <span style={{ fontWeight: 400, color: 'var(--muted)' }}>(заавал биш)</span>
+            {t('map_label')} <span style={{ fontWeight: 400, color: 'var(--muted)' }}>{t('map_optional')}</span>
           </label>
-          <div aria-labelledby="map-label" role="application" aria-label="Байршил сонгох газрын зураг">
+          <div aria-labelledby="map-label" role="application" aria-label={t('map_label')}>
             <LocationMap lat={coords?.lat} lng={coords?.lng} editable onPick={setCoords} />
           </div>
           {coords && (
             <p style={{ fontSize: 12, color: 'var(--muted)', marginTop: 4 }} aria-live="polite">
-              📍 Байршил сонгогдлоо ({coords.lat.toFixed(4)}, {coords.lng.toFixed(4)})
+              📍 {coords.lat.toFixed(4)}, {coords.lng.toFixed(4)}
             </p>
           )}
         </>
       )}
 
-      {/* Алхам 3 — Холбоо барих */}
       {step === 3 && (
         <>
-          <label htmlFor="pet-phone">Утасны дугаар *</label>
-          <input id="pet-phone" name="phone" value={form.phone} onChange={handleChange} placeholder="99112233" required />
+          <label htmlFor="pet-phone">{t('phone_label')}</label>
+          <input id="pet-phone" name="phone" value={form.phone} onChange={handleChange} placeholder={t('phone_placeholder')} required />
 
           {error && <p className="error" role="alert">{error}</p>}
 
           <button type="submit" disabled={submitting} className="btn btn-primary" aria-busy={submitting}>
-            {submitting ? statusMsg || 'Илгээж байна...' : status === 'lost' ? 'Алдсан мэдэгдэл нийтлэх' : 'Олдсон мэдэгдэл нийтлэх'}
+            {submitting ? statusMsg || t('submitting') : status === 'lost' ? t('submit_lost') : t('submit_found')}
           </button>
           {submitting && statusMsg.includes('AI') && (
             <p style={{ fontSize: 12, color: 'var(--muted)', marginTop: 6 }} aria-live="polite">
@@ -263,10 +261,9 @@ export default function PetForm({ status }) {
         </>
       )}
 
-      {/* Алхмын товчнууд */}
       <div className="nav-row">
         {step > 0 && (
-          <button type="button" onClick={() => setStep(step - 1)} className="btn nav-back">← Буцах</button>
+          <button type="button" onClick={() => setStep(step - 1)} className="btn nav-back">{t('form_back')}</button>
         )}
         {step < STEPS.length - 1 && (
           <button
@@ -275,7 +272,7 @@ export default function PetForm({ status }) {
             disabled={!canNext}
             className="btn nav-next"
           >
-            Дараах →
+            {t('form_next')}
           </button>
         )}
       </div>

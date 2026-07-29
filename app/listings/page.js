@@ -7,6 +7,7 @@ import NotifySubscribe from '../../components/NotifySubscribe';
 import VolunteerBadge from '../../components/VolunteerBadge';
 import SkeletonCard from '../../components/SkeletonCard';
 import Link from 'next/link';
+import { useLanguage } from '../../lib/i18n';
 
 const DISTRICTS = [
   '', 'Баянзүрх', 'Хан-Уул', 'Сүхбаатар', 'Чингэлтэй', 'Баянгол',
@@ -14,6 +15,7 @@ const DISTRICTS = [
 ];
 
 export default function ListingsPage() {
+  const { t } = useLanguage();
   const [status, setStatus] = useState('');
   const [district, setDistrict] = useState('');
   const [search, setSearch] = useState('');
@@ -69,27 +71,27 @@ export default function ListingsPage() {
 
   return (
     <div>
-      <div className="eyebrow">🔍 Жагсаалт</div>
-      <h1 style={{ fontSize: 26, marginBottom: 16 }}>Алдсан ба олдсон амьтад</h1>
+      <div className="eyebrow">{t('listings_eyebrow')}</div>
+      <h1 style={{ fontSize: 26, marginBottom: 16 }}>{t('listings_title')}</h1>
 
       <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 8 }}>
         <input
           type="text"
-          placeholder="🔍 Нэр, өнгө, байршлаар хайх..."
+          placeholder={t('search_placeholder')}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="filter"
-          aria-label="Нэр, өнгө, байршлаар хайх"
+          aria-label={t('search_placeholder')}
           style={{ flex: '1 1 220px', minWidth: 180 }}
         />
         <select className="filter" value={status} onChange={(e) => setStatus(e.target.value)} aria-label="Статусаар шүүх">
-          <option value="">Бүгд</option>
-          <option value="lost">Алдсан</option>
-          <option value="found">Олдсон</option>
+          <option value="">{t('filter_all')}</option>
+          <option value="lost">{t('filter_lost')}</option>
+          <option value="found">{t('filter_found')}</option>
         </select>
         <select className="filter" value={district} onChange={(e) => setDistrict(e.target.value)} aria-label="Дүүргээр шүүх">
           {DISTRICTS.map((d) => (
-            <option key={d} value={d}>{d || 'Бүх дүүрэг'}</option>
+            <option key={d} value={d}>{d || t('filter_all_districts')}</option>
           ))}
         </select>
       </div>
@@ -99,7 +101,7 @@ export default function ListingsPage() {
 
       <div style={{ marginBottom: 20 }}>
         <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--primary)' }}>
-          Өөрийн зурагтай төстэйгээр эрэмбэлэх (туршилт):{' '}
+          {t('match_label')}{' '}
         </label>
         <input type="file" accept="image/*" onChange={handleMatchUpload} disabled={!!matching} aria-label="Төстэй байдлаар эрэмбэлэх зураг сонгох" />
         {matching && <span style={{ fontSize: 12, color: 'var(--muted)' }}> — {typeof matching === 'string' ? matching : 'AI шинжилж байна (эхний удаа 10-30 сек)...'}</span>}
@@ -126,16 +128,14 @@ export default function ListingsPage() {
         }}>
           <div style={{ fontSize: 46, marginBottom: 10 }}>🐾</div>
           <p style={{ fontWeight: 600, color: 'var(--primary)', marginBottom: 4 }}>
-            {search || district || status ? 'Хайлтад тохирох бичлэг олдсонгүй' : 'Одоогоор бичлэг алга'}
+            {search || district || status ? t('empty_no_results_title') : t('empty_no_posts_title')}
           </p>
           <p style={{ color: 'var(--muted)', fontSize: 13.5, marginBottom: 18 }}>
-            {search || district || status
-              ? 'Шүүлтүүрээ өөрчилж эсвэл цэвэрлээд дахин үзнэ үү.'
-              : 'Хамгийн эхний мэдэгдлийг та нийтэлж болно.'}
+            {search || district || status ? t('empty_no_results_desc') : t('empty_no_posts_desc')}
           </p>
           <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
-            <Link href="/report-lost" className="btn btn-accent">🐾 Алдсан мэдэгдэх</Link>
-            <Link href="/report-found" className="btn btn-primary">👀 Олсон зурагтай</Link>
+            <Link href="/report-lost" className="btn btn-accent">{t('hero_btn_lost')}</Link>
+            <Link href="/report-found" className="btn btn-primary">{t('hero_btn_found')}</Link>
           </div>
         </div>
       ) : (
