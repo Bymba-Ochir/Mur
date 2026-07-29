@@ -246,3 +246,36 @@ create policy "Users manage own volunteer status"
   to authenticated
   using (auth.uid() = user_id)
   with check (auth.uid() = user_id);
+
+-- 16. Хандив (QPay) — донор нэр/мессеж, төлбөрийн статус
+create table if not exists donations (
+  id uuid primary key default gen_random_uuid(),
+  amount integer not null,
+  supporter_name text,
+  message text,
+  is_anonymous boolean default false,
+  status text not null default 'pending' check (status in ('pending', 'paid', 'failed')),
+  invoice_id text,
+  qr_image text,
+  qr_text text,
+  status_token text not null,
+  created_at timestamptz default now()
+);
+
+alter table donations enable row level security;
+
+-- Хэн ч хандив үүсгэж болно (нэвтрэлт шаардахгүй)
+drop policy if exists "Anyone can create donation" on donations;
+create policy "Anyone can create donation"
+  on donations for insert
+  with check (true);
+
+-- Зөвхөн серверийн код (service role) л унших/шинэчилнэ — status_token-оор
+-- баталгаажуулалт хийдэг тул client-д нээлттэй select хэрэггүй
+drop policy if exists "No public read donations" on donations;
+
+-- Сүүлд төлсөн хандивуудыг нийтэд харуулах (нэр, мессеж, дүн — зөвхөн paid)
+drop policy if exists "Public read paid donations" on donations;
+create policy "Public read paid donations"
+  on donations for select
+  using (status = 'paid');

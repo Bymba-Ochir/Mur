@@ -3,6 +3,7 @@ import BottomNav from '../components/BottomNav';
 import InstallPrompt from '../components/InstallPrompt';
 import Onboarding from '../components/Onboarding';
 import { ToastProvider } from '../components/Toast';
+import { LanguageProvider } from '../lib/i18n';
 import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import './globals.css';
@@ -51,13 +52,15 @@ export default function RootLayout({ children }) {
       </head>
       <body>
         <a href="#main-content" className="skip-link">Үндсэн агуулга руу шилжих</a>
-        <ToastProvider>
-          <Navbar />
-          <main id="main-content">{children}</main>
-          <InstallPrompt />
-          <Onboarding />
-          <BottomNav />
-        </ToastProvider>
+        <LanguageProvider>
+          <ToastProvider>
+            <Navbar />
+            <main id="main-content">{children}</main>
+            <InstallPrompt />
+            <Onboarding />
+            <BottomNav />
+          </ToastProvider>
+        </LanguageProvider>
         <Analytics />
         <SpeedInsights />
       </body>

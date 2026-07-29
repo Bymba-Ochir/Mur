@@ -4,9 +4,13 @@ import Link from 'next/link';
 import { useAuth } from '../lib/useAuth';
 import { isAdmin } from '../lib/adminService';
 import ThemeToggle from './ThemeToggle';
+import DonateButton from './DonateButton';
+import LanguageToggle from './LanguageToggle';
+import { useLanguage } from '../lib/i18n';
 
 export default function Navbar() {
   const { user, loginWithEmail, logout } = useAuth();
+  const { t } = useLanguage();
   const [showLogin, setShowLogin] = useState(false);
   const [email, setEmail] = useState('');
   const [sent, setSent] = useState(false);
@@ -34,7 +38,7 @@ export default function Navbar() {
       await loginWithEmail(email);
       setSent(true);
     } catch (e2) {
-      setErr('Алдаа гарлаа. Имэйлээ шалгаад дахин оролдоно уу.');
+      setErr(t('login_error'));
     }
   }
 
@@ -45,16 +49,18 @@ export default function Navbar() {
         <span>МӨР</span>
       </Link>
       <nav aria-label="Үндсэн цэс">
-        <Link href="/report-lost" className="nav-link-desktop">Алдсан</Link>
-        <Link href="/report-found" className="nav-link-desktop">Олдсон</Link>
-        <Link href="/listings" className="nav-link-desktop">Жагсаалт</Link>
-        <Link href="/my-pets" className="nav-link-desktop">Миний амьтад</Link>
-        {admin && <Link href="/admin" className="nav-link-desktop" style={{ color: 'var(--accent)' }}>🛡️ Админ</Link>}
+        <Link href="/report-lost" className="nav-link-desktop">{t('nav_lost')}</Link>
+        <Link href="/report-found" className="nav-link-desktop">{t('nav_found')}</Link>
+        <Link href="/listings" className="nav-link-desktop">{t('nav_listings')}</Link>
+        <Link href="/my-pets" className="nav-link-desktop">{t('nav_mypets')}</Link>
+        {admin && <Link href="/admin" className="nav-link-desktop" style={{ color: 'var(--accent)' }}>{t('nav_admin')}</Link>}
+        <DonateButton />
+        <LanguageToggle />
         <ThemeToggle />
         {user ? (
-          <button onClick={logout} className="link-btn">Гарах ({user.email})</button>
+          <button onClick={logout} className="link-btn">{t('nav_logout_prefix')} ({user.email})</button>
         ) : (
-          <button onClick={() => setShowLogin(true)} className="link-btn">Нэвтрэх</button>
+          <button onClick={() => setShowLogin(true)} className="link-btn">{t('nav_login')}</button>
         )}
       </nav>
 
@@ -67,12 +73,12 @@ export default function Navbar() {
             aria-modal="true"
             aria-labelledby="login-modal-title"
           >
-            <h2 id="login-modal-title" style={{ fontSize: 16, marginBottom: 12 }}>Нэвтрэх</h2>
+            <h2 id="login-modal-title" style={{ fontSize: 16, marginBottom: 12 }}>{t('login_title')}</h2>
             {sent ? (
-              <p role="status">✅ Нэвтрэх холбоос имэйл рүү тань илгээгдлээ. Имэйлээ шалгаарай.</p>
+              <p role="status">{t('login_sent')}</p>
             ) : (
               <form onSubmit={handleSend}>
-                <label htmlFor="login-email">Имэйл хаяг</label>
+                <label htmlFor="login-email">{t('login_email_label')}</label>
                 <input
                   id="login-email"
                   type="email" required value={email}
@@ -81,10 +87,10 @@ export default function Navbar() {
                   aria-describedby={err ? 'login-error' : undefined}
                 />
                 {err && <p id="login-error" className="err" role="alert">{err}</p>}
-                <button type="submit" className="btn-primary">Нэвтрэх холбоос авах</button>
+                <button type="submit" className="btn-primary">{t('login_button')}</button>
               </form>
             )}
-            <button className="close" onClick={() => setShowLogin(false)} aria-label="Цонхыг хаах">Хаах</button>
+            <button className="close" onClick={() => setShowLogin(false)} aria-label="Цонхыг хаах">{t('close')}</button>
           </div>
         </div>
       )}
