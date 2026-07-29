@@ -5,10 +5,12 @@ import { useAuth } from '../../lib/useAuth';
 import { isAdmin, fetchReports, dismissReport, adminDeletePet } from '../../lib/adminService';
 import { useToast } from '../../components/Toast';
 import { relativeTime } from '../../lib/relativeTime';
+import { useLanguage } from '../../lib/i18n';
 
 export default function AdminPage() {
   const { user, loading } = useAuth();
   const showToast = useToast();
+  const { t } = useLanguage();
   const [checked, setChecked] = useState(false);
   const [admin, setAdmin] = useState(false);
   const [reports, setReports] = useState([]);
@@ -60,28 +62,28 @@ export default function AdminPage() {
     }
   }
 
-  if (loading || !checked) return <p style={{ color: 'var(--muted)' }}>Ачааллаж байна...</p>;
+  if (loading || !checked) return <p style={{ color: 'var(--muted)' }}>{t('detail_loading')}</p>;
 
   if (!user) {
-    return <p style={{ color: 'var(--muted)' }}>Энэ хуудсанд орохын тулд нэвтэрнэ үү.</p>;
+    return <p style={{ color: 'var(--muted)' }}>{t('admin_login_required')}</p>;
   }
 
   if (!admin) {
     return (
       <div>
-        <div className="eyebrow">🔒 Хязгаарлагдмал хуудас</div>
-        <h1 style={{ fontSize: 22 }}>Танд энэ хуудсанд орох эрх байхгүй</h1>
+        <div className="eyebrow">{t('admin_restricted_eyebrow')}</div>
+        <h1 style={{ fontSize: 22 }}>{t('admin_no_access')}</h1>
       </div>
     );
   }
 
   return (
     <div style={{ maxWidth: 640 }}>
-      <div className="eyebrow">🛡️ Модератор</div>
-      <h1 style={{ fontSize: 24, marginBottom: 16 }}>Мэдээлэгдсэн бичлэгүүд</h1>
+      <div className="eyebrow">{t('admin_eyebrow')}</div>
+      <h1 style={{ fontSize: 24, marginBottom: 16 }}>{t('admin_title')}</h1>
 
       {reports.length === 0 ? (
-        <p style={{ color: 'var(--muted)' }}>Одоогоор мэдээлэл алга. 👍</p>
+        <p style={{ color: 'var(--muted)' }}>{t('admin_none')}</p>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {reports.map((r) => (
@@ -99,12 +101,12 @@ export default function AdminPage() {
                 {r.pet ? (
                   <p style={{ fontSize: 13, color: 'var(--muted)' }}>
                     <Link href={`/pets/${r.pet.id}`} style={{ color: 'var(--primary)', textDecoration: 'underline' }}>
-                      {r.pet.status === 'lost' ? 'Алдсан' : 'Олдсон'} {r.pet.type}{r.pet.name ? ' — ' + r.pet.name : ''}
+                      {r.pet.status === 'lost' ? t('nav_lost') : t('nav_found')} {r.pet.type}{r.pet.name ? ' — ' + r.pet.name : ''}
                     </Link>
                     {' '}· {r.pet.district}
                   </p>
                 ) : (
-                  <p style={{ fontSize: 13, color: 'var(--muted)' }}>Анхны бичлэг устсан байна</p>
+                  <p style={{ fontSize: 13, color: 'var(--muted)' }}>{t('admin_pet_deleted')}</p>
                 )}
                 <p style={{ fontSize: 12, color: 'var(--muted)' }}>{relativeTime(r.createdAt)}</p>
               </div>
@@ -115,7 +117,7 @@ export default function AdminPage() {
                   className="btn"
                   style={{ background: 'var(--eyebrow-bg)', color: 'var(--primary)', fontSize: 12.5 }}
                 >
-                  Үл хэрэгсэх
+                  {t('admin_dismiss')}
                 </button>
                 {r.pet && (
                   <button
@@ -124,7 +126,7 @@ export default function AdminPage() {
                     className="btn"
                     style={{ background: 'var(--alert)', color: '#fff', fontSize: 12.5 }}
                   >
-                    Бичлэг устгах
+                    {t('admin_delete_pet')}
                   </button>
                 )}
               </div>
