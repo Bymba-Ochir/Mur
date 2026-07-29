@@ -12,11 +12,13 @@ import ReportButton from '../../../components/ReportButton';
 import SightingsList from '../../../components/SightingsList';
 import PetIcon from '../../../components/PetIcon';
 import { useToast } from '../../../components/Toast';
+import { useLanguage } from '../../../lib/i18n';
 
 export default function PetDetailClient({ id }) {
   const { user } = useAuth();
   const router = useRouter();
   const showToast = useToast();
+  const { t } = useLanguage();
   const [pet, setPet] = useState(null);
   const [error, setError] = useState(null);
   const [url, setUrl] = useState('');
@@ -44,7 +46,7 @@ export default function PetDetailClient({ id }) {
   }
 
   async function handleResolve() {
-    if (!confirm('Амьтан олдсон гэж тэмдэглэх үү? Энэ бичлэг жагсаалтаас далд болно.')) return;
+    if (!confirm(t('detail_resolve_confirm'))) return;
     setResolving(true);
     try {
       await markResolved(id);
@@ -62,7 +64,7 @@ export default function PetDetailClient({ id }) {
       await updatePet(id, editForm);
       setEditing(false);
       await load();
-      showToast('Мэдээлэл хадгалагдлаа', 'success');
+      showToast('Мэдээлэл хадгалагдлаа', 'success'); // eslint-disable-line
     } catch (err) {
       showToast('Алдаа гарлаа: ' + err.message, 'error');
     } finally {
@@ -71,7 +73,7 @@ export default function PetDetailClient({ id }) {
   }
 
   async function handleDelete() {
-    if (!confirm('Энэ бичлэгийг бүрмөсөн устгах уу? Энэ үйлдлийг буцаах боломжгүй.')) return;
+    if (!confirm(t('detail_delete_confirm'))) return;
     setDeleting(true);
     try {
       await deletePet(id);
@@ -82,15 +84,15 @@ export default function PetDetailClient({ id }) {
     }
   }
 
-  if (error) return <p style={{ color: 'var(--alert)' }}>Бичлэг олдсонгүй эсвэл устсан байна.</p>;
-  if (!pet) return <p style={{ color: 'var(--muted)' }}>Ачааллаж байна...</p>;
+  if (error) return <p style={{ color: 'var(--alert)' }}>{t('detail_not_found')}</p>;
+  if (!pet) return <p style={{ color: 'var(--muted)' }}>{t('detail_loading')}</p>;
 
-  const title = `${pet.status === 'lost' ? 'Алдсан' : 'Олдсон'} ${pet.type}${pet.name ? ' — ' + pet.name : ''}`;
+  const title = `${pet.status === 'lost' ? t('nav_lost') : t('nav_found')} ${pet.type}${pet.name ? ' — ' + pet.name : ''}`;
   const isOwner = user && pet.createdBy && user.id === pet.createdBy;
 
   return (
     <div style={{ maxWidth: 480 }}>
-      <div className="eyebrow">{pet.status === 'lost' ? '🚨 Алдсан амьтан' : '👀 Олдсон амьтан'}</div>
+      <div className="eyebrow">{pet.status === 'lost' ? t('report_lost_eyebrow') : t('report_found_eyebrow')}</div>
       <h1 style={{ fontSize: 24, marginBottom: 4 }}>{title}</h1>
       {pet.createdAt && (
         <p style={{ fontSize: 12.5, color: 'var(--muted)', marginBottom: 12 }}>🕓 {relativeTime(pet.createdAt)}</p>
@@ -98,7 +100,7 @@ export default function PetDetailClient({ id }) {
 
       {pet.resolved && (
         <div style={{ background: 'var(--success-bg)', border: '1.5px solid var(--success)', borderRadius: 10, padding: '8px 14px', marginBottom: 14, color: 'var(--success-text)', fontSize: 13.5, fontWeight: 600 }}>
-          ✅ Энэ амьтан олдсон гэж тэмдэглэгдсэн байна
+          {t('detail_resolved_badge')}
         </div>
       )}
 
@@ -116,9 +118,9 @@ export default function PetDetailClient({ id }) {
 
       {!editing ? (
         <div style={{ background: 'var(--card)', border: '1px solid var(--line)', borderRadius: 14, padding: 18 }}>
-          <p style={{ marginBottom: 6 }}><b>Төрөл:</b> {pet.type}{pet.color ? `, ${pet.color}` : ''}</p>
-          <p style={{ marginBottom: 6 }}><b>Дүүрэг:</b> {pet.district}</p>
-          <p style={{ marginBottom: 6 }}><b>Байршил:</b> {pet.place}</p>
+          <p style={{ marginBottom: 6 }}><b>{t('detail_type')}</b> {pet.type}{pet.color ? `, ${pet.color}` : ''}</p>
+          <p style={{ marginBottom: 6 }}><b>{t('detail_district')}</b> {pet.district}</p>
+          <p style={{ marginBottom: 6 }}><b>{t('detail_place')}</b> {pet.place}</p>
           {revealed ? (
             <a href={`tel:${pet.phone}`} style={{ display: 'inline-block', marginTop: 8, fontWeight: 700, color: 'var(--primary)' }}>
               ☎ {pet.phone}
@@ -128,37 +130,37 @@ export default function PetDetailClient({ id }) {
               onClick={() => setRevealed(true)}
               style={{ display: 'inline-block', marginTop: 8, fontWeight: 700, color: 'var(--primary)', background: 'none', border: 'none', cursor: 'pointer', fontSize: 15, padding: 0 }}
             >
-              ☎ {maskPhone(pet.phone)} · Дугаар харах
+              ☎ {maskPhone(pet.phone)} · {t('detail_show_phone')}
             </button>
           )}
         </div>
       ) : (
         <div style={{ background: 'var(--card)', border: '1px solid var(--line)', borderRadius: 14, padding: 18, display: 'flex', flexDirection: 'column', gap: 8 }}>
-          <label htmlFor="edit-name" style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--primary)' }}>Нэр</label>
+          <label htmlFor="edit-name" style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--primary)' }}>{t('name_label')}</label>
           <input id="edit-name" value={editForm.name} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
             style={{ padding: 9, borderRadius: 8, border: '1.5px solid var(--line)' }} />
-          <label htmlFor="edit-color" style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--primary)' }}>Өнгө</label>
+          <label htmlFor="edit-color" style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--primary)' }}>{t('color_label').replace(' *','')}</label>
           <input id="edit-color" value={editForm.color} onChange={(e) => setEditForm({ ...editForm, color: e.target.value })}
             style={{ padding: 9, borderRadius: 8, border: '1.5px solid var(--line)' }} />
-          <label htmlFor="edit-district" style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--primary)' }}>Дүүрэг</label>
+          <label htmlFor="edit-district" style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--primary)' }}>{t('district_label')}</label>
           <select id="edit-district" value={editForm.district} onChange={(e) => setEditForm({ ...editForm, district: e.target.value })}
             style={{ padding: 9, borderRadius: 8, border: '1.5px solid var(--line)' }}>
             {DISTRICTS.map((d) => <option key={d}>{d}</option>)}
           </select>
-          <label htmlFor="edit-place" style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--primary)' }}>Байршил</label>
+          <label htmlFor="edit-place" style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--primary)' }}>{t('detail_place').replace(':','')}</label>
           <input id="edit-place" value={editForm.place} onChange={(e) => setEditForm({ ...editForm, place: e.target.value })}
             style={{ padding: 9, borderRadius: 8, border: '1.5px solid var(--line)' }} />
-          <label htmlFor="edit-phone" style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--primary)' }}>Утас</label>
+          <label htmlFor="edit-phone" style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--primary)' }}>{t('phone_label').replace(' *','')}</label>
           <input id="edit-phone" value={editForm.phone} onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
             style={{ padding: 9, borderRadius: 8, border: '1.5px solid var(--line)' }} />
           <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
             <button onClick={handleSaveEdit} disabled={saving} className="btn"
               style={{ background: 'var(--brand)', color: '#fff', flex: 1, justifyContent: 'center' }}>
-              {saving ? 'Хадгалж байна...' : 'Хадгалах'}
+              {saving ? t('detail_saving') : t('detail_save')}
             </button>
             <button onClick={() => setEditing(false)} className="btn"
               style={{ background: 'var(--eyebrow-bg)', color: 'var(--primary)', flex: 1, justifyContent: 'center' }}>
-              Цуцлах
+              {t('detail_cancel')}
             </button>
           </div>
         </div>
@@ -168,11 +170,11 @@ export default function PetDetailClient({ id }) {
         <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
           <button onClick={() => setEditing(true)} className="btn"
             style={{ background: 'var(--eyebrow-bg)', color: 'var(--primary)', flex: 1, justifyContent: 'center', fontSize: 13 }}>
-            ✏️ Засах
+            {t('detail_edit_btn')}
           </button>
           <button onClick={handleDelete} disabled={deleting} className="btn"
             style={{ background: 'var(--card)', color: 'var(--alert)', border: '1.5px solid var(--alert)', flex: 1, justifyContent: 'center', fontSize: 13 }}>
-            {deleting ? 'Устгаж байна...' : '🗑 Устгах'}
+            {deleting ? t('detail_deleting') : t('detail_delete_btn')}
           </button>
         </div>
       )}
@@ -184,14 +186,14 @@ export default function PetDetailClient({ id }) {
           className="btn"
           style={{ marginTop: 10, background: 'var(--success)', color: '#fff', width: '100%', justifyContent: 'center' }}
         >
-          {resolving ? 'Тэмдэглэж байна...' : '✅ Амьтан олдлоо'}
+          {resolving ? t('detail_resolving') : t('detail_resolve_btn')}
         </button>
       )}
 
       {pet.lat != null && pet.lng != null && (
         <div style={{ marginTop: 16 }}>
           <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--primary)', marginBottom: 8 }}>
-            📍 Сүүлд харагдсан байршил
+            {t('detail_last_seen_loc')}
           </p>
           <LocationMap lat={pet.lat} lng={pet.lng} />
         </div>
@@ -200,8 +202,7 @@ export default function PetDetailClient({ id }) {
       <ShareButtons url={url} title={title} />
 
       <p style={{ fontSize: 12, color: 'var(--muted)', marginTop: 12 }}>
-        📱 Messenger, Viber зэрэгт шууд хуваалцахын тулд "Хуваалцах" товчийг ашиглана уу
-        (гар утсан дээр систем өөрөө боломжит апп-уудыг жагсаана).
+        {t('detail_share_hint')}
       </p>
 
       <ReportButton petId={pet.id} />

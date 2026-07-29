@@ -3,9 +3,11 @@ import { useEffect, useState } from 'react';
 import { createSighting, fetchSightings } from '../lib/sightingService';
 import { relativeTime } from '../lib/relativeTime';
 import { useToast } from './Toast';
+import { useLanguage } from '../lib/i18n';
 
 export default function SightingsList({ petId }) {
   const showToast = useToast();
+  const { t } = useLanguage();
   const [sightings, setSightings] = useState([]);
   const [message, setMessage] = useState('');
   const [place, setPlace] = useState('');
@@ -35,7 +37,7 @@ export default function SightingsList({ petId }) {
       setPlace('');
       setShowForm(false);
       await load();
-      showToast('Баярлалаа! Сэтгэгдэл нэмэгдлээ.', 'success');
+      showToast(t('sightings_thanks'), 'success');
     } catch (err) {
       showToast('Алдаа гарлаа: ' + err.message, 'error');
     } finally {
@@ -47,13 +49,13 @@ export default function SightingsList({ petId }) {
     <div style={{ marginTop: 20 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
         <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--primary)' }}>
-          👀 Би харсан ({sightings.length})
+          {t('sightings_title')} ({sightings.length})
         </p>
         <button
           onClick={() => setShowForm((s) => !s)}
           style={{ background: 'none', border: 'none', color: 'var(--accent)', fontSize: 12.5, fontWeight: 600, cursor: 'pointer' }}
         >
-          {showForm ? 'Хаах' : '+ Би харсан'}
+          {showForm ? t('sightings_close') : t('sightings_add')}
         </button>
       </div>
 
@@ -62,7 +64,7 @@ export default function SightingsList({ petId }) {
           <textarea
             value={message}
             onChange={(e) => setMessage(e.target.value)}
-            placeholder="жишээ: Өчигдөр орой 8 цагийн үед 3-р хорооллын ойролцоо харсан..."
+            placeholder={t('sightings_placeholder')}
             required
             rows={3}
             aria-label="Харсан тухай мэдээлэл"
@@ -71,18 +73,18 @@ export default function SightingsList({ petId }) {
           <input
             value={place}
             onChange={(e) => setPlace(e.target.value)}
-            placeholder="Байршил (заавал биш)"
+            placeholder={t('sightings_place_placeholder')}
             aria-label="Харсан байршил"
             style={{ padding: 9, borderRadius: 9, border: '1.5px solid var(--line)', fontSize: 13.5, background: 'var(--card)', color: 'var(--ink)' }}
           />
           <button type="submit" disabled={submitting} className="btn" style={{ background: 'var(--brand)', color: '#fff', fontSize: 13 }}>
-            {submitting ? 'Илгээж байна...' : 'Нийтлэх'}
+            {submitting ? t('sightings_submitting') : t('sightings_submit')}
           </button>
         </form>
       )}
 
       {sightings.length === 0 ? (
-        <p style={{ fontSize: 12.5, color: 'var(--muted)' }}>Одоогоор сэтгэгдэл алга.</p>
+        <p style={{ fontSize: 12.5, color: 'var(--muted)' }}>{t('sightings_none')}</p>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {sightings.map((s) => (

@@ -2,11 +2,21 @@
 import { useState } from 'react';
 import { reportPet } from '../lib/petService';
 import { useToast } from './Toast';
+import { useLanguage } from '../lib/i18n';
 
-const REASONS = ['Хуурамч мэдээлэл', 'Спам', 'Зохисгүй агуулга', 'Дахин нийтэлсэн', 'Бусад'];
+// Дотоод утга (DB-д хадгалагдах) Монгол хэвээр — admin dashboard-той нийцүүлнэ
+const REASON_VALUES = ['Хуурамч мэдээлэл', 'Спам', 'Зохисгүй агуулга', 'Дахин нийтэлсэн', 'Бусад'];
 
 export default function ReportButton({ petId }) {
   const showToast = useToast();
+  const { t } = useLanguage();
+  const REASON_LABELS = {
+    'Хуурамч мэдээлэл': t('report_reason_fake'),
+    'Спам': t('report_reason_spam'),
+    'Зохисгүй агуулга': t('report_reason_inappropriate'),
+    'Дахин нийтэлсэн': t('report_reason_duplicate'),
+    'Бусад': t('report_reason_other'),
+  };
   const [open, setOpen] = useState(false);
   const [sent, setSent] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -24,7 +34,7 @@ export default function ReportButton({ petId }) {
   }
 
   if (sent) {
-    return <p style={{ fontSize: 12, color: 'var(--muted)', marginTop: 8 }}>✅ Мэдээлэл хүлээн авлаа, баярлалаа.</p>;
+    return <p style={{ fontSize: 12, color: 'var(--muted)', marginTop: 8 }}>{t('report_thanks')}</p>;
   }
 
   return (
@@ -34,12 +44,12 @@ export default function ReportButton({ petId }) {
           onClick={() => setOpen(true)}
           style={{ background: 'none', border: 'none', color: 'var(--muted)', fontSize: 12, cursor: 'pointer', textDecoration: 'underline' }}
         >
-          🚩 Энэ бичлэгийг мэдээлэх
+          {t('report_btn')}
         </button>
       ) : (
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
-          <span style={{ fontSize: 12, color: 'var(--muted)' }}>Шалтгаан:</span>
-          {REASONS.map((r) => (
+          <span style={{ fontSize: 12, color: 'var(--muted)' }}>{t('report_reason_label')}</span>
+          {REASON_VALUES.map((r) => (
             <button
               key={r}
               disabled={busy}
@@ -49,7 +59,7 @@ export default function ReportButton({ petId }) {
                 border: '1px solid var(--line)', background: 'var(--card)', cursor: 'pointer', color: 'var(--primary)',
               }}
             >
-              {r}
+              {REASON_LABELS[r]}
             </button>
           ))}
         </div>

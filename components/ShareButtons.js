@@ -1,7 +1,9 @@
 'use client';
 import { useState } from 'react';
+import { useLanguage } from '../lib/i18n';
 
 export default function ShareButtons({ url, title }) {
+  const { t } = useLanguage();
   const [copied, setCopied] = useState(false);
 
   const fbShareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
@@ -26,14 +28,14 @@ export default function ShareButtons({ url, title }) {
     <div className="share-row">
       {typeof navigator !== 'undefined' && navigator.share && (
         <button onClick={handleNativeShare} className="share-btn native">
-          📤 Хуваалцах
+          {t('share_native')}
         </button>
       )}
       <a href={fbShareUrl} target="_blank" rel="noopener noreferrer" className="share-btn fb">
-        Facebook-т нийтлэх
+        {t('share_fb')}
       </a>
       <button onClick={handleCopy} className="share-btn copy">
-        {copied ? '✅ Хуулагдлаа' : '🔗 Холбоос хуулах'}
+        {copied ? t('share_copied') : t('share_copy')}
       </button>
 
       <style jsx>{`
