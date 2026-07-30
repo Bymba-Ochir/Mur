@@ -288,5 +288,5 @@ supabase-setup.sql      — Өгөгдлийн сан, RLS дүрэм, Storage b
 - [x] Сайн дурын сүлжээ ✅ (`volunteers` хүснэгт, `VolunteerBadge.js`, дүүрэг бүрийн тоог харуулна)
 - [x] Screen reader дэмжлэг (a11y) ✅ (keyboard navigation, aria-label, htmlFor/id, skip-link, focus states)
 - [x] Хандив (QPay) ✅ (`DonateModal.js`, QR код, автомат баталгаажуулалт — бизнесийн данс шаардана)
-- [x] Англи хэл сонголт ✅ (`lib/i18n.js` — **бүх хуудас 100% орчуулагдсан**: Navbar, Нүүр, форм, Жагсаалт, дэлгэрэнгүй, Миний амьтад, Admin)
+- [x] Англи хэл сонголт ✅ (`lib/i18n.js` — **бүх хуудас 100% орчуулагдсан**: Navbar, Нүүр, форм, Жагсаалт, дэлгэрэнгүй, Миний амьтад, Admin, Хандив (QPay))
 - [ ] React Native апп (iOS/Android)

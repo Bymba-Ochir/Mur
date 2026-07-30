@@ -1,11 +1,13 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import { useToast } from './Toast';
+import { useLanguage } from '../lib/i18n';
 
 const AMOUNTS = [3000, 5000, 10000, 20000];
 
 export default function DonateModal({ onClose }) {
   const showToast = useToast();
+  const { t } = useLanguage();
   const [amount, setAmount] = useState(5000);
   const [customAmount, setCustomAmount] = useState('');
   const [name, setName] = useState('');
@@ -32,7 +34,7 @@ export default function DonateModal({ onClose }) {
   async function handleCreate(e) {
     e.preventDefault();
     if (!finalAmount || finalAmount < 1000) {
-      showToast('Хамгийн багадаа 1,000₮', 'error');
+      showToast(t('donate_min_error'), 'error');
       return;
     }
     setStage('loading');
@@ -48,7 +50,7 @@ export default function DonateModal({ onClose }) {
         }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Алдаа гарлаа');
+      if (!res.ok) throw new Error(data.error || t('donate_generic_error'));
 
       setInvoice(data);
       setStage('qr');
@@ -74,14 +76,14 @@ export default function DonateModal({ onClose }) {
   return (
     <div className="overlay" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="donate-title">
-        <button className="close" onClick={onClose} aria-label="Хаах">✕</button>
-        <h2 id="donate-title">💛 МӨР-ийг дэмжих</h2>
+        <button className="close" onClick={onClose} aria-label={t('donate_close')}>✕</button>
+        <h2 id="donate-title">{t('donate_title')}</h2>
 
         {stage === 'form' && (
           <form onSubmit={handleCreate}>
-            <p className="hint">Таны хандив сервер, домэйн зэрэг зардлыг санхүүжүүлэхэд зарцуулагдана. Баярлалаа! 🙏</p>
+            <p className="hint">{t('donate_intro')}</p>
 
-            <div className="amounts" role="group" aria-label="Дүн сонгох">
+            <div className="amounts" role="group" aria-label={t('donate_custom_label')}>
               {AMOUNTS.map((a) => (
                 <button
                   type="button" key={a}
@@ -92,34 +94,34 @@ export default function DonateModal({ onClose }) {
                 </button>
               ))}
             </div>
-            <label htmlFor="custom-amount">Өөр дүн</label>
+            <label htmlFor="custom-amount">{t('donate_custom_label')}</label>
             <input
-              id="custom-amount" type="number" min="1000" placeholder="Дурын дүн (₮)"
+              id="custom-amount" type="number" min="1000" placeholder={t('donate_custom_ph')}
               value={customAmount} onChange={(e) => setCustomAmount(e.target.value)}
             />
 
-            <label htmlFor="donor-name">Нэр (заавал биш)</label>
-            <input id="donor-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Нэрээ бичих" />
+            <label htmlFor="donor-name">{t('donate_name_label')}</label>
+            <input id="donor-name" value={name} onChange={(e) => setName(e.target.value)} placeholder={t('donate_name_ph')} />
 
-            <label htmlFor="donor-message">Мессеж (заавал биш)</label>
-            <textarea id="donor-message" value={message} onChange={(e) => setMessage(e.target.value)} rows={2} placeholder="Урам зориг өгөх үг..." />
+            <label htmlFor="donor-message">{t('donate_message_label')}</label>
+            <textarea id="donor-message" value={message} onChange={(e) => setMessage(e.target.value)} rows={2} placeholder={t('donate_message_ph')} />
 
             <label className="checkbox-row">
               <input type="checkbox" checked={anonymous} onChange={(e) => setAnonymous(e.target.checked)} />
-              Нэргүйгээр хандивлах
+              {t('donate_anonymous')}
             </label>
 
-            <button type="submit" className="submit-btn">QPay-ээр төлөх</button>
+            <button type="submit" className="submit-btn">{t('donate_pay_btn')}</button>
           </form>
         )}
 
-        {stage === 'loading' && <p role="status">⏳ Нэхэмжлэл үүсгэж байна...</p>}
+        {stage === 'loading' && <p role="status">{t('donate_generating')}</p>}
 
         {stage === 'qr' && invoice && (
           <div className="qr-box">
-            <p>{finalAmount.toLocaleString()}₮ дүнтэй нэхэмжлэл үүслээ</p>
-            <img src={invoice.qrImage} alt="QPay QR код" className="qr-img" />
-            <p className="hint">Банкны апп-аараа QR кодыг уншуулж төлнө үү</p>
+            <p>{finalAmount.toLocaleString()}₮ {t('donate_invoice_created')}</p>
+            <img src={invoice.qrImage} alt={t('donate_qr_alt')} className="qr-img" />
+            <p className="hint">{t('donate_scan_hint')}</p>
             {invoice.deepLinks?.length > 0 && (
               <div className="deep-links">
                 {invoice.deepLinks.slice(0, 4).map((l) => (
@@ -130,23 +132,23 @@ export default function DonateModal({ onClose }) {
                 ))}
               </div>
             )}
-            <p className="hint" role="status" aria-live="polite">Төлбөрийг автоматаар шалгаж байна...</p>
+            <p className="hint" role="status" aria-live="polite">{t('donate_checking')}</p>
           </div>
         )}
 
         {stage === 'paid' && (
           <div className="paid-box" role="status">
             <div style={{ fontSize: 44 }}>🎉</div>
-            <p style={{ fontWeight: 700, color: 'var(--success)' }}>Баярлалаа!</p>
-            <p className="hint">Таны {finalAmount.toLocaleString()}₮ хандив амжилттай хийгдлээ.</p>
-            <button className="submit-btn" onClick={onClose}>Хаах</button>
+            <p style={{ fontWeight: 700, color: 'var(--success)' }}>{t('donate_thanks')}</p>
+            <p className="hint">{finalAmount.toLocaleString()}₮ {t('donate_paid_hint')}</p>
+            <button className="submit-btn" onClick={onClose}>{t('donate_close')}</button>
           </div>
         )}
 
         {stage === 'error' && (
           <div>
             <p role="alert" style={{ color: 'var(--alert)' }}>{errorMsg}</p>
-            <button className="submit-btn" onClick={() => setStage('form')}>Дахин оролдох</button>
+            <button className="submit-btn" onClick={() => setStage('form')}>{t('donate_retry')}</button>
           </div>
         )}
       </div>

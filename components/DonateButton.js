@@ -1,13 +1,15 @@
 'use client';
 import { useState } from 'react';
 import DonateModal from './DonateModal';
+import { useLanguage } from '../lib/i18n';
 
 export default function DonateButton() {
+  const { t } = useLanguage();
   const [open, setOpen] = useState(false);
   return (
     <>
       <button onClick={() => setOpen(true)} className="donate-btn">
-        💛 Дэмжих
+        {t('donate_btn')}
       </button>
       {open && <DonateModal onClose={() => setOpen(false)} />}
       <style jsx>{`
