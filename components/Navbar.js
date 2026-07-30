@@ -46,7 +46,7 @@ export default function Navbar() {
     <header className="navbar">
       <Link href="/" className="brand" aria-label="МӨР — Нүүр хуудас">
         <span className="brand-mark" aria-hidden="true">М</span>
-        <span>МӨР</span>
+        <span className="brand-name">МӨР</span>
       </Link>
       <nav aria-label="Үндсэн цэс">
         <Link href="/report-lost" className="nav-link-desktop">{t('nav_lost')}</Link>
@@ -98,20 +98,25 @@ export default function Navbar() {
       <style jsx>{`
         .navbar {
           display: flex; justify-content: space-between; align-items: center;
-          padding: 16px 24px; background: var(--brand); color: #fff;
+          padding: 14px 28px; background: var(--brand); color: #fff;
+          box-shadow: var(--shadow-sm);
+          position: sticky; top: 0; z-index: 90;
         }
-        .brand { display: flex; align-items: center; gap: 8px; color: #fff; text-decoration: none; font-weight: 700; font-size: 18px; }
+        .brand { display: flex; align-items: center; gap: 10px; color: #fff; text-decoration: none; }
+        .brand-name { font-family: var(--font-display); font-weight: 700; font-size: 18px; letter-spacing: -0.01em; }
         .brand-mark {
-          width: 30px; height: 30px; border-radius: 8px; background: var(--accent); color: var(--brand);
-          display: flex; align-items: center; justify-content: center; font-weight: 700;
+          width: 32px; height: 32px; border-radius: var(--r-sm); background: var(--accent); color: var(--brand);
+          display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-weight: 700; font-size: 15px;
         }
-        nav { display: flex; gap: 18px; align-items: center; }
+        nav { display: flex; gap: 20px; align-items: center; }
         @media (max-width: 640px) {
           .nav-link-desktop { display: none; }
+          .navbar { padding: 14px 16px; }
         }
         nav :global(a), .link-btn {
-          color: #DCE9EC; text-decoration: none; font-size: 14px;
-          background: none; border: none; cursor: pointer; font-family: inherit;
+          color: rgba(255,255,255,0.78); text-decoration: none; font-size: 13.5px; font-weight: 500;
+          background: none; border: none; cursor: pointer; font-family: var(--font-body);
+          transition: color 0.15s ease;
         }
         nav :global(a:hover), .link-btn:hover { color: #fff; }
         :global(a:focus-visible), .link-btn:focus-visible {
@@ -120,19 +125,25 @@ export default function Navbar() {
         .overlay {
           position: fixed; inset: 0; background: var(--overlay);
           display: flex; align-items: center; justify-content: center; z-index: 100;
+          animation: fadeIn 0.15s ease;
         }
-        .modal { background: var(--card); border-radius: 16px; padding: 24px; max-width: 320px; width: 90%; color: var(--ink); }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .modal {
+          background: var(--card); border-radius: var(--r-lg); padding: 28px; max-width: 320px; width: 90%; color: var(--ink);
+          box-shadow: var(--shadow-lift);
+        }
+        .modal h2 { font-family: var(--font-display); }
         .modal label { font-size: 13px; font-weight: 600; color: var(--primary); display: block; margin-bottom: 6px; }
         .modal input {
-          width: 100%; padding: 10px 12px; border: 1.5px solid var(--line); border-radius: 9px;
-          font-size: 14px; margin-bottom: 12px;
+          width: 100%; padding: 11px 13px; border: 1.5px solid var(--line); border-radius: var(--r-sm);
+          font-size: 14px; margin-bottom: 12px; font-family: var(--font-body); background: var(--card); color: var(--ink);
         }
         .btn-primary {
-          width: 100%; padding: 11px; border-radius: 9px; border: none;
-          background: var(--brand); color: #fff; font-weight: 600; cursor: pointer;
+          width: 100%; padding: 12px; border-radius: var(--r-sm); border: none;
+          background: var(--accent); color: #fff; font-weight: 600; cursor: pointer; font-family: var(--font-body); font-size: 14px;
         }
         .err { color: var(--alert); font-size: 12.5px; margin-bottom: 8px; }
-        .close { margin-top: 12px; background: none; border: none; color: var(--muted); font-size: 12.5px; cursor: pointer; }
+        .close { margin-top: 14px; background: none; border: none; color: var(--muted); font-size: 12.5px; cursor: pointer; }
       `}</style>
     </header>
   );

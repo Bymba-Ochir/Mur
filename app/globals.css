@@ -1,110 +1,191 @@
-/* ===== Theme variables ===== */
+/* =====================================================================
+   МӨР — Design tokens
+   Concept: "Steppe night → ember trail" — the deep teal-navy of dusk over
+   Ulaanbaatar (when pets go missing and searches begin) paired with a
+   warm signal-orange that carries hope through the dark. "Мөр" itself
+   means trail/track — the paw-print trail motif (PawTrail.js) is the
+   signature element, used only where content is genuinely sequential
+   (how-it-works steps, the 4-step report wizard).
+   ===================================================================== */
 :root {
-  --bg: #F6F7F4;
-  --ink: #1C2B33;
-  --primary: #1F4B5C;
-  --primary-light: #2E6A80;
-  --brand: #1F4B5C;
-  --accent: #E8A33D;
-  --alert: #C6473B;
-  --success: #4C8C6B;
-  --success-bg: #F0F6F1;
-  --success-text: #2F6B4A;
-  --muted: #6B7680;
-  --card: #FFFFFF;
-  --line: #E1E4DF;
-  --thumb-bg: #DCE4DD;
-  --eyebrow-bg: #E9EFE9;
-  --overlay: rgba(28,43,51,0.6);
+  /* Named palette */
+  --steppe-night: #17414D;   /* brand — primary teal-navy */
+  --steppe-night-light: #2B6575;
+  --ember: #E07A3E;          /* accent — warm signal-orange */
+  --ember-deep: #C4622C;
+  --coral-alarm: #CE5642;    /* lost / urgent */
+  --larch-green: #3D8C68;    /* found / success */
+  --overcast: #F1F5F4;       /* page background — cool, not cream */
+  --paper: #FFFFFF;          /* card surfaces */
+  --slate-ink: #172227;      /* body text */
+
+  /* Semantic tokens (used throughout the app) */
+  --bg: var(--overcast);
+  --ink: var(--slate-ink);
+  --primary: var(--steppe-night);
+  --primary-light: var(--steppe-night-light);
+  --brand: var(--steppe-night);
+  --accent: var(--ember);
+  --alert: var(--coral-alarm);
+  --success: var(--larch-green);
+  --success-bg: #EAF4EE;
+  --success-text: #29553F;
+  --muted: #5C6E71;
+  --card: var(--paper);
+  --line: #DEE6E3;
+  --thumb-bg: #E1E9E6;
+  --eyebrow-bg: #E6EEEB;
+  --overlay: rgba(15, 26, 29, 0.62);
+
+  /* Type */
+  --font-display: 'Unbounded', system-ui, sans-serif;
+  --font-body: 'Inter', 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  /* Spacing scale */
+  --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px;
+  --sp-5: 24px; --sp-6: 32px; --sp-7: 48px; --sp-8: 64px;
+
+  /* Radius scale */
+  --r-sm: 8px; --r-md: 12px; --r-lg: 18px; --r-pill: 999px;
+
+  /* Shadow */
+  --shadow-sm: 0 1px 2px rgba(23, 34, 39, 0.06), 0 1px 1px rgba(23, 34, 39, 0.04);
+  --shadow-md: 0 6px 20px rgba(23, 34, 39, 0.08), 0 2px 6px rgba(23, 34, 39, 0.05);
+  --shadow-lift: 0 12px 32px rgba(23, 34, 39, 0.14);
 }
 
 [data-theme="dark"] {
-  --bg: #101A20;
-  --ink: #E7EDF0;
-  --primary: #6FB4CE;
-  --primary-light: #8CC7DC;
-  --brand: #16323D;
-  --accent: #F0B85C;
-  --alert: #E17164;
-  --success: #6FBF93;
-  --success-bg: #16241C;
+  --steppe-night: #7FC3D6;
+  --steppe-night-light: #9BD3E3;
+  --ember: #F0A15C;
+  --coral-alarm: #E3897A;
+  --larch-green: #74C99A;
+  --slate-ink: #E8EEEC;
+
+  --bg: #0E1B1F;
+  --ink: var(--slate-ink);
+  --primary: var(--steppe-night);
+  --primary-light: var(--steppe-night-light);
+  --brand: #123039;
+  --accent: var(--ember);
+  --alert: var(--coral-alarm);
+  --success: var(--larch-green);
+  --success-bg: #14261E;
   --success-text: #8FDCB0;
-  --muted: #93A0A7;
-  --card: #182229;
-  --line: #2A3840;
-  --thumb-bg: #223038;
-  --eyebrow-bg: #1C2B33;
-  --overlay: rgba(0,0,0,0.7);
+  --muted: #8FA0A0;
+  --card: #16262A;
+  --line: #253A3F;
+  --thumb-bg: #1D3136;
+  --eyebrow-bg: #17282C;
+  --overlay: rgba(0, 0, 0, 0.72);
+
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
+  --shadow-md: 0 6px 20px rgba(0,0,0,0.35);
+  --shadow-lift: 0 12px 32px rgba(0,0,0,0.45);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
+html { -webkit-text-size-adjust: 100%; }
+
 body {
   background: var(--bg);
   color: var(--ink);
-  font-family: 'Segoe UI', Arial, sans-serif;
-  transition: background 0.15s, color 0.15s;
+  font-family: var(--font-body);
+  font-size: 15.5px;
+  line-height: 1.55;
+  transition: background 0.2s ease, color 0.2s ease;
+  -webkit-font-smoothing: antialiased;
 }
 
 main {
-  max-width: 1000px;
+  max-width: 1040px;
   margin: 0 auto;
-  padding: 32px 20px 60px;
+  padding: var(--sp-6) var(--sp-4) 60px;
 }
 
 @media (max-width: 640px) {
-  main {
-    padding-bottom: 84px; /* доод цэс (BottomNav)-тэй давхцахгүй байхаар зай үлдээнэ */
-  }
+  main { padding: var(--sp-5) var(--sp-4) 84px; }
 }
 
-h1, h2, h3 { color: var(--primary); }
+h1, h2, h3 {
+  font-family: var(--font-display);
+  color: var(--primary);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+}
+h1 { font-weight: 800; }
 
 a { color: inherit; }
+a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, [tabindex]:focus-visible {
+  outline: 2.5px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
 
 .skip-link {
   position: absolute; top: -100px; left: 12px; z-index: 500;
-  background: var(--brand); color: #fff; padding: 10px 16px; border-radius: 8px;
+  background: var(--brand); color: #fff; padding: 10px 16px; border-radius: var(--r-sm);
   text-decoration: none; font-size: 14px; font-weight: 600;
   transition: top 0.15s;
 }
 .skip-link:focus { top: 12px; }
 
 .eyebrow {
-  display: inline-block;
-  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
   color: var(--primary);
   background: var(--eyebrow-bg);
-  padding: 5px 12px;
-  border-radius: 20px;
-  margin-bottom: 14px;
+  padding: 6px 13px;
+  border-radius: var(--r-pill);
+  margin-bottom: var(--sp-4);
 }
 
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
-  gap: 16px;
-  margin-top: 20px;
+  gap: var(--sp-4);
+  margin-top: var(--sp-5);
 }
 
 .btn {
-  padding: 12px 20px;
-  border-radius: 10px;
+  padding: 12px 22px;
+  border-radius: var(--r-md);
   border: none;
+  font-family: var(--font-body);
   font-weight: 600;
   cursor: pointer;
   font-size: 14.5px;
   text-decoration: none;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
+  box-shadow: var(--shadow-sm);
 }
+.btn:hover { transform: translateY(-1px); box-shadow: var(--shadow-md); }
+.btn:active { transform: translateY(0); }
 .btn-primary { background: var(--brand); color: #fff; }
-.btn-accent { background: var(--accent); color: var(--primary); }
+.btn-accent { background: var(--accent); color: #fff; }
 
 select.filter, input.filter {
-  padding: 8px 12px;
-  border-radius: 9px;
+  padding: 9px 13px;
+  border-radius: var(--r-sm);
   border: 1.5px solid var(--line);
-  margin-bottom: 8px;
+  margin-bottom: var(--sp-2);
   background: var(--card);
   color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 14px;
 }

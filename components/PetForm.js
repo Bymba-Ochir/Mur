@@ -9,6 +9,7 @@ import { useLanguage } from '../lib/i18n';
 import ShareButtons from './ShareButtons';
 import LocationMap from './LocationMap';
 import PetPreviewCard from './PetPreviewCard';
+import PawTrail from './PawTrail';
 
 const DISTRICTS = [
   'Баянзүрх', 'Хан-Уул', 'Сүхбаатар', 'Чингэлтэй', 'Баянгол',
@@ -159,19 +160,7 @@ export default function PetForm({ status }) {
   return (
     <div className="form-layout">
     <form onSubmit={handleSubmit} className="pet-form" aria-label={status === 'lost' ? 'Алдсан амьтан мэдэгдэх форм' : 'Олдсон амьтан мэдэгдэх форм'}>
-      <div className="progress-row" role="list" aria-label="Формын алхмууд">
-        {STEPS.map((label, i) => (
-          <div
-            key={label}
-            className={`progress-step ${i === step ? 'active' : i < step ? 'done' : ''}`}
-            role="listitem"
-            aria-current={i === step ? 'step' : undefined}
-          >
-            <div className="progress-dot" aria-hidden="true">{i < step ? '✓' : i + 1}</div>
-            <span className="progress-label">{label}</span>
-          </div>
-        ))}
-      </div>
+      <PawTrail labels={STEPS} current={step} />
       <p className="progress-text" aria-live="polite">{step + 1}/{STEPS.length}: {STEPS[step]}</p>
 
       {step === 0 && (
@@ -294,54 +283,56 @@ export default function PetForm({ status }) {
     </div>
 
       <style jsx>{`
-        .form-layout { display: flex; gap: 40px; align-items: flex-start; }
+        .form-layout { display: flex; gap: 48px; align-items: flex-start; }
         .preview-col { display: none; position: sticky; top: 100px; }
         @media (min-width: 860px) {
           .preview-col { display: block; }
         }
-        .pet-form { display: flex; flex-direction: column; gap: 4px; max-width: 420px; flex: 1; min-width: 0; }
-        label { font-size: 13px; font-weight: 600; color: var(--primary); margin-top: 12px; display: block; }
+        .pet-form {
+          display: flex; flex-direction: column; gap: 4px; max-width: 440px; flex: 1; min-width: 0;
+          background: var(--card); border: 1px solid var(--line); border-radius: var(--r-lg);
+          padding: var(--sp-6); box-shadow: var(--shadow-sm);
+        }
+        label { font-size: 12.5px; font-weight: 600; color: var(--primary); margin-top: var(--sp-4); display: block; letter-spacing: 0.01em; }
         label:first-child { margin-top: 0; }
-        input, select { padding: 10px 12px; border: 1.5px solid var(--line); border-radius: 9px; font-size: 14px; width: 100%; }
-        input:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+        input, select {
+          padding: 11px 13px; border: 1.5px solid var(--line); border-radius: var(--r-sm);
+          font-size: 14.5px; width: 100%; font-family: var(--font-body); background: var(--card); color: var(--ink);
+          transition: border-color 0.15s ease;
+        }
+        input:hover, select:hover { border-color: var(--muted); }
+        input:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; border-color: var(--accent); }
         .upload-zone {
-          border: 2px dashed var(--line); border-radius: 12px; padding: 20px;
-          text-align: center; cursor: pointer; color: var(--muted); background: var(--bg);
+          border: 1.5px dashed var(--line); border-radius: var(--r-md); padding: 28px 20px;
+          text-align: center; cursor: pointer; color: var(--muted); background: var(--overcast);
+          transition: border-color 0.15s ease, background 0.15s ease;
         }
+        .upload-zone:hover { border-color: var(--accent); background: var(--eyebrow-bg); }
         .upload-zone:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-        .upload-zone img { max-width: 140px; border-radius: 10px; }
-        .btn {
-          padding: 12px; border-radius: 10px; border: none;
-          font-weight: 600; cursor: pointer; font-size: 14.5px;
+        .upload-zone img { max-width: 150px; border-radius: var(--r-sm); }
+        .btn-primary { width: 100%; margin-top: var(--sp-5); justify-content: center; font-size: 15px; padding: 14px; }
+        .btn-primary:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+        .error { color: var(--alert); font-size: 13px; margin-top: var(--sp-2); }
+        .success-box {
+          padding: var(--sp-6); background: var(--success-bg); border-radius: var(--r-lg); text-align: center;
+          border: 1px solid color-mix(in srgb, var(--success) 30%, transparent);
         }
-        .btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-        .btn-primary { background: var(--brand); color: #fff; width: 100%; margin-top: 18px; }
-        .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
-        .error { color: var(--alert); font-size: 13px; margin-top: 8px; }
-        .success-box { padding: 24px; background: var(--success-bg); border-radius: 12px; text-align: center; }
 
-        .progress-row { display: flex; justify-content: space-between; margin-bottom: 4px; }
-        .progress-step { display: flex; flex-direction: column; align-items: center; flex: 1; gap: 4px; }
-        .progress-dot {
-          width: 26px; height: 26px; border-radius: 50%; background: var(--line); color: var(--muted);
-          display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700;
-        }
-        .progress-step.active .progress-dot { background: var(--accent); color: var(--primary); }
-        .progress-step.done .progress-dot { background: var(--success); color: #fff; }
-        .progress-label { font-size: 10.5px; color: var(--muted); text-align: center; }
-        .progress-text { font-size: 12.5px; color: var(--muted); margin-bottom: 14px; text-align: center; }
+        .progress-text { font-family: var(--font-mono); font-size: 11.5px; color: var(--muted); margin: var(--sp-2) 0 var(--sp-5); text-align: center; letter-spacing: 0.02em; }
 
         .locate-btn {
-          padding: 10px 14px; border-radius: 9px; border: 1.5px solid var(--primary);
-          background: var(--card); color: var(--primary); font-weight: 600; cursor: pointer; font-size: 13px; margin-bottom: 8px;
+          padding: 10px 15px; border-radius: var(--r-pill); border: 1.5px solid var(--primary);
+          background: transparent; color: var(--primary); font-weight: 600; cursor: pointer; font-size: 13px; margin-bottom: var(--sp-3);
+          transition: background 0.15s ease;
         }
+        .locate-btn:hover { background: var(--eyebrow-bg); }
         .locate-btn:disabled { opacity: 0.6; }
         .locate-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
-        .nav-row { display: flex; gap: 10px; margin-top: 20px; }
-        .nav-back { background: var(--eyebrow-bg); color: var(--primary); flex: 1; }
-        .nav-next { background: var(--accent); color: var(--primary); flex: 1; }
-        .nav-next:disabled { opacity: 0.5; cursor: not-allowed; }
+        .nav-row { display: flex; gap: 10px; margin-top: var(--sp-5); }
+        .nav-back { background: var(--eyebrow-bg); color: var(--primary); flex: 1; justify-content: center; }
+        .nav-next { background: var(--accent); color: #fff; flex: 1; justify-content: center; }
+        .nav-next:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
       `}</style>
     </div>
   );

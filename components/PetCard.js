@@ -73,33 +73,33 @@ export default function PetCard({ pet }) {
 
       <style jsx>{`
         .pet-card {
-          background: var(--card); border: 1px solid var(--line); border-radius: 14px;
-          overflow: hidden; cursor: pointer; transition: box-shadow .15s;
+          background: var(--card); border: 1px solid var(--line); border-radius: var(--r-md);
+          overflow: hidden; cursor: pointer; transition: box-shadow .18s ease, transform .18s ease, border-color .18s ease;
         }
-        .pet-card:hover { box-shadow: 0 6px 18px rgba(0,0,0,0.08); }
+        .pet-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); border-color: transparent; }
         .pet-card:focus-visible {
-          outline: 3px solid var(--accent); outline-offset: 2px;
+          outline: 2.5px solid var(--accent); outline-offset: 2px;
         }
         .thumb {
-          height: 150px; background: var(--thumb-bg); position: relative;
+          height: 152px; background: var(--thumb-bg); position: relative;
           display: flex; align-items: center; justify-content: center;
         }
         .thumb img { width: 100%; height: 100%; object-fit: cover; }
-        .emoji { color: var(--muted); display: flex; }
+        .emoji { color: var(--muted); display: flex; opacity: 0.55; }
         .badge {
-          position: absolute; top: 8px; left: 8px; font-size: 10px;
-          padding: 3px 8px; border-radius: 6px; color: #fff; font-weight: 600;
+          position: absolute; top: 9px; left: 9px; font-family: var(--font-mono); font-size: 9.5px;
+          padding: 4px 8px; border-radius: var(--r-sm); color: #fff; font-weight: 700; letter-spacing: 0.03em;
         }
         .badge.lost { background: var(--alert); }
         .badge.found { background: var(--success); }
         .similarity {
-          position: absolute; bottom: 8px; right: 8px; font-size: 11px;
-          background: rgba(31,75,92,0.9); color: var(--accent); padding: 3px 8px; border-radius: 6px;
+          position: absolute; bottom: 9px; right: 9px; font-family: var(--font-mono); font-size: 10.5px; font-weight: 600;
+          background: rgba(23,34,39,0.85); color: var(--accent); padding: 3px 8px; border-radius: var(--r-sm);
         }
-        .info { padding: 12px 14px; }
-        h4 { font-size: 14.5px; margin-bottom: 2px; color: var(--primary); }
-        p { font-size: 12.5px; color: var(--muted); margin: 2px 0; }
-        .phone { display: block; margin-top: 6px; font-size: 13px; color: var(--primary); font-weight: 600; text-decoration: none; }
+        .info { padding: 14px 15px; }
+        h4 { font-family: var(--font-display); font-size: 14.5px; font-weight: 600; margin-bottom: 3px; color: var(--primary); }
+        p { font-size: 12.5px; color: var(--muted); margin: 3px 0; line-height: 1.4; }
+        .phone { display: block; margin-top: 8px; font-size: 13px; color: var(--primary); font-weight: 600; text-decoration: none; }
         .reveal-btn { background: none; border: none; padding: 0; cursor: pointer; font-family: inherit; text-align: left; }
         .reveal-btn:focus-visible, .phone:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
       `}</style>
