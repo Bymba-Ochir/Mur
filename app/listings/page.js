@@ -17,6 +17,7 @@ const DISTRICTS = [
 export default function ListingsPage() {
   const { t } = useLanguage();
   const [status, setStatus] = useState('');
+  const [type, setType] = useState('');
   const [district, setDistrict] = useState('');
   const [search, setSearch] = useState('');
   const [pets, setPets] = useState([]);
@@ -31,13 +32,14 @@ export default function ListingsPage() {
     const timer = setTimeout(load, 400);
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [status, district, search]);
+  }, [status, type, district, search]);
 
   async function load() {
     setLoading(true);
     try {
       const data = await fetchPets({
         status: status || undefined,
+        type: type || undefined,
         district: district || undefined,
         search: search || undefined,
       });
@@ -89,6 +91,12 @@ export default function ListingsPage() {
           <option value="lost">{t('filter_lost')}</option>
           <option value="found">{t('filter_found')}</option>
         </select>
+        <select className="filter" value={type} onChange={(e) => setType(e.target.value)} aria-label="Төрлөөр шүүх">
+          <option value="">{t('filter_all_types')}</option>
+          <option value="Нохой">{t('type_dog')}</option>
+          <option value="Муур">{t('type_cat')}</option>
+          <option value="Бусад">{t('type_other')}</option>
+        </select>
         <select className="filter" value={district} onChange={(e) => setDistrict(e.target.value)} aria-label="Дүүргээр шүүх">
           {DISTRICTS.map((d) => (
             <option key={d} value={d}>{d || t('filter_all_districts')}</option>
@@ -128,10 +136,10 @@ export default function ListingsPage() {
         }}>
           <div style={{ fontSize: 46, marginBottom: 10 }}>🐾</div>
           <p style={{ fontWeight: 600, color: 'var(--primary)', marginBottom: 4 }}>
-            {search || district || status ? t('empty_no_results_title') : t('empty_no_posts_title')}
+            {search || district || status || type ? t('empty_no_results_title') : t('empty_no_posts_title')}
           </p>
           <p style={{ color: 'var(--muted)', fontSize: 13.5, marginBottom: 18 }}>
-            {search || district || status ? t('empty_no_results_desc') : t('empty_no_posts_desc')}
+            {search || district || status || type ? t('empty_no_results_desc') : t('empty_no_posts_desc')}
           </p>
           <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
             <Link href="/report-lost" className="btn btn-accent">{t('hero_btn_lost')}</Link>

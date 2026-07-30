@@ -289,4 +289,7 @@ supabase-setup.sql      — Өгөгдлийн сан, RLS дүрэм, Storage b
 - [x] Screen reader дэмжлэг (a11y) ✅ (keyboard navigation, aria-label, htmlFor/id, skip-link, focus states)
 - [x] Хандив (QPay) ✅ (`DonateModal.js`, QR код, автомат баталгаажуулалт — бизнесийн данс шаардана)
 - [x] Англи хэл сонголт ✅ (`lib/i18n.js` — **бүх хуудас 100% орчуулагдсан**: Navbar, Нүүр, форм, Жагсаалт, дэлгэрэнгүй, Миний амьтад, Admin, Хандив (QPay))
+- [x] Формын урьдчилан харах карт (preview) ✅ (`PetPreviewCard.js`, баруун талын хоосон зайг ашигласан, ≥860px дэлгэцэнд)
+- [x] Зурган оруулаагүй үед автомат нохой/муур icon ✅ (form preview + жагсаалтад аль хэдийн байсан)
+- [x] Жагсаалтыг амьтны төрлөөр шүүх ✅ (Нохой/Муур/Бусад)
 - [ ] React Native апп (iOS/Android)

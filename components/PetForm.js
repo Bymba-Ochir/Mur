@@ -8,6 +8,7 @@ import { useToast } from './Toast';
 import { useLanguage } from '../lib/i18n';
 import ShareButtons from './ShareButtons';
 import LocationMap from './LocationMap';
+import PetPreviewCard from './PetPreviewCard';
 
 const DISTRICTS = [
   'Баянзүрх', 'Хан-Уул', 'Сүхбаатар', 'Чингэлтэй', 'Баянгол',
@@ -156,6 +157,7 @@ export default function PetForm({ status }) {
   }
 
   return (
+    <div className="form-layout">
     <form onSubmit={handleSubmit} className="pet-form" aria-label={status === 'lost' ? 'Алдсан амьтан мэдэгдэх форм' : 'Олдсон амьтан мэдэгдэх форм'}>
       <div className="progress-row" role="list" aria-label="Формын алхмууд">
         {STEPS.map((label, i) => (
@@ -276,9 +278,28 @@ export default function PetForm({ status }) {
           </button>
         )}
       </div>
+    </form>
+
+    <div className="preview-col">
+      <PetPreviewCard
+        status={status}
+        name={form.name}
+        type={form.type}
+        color={form.color}
+        district={form.district}
+        place={form.place}
+        phone={form.phone}
+        photoPreview={preview}
+      />
+    </div>
 
       <style jsx>{`
-        .pet-form { display: flex; flex-direction: column; gap: 4px; max-width: 420px; }
+        .form-layout { display: flex; gap: 40px; align-items: flex-start; }
+        .preview-col { display: none; position: sticky; top: 100px; }
+        @media (min-width: 860px) {
+          .preview-col { display: block; }
+        }
+        .pet-form { display: flex; flex-direction: column; gap: 4px; max-width: 420px; flex: 1; min-width: 0; }
         label { font-size: 13px; font-weight: 600; color: var(--primary); margin-top: 12px; display: block; }
         label:first-child { margin-top: 0; }
         input, select { padding: 10px 12px; border: 1.5px solid var(--line); border-radius: 9px; font-size: 14px; width: 100%; }
@@ -322,6 +343,6 @@ export default function PetForm({ status }) {
         .nav-next { background: var(--accent); color: var(--primary); flex: 1; }
         .nav-next:disabled { opacity: 0.5; cursor: not-allowed; }
       `}</style>
-    </form>
+    </div>
   );
 }
