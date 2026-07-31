@@ -48,7 +48,7 @@ export default function VolunteerBadge({ district }) {
   return (
     <div style={{
       display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10,
-      background: 'var(--eyebrow-bg)', borderRadius: 10, padding: '10px 14px', marginBottom: 8,
+      background: 'var(--eyebrow-bg)', borderRadius: 'var(--r-sm)', padding: '10px 14px', marginBottom: 8,
     }}>
       <span style={{ fontSize: 13, color: 'var(--primary)' }}>
         🙋 <b>{count}</b> сайн дурын идэвхтэн "{district}" дүүрэгт
@@ -60,7 +60,7 @@ export default function VolunteerBadge({ district }) {
           background: joined ? 'transparent' : 'var(--brand)',
           color: joined ? 'var(--muted)' : '#fff',
           border: joined ? '1px solid var(--line)' : 'none',
-          borderRadius: 8, padding: '6px 12px', fontSize: 12, fontWeight: 600, cursor: 'pointer',
+          borderRadius: 'var(--r-sm)', padding: '6px 12px', fontSize: 12, fontWeight: 600, cursor: 'pointer',
         }}
       >
         {joined ? 'Гарах' : '+ Нэгдэх'}

@@ -88,14 +88,14 @@ export default function AdminPage() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {reports.map((r) => (
             <div key={r.id} style={{
-              background: 'var(--card)', border: '1px solid var(--line)', borderRadius: 14, padding: 16,
+              background: 'var(--card)', border: '1px solid var(--line)', borderRadius: 'var(--r-md)', boxShadow: 'var(--shadow-sm)', padding: 16,
               display: 'flex', gap: 12, alignItems: 'flex-start', flexWrap: 'wrap',
             }}>
               {r.pet?.photoURL && (
-                <img src={r.pet.photoURL} alt="" style={{ width: 64, height: 64, borderRadius: 10, objectFit: 'cover' }} />
+                <img src={r.pet.photoURL} alt="" style={{ width: 64, height: 64, borderRadius: 'var(--r-sm)', objectFit: 'cover' }} />
               )}
               <div style={{ flex: 1, minWidth: 180 }}>
-                <p style={{ fontWeight: 600, color: 'var(--primary)' }}>
+                <p style={{ fontWeight: 600, color: 'var(--primary)', fontFamily: 'var(--font-display)', fontSize: 14.5 }}>
                   🚩 {r.reason}
                 </p>
                 {r.pet ? (

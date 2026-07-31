@@ -100,7 +100,7 @@ export default function MyPetsPage() {
       </p>
 
       {!subscribed ? (
-        <div style={{ background: 'var(--success-bg)', padding: 14, borderRadius: 12, marginBottom: 20 }}>
+        <div style={{ background: 'var(--success-bg)', padding: 14, borderRadius: 'var(--r-md)', marginBottom: 20 }}>
           <button onClick={handleSubscribe} className="btn" style={{ background: 'var(--brand)', color: '#fff' }}>
             {t('mypets_subscribe')}
           </button>
@@ -115,20 +115,20 @@ export default function MyPetsPage() {
           value={name} onChange={(e) => setName(e.target.value)}
           placeholder={t('mypets_name_ph')} required
           aria-label={t('mypets_name_ph')}
-          style={{ flex: '1 1 140px', padding: 10, borderRadius: 9, border: '1.5px solid var(--line)' }}
+          style={{ flex: '1 1 140px', padding: 10, borderRadius: 'var(--r-sm)', border: '1.5px solid var(--line)' }}
         />
         <select value={type} onChange={(e) => setType(e.target.value)}
           aria-label={t('type_label')}
-          style={{ padding: 10, borderRadius: 9, border: '1.5px solid var(--line)' }}>
+          style={{ padding: 10, borderRadius: 'var(--r-sm)', border: '1.5px solid var(--line)' }}>
           <option value="Нохой">{TYPE_LABELS['Нохой']}</option>
           <option value="Муур">{TYPE_LABELS['Муур']}</option>
         </select>
         <input
           type="date" value={date} onChange={(e) => setDate(e.target.value)}
           aria-label="Дараагийн вакцины огноо"
-          style={{ padding: 10, borderRadius: 9, border: '1.5px solid var(--line)' }}
+          style={{ padding: 10, borderRadius: 'var(--r-sm)', border: '1.5px solid var(--line)' }}
         />
-        <button type="submit" disabled={busy} className="btn" style={{ background: 'var(--accent)', color: 'var(--primary)' }}>
+        <button type="submit" disabled={busy} className="btn" style={{ background: 'var(--accent)', color: '#fff' }}>
           {t('mypets_add')}
         </button>
       </form>
@@ -142,13 +142,13 @@ export default function MyPetsPage() {
             const label = STATUS_LABEL[st];
             return (
               <div key={p.id} style={{
-                background: 'var(--card)', border: '1px solid var(--line)', borderRadius: 12,
+                background: 'var(--card)', border: '1px solid var(--line)', borderRadius: 'var(--r-md)', boxShadow: 'var(--shadow-sm)',
                 padding: 14, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap',
               }}>
                 <div>
-                  <b style={{ color: 'var(--primary)' }}>{p.name}</b>
+                  <b style={{ color: 'var(--primary)', fontFamily: 'var(--font-display)' }}>{p.name}</b>
                   <span style={{ color: 'var(--muted)', fontSize: 13 }}> — {TYPE_LABELS[p.type] || p.type}</span>
-                  <div style={{ fontSize: 12.5, color: label.color, marginTop: 2 }}>{label.text}</div>
+                  <div style={{ fontSize: 11, fontFamily: 'var(--font-mono)', fontWeight: 600, color: label.color, marginTop: 4 }}>{label.text}</div>
                 </div>
                 <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                   <input
@@ -156,7 +156,7 @@ export default function MyPetsPage() {
                     defaultValue={p.nextVaccineDate || ''}
                     onChange={(e) => handleDateChange(p.id, e.target.value)}
                     aria-label={`${p.name}-ийн дараагийн вакцины огноо`}
-                    style={{ padding: 6, borderRadius: 8, border: '1.5px solid var(--line)', fontSize: 13 }}
+                    style={{ padding: 6, borderRadius: 'var(--r-sm)', border: '1.5px solid var(--line)', fontSize: 13 }}
                   />
                   <button onClick={() => handleDelete(p.id)} aria-label={`${p.name}-ийг устгах`} style={{
                     background: 'none', border: 'none', color: 'var(--alert)', cursor: 'pointer', fontSize: 13,

@@ -41,7 +41,7 @@ export default function ShareButtons({ url, title }) {
       <style jsx>{`
         .share-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
         .share-btn {
-          padding: 9px 14px; border-radius: 9px; border: none; cursor: pointer;
+          padding: 9px 14px; border-radius: var(--r-sm); border: none; cursor: pointer;
           font-size: 13px; font-weight: 600; text-decoration: none; display: inline-block;
         }
         .native { background: var(--brand); color: #fff; }

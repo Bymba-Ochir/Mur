@@ -132,7 +132,7 @@ export default function ListingsPage() {
       ) : pets.length === 0 ? (
         <div style={{
           textAlign: 'center', padding: '48px 20px', background: 'var(--card)',
-          border: '1px dashed var(--line)', borderRadius: 16, marginTop: 8,
+          border: '1px dashed var(--line)', borderRadius: 'var(--r-lg)', marginTop: 8,
         }}>
           <div style={{ fontSize: 46, marginBottom: 10 }}>🐾</div>
           <p style={{ fontWeight: 600, color: 'var(--primary)', marginBottom: 4 }}>

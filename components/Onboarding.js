@@ -67,7 +67,7 @@ export default function Onboarding() {
           display: flex; align-items: center; justify-content: center; z-index: 400; padding: 20px;
         }
         .onb-card {
-          background: var(--card); border-radius: 20px; padding: 32px 28px; max-width: 340px; width: 100%;
+          background: var(--card); border-radius: var(--r-lg); padding: 32px 28px; box-shadow: var(--shadow-lift); max-width: 340px; width: 100%;
           text-align: center; position: relative; animation: pop 0.2s ease-out;
         }
         @keyframes pop { from { transform: scale(0.94); opacity: 0; } to { transform: scale(1); opacity: 1; } }
@@ -82,7 +82,7 @@ export default function Onboarding() {
         .onb-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--line); transition: all 0.2s; }
         .onb-dot.active { background: var(--accent); width: 20px; border-radius: 4px; }
         .onb-next {
-          width: 100%; padding: 12px; border-radius: 10px; border: none;
+          width: 100%; padding: 12px; border-radius: var(--r-sm); border: none;
           background: var(--brand); color: #fff; font-weight: 600; cursor: pointer; font-size: 14px;
         }
       `}</style>

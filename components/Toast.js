@@ -44,7 +44,7 @@ export function ToastProvider({ children }) {
           width: 92%; max-width: 380px; pointer-events: none;
         }
         .toast {
-          background: var(--ink); color: #fff; padding: 12px 16px; border-radius: 10px;
+          background: var(--ink); color: #fff; padding: 12px 16px; border-radius: var(--r-sm);
           font-size: 13.5px; box-shadow: 0 6px 20px rgba(0,0,0,0.2); cursor: pointer;
           pointer-events: auto; animation: slideUp 0.25s ease-out;
         }

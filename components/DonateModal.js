@@ -155,22 +155,24 @@ export default function DonateModal({ onClose }) {
 
       <style jsx>{`
         .overlay { position: fixed; inset: 0; background: var(--overlay); display: flex; align-items: center; justify-content: center; z-index: 300; padding: 16px; }
-        .modal { background: var(--card); border-radius: 16px; padding: 24px; max-width: 360px; width: 100%; color: var(--ink); position: relative; max-height: 90vh; overflow-y: auto; }
+        .modal { background: var(--card); border-radius: var(--r-lg); padding: 24px; max-width: 360px; width: 100%; color: var(--ink); position: relative; max-height: 90vh; overflow-y: auto; }
         .close { position: absolute; top: 14px; right: 14px; background: none; border: none; font-size: 16px; cursor: pointer; color: var(--muted); }
         h2 { font-size: 18px; margin-bottom: 12px; }
         .hint { font-size: 12.5px; color: var(--muted); margin-bottom: 12px; }
         .amounts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
-        .amount-btn { padding: 10px; border-radius: 9px; border: 1.5px solid var(--line); background: var(--bg); color: var(--ink); font-weight: 600; cursor: pointer; }
-        .amount-btn.active { background: var(--accent); border-color: var(--accent); color: var(--primary); }
+        .amount-btn { padding: 10px; border-radius: var(--r-sm); border: 1.5px solid var(--line); background: var(--bg); color: var(--ink); font-weight: 600; cursor: pointer; font-family: var(--font-body); transition: all 0.15s ease; }
+        .amount-btn:hover { border-color: var(--accent); }
+        .amount-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
         label { font-size: 12.5px; font-weight: 600; color: var(--primary); display: block; margin-top: 10px; margin-bottom: 4px; }
-        input, textarea { width: 100%; padding: 9px 11px; border: 1.5px solid var(--line); border-radius: 9px; font-size: 13.5px; background: var(--card); color: var(--ink); font-family: inherit; }
+        input, textarea { width: 100%; padding: 9px 11px; border: 1.5px solid var(--line); border-radius: var(--r-sm); font-size: 13.5px; background: var(--card); color: var(--ink); font-family: inherit; }
         .checkbox-row { display: flex; align-items: center; gap: 8px; font-weight: 400; color: var(--ink); }
         .checkbox-row input { width: auto; }
-        .submit-btn { width: 100%; margin-top: 16px; padding: 12px; border-radius: 10px; border: none; background: var(--brand); color: #fff; font-weight: 700; cursor: pointer; font-size: 14px; }
+        .submit-btn { width: 100%; margin-top: 16px; padding: 13px; border-radius: var(--r-sm); border: none; background: var(--brand); color: #fff; font-weight: 700; cursor: pointer; font-size: 14px; font-family: var(--font-body); transition: transform 0.12s ease, box-shadow 0.12s ease; box-shadow: var(--shadow-sm); }
+        .submit-btn:hover { transform: translateY(-1px); box-shadow: var(--shadow-md); }
         .qr-box, .paid-box { text-align: center; }
-        .qr-img { width: 200px; height: 200px; margin: 10px auto; border-radius: 10px; border: 1px solid var(--line); }
+        .qr-img { width: 200px; height: 200px; margin: 10px auto; border-radius: var(--r-sm); border: 1px solid var(--line); }
         .deep-links { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 10px 0; }
-        .deep-link { display: flex; align-items: center; gap: 4px; font-size: 11.5px; background: var(--eyebrow-bg); color: var(--primary); padding: 5px 10px; border-radius: 8px; text-decoration: none; }
+        .deep-link { display: flex; align-items: center; gap: 4px; font-size: 11.5px; background: var(--eyebrow-bg); color: var(--primary); padding: 5px 10px; border-radius: var(--r-sm); text-decoration: none; }
         .deep-link img { width: 16px; height: 16px; border-radius: 3px; }
       `}</style>
     </div>

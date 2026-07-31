@@ -68,14 +68,14 @@ export default function SightingsList({ petId }) {
             required
             rows={3}
             aria-label="Харсан тухай мэдээлэл"
-            style={{ padding: 10, borderRadius: 9, border: '1.5px solid var(--line)', fontFamily: 'inherit', fontSize: 13.5, resize: 'vertical', background: 'var(--card)', color: 'var(--ink)' }}
+            style={{ padding: 10, borderRadius: 'var(--r-sm)', border: '1.5px solid var(--line)', fontFamily: 'inherit', fontSize: 13.5, resize: 'vertical', background: 'var(--card)', color: 'var(--ink)' }}
           />
           <input
             value={place}
             onChange={(e) => setPlace(e.target.value)}
             placeholder={t('sightings_place_placeholder')}
             aria-label="Харсан байршил"
-            style={{ padding: 9, borderRadius: 9, border: '1.5px solid var(--line)', fontSize: 13.5, background: 'var(--card)', color: 'var(--ink)' }}
+            style={{ padding: 9, borderRadius: 'var(--r-sm)', border: '1.5px solid var(--line)', fontSize: 13.5, background: 'var(--card)', color: 'var(--ink)' }}
           />
           <button type="submit" disabled={submitting} className="btn" style={{ background: 'var(--brand)', color: '#fff', fontSize: 13 }}>
             {submitting ? t('sightings_submitting') : t('sightings_submit')}
@@ -88,7 +88,7 @@ export default function SightingsList({ petId }) {
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {sightings.map((s) => (
-            <div key={s.id} style={{ background: 'var(--card)', border: '1px solid var(--line)', borderRadius: 10, padding: '10px 12px' }}>
+            <div key={s.id} style={{ background: 'var(--card)', border: '1px solid var(--line)', borderRadius: 'var(--r-sm)', padding: '10px 12px' }}>
               <p style={{ fontSize: 13.5, color: 'var(--ink)' }}>{s.message}</p>
               <p style={{ fontSize: 11.5, color: 'var(--muted)', marginTop: 4 }}>
                 {s.place && `📍 ${s.place} · `}{relativeTime(s.createdAt)}

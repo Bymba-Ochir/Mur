@@ -10,7 +10,7 @@ export default function SkeletonCard() {
 
       <style jsx>{`
         .skeleton-card {
-          background: var(--card); border: 1px solid var(--line); border-radius: 14px; overflow: hidden;
+          background: var(--card); border: 1px solid var(--line); border-radius: var(--r-md); overflow: hidden;
         }
         .skeleton-thumb { height: 150px; background: var(--line); }
         .skeleton-info { padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; }

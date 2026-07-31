@@ -55,7 +55,7 @@ export default function ReportButton({ petId }) {
               disabled={busy}
               onClick={() => handleReport(r)}
               style={{
-                fontSize: 11.5, padding: '4px 9px', borderRadius: 7,
+                fontSize: 11.5, padding: '4px 9px', borderRadius: 'var(--r-sm)',
                 border: '1px solid var(--line)', background: 'var(--card)', cursor: 'pointer', color: 'var(--primary)',
               }}
             >

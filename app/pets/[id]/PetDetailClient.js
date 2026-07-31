@@ -99,13 +99,13 @@ export default function PetDetailClient({ id }) {
       )}
 
       {pet.resolved && (
-        <div style={{ background: 'var(--success-bg)', border: '1.5px solid var(--success)', borderRadius: 10, padding: '8px 14px', marginBottom: 14, color: 'var(--success-text)', fontSize: 13.5, fontWeight: 600 }}>
+        <div style={{ background: 'var(--success-bg)', border: '1.5px solid var(--success)', borderRadius: 'var(--r-sm)', padding: '8px 14px', marginBottom: 14, color: 'var(--success-text)', fontSize: 13.5, fontWeight: 600 }}>
           {t('detail_resolved_badge')}
         </div>
       )}
 
       <div style={{
-        borderRadius: 14, overflow: 'hidden', background: 'var(--thumb-bg)', height: 260,
+        borderRadius: 'var(--r-md)', overflow: 'hidden', background: 'var(--thumb-bg)', height: 260,
         display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16,
         opacity: pet.resolved ? 0.6 : 1,
       }}>
@@ -117,7 +117,7 @@ export default function PetDetailClient({ id }) {
       </div>
 
       {!editing ? (
-        <div style={{ background: 'var(--card)', border: '1px solid var(--line)', borderRadius: 14, padding: 18 }}>
+        <div style={{ background: 'var(--card)', border: '1px solid var(--line)', borderRadius: 'var(--r-md)', boxShadow: 'var(--shadow-sm)', padding: 18 }}>
           <p style={{ marginBottom: 6 }}><b>{t('detail_type')}</b> {pet.type}{pet.color ? `, ${pet.color}` : ''}</p>
           <p style={{ marginBottom: 6 }}><b>{t('detail_district')}</b> {pet.district}</p>
           <p style={{ marginBottom: 6 }}><b>{t('detail_place')}</b> {pet.place}</p>
@@ -135,24 +135,24 @@ export default function PetDetailClient({ id }) {
           )}
         </div>
       ) : (
-        <div style={{ background: 'var(--card)', border: '1px solid var(--line)', borderRadius: 14, padding: 18, display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <div style={{ background: 'var(--card)', border: '1px solid var(--line)', borderRadius: 'var(--r-md)', boxShadow: 'var(--shadow-sm)', padding: 18, display: 'flex', flexDirection: 'column', gap: 8 }}>
           <label htmlFor="edit-name" style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--primary)' }}>{t('name_label')}</label>
           <input id="edit-name" value={editForm.name} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-            style={{ padding: 9, borderRadius: 8, border: '1.5px solid var(--line)' }} />
+            style={{ padding: 9, borderRadius: 'var(--r-sm)', border: '1.5px solid var(--line)' }} />
           <label htmlFor="edit-color" style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--primary)' }}>{t('color_label').replace(' *','')}</label>
           <input id="edit-color" value={editForm.color} onChange={(e) => setEditForm({ ...editForm, color: e.target.value })}
-            style={{ padding: 9, borderRadius: 8, border: '1.5px solid var(--line)' }} />
+            style={{ padding: 9, borderRadius: 'var(--r-sm)', border: '1.5px solid var(--line)' }} />
           <label htmlFor="edit-district" style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--primary)' }}>{t('district_label')}</label>
           <select id="edit-district" value={editForm.district} onChange={(e) => setEditForm({ ...editForm, district: e.target.value })}
-            style={{ padding: 9, borderRadius: 8, border: '1.5px solid var(--line)' }}>
+            style={{ padding: 9, borderRadius: 'var(--r-sm)', border: '1.5px solid var(--line)' }}>
             {DISTRICTS.map((d) => <option key={d}>{d}</option>)}
           </select>
           <label htmlFor="edit-place" style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--primary)' }}>{t('detail_place').replace(':','')}</label>
           <input id="edit-place" value={editForm.place} onChange={(e) => setEditForm({ ...editForm, place: e.target.value })}
-            style={{ padding: 9, borderRadius: 8, border: '1.5px solid var(--line)' }} />
+            style={{ padding: 9, borderRadius: 'var(--r-sm)', border: '1.5px solid var(--line)' }} />
           <label htmlFor="edit-phone" style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--primary)' }}>{t('phone_label').replace(' *','')}</label>
           <input id="edit-phone" value={editForm.phone} onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
-            style={{ padding: 9, borderRadius: 8, border: '1.5px solid var(--line)' }} />
+            style={{ padding: 9, borderRadius: 'var(--r-sm)', border: '1.5px solid var(--line)' }} />
           <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
             <button onClick={handleSaveEdit} disabled={saving} className="btn"
               style={{ background: 'var(--brand)', color: '#fff', flex: 1, justifyContent: 'center' }}>

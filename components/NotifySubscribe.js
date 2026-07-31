@@ -48,7 +48,7 @@ export default function NotifySubscribe({ district }) {
       <style jsx>{`
         .notify-box { margin: 12px 0; }
         .notify-btn {
-          padding: 9px 14px; border-radius: 9px; border: 1.5px solid var(--primary);
+          padding: 9px 14px; border-radius: var(--r-sm); border: 1.5px solid var(--primary);
           background: var(--card); color: var(--primary); font-weight: 600; font-size: 13px; cursor: pointer;
         }
         .notify-btn:disabled { opacity: 0.6; cursor: not-allowed; }

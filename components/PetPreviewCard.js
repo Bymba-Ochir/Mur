@@ -35,7 +35,7 @@ export default function PetPreviewCard({ status, name, type, color, district, pl
         .preview-wrap { max-width: 260px; }
         .preview-label { font-size: 12px; color: var(--muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.03em; }
         .pet-card {
-          background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+          background: var(--card); border: 1px solid var(--line); border-radius: var(--r-md);
           overflow: hidden; box-shadow: 0 6px 18px rgba(0,0,0,0.06);
         }
         .thumb {
