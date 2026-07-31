@@ -14,6 +14,7 @@ export default function AdminPage() {
   const [checked, setChecked] = useState(false);
   const [admin, setAdmin] = useState(false);
   const [reports, setReports] = useState([]);
+  const [reportsLoading, setReportsLoading] = useState(true);
   const [busyId, setBusyId] = useState(null);
 
   useEffect(() => {
@@ -27,10 +28,13 @@ export default function AdminPage() {
   }, [user, loading]);
 
   async function load() {
+    setReportsLoading(true);
     try {
       setReports(await fetchReports());
     } catch (err) {
       showToast('Алдаа: ' + err.message, 'error');
+    } finally {
+      setReportsLoading(false);
     }
   }
 
@@ -80,16 +84,30 @@ export default function AdminPage() {
   return (
     <div style={{ maxWidth: 640 }}>
       <div className="eyebrow">{t('admin_eyebrow')}</div>
-      <h1 style={{ fontSize: 24, marginBottom: 16 }}>{t('admin_title')}</h1>
+      <h1 style={{ fontSize: 24, marginBottom: 'var(--sp-4)' }}>{t('admin_title')}</h1>
 
-      {reports.length === 0 ? (
-        <p style={{ color: 'var(--muted)' }}>{t('admin_none')}</p>
+      {reportsLoading ? (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-3)' }}>
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="skel-row" style={{
+              background: 'var(--card)', border: '1px solid var(--line)', borderRadius: 'var(--r-md)', height: 78,
+            }} />
+          ))}
+        </div>
+      ) : reports.length === 0 ? (
+        <div style={{
+          textAlign: 'center', padding: 'var(--sp-6) var(--sp-4)', background: 'var(--card)',
+          border: '1px dashed var(--line)', borderRadius: 'var(--r-lg)',
+        }}>
+          <div style={{ fontSize: 36, marginBottom: 'var(--sp-2)' }}>👍</div>
+          <p style={{ color: 'var(--muted)', fontSize: 13.5 }}>{t('admin_none')}</p>
+        </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-3)' }}>
           {reports.map((r) => (
             <div key={r.id} style={{
-              background: 'var(--card)', border: '1px solid var(--line)', borderRadius: 'var(--r-md)', boxShadow: 'var(--shadow-sm)', padding: 16,
-              display: 'flex', gap: 12, alignItems: 'flex-start', flexWrap: 'wrap',
+              background: 'var(--card)', border: '1px solid var(--line)', borderRadius: 'var(--r-md)', boxShadow: 'var(--shadow-sm)', padding: 'var(--sp-4)',
+              display: 'flex', gap: 'var(--sp-3)', alignItems: 'flex-start', flexWrap: 'wrap',
             }}>
               {r.pet?.photoURL && (
                 <img src={r.pet.photoURL} alt="" style={{ width: 64, height: 64, borderRadius: 'var(--r-sm)', objectFit: 'cover' }} />
@@ -110,7 +128,7 @@ export default function AdminPage() {
                 )}
                 <p style={{ fontSize: 12, color: 'var(--muted)' }}>{relativeTime(r.createdAt)}</p>
               </div>
-              <div style={{ display: 'flex', gap: 8 }}>
+              <div style={{ display: 'flex', gap: 'var(--sp-2)' }}>
                 <button
                   onClick={() => handleDismiss(r.id)}
                   disabled={busyId === r.id}

@@ -189,3 +189,24 @@ select.filter, input.filter {
   font-family: var(--font-body);
   font-size: 14px;
 }
+
+/* Дахин ашиглагдах skeleton/shimmer — Admin, MyPets зэрэг loading state-д */
+.skel-row {
+  position: relative;
+  overflow: hidden;
+}
+.skel-row::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(90deg, transparent 25%, rgba(255,255,255,0.35) 50%, transparent 75%);
+  background-size: 200% 100%;
+  animation: skel-shimmer 1.4s ease infinite;
+}
+[data-theme="dark"] .skel-row::after {
+  background: linear-gradient(90deg, transparent 25%, rgba(255,255,255,0.06) 50%, transparent 75%);
+  background-size: 200% 100%;
+}
+@keyframes skel-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}

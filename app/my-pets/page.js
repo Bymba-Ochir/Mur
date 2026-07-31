@@ -20,6 +20,7 @@ export default function MyPetsPage() {
   };
   const TYPE_LABELS = { 'Нохой': t('type_dog'), 'Муур': t('type_cat') };
   const [pets, setPets] = useState([]);
+  const [petsLoading, setPetsLoading] = useState(true);
   const [name, setName] = useState('');
   const [type, setType] = useState('Нохой');
   const [date, setDate] = useState('');
@@ -33,10 +34,13 @@ export default function MyPetsPage() {
   }, [user]);
 
   async function load() {
+    setPetsLoading(true);
     try {
       setPets(await fetchMyPets());
     } catch (err) {
       console.error(err);
+    } finally {
+      setPetsLoading(false);
     }
   }
 
@@ -83,7 +87,7 @@ export default function MyPetsPage() {
     return (
       <div>
         <div className="eyebrow">{t('mypets_eyebrow')}</div>
-        <h1 style={{ fontSize: 24, marginBottom: 12 }}>{t('mypets_title')}</h1>
+        <h1 style={{ fontSize: 24, marginBottom: 'var(--sp-3)' }}>{t('mypets_title')}</h1>
         <p style={{ color: 'var(--muted)' }}>
           {t('mypets_login_required')}
         </p>
@@ -94,69 +98,84 @@ export default function MyPetsPage() {
   return (
     <div style={{ maxWidth: 520 }}>
       <div className="eyebrow">{t('mypets_eyebrow')}</div>
-      <h1 style={{ fontSize: 24, marginBottom: 8 }}>{t('mypets_title')}</h1>
-      <p style={{ color: 'var(--muted)', marginBottom: 16, fontSize: 13.5 }}>
+      <h1 style={{ fontSize: 24, marginBottom: 'var(--sp-2)' }}>{t('mypets_title')}</h1>
+      <p style={{ color: 'var(--muted)', marginBottom: 'var(--sp-4)', fontSize: 13.5 }}>
         {t('mypets_desc')}
       </p>
 
       {!subscribed ? (
-        <div style={{ background: 'var(--success-bg)', padding: 14, borderRadius: 'var(--r-md)', marginBottom: 20 }}>
+        <div style={{ background: 'var(--success-bg)', padding: 'var(--sp-3)', borderRadius: 'var(--r-md)', marginBottom: 'var(--sp-4)' }}>
           <button onClick={handleSubscribe} className="btn" style={{ background: 'var(--brand)', color: '#fff' }}>
             {t('mypets_subscribe')}
           </button>
-          {notifyError && <p style={{ color: 'var(--alert)', fontSize: 12, marginTop: 6 }}>{notifyError}</p>}
+          {notifyError && <p style={{ color: 'var(--alert)', fontSize: 12, marginTop: 'var(--sp-1)' }}>{notifyError}</p>}
         </div>
       ) : (
-        <p style={{ fontSize: 13, color: 'var(--success)', marginBottom: 16 }}>{t('mypets_subscribed')}</p>
+        <p style={{ fontSize: 13, color: 'var(--success)', marginBottom: 'var(--sp-4)' }}>{t('mypets_subscribed')}</p>
       )}
 
-      <form onSubmit={handleAdd} style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 24 }} aria-label="Шинэ амьтан нэмэх">
+      <form onSubmit={handleAdd} style={{ display: 'flex', gap: 'var(--sp-2)', flexWrap: 'wrap', marginBottom: 'var(--sp-5)' }} aria-label="Шинэ амьтан нэмэх">
         <input
           value={name} onChange={(e) => setName(e.target.value)}
           placeholder={t('mypets_name_ph')} required
           aria-label={t('mypets_name_ph')}
-          style={{ flex: '1 1 140px', padding: 10, borderRadius: 'var(--r-sm)', border: '1.5px solid var(--line)' }}
+          style={{ flex: '1 1 140px', padding: 'var(--sp-2)', borderRadius: 'var(--r-sm)', border: '1.5px solid var(--line)' }}
         />
         <select value={type} onChange={(e) => setType(e.target.value)}
           aria-label={t('type_label')}
-          style={{ padding: 10, borderRadius: 'var(--r-sm)', border: '1.5px solid var(--line)' }}>
+          style={{ padding: 'var(--sp-2)', borderRadius: 'var(--r-sm)', border: '1.5px solid var(--line)' }}>
           <option value="Нохой">{TYPE_LABELS['Нохой']}</option>
           <option value="Муур">{TYPE_LABELS['Муур']}</option>
         </select>
         <input
           type="date" value={date} onChange={(e) => setDate(e.target.value)}
           aria-label="Дараагийн вакцины огноо"
-          style={{ padding: 10, borderRadius: 'var(--r-sm)', border: '1.5px solid var(--line)' }}
+          style={{ padding: 'var(--sp-2)', borderRadius: 'var(--r-sm)', border: '1.5px solid var(--line)' }}
         />
         <button type="submit" disabled={busy} className="btn" style={{ background: 'var(--accent)', color: '#fff' }}>
           {t('mypets_add')}
         </button>
       </form>
 
-      {pets.length === 0 ? (
-        <p style={{ color: 'var(--muted)' }}>{t('mypets_none')}</p>
+      {petsLoading ? (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-2)' }}>
+          {[0, 1].map((i) => (
+            <div key={i} className="skel-row" style={{
+              background: 'var(--card)', border: '1px solid var(--line)', borderRadius: 'var(--r-md)',
+              padding: 'var(--sp-3)', height: 52,
+            }} />
+          ))}
+        </div>
+      ) : pets.length === 0 ? (
+        <div style={{
+          textAlign: 'center', padding: 'var(--sp-6) var(--sp-4)', background: 'var(--card)',
+          border: '1px dashed var(--line)', borderRadius: 'var(--r-lg)',
+        }}>
+          <div style={{ fontSize: 36, marginBottom: 'var(--sp-2)' }}>💉</div>
+          <p style={{ color: 'var(--muted)', fontSize: 13.5 }}>{t('mypets_none')}</p>
+        </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-2)' }}>
           {pets.map((p) => {
             const st = vaccineStatus(p.nextVaccineDate);
             const label = STATUS_LABEL[st];
             return (
               <div key={p.id} style={{
                 background: 'var(--card)', border: '1px solid var(--line)', borderRadius: 'var(--r-md)', boxShadow: 'var(--shadow-sm)',
-                padding: 14, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap',
+                padding: 'var(--sp-3)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 'var(--sp-2)', flexWrap: 'wrap',
               }}>
                 <div>
                   <b style={{ color: 'var(--primary)', fontFamily: 'var(--font-display)' }}>{p.name}</b>
                   <span style={{ color: 'var(--muted)', fontSize: 13 }}> — {TYPE_LABELS[p.type] || p.type}</span>
-                  <div style={{ fontSize: 11, fontFamily: 'var(--font-mono)', fontWeight: 600, color: label.color, marginTop: 4 }}>{label.text}</div>
+                  <div style={{ fontSize: 11, fontFamily: 'var(--font-mono)', fontWeight: 600, color: label.color, marginTop: 'var(--sp-1)' }}>{label.text}</div>
                 </div>
-                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <div style={{ display: 'flex', gap: 'var(--sp-2)', alignItems: 'center' }}>
                   <input
                     type="date"
                     defaultValue={p.nextVaccineDate || ''}
                     onChange={(e) => handleDateChange(p.id, e.target.value)}
                     aria-label={`${p.name}-ийн дараагийн вакцины огноо`}
-                    style={{ padding: 6, borderRadius: 'var(--r-sm)', border: '1.5px solid var(--line)', fontSize: 13 }}
+                    style={{ padding: 'var(--sp-1)', borderRadius: 'var(--r-sm)', border: '1.5px solid var(--line)', fontSize: 13 }}
                   />
                   <button onClick={() => handleDelete(p.id)} aria-label={`${p.name}-ийг устгах`} style={{
                     background: 'none', border: 'none', color: 'var(--alert)', cursor: 'pointer', fontSize: 13,

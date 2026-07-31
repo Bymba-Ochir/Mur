@@ -34,11 +34,11 @@ export default function ReportButton({ petId }) {
   }
 
   if (sent) {
-    return <p style={{ fontSize: 12, color: 'var(--muted)', marginTop: 8 }}>{t('report_thanks')}</p>;
+    return <p style={{ fontSize: 12, color: 'var(--muted)', marginTop: 'var(--sp-2)' }}>{t('report_thanks')}</p>;
   }
 
   return (
-    <div style={{ marginTop: 10 }}>
+    <div style={{ marginTop: 'var(--sp-2)' }}>
       {!open ? (
         <button
           onClick={() => setOpen(true)}
@@ -47,7 +47,7 @@ export default function ReportButton({ petId }) {
           {t('report_btn')}
         </button>
       ) : (
-        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: 'var(--sp-1)', flexWrap: 'wrap', alignItems: 'center' }}>
           <span style={{ fontSize: 12, color: 'var(--muted)' }}>{t('report_reason_label')}</span>
           {REASON_VALUES.map((r) => (
             <button

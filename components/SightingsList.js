@@ -46,8 +46,8 @@ export default function SightingsList({ petId }) {
   }
 
   return (
-    <div style={{ marginTop: 20 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+    <div style={{ marginTop: 'var(--sp-4)' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--sp-2)' }}>
         <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--primary)' }}>
           {t('sightings_title')} ({sightings.length})
         </p>
@@ -60,7 +60,7 @@ export default function SightingsList({ petId }) {
       </div>
 
       {showForm && (
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 14 }}>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-2)', marginBottom: 'var(--sp-3)' }}>
           <textarea
             value={message}
             onChange={(e) => setMessage(e.target.value)}
@@ -68,14 +68,14 @@ export default function SightingsList({ petId }) {
             required
             rows={3}
             aria-label="Харсан тухай мэдээлэл"
-            style={{ padding: 10, borderRadius: 'var(--r-sm)', border: '1.5px solid var(--line)', fontFamily: 'inherit', fontSize: 13.5, resize: 'vertical', background: 'var(--card)', color: 'var(--ink)' }}
+            style={{ padding: 'var(--sp-2)', borderRadius: 'var(--r-sm)', border: '1.5px solid var(--line)', fontFamily: 'inherit', fontSize: 13.5, resize: 'vertical', background: 'var(--card)', color: 'var(--ink)' }}
           />
           <input
             value={place}
             onChange={(e) => setPlace(e.target.value)}
             placeholder={t('sightings_place_placeholder')}
             aria-label="Харсан байршил"
-            style={{ padding: 9, borderRadius: 'var(--r-sm)', border: '1.5px solid var(--line)', fontSize: 13.5, background: 'var(--card)', color: 'var(--ink)' }}
+            style={{ padding: 'var(--sp-2)', borderRadius: 'var(--r-sm)', border: '1.5px solid var(--line)', fontSize: 13.5, background: 'var(--card)', color: 'var(--ink)' }}
           />
           <button type="submit" disabled={submitting} className="btn" style={{ background: 'var(--brand)', color: '#fff', fontSize: 13 }}>
             {submitting ? t('sightings_submitting') : t('sightings_submit')}
@@ -86,11 +86,11 @@ export default function SightingsList({ petId }) {
       {sightings.length === 0 ? (
         <p style={{ fontSize: 12.5, color: 'var(--muted)' }}>{t('sightings_none')}</p>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-2)' }}>
           {sightings.map((s) => (
             <div key={s.id} style={{ background: 'var(--card)', border: '1px solid var(--line)', borderRadius: 'var(--r-sm)', padding: '10px 12px' }}>
               <p style={{ fontSize: 13.5, color: 'var(--ink)' }}>{s.message}</p>
-              <p style={{ fontSize: 11.5, color: 'var(--muted)', marginTop: 4 }}>
+              <p style={{ fontSize: 11.5, color: 'var(--muted)', marginTop: 'var(--sp-1)' }}>
                 {s.place && `📍 ${s.place} · `}{relativeTime(s.createdAt)}
               </p>
             </div>

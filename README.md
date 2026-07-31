@@ -309,4 +309,6 @@ supabase-setup.sql      — Өгөгдлийн сан, RLS дүрэм, Storage b
 - [x] Зурган оруулаагүй үед автомат нохой/муур icon ✅ (form preview + жагсаалтад аль хэдийн байсан)
 - [x] Жагсаалтыг амьтны төрлөөр шүүх ✅ (Нохой/Муур/Бусад)
 - [x] Мэргэжлийн түвшний дизайны систем ✅ (`app/globals.css` — өнгө/фонт/зай/сүүдрийн token, `PawTrail.js` гарын үсэг элемент, **бүх хуудсанд** (Listings, PetDetail, MyPets, Admin, DonateModal) нэгдсэн байдлаар тарааж хэрэгжүүлсэн)
+- [x] Зай (padding/gap/margin) token-жуулсан ✅ (`var(--sp-1)`–`var(--sp-8)`, MyPets/Admin/PetDetail/бусад)
+- [x] Admin, MyPets-ийн empty/loading state сайжруулсан ✅ (skeleton shimmer, icon-тэй empty state)
 - [ ] React Native апп (iOS/Android)

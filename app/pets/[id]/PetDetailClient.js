@@ -93,20 +93,20 @@ export default function PetDetailClient({ id }) {
   return (
     <div style={{ maxWidth: 480 }}>
       <div className="eyebrow">{pet.status === 'lost' ? t('report_lost_eyebrow') : t('report_found_eyebrow')}</div>
-      <h1 style={{ fontSize: 24, marginBottom: 4 }}>{title}</h1>
+      <h1 style={{ fontSize: 24, marginBottom: 'var(--sp-1)' }}>{title}</h1>
       {pet.createdAt && (
-        <p style={{ fontSize: 12.5, color: 'var(--muted)', marginBottom: 12 }}>🕓 {relativeTime(pet.createdAt)}</p>
+        <p style={{ fontSize: 12.5, color: 'var(--muted)', marginBottom: 'var(--sp-3)' }}>🕓 {relativeTime(pet.createdAt)}</p>
       )}
 
       {pet.resolved && (
-        <div style={{ background: 'var(--success-bg)', border: '1.5px solid var(--success)', borderRadius: 'var(--r-sm)', padding: '8px 14px', marginBottom: 14, color: 'var(--success-text)', fontSize: 13.5, fontWeight: 600 }}>
+        <div style={{ background: 'var(--success-bg)', border: '1.5px solid var(--success)', borderRadius: 'var(--r-sm)', padding: '8px 14px', marginBottom: 'var(--sp-3)', color: 'var(--success-text)', fontSize: 13.5, fontWeight: 600 }}>
           {t('detail_resolved_badge')}
         </div>
       )}
 
       <div style={{
         borderRadius: 'var(--r-md)', overflow: 'hidden', background: 'var(--thumb-bg)', height: 260,
-        display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16,
+        display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 'var(--sp-4)',
         opacity: pet.resolved ? 0.6 : 1,
       }}>
         {pet.photoURL ? (
@@ -117,43 +117,43 @@ export default function PetDetailClient({ id }) {
       </div>
 
       {!editing ? (
-        <div style={{ background: 'var(--card)', border: '1px solid var(--line)', borderRadius: 'var(--r-md)', boxShadow: 'var(--shadow-sm)', padding: 18 }}>
-          <p style={{ marginBottom: 6 }}><b>{t('detail_type')}</b> {pet.type}{pet.color ? `, ${pet.color}` : ''}</p>
-          <p style={{ marginBottom: 6 }}><b>{t('detail_district')}</b> {pet.district}</p>
-          <p style={{ marginBottom: 6 }}><b>{t('detail_place')}</b> {pet.place}</p>
+        <div style={{ background: 'var(--card)', border: '1px solid var(--line)', borderRadius: 'var(--r-md)', boxShadow: 'var(--shadow-sm)', padding: 'var(--sp-4)' }}>
+          <p style={{ marginBottom: 'var(--sp-1)' }}><b>{t('detail_type')}</b> {pet.type}{pet.color ? `, ${pet.color}` : ''}</p>
+          <p style={{ marginBottom: 'var(--sp-1)' }}><b>{t('detail_district')}</b> {pet.district}</p>
+          <p style={{ marginBottom: 'var(--sp-1)' }}><b>{t('detail_place')}</b> {pet.place}</p>
           {revealed ? (
-            <a href={`tel:${pet.phone}`} style={{ display: 'inline-block', marginTop: 8, fontWeight: 700, color: 'var(--primary)' }}>
+            <a href={`tel:${pet.phone}`} style={{ display: 'inline-block', marginTop: 'var(--sp-2)', fontWeight: 700, color: 'var(--primary)' }}>
               ☎ {pet.phone}
             </a>
           ) : (
             <button
               onClick={() => setRevealed(true)}
-              style={{ display: 'inline-block', marginTop: 8, fontWeight: 700, color: 'var(--primary)', background: 'none', border: 'none', cursor: 'pointer', fontSize: 15, padding: 0 }}
+              style={{ display: 'inline-block', marginTop: 'var(--sp-2)', fontWeight: 700, color: 'var(--primary)', background: 'none', border: 'none', cursor: 'pointer', fontSize: 15, padding: 0 }}
             >
               ☎ {maskPhone(pet.phone)} · {t('detail_show_phone')}
             </button>
           )}
         </div>
       ) : (
-        <div style={{ background: 'var(--card)', border: '1px solid var(--line)', borderRadius: 'var(--r-md)', boxShadow: 'var(--shadow-sm)', padding: 18, display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <div style={{ background: 'var(--card)', border: '1px solid var(--line)', borderRadius: 'var(--r-md)', boxShadow: 'var(--shadow-sm)', padding: 'var(--sp-4)', display: 'flex', flexDirection: 'column', gap: 'var(--sp-2)' }}>
           <label htmlFor="edit-name" style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--primary)' }}>{t('name_label')}</label>
           <input id="edit-name" value={editForm.name} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-            style={{ padding: 9, borderRadius: 'var(--r-sm)', border: '1.5px solid var(--line)' }} />
+            style={{ padding: 'var(--sp-2)', borderRadius: 'var(--r-sm)', border: '1.5px solid var(--line)' }} />
           <label htmlFor="edit-color" style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--primary)' }}>{t('color_label').replace(' *','')}</label>
           <input id="edit-color" value={editForm.color} onChange={(e) => setEditForm({ ...editForm, color: e.target.value })}
-            style={{ padding: 9, borderRadius: 'var(--r-sm)', border: '1.5px solid var(--line)' }} />
+            style={{ padding: 'var(--sp-2)', borderRadius: 'var(--r-sm)', border: '1.5px solid var(--line)' }} />
           <label htmlFor="edit-district" style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--primary)' }}>{t('district_label')}</label>
           <select id="edit-district" value={editForm.district} onChange={(e) => setEditForm({ ...editForm, district: e.target.value })}
-            style={{ padding: 9, borderRadius: 'var(--r-sm)', border: '1.5px solid var(--line)' }}>
+            style={{ padding: 'var(--sp-2)', borderRadius: 'var(--r-sm)', border: '1.5px solid var(--line)' }}>
             {DISTRICTS.map((d) => <option key={d}>{d}</option>)}
           </select>
           <label htmlFor="edit-place" style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--primary)' }}>{t('detail_place').replace(':','')}</label>
           <input id="edit-place" value={editForm.place} onChange={(e) => setEditForm({ ...editForm, place: e.target.value })}
-            style={{ padding: 9, borderRadius: 'var(--r-sm)', border: '1.5px solid var(--line)' }} />
+            style={{ padding: 'var(--sp-2)', borderRadius: 'var(--r-sm)', border: '1.5px solid var(--line)' }} />
           <label htmlFor="edit-phone" style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--primary)' }}>{t('phone_label').replace(' *','')}</label>
           <input id="edit-phone" value={editForm.phone} onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
-            style={{ padding: 9, borderRadius: 'var(--r-sm)', border: '1.5px solid var(--line)' }} />
-          <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+            style={{ padding: 'var(--sp-2)', borderRadius: 'var(--r-sm)', border: '1.5px solid var(--line)' }} />
+          <div style={{ display: 'flex', gap: 'var(--sp-2)', marginTop: 'var(--sp-2)' }}>
             <button onClick={handleSaveEdit} disabled={saving} className="btn"
               style={{ background: 'var(--brand)', color: '#fff', flex: 1, justifyContent: 'center' }}>
               {saving ? t('detail_saving') : t('detail_save')}
@@ -167,7 +167,7 @@ export default function PetDetailClient({ id }) {
       )}
 
       {isOwner && !editing && (
-        <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
+        <div style={{ display: 'flex', gap: 'var(--sp-2)', marginTop: 'var(--sp-2)' }}>
           <button onClick={() => setEditing(true)} className="btn"
             style={{ background: 'var(--eyebrow-bg)', color: 'var(--primary)', flex: 1, justifyContent: 'center', fontSize: 13 }}>
             {t('detail_edit_btn')}
@@ -184,15 +184,15 @@ export default function PetDetailClient({ id }) {
           onClick={handleResolve}
           disabled={resolving}
           className="btn"
-          style={{ marginTop: 10, background: 'var(--success)', color: '#fff', width: '100%', justifyContent: 'center' }}
+          style={{ marginTop: 'var(--sp-2)', background: 'var(--success)', color: '#fff', width: '100%', justifyContent: 'center' }}
         >
           {resolving ? t('detail_resolving') : t('detail_resolve_btn')}
         </button>
       )}
 
       {pet.lat != null && pet.lng != null && (
-        <div style={{ marginTop: 16 }}>
-          <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--primary)', marginBottom: 8 }}>
+        <div style={{ marginTop: 'var(--sp-4)' }}>
+          <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--primary)', marginBottom: 'var(--sp-2)' }}>
             {t('detail_last_seen_loc')}
           </p>
           <LocationMap lat={pet.lat} lng={pet.lng} />
@@ -201,7 +201,7 @@ export default function PetDetailClient({ id }) {
 
       <ShareButtons url={url} title={title} />
 
-      <p style={{ fontSize: 12, color: 'var(--muted)', marginTop: 12 }}>
+      <p style={{ fontSize: 12, color: 'var(--muted)', marginTop: 'var(--sp-3)' }}>
         {t('detail_share_hint')}
       </p>
 
