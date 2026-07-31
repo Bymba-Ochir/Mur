@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useToast } from './Toast';
 import { useLanguage } from '../lib/i18n';
+import { fireConfetti } from '../lib/confetti';
 
 const AMOUNTS = [3000, 5000, 10000, 20000];
 
@@ -62,6 +63,7 @@ export default function DonateModal({ onClose }) {
           if (s.status === 'paid') {
             clearInterval(pollRef.current);
             setStage('paid');
+            fireConfetti();
           }
         } catch (e) {
           // polling алдааг үл тоомсорлоно
@@ -137,7 +139,7 @@ export default function DonateModal({ onClose }) {
         )}
 
         {stage === 'paid' && (
-          <div className="paid-box" role="status">
+          <div className="paid-box pop-in" role="status">
             <div style={{ fontSize: 44 }}>🎉</div>
             <p style={{ fontWeight: 700, color: 'var(--success)' }}>{t('donate_thanks')}</p>
             <p className="hint">{finalAmount.toLocaleString()}₮ {t('donate_paid_hint')}</p>

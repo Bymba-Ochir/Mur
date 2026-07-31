@@ -50,11 +50,16 @@ export function ToastProvider({ children }) {
         }
         .toast:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
         .toast-error { background: var(--alert); }
-        .toast-success { background: var(--success-text); }
+        .toast-success { background: var(--success-text); animation: slideUpBounce 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
         .toast-info { background: var(--brand); }
         @keyframes slideUp {
           from { opacity: 0; transform: translateY(12px); }
           to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes slideUpBounce {
+          0% { opacity: 0; transform: translateY(14px) scale(0.9); }
+          70% { opacity: 1; transform: translateY(-2px) scale(1.02); }
+          100% { transform: translateY(0) scale(1); }
         }
       `}</style>
     </ToastContext.Provider>

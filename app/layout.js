@@ -2,6 +2,7 @@ import Navbar from '../components/Navbar';
 import BottomNav from '../components/BottomNav';
 import InstallPrompt from '../components/InstallPrompt';
 import Onboarding from '../components/Onboarding';
+import PageTransition from '../components/PageTransition';
 import { ToastProvider } from '../components/Toast';
 import { LanguageProvider } from '../lib/i18n';
 import { Analytics } from '@vercel/analytics/react';
@@ -61,7 +62,7 @@ export default function RootLayout({ children }) {
         <LanguageProvider>
           <ToastProvider>
             <Navbar />
-            <main id="main-content">{children}</main>
+            <main id="main-content"><PageTransition>{children}</PageTransition></main>
             <InstallPrompt />
             <Onboarding />
             <BottomNav />

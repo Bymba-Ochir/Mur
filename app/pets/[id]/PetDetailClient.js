@@ -13,6 +13,7 @@ import SightingsList from '../../../components/SightingsList';
 import PetIcon from '../../../components/PetIcon';
 import { useToast } from '../../../components/Toast';
 import { useLanguage } from '../../../lib/i18n';
+import { fireConfetti } from '../../../lib/confetti';
 
 export default function PetDetailClient({ id }) {
   const { user } = useAuth();
@@ -51,6 +52,8 @@ export default function PetDetailClient({ id }) {
     try {
       await markResolved(id);
       await load();
+      fireConfetti();
+      showToast('🎉 ' + t('detail_resolved_badge').replace('✅ ', ''), 'success');
     } catch (err) {
       showToast('Алдаа гарлаа: ' + err.message, 'error');
     } finally {
@@ -99,7 +102,7 @@ export default function PetDetailClient({ id }) {
       )}
 
       {pet.resolved && (
-        <div style={{ background: 'var(--success-bg)', border: '1.5px solid var(--success)', borderRadius: 'var(--r-sm)', padding: '8px 14px', marginBottom: 'var(--sp-3)', color: 'var(--success-text)', fontSize: 13.5, fontWeight: 600 }}>
+        <div className="pop-in" style={{ background: 'var(--success-bg)', border: '1.5px solid var(--success)', borderRadius: 'var(--r-sm)', padding: '8px 14px', marginBottom: 'var(--sp-3)', color: 'var(--success-text)', fontSize: 13.5, fontWeight: 600 }}>
           {t('detail_resolved_badge')}
         </div>
       )}
