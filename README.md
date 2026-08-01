@@ -313,4 +313,6 @@ supabase-setup.sql      — Өгөгдлийн сан, RLS дүрэм, Storage b
 - [x] Admin, MyPets-ийн empty/loading state сайжруулсан ✅ (skeleton shimmer, icon-тэй empty state)
 - [x] Хуудас шилжилтийн animation ✅ (`PageTransition.js`, App Router-д зориулсан fade+slide, нэмэлт сан шаардахгүй)
 - [x] Confetti/pop micro-interaction ✅ (`lib/confetti.js` — "Амьтан олдлоо" болон хандив амжилттай төлөгдөх мөчид, `prefers-reduced-motion`-той нийцтэй)
+- [x] `next/image` ашиглаж зураг optimize хийсэн ✅ (WebP, responsive sizes, автомат lazy-load — PetCard, PetDetail, Admin)
+- [x] Жагсаалтын хуудаслалт ✅ (24 бичлэг тутам, "Илүү үзэх" товч, Supabase `.range()` ашигласан)
 - [ ] React Native апп (iOS/Android)

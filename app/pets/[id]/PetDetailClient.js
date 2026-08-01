@@ -6,6 +6,7 @@ import { maskPhone } from '../../../lib/utils';
 import { relativeTime } from '../../../lib/relativeTime';
 import { DISTRICTS } from '../../../lib/districts';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import ShareButtons from '../../../components/ShareButtons';
 import LocationMap from '../../../components/LocationMap';
 import ReportButton from '../../../components/ReportButton';
@@ -110,10 +111,10 @@ export default function PetDetailClient({ id }) {
       <div style={{
         borderRadius: 'var(--r-md)', overflow: 'hidden', background: 'var(--thumb-bg)', height: 260,
         display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 'var(--sp-4)',
-        opacity: pet.resolved ? 0.6 : 1,
+        opacity: pet.resolved ? 0.6 : 1, position: 'relative',
       }}>
         {pet.photoURL ? (
-          <img src={pet.photoURL} alt={pet.type} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          <Image src={pet.photoURL} alt={pet.type} fill sizes="480px" style={{ objectFit: 'cover' }} priority />
         ) : (
           <span style={{ color: 'var(--muted)' }}><PetIcon type={pet.type} size={64} /></span>
         )}

@@ -22,33 +22,45 @@ export default function ListingsPage() {
   const [search, setSearch] = useState('');
   const [pets, setPets] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(false);
   const [matchFile, setMatchFile] = useState(null);
   const [matching, setMatching] = useState(false);
   const [matchError, setMatchError] = useState(null);
   const [matchedCount, setMatchedCount] = useState(null);
 
   useEffect(() => {
-    // Хайлтын текст бичих бүрд шууд дуудахгүй, 400мс хүлээгээд дуудна (debounce)
-    const timer = setTimeout(load, 400);
+    // Шүүлтүүр өөрчлөгдөхөд эхний хуудаснаас дахин ачаална
+    const timer = setTimeout(() => load(0), 400);
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status, type, district, search]);
 
-  async function load() {
-    setLoading(true);
+  async function load(pageToLoad = 0) {
+    if (pageToLoad === 0) setLoading(true);
+    else setLoadingMore(true);
     try {
-      const data = await fetchPets({
+      const { pets: data, hasMore: more } = await fetchPets({
         status: status || undefined,
         type: type || undefined,
         district: district || undefined,
         search: search || undefined,
+        page: pageToLoad,
       });
-      setPets(data);
+      setPets((prev) => (pageToLoad === 0 ? data : [...prev, ...data]));
+      setHasMore(more);
+      setPage(pageToLoad);
     } catch (err) {
       console.error(err);
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
+  }
+
+  function handleLoadMore() {
+    load(page + 1);
   }
 
   async function handleMatchUpload(e) {
@@ -147,9 +159,23 @@ export default function ListingsPage() {
           </div>
         </div>
       ) : (
-        <div className="grid">
-          {pets.map((p) => <PetCard key={p.id} pet={p} />)}
-        </div>
+        <>
+          <div className="grid">
+            {pets.map((p) => <PetCard key={p.id} pet={p} />)}
+          </div>
+          {hasMore && !matchFile && (
+            <div style={{ textAlign: 'center', marginTop: 'var(--sp-5)' }}>
+              <button
+                onClick={handleLoadMore}
+                disabled={loadingMore}
+                className="btn"
+                style={{ background: 'var(--eyebrow-bg)', color: 'var(--primary)' }}
+              >
+                {loadingMore ? t('loading_more') : t('load_more')}
+              </button>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

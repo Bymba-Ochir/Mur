@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { maskPhone } from '../lib/utils';
 import PetIcon from './PetIcon';
 import { relativeTime } from '../lib/relativeTime';
@@ -36,7 +37,13 @@ export default function PetCard({ pet }) {
           {pet.status === 'lost' ? 'АЛДСАН' : 'ОЛДСОН'}
         </span>
         {pet.photoURL ? (
-          <img src={pet.photoURL} alt={`${pet.type}${pet.name ? ' — ' + pet.name : ''}, ${pet.color || ''}`} />
+          <Image
+            src={pet.photoURL}
+            alt={`${pet.type}${pet.name ? ' — ' + pet.name : ''}, ${pet.color || ''}`}
+            fill
+            sizes="(max-width: 640px) 45vw, 220px"
+            style={{ objectFit: 'cover' }}
+          />
         ) : (
           <span className="emoji" aria-hidden="true"><PetIcon type={pet.type} size={44} /></span>
         )}
@@ -84,7 +91,6 @@ export default function PetCard({ pet }) {
           height: 152px; background: var(--thumb-bg); position: relative;
           display: flex; align-items: center; justify-content: center;
         }
-        .thumb img { width: 100%; height: 100%; object-fit: cover; }
         .emoji { color: var(--muted); display: flex; opacity: 0.55; }
         .badge {
           position: absolute; top: 9px; left: 9px; font-family: var(--font-mono); font-size: 9.5px;

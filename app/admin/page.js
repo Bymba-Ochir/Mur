@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useAuth } from '../../lib/useAuth';
 import { isAdmin, fetchReports, dismissReport, adminDeletePet } from '../../lib/adminService';
 import { useToast } from '../../components/Toast';
@@ -110,7 +111,7 @@ export default function AdminPage() {
               display: 'flex', gap: 'var(--sp-3)', alignItems: 'flex-start', flexWrap: 'wrap',
             }}>
               {r.pet?.photoURL && (
-                <img src={r.pet.photoURL} alt="" style={{ width: 64, height: 64, borderRadius: 'var(--r-sm)', objectFit: 'cover' }} />
+                <Image src={r.pet.photoURL} alt="" width={64} height={64} style={{ borderRadius: 'var(--r-sm)', objectFit: 'cover' }} />
               )}
               <div style={{ flex: 1, minWidth: 180 }}>
                 <p style={{ fontWeight: 600, color: 'var(--primary)', fontFamily: 'var(--font-display)', fontSize: 14.5 }}>
