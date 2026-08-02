@@ -242,9 +242,9 @@ object-д шинэ түлхүүр нэмээд, тухайн хуудсанд `u
 
 ### 14. Автомат тест (unit + e2e)
 
-**Unit test (Vitest)** — цэвэр функцуудад (маскдах, харьцангуй цаг, dedупликат
-эрэмбэлэлт, дүүрэг тодорхойлол, вакцины статус) бичигдсэн, Supabase холбогдохгүй,
-хурдан:
+**Unit + Component test (Vitest)** — цэвэр функцууд (маскдах, харьцангуй цаг,
+дүүрэг тодорхойлол, вакцины статус) **бас** бодит React component (`PetCard`-ийн
+дугаар нуух/харуулах логик) jsdom орчинд, Supabase холбогдохгүй, хурдан:
 ```bash
 npm test          # нэг удаа ажиллуулна
 npm run test:watch  # код өөрчлөгдөх бүрд автоматаар дахин ажиллана
@@ -340,5 +340,5 @@ supabase-setup.sql      — Өгөгдлийн сан, RLS дүрэм, Storage b
 - [x] Confetti/pop micro-interaction ✅ (`lib/confetti.js` — "Амьтан олдлоо" болон хандив амжилттай төлөгдөх мөчид, `prefers-reduced-motion`-той нийцтэй)
 - [x] `next/image` ашиглаж зураг optimize хийсэн ✅ (WebP, responsive sizes, автомат lazy-load — PetCard, PetDetail, Admin)
 - [x] Жагсаалтын хуудаслалт ✅ (24 бичлэг тутам, "Илүү үзэх" товч, Supabase `.range()` ашигласан)
-- [x] Автомат тест (unit + e2e) ✅ (Vitest — 24 unit test, Playwright — навигаци/форм e2e smoke test, GitHub Actions CI)
+- [x] Автомат тест (unit + component + e2e) ✅ (Vitest — 28 unit/component test бодитоор ажиллуулж баталгаажуулсан, Playwright — навигаци/форм e2e smoke test, GitHub Actions CI)
 - [ ] React Native апп (iOS/Android)
