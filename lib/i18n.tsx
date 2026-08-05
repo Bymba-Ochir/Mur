@@ -1,8 +1,9 @@
 // lib/i18n.tsx
 'use client';
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext } from 'react';
 import type { ReactNode } from 'react';
 import type { Locale } from './types';
+import { useLocalStorageValue, setLocalStorageValue } from './useLocalStorageState';
 
 const MN = {
   nav_lost: 'Алдсан', nav_found: 'Олдсон', nav_listings: 'Жагсаалт',
@@ -217,17 +218,12 @@ interface LanguageContextValue {
 const LanguageContext = createContext<LanguageContextValue | null>(null);
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [lang, setLang] = useState<Locale>('mn');
-
-  useEffect(() => {
-    const saved = localStorage.getItem('mur-lang');
-    if (saved === 'en' || saved === 'mn') setLang(saved);
-  }, []);
+  // localStorage-тэй синхрончлогдсон хэл — useSyncExternalStore (SSR-аюулгүй)
+  const saved = useLocalStorageValue('mur-lang');
+  const lang: Locale = saved === 'en' || saved === 'mn' ? saved : 'mn';
 
   function toggle() {
-    const next: Locale = lang === 'mn' ? 'en' : 'mn';
-    setLang(next);
-    localStorage.setItem('mur-lang', next);
+    setLocalStorageValue('mur-lang', lang === 'mn' ? 'en' : 'mn');
   }
 
   function t(key: TranslationKey): string {

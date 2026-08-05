@@ -11,8 +11,15 @@ export default function NotifySubscribe({ district }: { district: District }) {
   const [supported, setSupported] = useState(true);
 
   useEffect(() => {
-    setSupported(isPushSupported());
-    isSubscribed().then(setSubscribed);
+    let active = true;
+    Promise.all([Promise.resolve(isPushSupported()), isSubscribed()]).then(([supp, sub]) => {
+      if (!active) return;
+      setSupported(supp);
+      setSubscribed(sub);
+    });
+    return () => {
+      active = false;
+    };
   }, []);
 
   async function handleSubscribe() {

@@ -21,8 +21,8 @@ export default function Navbar() {
   const [admin, setAdmin] = useState(false);
 
   useEffect(() => {
-    if (user) isAdmin().then(setAdmin);
-    else setAdmin(false);
+    const task = user ? isAdmin() : Promise.resolve(false);
+    task.then(setAdmin);
   }, [user]);
 
   useEffect(() => {

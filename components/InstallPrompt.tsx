@@ -24,11 +24,14 @@ export default function InstallPrompt() {
 
     const ua = window.navigator.userAgent;
     const iosDevice = /iPad|iPhone|iPod/.test(ua) && !('MSStream' in window);
-    setIsIOS(iosDevice);
 
     if (iosDevice) {
-      // iOS дээр beforeinstallprompt дэмжигддэггүй тул зааврыг шууд харуулна
-      setVisible(true);
+      // iOS дээр beforeinstallprompt дэмжигддэггүй тул зааврыг шууд харуулна.
+      // setState-г effect-ийн биед синхрон хийхгүй — microtask-аар (React 19 дүрэм)
+      Promise.resolve().then(() => {
+        setIsIOS(true);
+        setVisible(true);
+      });
       return;
     }
 

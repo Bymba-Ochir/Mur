@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useSyncExternalStore } from 'react';
 import { fetchPetById, markResolved, updatePet, deletePet } from '../../../lib/petService';
 import { useAuth } from '../../../lib/useAuth';
 import { maskPhone } from '../../../lib/utils';
@@ -27,6 +27,19 @@ interface EditForm {
   phone: string;
 }
 
+// URL-ийн snapshot — share холбоосын зориулалттай (useSyncExternalStore;
+// effect-д setUrl хийхгүй, SSR-д хоосон string)
+function subscribeLocation(cb: () => void): () => void {
+  window.addEventListener('popstate', cb);
+  window.addEventListener('hashchange', cb);
+  return () => {
+    window.removeEventListener('popstate', cb);
+    window.removeEventListener('hashchange', cb);
+  };
+}
+const getLocationSnapshot = (): string => window.location.href;
+const getLocationServerSnapshot = (): string => '';
+
 export default function PetDetailClient({ id }: { id: string }) {
   const { user } = useAuth();
   const router = useRouter();
@@ -34,7 +47,7 @@ export default function PetDetailClient({ id }: { id: string }) {
   const { t } = useLanguage();
   const [pet, setPet] = useState<Pet | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [url, setUrl] = useState('');
+  const url = useSyncExternalStore(subscribeLocation, getLocationSnapshot, getLocationServerSnapshot);
   const [resolving, setResolving] = useState(false);
   const [revealed, setRevealed] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -43,7 +56,6 @@ export default function PetDetailClient({ id }: { id: string }) {
   const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
-    setUrl(window.location.href);
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);

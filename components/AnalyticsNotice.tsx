@@ -1,23 +1,20 @@
 'use client';
-import { useEffect, useState } from 'react';
 import { useLanguage } from '../lib/i18n';
-import { getConsentStatus, setConsentStatus } from '../lib/analyticsConsent';
+import { setConsentStatus } from '../lib/analyticsConsent';
+import { useLocalStorageValue } from '../lib/useLocalStorageState';
 
 // Апп cookie хэрэглэдэггүй тул энэ нь "cookie" баннер биш — зөвхөн нэргүй
 // статистик (Vercel Analytics/Speed Insights) цуглуулдгийг мэдэгдэх,
 // хэрэглэгчид зөвшөөрөх/татгалзах боломж өгөх хөнгөн мэдэгдэл юм.
 export default function AnalyticsNotice() {
   const { t } = useLanguage();
-  const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    // Зөвшөөрөл хараахан шийдэгдээгүй (null) үед л баннер харуулна
-    if (getConsentStatus() === null) setVisible(true);
-  }, []);
+  // localStorage-тэй синхрончлогдсон зөвшөөрөл — useSyncExternalStore.
+  // server дээр 'declined' → анхны анивчилтгүй; null (шийдээгүй) үед л харуулна
+  const consent = useLocalStorageValue('mur-analytics-consent', 'declined');
+  const visible = consent === null;
 
   function choose(status: 'accepted' | 'declined') {
     setConsentStatus(status);
-    setVisible(false);
   }
 
   if (!visible) return null;

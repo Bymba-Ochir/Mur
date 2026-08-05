@@ -1,5 +1,6 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import { useLocalStorageValue, setLocalStorageValue } from '../lib/useLocalStorageState';
 
 const SEEN_KEY = 'mur-onboarding-seen';
 
@@ -28,18 +29,15 @@ const SLIDES: Slide[] = [
 ];
 
 export default function Onboarding() {
-  const [visible, setVisible] = useState(false);
   const [step, setStep] = useState(0);
-
-  useEffect(() => {
-    if (!localStorage.getItem(SEEN_KEY)) {
-      setVisible(true);
-    }
-  }, []);
+  // localStorage-тэй синхрончлогдсон "харсан" туг — useSyncExternalStore
+  // (server дээр '1' → анхны анивчилтгүй; анх удаагийн хэрэглэгчид mount-ын
+  // дараа харагдана)
+  const seen = useLocalStorageValue(SEEN_KEY, '1');
+  const visible = seen !== '1';
 
   function close() {
-    localStorage.setItem(SEEN_KEY, '1');
-    setVisible(false);
+    setLocalStorageValue(SEEN_KEY, '1');
   }
 
   function next() {

@@ -1,21 +1,31 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useLayoutEffect } from 'react';
+import { useLocalStorageValue, setLocalStorageValue } from '../lib/useLocalStorageState';
+
+const THEME_KEY = 'mur-theme';
+
+function resolveTheme(saved: string | null): string {
+  if (saved === 'dark' || saved === 'light') return saved;
+  // Анхны удаа — системийн сонголтыг ашиглана
+  return typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches
+    ? 'dark'
+    : 'light';
+}
 
 export default function ThemeToggle() {
-  const [theme, setTheme] = useState('light');
+  // localStorage-тэй синхрончлогдсон theme — useSyncExternalStore (SSR-аюулгүй)
+  const saved = useLocalStorageValue(THEME_KEY);
+  const theme = resolveTheme(saved);
 
-  useEffect(() => {
-    const saved = localStorage.getItem('mur-theme');
-    const initial = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-    setTheme(initial);
-    document.documentElement.setAttribute('data-theme', initial);
-  }, []);
+  // localStorage/системийн утга өөрчлөгдөхөд <html data-theme> DOM-д бичих
+  // (setState биш тул effect дотор зөвшөөрөгдөнө; FOUC-аас layout.tsx-ийн
+  // inline script сэргийлдэг)
+  useLayoutEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+  }, [theme]);
 
   function toggle() {
-    const next = theme === 'dark' ? 'light' : 'dark';
-    setTheme(next);
-    document.documentElement.setAttribute('data-theme', next);
-    localStorage.setItem('mur-theme', next);
+    setLocalStorageValue(THEME_KEY, theme === 'dark' ? 'light' : 'dark');
   }
 
   return (

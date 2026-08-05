@@ -15,8 +15,8 @@ export default function VolunteerBadge({ district }: { district: District }) {
 
   useEffect(() => {
     fetchVolunteerCounts().then((counts) => setCount(counts[district] || 0));
-    if (user) isVolunteer(district).then(setJoined);
-    else setJoined(false);
+    const task = user ? isVolunteer(district) : Promise.resolve(false);
+    task.then(setJoined);
   }, [district, user]);
 
   async function handleToggle() {

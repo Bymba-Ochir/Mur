@@ -5,6 +5,7 @@
 // дата цуглуулалтыг хэрэглэгчийн сонголтод холбоно.
 import type { BeforeSendEvent } from '@vercel/analytics';
 import type { BeforeSendMiddleware } from '@vercel/speed-insights';
+import { setLocalStorageValue } from './useLocalStorageState';
 
 const CONSENT_KEY = 'mur-analytics-consent';
 
@@ -20,12 +21,10 @@ export function getConsentStatus(): ConsentStatus {
   return null;
 }
 
+// setLocalStorageValue-р бичвэл useSyncExternalStore-ийн listener-үүд ч
+// шинэчлэгдэнэ (AnalyticsNotice-ийн баннер шууд нуугдана)
 export function setConsentStatus(status: 'accepted' | 'declined'): void {
-  try {
-    localStorage.setItem(CONSENT_KEY, status);
-  } catch {
-    // localStorage алдаатай үед зөвхөн session-д л санагддаггүй
-  }
+  setLocalStorageValue(CONSENT_KEY, status);
 }
 
 function hasConsent(): boolean {

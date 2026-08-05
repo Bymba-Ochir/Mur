@@ -22,7 +22,10 @@ export default function AdminPage() {
 
   useEffect(() => {
     if (loading) return;
-    if (!user) { setChecked(true); return; }
+    if (!user) {
+      Promise.resolve().then(() => setChecked(true));
+      return;
+    }
     isAdmin().then((ok) => {
       setAdmin(ok);
       setChecked(true);

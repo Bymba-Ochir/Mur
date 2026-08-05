@@ -17,19 +17,10 @@
 
 ## 2. Хүлээн зөвшөөрсөн эрсдэл (accepted risk)
 
-### 2.1. `npm audit` — 5 vulnerability (2026-08-05, Next 16 + React 19 + Sentry v10-ийн дараа)
+### 2.1. `npm audit` — 0 vulnerability (2026-08-05)
 
-`@sentry/nextjs@10`, `next@16.3`, `react@19` upgrade хийгдсэн тул
-Sentry/Next.js-ийн vuln-ууд арилсан (33→5). Үлдсэн 5 нь бүгд **test/dev tooling**:
-
-| Vuln | Хаана | Эрсдэл |
-|---|---|---|
-| `esbuild` / `vite` / `vitest` (moderate + 1 high + 1 critical) | `vitest`, `vite-node`, `@vitest/mocker` | **Зөвхөн dev/test орчинд** — production build bundle-д орохгүй, нийтийн интерфейсээр хүрэх боломжгүй |
-
-**Яагаад хүлээн зөвшөөрсөн бэ:**
-- Эдгээр нь build-time/dev-ийн хэрэгсэл; `next start`-д ашиглагдахгүй.
-- Fix нь `vitest@4` **breaking major** (Vite 7, config өөрчлөлт) — MVP-д
-  хөгжүүлэлтийн тасралт үүсгэхгүйн тулд тусдаа төлөвлөнө (§3).
+`@sentry/nextjs@10`, `next@16.3`, `react@19`, `vitest@4` + `vite@7` upgrade хийгдсэн.
+`npm audit` одоо **0 vulnerability** — бүх known vuln арилсан.
 
 ### 2.2. Бусад
 
@@ -43,12 +34,13 @@ Sentry/Next.js-ийн vuln-ууд арилсан (33→5). Үлдсэн 5 нь �
 - [x] `@sentry/nextjs` → v10 шинэчилсэн (2026-08-05) — `@sentry/*`-ийн vuln арилсан.
 - [x] `next` 14 → **16.3** + `react` → **19** + ESLint 9 flat config шинэчилсэн
       (2026-08-05) — Next.js-ийн vuln арилсан; async `params`, `eslint .` руу
-      шилжсэн; `react-hooks/set-state-in-effect` rule унтраасан
-      (localStorage hydration загвар; useSyncExternalStore миграци follow-up).
-      Үлдсэн5 vuln нь зөвхөн dev/test (vitest).
-- [ ] `vitest` 2 → 4 upgrade (dev/test tooling-ийн үлдсэн5 vuln) — Vite 7 breaking.
-- [ ] `useSyncExternalStore` руу localStorage-уншилтыг шилжүүлж,
-      `react-hooks/set-state-in-effect`-ийг дахин идэвхжүүлэх.
+      шилжсэн.
+- [x] `vitest` 2 → **4.1** + `vite` → **7.3** upgrade (2026-08-05) — `npm audit`
+      **0 vulnerability** болсон, 37/37 тест ногоон.
+- [x] localStorage-уншилт `useSyncExternalStore` руу шилжсэн
+      (`lib/useLocalStorageState.ts` — theme, хэл, onboarding, analytics consent);
+      async-fetch/URL effect-уудыг promise/`useSyncExternalStore`-р засч,
+      `react-hooks/set-state-in-effect` дүрмийг **дахин идэвхжүүлсэн** (2026-08-05).
 - [ ] Хэрэв хандив spam-ын түвшин өсвөл: DB-суурилсан эсвэл Redis (Upstash) rate limiter.
 - [ ] Апп өсөхөд: Supabase Pro → автомат backup + PITR (`docs/BACKUP.md` §7).
 
