@@ -28,6 +28,18 @@ export default function Navbar() {
   const userMenuRef = useRef<HTMLDivElement>(null);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
 
+  // Lock body scroll when mobile menu is open
+  useEffect(() => {
+    if (showMobileMenu) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [showMobileMenu]);
+
   useEffect(() => {
     const task = user ? isAdmin() : Promise.resolve(false);
     task.then(setAdmin);
@@ -162,15 +174,22 @@ interface NavLinkItem { href: string; label: string; } interface UserMenuItem { 
       </nav>
 
       {/* Mobile Menu Button */}
-      <button
-        className="mobile-menu-btn btn-base"
-        onClick={() => setShowMobileMenu(!showMobileMenu)}
-        aria-expanded={showMobileMenu}
-        aria-controls="mobile-menu"
-        aria-label={showMobileMenu ? t('nav_close_menu') : t('nav_open_menu')}
-      >
-        {showMobileMenu ? '✕' : '☰'}
-      </button>
+      <div className="mobile-actions">
+        <DonateButton />
+        <button
+          className={`mobile-menu-btn ${showMobileMenu ? 'active' : ''}`}
+          onClick={() => setShowMobileMenu(!showMobileMenu)}
+          aria-expanded={showMobileMenu}
+          aria-controls="mobile-menu"
+          aria-label={showMobileMenu ? t('nav_close_menu') : t('nav_open_menu')}
+        >
+          <span className="menu-icon">
+            <span className="menu-line"></span>
+            <span className="menu-line"></span>
+            <span className="menu-line"></span>
+          </span>
+        </button>
+      </div>
 
       {/* Mobile Navigation Drawer */}
       {showMobileMenu && (
@@ -185,6 +204,15 @@ interface NavLinkItem { href: string; label: string; } interface UserMenuItem { 
           <div className="mobile-menu-panel" ref={mobileMenuRef} onClick={(e) => e.stopPropagation()}>
             <div className="mobile-menu-header">
               <h2 id="mobile-menu-title" className="eyebrow">{t('nav_menu_title')}</h2>
+              <button
+                className="mobile-close-btn"
+                onClick={() => setShowMobileMenu(false)}
+                aria-label={t('nav_close_menu')}
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M18 6L6 18M6 6l12 12" />
+                </svg>
+              </button>
             </div>
             <nav className="mobile-nav" aria-label="Мобайл цэс">
               {navLinks.map((link) => (
@@ -425,6 +453,27 @@ interface NavLinkItem { href: string; label: string; } interface UserMenuItem { 
         .dropdown-danger { color: var(--alert); }
         .dropdown-danger:hover { background: var(--alert-bg); }
 
+        /* Mobile Actions Container */
+        .mobile-actions {
+          display: none;
+          align-items: center;
+          gap: var(--sp-2);
+        }
+
+        .mobile-actions :global(.donate-btn) {
+          min-height: 40px;
+          font-size: 13px;
+          padding: 8px 14px;
+        }
+
+        @media (max-width: 480px) {
+          .mobile-actions :global(.donate-btn) {
+            min-height: 38px;
+            font-size: 12px;
+            padding: 6px 12px;
+          }
+        }
+
         /* Mobile Menu Button */
         .mobile-menu-btn {
           display: none;
@@ -433,36 +482,75 @@ interface NavLinkItem { href: string; label: string; } interface UserMenuItem { 
           align-items: center;
           width: var(--touch-target);
           height: var(--touch-target);
-          font-size: var(--text-xl);
           background: transparent;
-          border: none;
-          color: var(--ink);
+          border: 1.5px solid var(--line);
+          border-radius: var(--r-md);
+          cursor: pointer;
+          padding: 0;
+          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .mobile-menu-btn:hover {
+          background: var(--eyebrow-bg);
+          border-color: var(--primary);
+        }
+
+        .menu-icon {
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+          width: 18px;
+          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .menu-line {
+          height: 2px;
+          background: var(--ink);
+          border-radius: 2px;
+          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+          transform-origin: center;
+        }
+
+        .mobile-menu-btn.active .menu-line:nth-child(1) {
+          transform: translateY(6px) rotate(45deg);
+        }
+
+        .mobile-menu-btn.active .menu-line:nth-child(2) {
+          opacity: 0;
+          transform: scaleX(0);
+        }
+
+        .mobile-menu-btn.active .menu-line:nth-child(3) {
+          transform: translateY(-6px) rotate(-45deg);
         }
 
         /* Mobile Menu Overlay */
         .mobile-menu-overlay {
           position: fixed;
           inset: 0;
-          background: var(--overlay);
+          background: rgba(0, 0, 0, 0.5);
+          backdrop-filter: blur(8px);
+          -webkit-backdrop-filter: blur(8px);
           display: flex;
           justify-content: flex-end;
           z-index: 200;
-          animation: fadeIn 0.2s ease;
+          animation: fadeIn 0.25s ease;
           padding-bottom: var(--safe-bottom);
         }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
         .mobile-menu-panel {
           width: 100%;
-          max-width: 320px;
+          max-width: 360px;
           height: 100dvh;
           background: var(--card);
           border-left: 1px solid var(--line);
-          box-shadow: var(--shadow-xl);
+          box-shadow: -8px 0 32px rgba(0, 0, 0, 0.2);
           display: flex;
           flex-direction: column;
-          animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+          animation: slideInRight 0.35s cubic-bezier(0.16, 1, 0.3, 1);
           overflow-y: auto;
+          overscroll-behavior: contain;
         }
         @keyframes slideInRight {
           from { transform: translateX(100%); }
@@ -473,30 +561,61 @@ interface NavLinkItem { href: string; label: string; } interface UserMenuItem { 
           display: flex;
           justify-content: space-between;
           align-items: center;
-          padding: var(--sp-4) var(--sp-4) var(--sp-3);
+          padding: var(--sp-5) var(--sp-4);
           border-bottom: 1px solid var(--line);
+          background: var(--bg);
+        }
+
+        .mobile-menu-header :global(.eyebrow) {
+          margin-bottom: 0;
+        }
+
+        .mobile-close-btn {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 36px;
+          height: 36px;
+          background: transparent;
+          border: 1.5px solid var(--line);
+          border-radius: var(--r-md);
+          cursor: pointer;
+          color: var(--ink);
+          transition: all 0.2s ease;
+        }
+
+        .mobile-close-btn:hover {
+          background: var(--eyebrow-bg);
+          border-color: var(--primary);
+          transform: rotate(90deg);
         }
 
         .mobile-nav {
           display: flex;
           flex-direction: column;
-          padding: var(--sp-3) var(--sp-3);
-          gap: var(--sp-1);
+          padding: var(--sp-4) var(--sp-3);
+          gap: var(--sp-2);
+          flex: 1;
+          overflow-y: auto;
         }
         .mobile-nav-link {
           display: flex;
           align-items: center;
-          min-height: var(--touch-target);
+          min-height: 48px;
           padding: var(--sp-3) var(--sp-4);
           color: var(--ink);
           text-decoration: none;
           font-family: var(--font-body);
-          font-size: var(--text-lg);
+          font-size: 16px;
           font-weight: 500;
           border-radius: var(--r-md);
-          transition: background 0.15s ease, color 0.15s ease;
+          transition: all 0.2s ease;
         }
-        .mobile-nav-link:hover { background: var(--eyebrow-bg); color: var(--primary); }
+        .mobile-nav-link:hover {
+          background: var(--eyebrow-bg);
+          color: var(--primary);
+          transform: translateX(4px);
+        }
         .mobile-nav-link.active {
           background: var(--eyebrow-bg);
           color: var(--primary);
@@ -505,33 +624,50 @@ interface NavLinkItem { href: string; label: string; } interface UserMenuItem { 
 
         .mobile-menu-actions {
           margin-top: auto;
-          padding: var(--sp-4) var(--sp-4) calc(var(--sp-6) + var(--safe-bottom));
+          padding: var(--sp-5) var(--sp-4) calc(var(--sp-6) + var(--safe-bottom));
           display: flex;
           flex-direction: column;
-          gap: var(--sp-3);
+          gap: var(--sp-4);
           border-top: 1px solid var(--line);
+          background: var(--bg);
         }
+
+        .mobile-menu-actions :global(.donate-btn) {
+          width: 100%;
+          min-height: 48px;
+          font-size: 15px;
+          padding: 12px 20px;
+        }
+
         .mobile-menu-row {
           display: flex;
           gap: var(--sp-2);
         }
-        .mobile-menu-row > * { flex: 1; }
+
+        .mobile-menu-row > * {
+          flex: 1;
+          min-height: 44px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
 
         .mobile-user-section {
           display: flex;
           flex-direction: column;
           gap: var(--sp-3);
-          padding-top: var(--sp-2);
+          padding-top: var(--sp-3);
           border-top: 1px solid var(--line);
         }
         .mobile-user-info {
           display: flex;
           align-items: center;
           gap: var(--sp-3);
-          padding: var(--sp-2) var(--sp-3);
-          background: var(--bg);
+          padding: var(--sp-3);
+          background: var(--card);
           border-radius: var(--r-lg);
           border: 1px solid var(--line);
+          font-size: 14px;
         }
         .mobile-user-actions {
           display: flex;
@@ -539,9 +675,15 @@ interface NavLinkItem { href: string; label: string; } interface UserMenuItem { 
           gap: var(--sp-2);
         }
 
+        .mobile-user-actions :global(.btn-base) {
+          min-height: 48px;
+          font-size: 15px;
+        }
+
         /* Responsive Breakpoints */
         @media (max-width: 768px) {
           .nav-desktop { display: none; }
+          .mobile-actions { display: flex; }
           .mobile-menu-btn { display: flex; }
           .navbar { padding: var(--sp-3) var(--sp-3); }
         }
@@ -551,6 +693,7 @@ interface NavLinkItem { href: string; label: string; } interface UserMenuItem { 
           .brand-mark { width: 32px; height: 32px; font-size: var(--text-sm); }
           .navbar { padding: var(--sp-2) var(--sp-2); min-height: 52px; }
           .mobile-menu-panel { max-width: 100%; }
+          .mobile-actions { gap: var(--sp-1); }
         }
 
         @media (max-width: 360px) {
