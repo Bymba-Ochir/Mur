@@ -8,11 +8,18 @@ import { createClient } from '@supabase/supabase-js';
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = process.env.NEXT_PUBLIC_SITE_URL || 'https://mur-chi.vercel.app';
 
-  const staticRoutes: MetadataRoute.Sitemap = ['', '/listings', '/report-lost', '/report-found'].map((path) => ({
+  const staticRoutes: MetadataRoute.Sitemap = [
+    { path: '', changeFrequency: 'daily' as const, priority: 1 },
+    { path: '/listings', changeFrequency: 'hourly' as const, priority: 0.8 },
+    { path: '/report-lost', changeFrequency: 'hourly' as const, priority: 0.8 },
+    { path: '/report-found', changeFrequency: 'hourly' as const, priority: 0.8 },
+    { path: '/privacy', changeFrequency: 'yearly' as const, priority: 0.3 },
+    { path: '/terms', changeFrequency: 'yearly' as const, priority: 0.3 },
+  ].map(({ path, changeFrequency, priority }) => ({
     url: `${base}${path}`,
     lastModified: new Date(),
-    changeFrequency: path === '' ? 'daily' : 'hourly',
-    priority: path === '' ? 1 : 0.8,
+    changeFrequency,
+    priority,
   }));
 
   let petRoutes: MetadataRoute.Sitemap = [];

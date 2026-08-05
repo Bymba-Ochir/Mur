@@ -85,6 +85,10 @@ const MN = {
   donate_retry: 'Дахин оролдох', donate_generic_error: 'Алдаа гарлаа', donate_btn: '💛 Дэмжих',
   preview_label: 'Ийм харагдана',
   load_more: 'Илүү үзэх', loading_more: 'Ачааллаж байна...',
+  footer_tagline: 'Алдсан, олдсон амьтныхаа гэртээ буцах замыг олоход туслах платформ',
+  footer_privacy: 'Нууцлалын бодлого',
+  footer_terms: 'Үйлчилгээний нөхцөл',
+  footer_rights: 'Бүх эрх хуулиар хамгаалагдсан.',
 };
 
 export type TranslationKey = keyof typeof MN;
@@ -170,6 +174,10 @@ const EN: Record<TranslationKey, string> = {
   donate_retry: 'Try again', donate_generic_error: 'Something went wrong', donate_btn: '💛 Support',
   preview_label: 'Preview',
   load_more: 'Load more', loading_more: 'Loading...',
+  footer_tagline: 'A platform to help lost & found pets find their way home',
+  footer_privacy: 'Privacy Policy',
+  footer_terms: 'Terms of Service',
+  footer_rights: 'All rights reserved.',
 };
 
 export const DICT = { mn: MN, en: EN };

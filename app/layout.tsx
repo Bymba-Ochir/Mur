@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
 import BottomNav from '../components/BottomNav';
 import InstallPrompt from '../components/InstallPrompt';
 import Onboarding from '../components/Onboarding';
@@ -65,6 +66,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           <ToastProvider>
             <Navbar />
             <main id="main-content"><PageTransition>{children}</PageTransition></main>
+            <Footer />
             <InstallPrompt />
             <Onboarding />
             <BottomNav />
