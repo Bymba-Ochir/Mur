@@ -26,6 +26,8 @@ export interface PetFormData {
   place: string;
   district: District;
   phone: string;
+  /** Шагналын дүн (raw текст инпут) — хоосон бол null-ээр хадгална */
+  reward: string;
 }
 
 // ---------- Зураг: шахалт + content moderation ----------
@@ -144,7 +146,14 @@ export function usePetSubmit({
     setStatusMsg(t('submitting'));
     try {
       const id = await createPetReport(
-        { ...form, status, photoFile, lat: coords?.lat, lng: coords?.lng },
+        {
+          ...form,
+          status,
+          reward: form.reward ? Number(form.reward) : null,
+          photoFile,
+          lat: coords?.lat,
+          lng: coords?.lng,
+        },
         setStatusMsg
       );
       setNewPetId(id);

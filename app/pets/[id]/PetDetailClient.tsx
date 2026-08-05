@@ -2,7 +2,7 @@
 import { useEffect, useState, useSyncExternalStore } from 'react';
 import { fetchPetById, markResolved, updatePet, deletePet } from '../../../lib/petService';
 import { useAuth } from '../../../lib/useAuth';
-import { maskPhone } from '../../../lib/utils';
+import { maskPhone, formatReward } from '../../../lib/utils';
 import { relativeTime } from '../../../lib/relativeTime';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
@@ -147,6 +147,9 @@ export default function PetDetailClient({ id }: { id: string }) {
           <p style={{ marginBottom: 'var(--sp-1)' }}><b>{t('detail_type')}</b> {pet.type}{pet.color ? `, ${pet.color}` : ''}</p>
           <p style={{ marginBottom: 'var(--sp-1)' }}><b>{t('detail_district')}</b> {pet.district}</p>
           <p style={{ marginBottom: 'var(--sp-1)' }}><b>{t('detail_place')}</b> {pet.place}</p>
+          {pet.reward ? (
+            <p style={{ marginBottom: 'var(--sp-1)' }}><b>🎁 {t('reward_prefix')}</b> {formatReward(pet.reward)}</p>
+          ) : null}
           {revealed ? (
             <a href={`tel:${pet.phone}`} style={{ display: 'inline-block', marginTop: 'var(--sp-2)', fontWeight: 700, color: 'var(--primary)' }}>
               ☎ {pet.phone}

@@ -9,6 +9,7 @@ vi.mock('next/navigation', () => ({
 }));
 
 const { default: PetCard } = await import('../../components/PetCard');
+const { LanguageProvider } = await import('../../lib/i18n');
 
 import type { Pet } from '../../lib/types';
 
@@ -21,6 +22,7 @@ const pet: Pet = {
   district: 'Баянзүрх',
   place: 'дэлгүүрийн ойролцоо',
   phone: '99112233',
+  reward: null,
   photoURL: null,
   embedding: null,
   lat: null,
@@ -30,26 +32,34 @@ const pet: Pet = {
   createdAt: new Date().toISOString(),
 };
 
+function renderCard() {
+  return render(
+    <LanguageProvider>
+      <PetCard pet={pet} />
+    </LanguageProvider>
+  );
+}
+
 describe('PetCard — утасны дугаар нуух/харуулах', () => {
   it('эхлээд дугаараа маскдсан хэлбэрээр харуулна', () => {
-    render(<PetCard pet={pet} />);
+    renderCard();
     expect(screen.getByText(/99\*+33/)).toBeInTheDocument();
     expect(screen.queryByText('☎ 99112233')).not.toBeInTheDocument();
   });
 
   it('"Дугаар харах" дарахад бүтэн дугаар гарч ирнэ', () => {
-    render(<PetCard pet={pet} />);
+    renderCard();
     fireEvent.click(screen.getByText(/Дугаар харах/));
     expect(screen.getByText('99112233')).toBeInTheDocument();
   });
 
   it('"АЛДСАН" badge зөв харагдана', () => {
-    render(<PetCard pet={pet} />);
+    renderCard();
     expect(screen.getByText('АЛДСАН')).toBeInTheDocument();
   });
 
   it('зурган бус үед PetIcon (SVG) харагдана', () => {
-    const { container } = render(<PetCard pet={pet} />);
+    const { container } = renderCard();
     expect(container.querySelector('svg')).toBeInTheDocument();
   });
 });

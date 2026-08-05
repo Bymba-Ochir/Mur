@@ -4,10 +4,12 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import type { KeyboardEvent } from 'react';
 import PetCardView from './PetCardView';
+import { useLanguage } from '../lib/i18n';
 import type { Pet } from '../lib/types';
 
 export default function PetCard({ pet }: { pet: Pet }) {
   const router = useRouter();
+  const { t } = useLanguage();
   const [revealed, setRevealed] = useState(false);
 
   const cardLabel = `${pet.status === 'lost' ? 'Алдсан' : 'Олдсон'} ${pet.type}${pet.name ? ', нэр ' + pet.name : ''}, ${pet.district}, ${pet.place}. Дэлгэрэнгүй үзэх.`;
@@ -35,6 +37,8 @@ export default function PetCard({ pet }: { pet: Pet }) {
       phone={pet.phone}
       createdAt={pet.createdAt || undefined}
       similarity={pet.similarity}
+      reward={pet.reward}
+      rewardLabel={t('reward_prefix')}
       revealed={revealed}
       onRevealPhone={() => setRevealed(true)}
       imageNode={

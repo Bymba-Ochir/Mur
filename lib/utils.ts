@@ -16,3 +16,9 @@ export function maskPhone(phone: string | null | undefined): string {
 export function getErrorMessage(err: unknown): string {
   return err instanceof Error ? err.message : String(err);
 }
+
+/** Шагналын дүнг хүний уншихад эвтэй форматлах (жишээ: 50000 → "50,000₮") */
+export function formatReward(amount: number | null | undefined): string {
+  if (!amount) return '';
+  return `${amount.toLocaleString('mn-MN')}₮`;
+}

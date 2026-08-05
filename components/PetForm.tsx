@@ -17,7 +17,7 @@ export default function PetForm({ status }: { status: PetStatus }) {
   const TYPE_LABELS: Record<PetType, string> = { 'Нохой': t('type_dog'), 'Муур': t('type_cat'), 'Бусад': t('type_other') };
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<PetFormData>({
-    name: '', type: 'Нохой', color: '', place: '', district: DISTRICTS[0], phone: '',
+    name: '', type: 'Нохой', color: '', place: '', district: DISTRICTS[0], phone: '', reward: '',
   });
 
   const photo = usePhotoUpload();
@@ -25,7 +25,7 @@ export default function PetForm({ status }: { status: PetStatus }) {
 
   // Амжилттай хадгалагдсаны дараа бүх форм төлөвийг цэвэрлэнэ
   function resetAll() {
-    setForm({ name: '', type: 'Нохой', color: '', place: '', district: DISTRICTS[0], phone: '' });
+    setForm({ name: '', type: 'Нохой', color: '', place: '', district: DISTRICTS[0], phone: '', reward: '' });
     setStep(0);
     photo.reset();
     location.reset();
@@ -161,6 +161,15 @@ export default function PetForm({ status }: { status: PetStatus }) {
 
       {step === 3 && (
         <>
+          {status === 'lost' && (
+            <>
+              <label htmlFor="pet-reward">{t('reward_label')}</label>
+              <input
+                id="pet-reward" name="reward" inputMode="numeric" pattern="[0-9]*"
+                value={form.reward} onChange={handleChange} placeholder={t('reward_placeholder')}
+              />
+            </>
+          )}
           <label htmlFor="pet-phone">{t('phone_label')}</label>
           <input id="pet-phone" name="phone" value={form.phone} onChange={handleChange} placeholder={t('phone_placeholder')} required />
 
@@ -205,6 +214,7 @@ export default function PetForm({ status }: { status: PetStatus }) {
         place={form.place}
         phone={form.phone}
         photoPreview={photo.preview}
+        reward={form.reward}
       />
     </div>
 

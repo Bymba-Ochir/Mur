@@ -12,6 +12,7 @@ create table if not exists pets (
   place text default '',
   district text default '',
   phone text default '',
+  reward integer,
   photo_url text,
   color_signature jsonb,
   lat double precision,
@@ -22,6 +23,9 @@ create table if not exists pets (
 -- Хуучин төсөлд lat/lng багана байхгүй бол нэмнэ (аюулгүй, дахин ажиллуулж болно)
 alter table pets add column if not exists lat double precision;
 alter table pets add column if not exists lng double precision;
+
+-- Алдсан амьтны шагналын дүн (₮, заавал биш)
+alter table pets add column if not exists reward integer;
 
 -- "Олдлоо" товч, зохиогчийг тэмдэглэх багана
 alter table pets add column if not exists created_by uuid references auth.users(id);

@@ -49,6 +49,7 @@ export async function createPetReport(data: PetReportInput, onProgress?: (messag
       place: data.place || '',
       district: data.district || '',
       phone: data.phone || '',
+      reward: data.reward ?? null,
       photo_url: photoUrl,
       color_signature: embedding, // багана нэрээ хуучнаар үлдээсэн, одоо CLIP vector хадгална
       lat: data.lat ?? null,

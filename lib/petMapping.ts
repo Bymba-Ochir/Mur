@@ -14,6 +14,7 @@ interface PetRow {
   place: string | null;
   district: string | null;
   phone: string | null;
+  reward: number | null;
   photo_url: string | null;
   color_signature: unknown; // CLIP vector (JSONB)
   lat: number | null;
@@ -33,6 +34,7 @@ export function mapPetRow(row: PetRow): Pet {
     place: row.place ?? '',
     district: (row.district ?? '') as Pet['district'],
     phone: row.phone ?? '',
+    reward: row.reward ?? null,
     photoURL: row.photo_url,
     embedding: (row.color_signature as number[] | null) ?? null,
     lat: row.lat,

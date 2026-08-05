@@ -2,7 +2,7 @@
 import type { HTMLAttributes, ReactNode } from 'react';
 import PetIcon from './PetIcon';
 import { relativeTime } from '../lib/relativeTime';
-import { maskPhone } from '../lib/utils';
+import { maskPhone, formatReward } from '../lib/utils';
 import type { PetStatus, PetType } from '../lib/types';
 
 /**
@@ -24,6 +24,9 @@ export interface PetCardViewProps extends HTMLAttributes<HTMLDivElement> {
   imageNode?: ReactNode;
   createdAt?: string;
   similarity?: number | null;
+  /** Шагналын дүн (₮) — байгаа үед карт дээр харуулна */
+  reward?: number | null;
+  rewardLabel?: string;
   /** false + onRevealPhone = утас далд (masked) эхэлнэ */
   revealed?: boolean;
   onRevealPhone?: () => void;
@@ -33,7 +36,8 @@ export interface PetCardViewProps extends HTMLAttributes<HTMLDivElement> {
 
 export default function PetCardView({
   status, badgeLabel, name, type, color, district, place, phone,
-  imageNode, createdAt, similarity, revealed = true, onRevealPhone, interactive = true,
+  imageNode, createdAt, similarity, reward, rewardLabel = 'Шагнал',
+  revealed = true, onRevealPhone, interactive = true,
   ...containerProps
 }: PetCardViewProps) {
   const showMasked = !!phone && !revealed && !!onRevealPhone;
@@ -52,6 +56,7 @@ export default function PetCardView({
         <h4>{name || type}</h4>
         <p>{type}{color ? `, ${color}` : ''}</p>
         <p className="place"><span aria-hidden="true">📍</span> {district} — {place}</p>
+        {reward ? <p className="reward"><span aria-hidden="true">🎁</span> {rewardLabel}: {formatReward(reward)}</p> : null}
         {createdAt && <p className="time"><span aria-hidden="true">🕓</span> {relativeTime(createdAt)}</p>}
         {showMasked ? (
           <button
@@ -107,6 +112,7 @@ export default function PetCardView({
         .info { padding: 14px 15px; }
         h4 { font-family: var(--font-display); font-size: 14.5px; font-weight: 600; margin-bottom: 3px; color: var(--primary); }
         p { font-size: 12.5px; color: var(--muted); margin: 3px 0; line-height: 1.4; }
+        .reward { display: block; margin-top: 6px; font-size: 12.5px; color: var(--accent); font-weight: 600; }
         .phone { display: block; margin-top: 8px; font-size: 13px; color: var(--primary); font-weight: 600; text-decoration: none; }
         .reveal-btn { background: none; border: none; padding: 0; cursor: pointer; font-family: inherit; text-align: left; }
         .reveal-btn:focus-visible, .phone:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
