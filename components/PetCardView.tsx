@@ -83,9 +83,13 @@ export default function PetCardView({
           background: var(--card); border: 1px solid var(--line); border-radius: var(--r-lg);
           overflow: hidden; cursor: pointer; box-shadow: var(--shadow-sm);
           transition: box-shadow .22s ease, transform .22s ease, border-color .22s ease;
+          display: flex; flex-direction: column; height: 100%;
         }
         @media (max-width: 640px) {
           .pet-card { border-radius: var(--r-md); }
+        }
+        @media (min-width: 1025px) {
+          .pet-card { border-radius: var(--r-xl); }
         }
         .pet-card:hover { box-shadow: var(--shadow-lift); transform: translateY(-3px); border-color: transparent; }
         .pet-card:focus-visible {
@@ -96,6 +100,10 @@ export default function PetCardView({
         .thumb {
           height: 152px; background: var(--thumb-bg); position: relative;
           display: flex; align-items: center; justify-content: center; overflow: hidden;
+          flex-shrink: 0;
+        }
+        @media (min-width: 1025px) {
+          .thumb { height: 200px; }
         }
         @media (max-width: 640px) {
           .thumb { height: 180px; }
@@ -103,7 +111,7 @@ export default function PetCardView({
         @media (max-width: 400px) {
           .thumb { height: 160px; }
         }
-        .thumb :global(img) { transition: transform .35s cubic-bezier(.16,1,.3,1); object-fit: cover; }
+        .thumb :global(img) { transition: transform .35s cubic-bezier(.16,1,.3,1); object-fit: cover; width: 100%; height: 100%; }
         .pet-card:hover .thumb :global(img) { transform: scale(1.06); }
         .emoji { color: var(--muted); display: flex; opacity: 0.55; }
         .badge {
@@ -113,6 +121,9 @@ export default function PetCardView({
         }
         @media (max-width: 480px) {
           .badge { font-size: 10px; padding: 5px 10px; top: 12px; left: 12px; }
+        }
+        @media (min-width: 1025px) {
+          .badge { font-size: 10.5px; padding: 5px 12px; top: 14px; left: 14px; }
         }
         .badge.lost { background: var(--alert); }
         .badge.found { background: var(--success); }
@@ -124,25 +135,43 @@ export default function PetCardView({
         @media (max-width: 480px) {
           .similarity { font-size: 11px; padding: 4px 10px; bottom: 12px; right: 12px; }
         }
-        .info { padding: 14px 15px; }
+        @media (min-width: 1025px) {
+          .similarity { font-size: 11px; padding: 4px 11px; bottom: 14px; right: 14px; }
+        }
+        .info { padding: 14px 15px; flex: 1; display: flex; flex-direction: column; }
         @media (max-width: 480px) {
           .info { padding: 12px 14px; }
+        }
+        @media (min-width: 1025px) {
+          .info { padding: 16px 18px; }
         }
         h4 { font-family: var(--font-display); font-size: 14.5px; font-weight: 600; margin-bottom: 3px; color: var(--primary); }
         @media (max-width: 480px) {
           h4 { font-size: 15px; margin-bottom: 4px; }
         }
+        @media (min-width: 1025px) {
+          h4 { font-size: 15.5px; margin-bottom: 6px; }
+        }
         p { font-size: 12.5px; color: var(--muted); margin: 3px 0; line-height: 1.4; }
         @media (max-width: 480px) {
           p { font-size: 13px; margin: 4px 0; }
+        }
+        @media (min-width: 1025px) {
+          p { font-size: 13.5px; margin: 4px 0; line-height: 1.5; }
         }
         .reward { display: block; margin-top: 6px; font-size: 12.5px; color: var(--accent); font-weight: 600; }
         @media (max-width: 480px) {
           .reward { margin-top: 8px; font-size: 13px; }
         }
-        .phone { display: block; margin-top: 8px; font-size: 13px; color: var(--primary); font-weight: 600; text-decoration: none; min-height: var(--touch-target); display: flex; align-items: center; }
+        @media (min-width: 1025px) {
+          .reward { margin-top: 8px; font-size: 13.5px; }
+        }
+        .phone { display: inline-flex; margin-top: 8px; font-size: 13px; color: var(--primary); font-weight: 600; text-decoration: none; min-height: var(--touch-target); align-items: center; }
         @media (max-width: 480px) {
           .phone { margin-top: 10px; font-size: 14px; }
+        }
+        @media (min-width: 1025px) {
+          .phone { margin-top: 12px; font-size: 14px; }
         }
         .reveal-btn { background: none; border: none; padding: 0; cursor: pointer; font-family: inherit; text-align: left; width: 100%; }
         .reveal-btn:focus-visible, .phone:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }

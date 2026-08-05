@@ -264,6 +264,10 @@ interface NavLinkItem { href: string; label: string; } interface UserMenuItem { 
           min-height: var(--touch-target);
         }
 
+        @media (min-width: 1440px) {
+          .navbar { padding: var(--sp-4) max(calc((100vw - 1200px) / 2), var(--sp-4)); }
+        }
+
         .brand {
           display: flex;
           align-items: center;
@@ -277,6 +281,9 @@ interface NavLinkItem { href: string; label: string; } interface UserMenuItem { 
           font-weight: 800;
           font-size: var(--text-xl);
           letter-spacing: -0.02em;
+        }
+        @media (min-width: 1025px) {
+          .brand-name { font-size: var(--text-2xl); }
         }
         .brand-mark {
           width: 36px;
@@ -292,6 +299,9 @@ interface NavLinkItem { href: string; label: string; } interface UserMenuItem { 
           font-size: var(--text-base);
           box-shadow: var(--shadow-sm);
         }
+        @media (min-width: 1025px) {
+          .brand-mark { width: 40px; height: 40px; font-size: 15px; }
+        }
 
         /* Desktop Navigation */
         .nav-desktop {
@@ -301,6 +311,9 @@ interface NavLinkItem { href: string; label: string; } interface UserMenuItem { 
           flex: 1;
           justify-content: flex-end;
           min-width: 0;
+        }
+        @media (min-width: 1200px) {
+          .nav-desktop { gap: var(--sp-3); }
         }
         .nav-link {
           display: inline-flex;
@@ -316,6 +329,9 @@ interface NavLinkItem { href: string; label: string; } interface UserMenuItem { 
           border-radius: var(--r-md);
           transition: color 0.15s ease, background 0.15s ease;
           white-space: nowrap;
+        }
+        @media (min-width: 1025px) {
+          .nav-link { font-size: var(--text-base); padding: var(--sp-2) var(--sp-4); }
         }
         .nav-link:hover { color: var(--primary); background: var(--eyebrow-bg); }
         .nav-link.active {
@@ -359,6 +375,9 @@ interface NavLinkItem { href: string; label: string; } interface UserMenuItem { 
           overflow: hidden;
           text-overflow: ellipsis;
           white-space: nowrap;
+        }
+        @media (min-width: 1025px) {
+          .user-email { max-width: 180px; }
         }
         .user-chevron {
           font-size: var(--text-2xs);

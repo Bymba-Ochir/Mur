@@ -85,6 +85,9 @@ export default function BottomNav() {
         @media (max-width: 400px) {
           .bn-item span { font-size: 9px; }
         }
+        @media (min-width: 401px) and (max-width: 640px) {
+          .bn-item span { font-size: 10.5px; }
+        }
         .bn-item.active { color: var(--accent); }
       `}</style>
     </nav>

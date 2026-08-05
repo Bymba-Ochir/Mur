@@ -75,6 +75,12 @@ export default function Home() {
         @media (max-width: 480px) {
           .hero { padding: var(--sp-4) 0 var(--sp-5); }
         }
+        @media (min-width: 1025px) {
+          .hero { padding: var(--sp-8) 0 calc(var(--sp-8) + var(--sp-4)); }
+        }
+        @media (min-width: 1440px) {
+          .hero { padding: calc(var(--sp-8) + var(--sp-3)) 0 calc(var(--sp-8) + var(--sp-6)); }
+        }
         /* Aurora — "steppe night → ember trail" gradient гэрэл */
         .hero::before {
           content: ''; position: absolute; inset: -20% -10%; z-index: 0; pointer-events: none;
@@ -96,6 +102,9 @@ export default function Home() {
         }
 
         .hero-content { position: relative; z-index: 1; max-width: 720px; }
+        @media (min-width: 1025px) {
+          .hero-content { max-width: 800px; }
+        }
         .hero-title {
           font-size: var(--text-display); margin-bottom: var(--sp-4); max-width: 660px; line-height: 1.08;
         }
@@ -105,6 +114,9 @@ export default function Home() {
         @media (max-width: 480px) {
           .hero-title { font-size: var(--text-xl); margin-bottom: var(--sp-3); }
         }
+        @media (min-width: 1025px) {
+          .hero-title { font-size: var(--text-display-lg); margin-bottom: var(--sp-5); max-width: 740px; }
+        }
         .hero-desc { color: var(--muted); max-width: 480px; margin-bottom: var(--sp-5); font-size: 16.5px; line-height: 1.6; }
         @media (max-width: 640px) {
           .hero-desc { font-size: 15px; margin-bottom: var(--sp-4); }
@@ -112,10 +124,16 @@ export default function Home() {
         @media (max-width: 480px) {
           .hero-desc { font-size: 14.5px; margin-bottom: var(--sp-4); line-height: 1.65; }
         }
+        @media (min-width: 1025px) {
+          .hero-desc { font-size: 17px; margin-bottom: var(--sp-6); max-width: 540px; line-height: 1.7; }
+        }
         .hero-actions { display: flex; gap: var(--sp-3); flex-wrap: wrap; }
         @media (max-width: 480px) {
           .hero-actions { gap: var(--sp-2); flex-direction: column; }
           .hero-actions :global(.btn) { width: 100%; justify-content: center; }
+        }
+        @media (min-width: 1025px) {
+          .hero-actions { gap: var(--sp-4); }
         }
 
         /* Гоёл чимэглэл — ember sparkles + floating paw */
@@ -176,6 +194,9 @@ export default function Home() {
         @media (max-width: 480px) {
           .how { margin-top: var(--sp-4); }
         }
+        @media (min-width: 1025px) {
+          .how { margin-top: var(--sp-7); }
+        }
         .how-title { font-size: clamp(1.4rem, 3vw, 1.9rem); margin-bottom: var(--sp-5); }
         @media (max-width: 640px) {
           .how-title { margin-bottom: var(--sp-4); }
@@ -183,9 +204,15 @@ export default function Home() {
         @media (max-width: 480px) {
           .how-title { margin-bottom: var(--sp-3); font-size: var(--text-xl); }
         }
+        @media (min-width: 1025px) {
+          .how-title { font-size: var(--text-3xl); margin-bottom: var(--sp-6); }
+        }
         .trail-wrap { max-width: 520px; margin-bottom: var(--sp-4); }
         @media (max-width: 480px) {
           .trail-wrap { margin-bottom: var(--sp-3); }
+        }
+        @media (min-width: 1025px) {
+          .trail-wrap { max-width: 620px; margin-bottom: var(--sp-5); }
         }
         .steps-grid { margin-top: 0; gap: var(--sp-5); }
         @media (max-width: 640px) {
@@ -193,6 +220,9 @@ export default function Home() {
         }
         @media (max-width: 480px) {
           .steps-grid { gap: var(--sp-3); }
+        }
+        @media (min-width: 1025px) {
+          .steps-grid { gap: var(--sp-6); }
         }
         .step-card {
           background: var(--card); border: 1px solid var(--line); border-radius: var(--r-lg);
@@ -205,10 +235,16 @@ export default function Home() {
         @media (max-width: 480px) {
           .step-card { padding: var(--sp-3); }
         }
+        @media (min-width: 1025px) {
+          .step-card { padding: var(--sp-6); border-radius: var(--r-xl); }
+        }
         .step-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: transparent; }
         .step-desc { color: var(--muted); font-size: 13.5px; line-height: 1.5; }
         @media (max-width: 480px) {
           .step-desc { font-size: 14px; line-height: 1.6; }
+        }
+        @media (min-width: 1025px) {
+          .step-desc { font-size: 15px; line-height: 1.65; }
         }
 
         @media (prefers-reduced-motion: reduce) {

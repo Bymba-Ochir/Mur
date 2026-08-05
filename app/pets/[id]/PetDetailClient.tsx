@@ -230,11 +230,14 @@ export default function PetDetailClient({ id }: { id: string }) {
           display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
           gap: var(--sp-5); align-items: start; margin-bottom: var(--sp-4);
         }
-        @media (max-width: 800px) {
+        @media (max-width: 1024px) {
           .detail-grid { grid-template-columns: 1fr; gap: var(--sp-4); }
         }
-        @media (max-width: 480px) {
+        @media (max-width: 640px) {
           .detail-grid { gap: var(--sp-3); margin-bottom: var(--sp-3); }
+        }
+        @media (min-width: 1440px) {
+          .detail-grid { gap: var(--sp-7); margin-bottom: var(--sp-6); }
         }
         .detail-media { min-width: 0; }
         .detail-info { min-width: 0; display: flex; flex-direction: column; }

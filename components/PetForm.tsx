@@ -244,6 +244,9 @@ export default function PetForm({ status }: { status: PetStatus }) {
         @media (max-width: 860px) {
           .form-layout { gap: 0; }
         }
+        @media (min-width: 1200px) {
+          .form-layout { gap: 64px; }
+        }
         .preview-col { display: none; position: sticky; top: 100px; }
         @media (min-width: 860px) {
           .preview-col { display: block; }
@@ -253,8 +256,11 @@ export default function PetForm({ status }: { status: PetStatus }) {
           background: var(--card); border: 1px solid var(--line); border-radius: var(--r-xl);
           padding: var(--sp-6); box-shadow: var(--shadow-md);
         }
+        @media (min-width: 1025px) {
+          .pet-form { max-width: 520px; padding: var(--sp-7); }
+        }
         @media (max-width: 640px) {
-          .pet-form { padding: var(--sp-5); border-radius: var(--r-lg); }
+          .pet-form { padding: var(--sp-5); border-radius: var(--r-lg); max-width: 100%; }
         }
         @media (max-width: 480px) {
           .pet-form { padding: var(--sp-4); border-radius: var(--r-md); }
@@ -263,6 +269,9 @@ export default function PetForm({ status }: { status: PetStatus }) {
         label:first-child { margin-top: 0; }
         @media (max-width: 480px) {
           label { font-size: 13px; margin-top: var(--sp-3); }
+        }
+        @media (min-width: 1025px) {
+          label { font-size: 13.5px; margin-top: var(--sp-5); }
         }
 
         input, select {
@@ -273,6 +282,9 @@ export default function PetForm({ status }: { status: PetStatus }) {
         }
         @media (max-width: 480px) {
           input, select { font-size: 16px; padding: 12px 14px; }
+        }
+        @media (min-width: 1025px) {
+          input, select { font-size: 15px; padding: 12px 16px; }
         }
         input:hover, select:hover { border-color: var(--muted); }
         input:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; border-color: var(--accent); }
@@ -286,9 +298,15 @@ export default function PetForm({ status }: { status: PetStatus }) {
         @media (max-width: 480px) {
           .upload-zone { padding: 24px 16px; }
         }
+        @media (min-width: 1025px) {
+          .upload-zone { padding: 32px 24px; }
+        }
         .upload-zone:hover { border-color: var(--accent); background: var(--eyebrow-bg); }
         .upload-zone:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
         .upload-zone img { max-width: 150px; border-radius: var(--r-sm); }
+        @media (min-width: 1025px) {
+          .upload-zone img { max-width: 180px; }
+        }
         .photo-quality {
           background: var(--eyebrow-bg); border: 1px solid var(--line); border-radius: var(--r-md);
           padding: 10px 14px; margin-top: var(--sp-3); color: var(--muted); font-size: 12.5px;
@@ -296,9 +314,15 @@ export default function PetForm({ status }: { status: PetStatus }) {
         @media (max-width: 480px) {
           .photo-quality { padding: 12px 16px; font-size: 13px; }
         }
+        @media (min-width: 1025px) {
+          .photo-quality { padding: 14px 18px; font-size: 13px; }
+        }
         .pq-title { font-weight: 700; color: var(--primary); font-size: 12.5px; margin: 0 0 6px; }
         @media (max-width: 480px) {
           .pq-title { font-size: 13px; }
+        }
+        @media (min-width: 1025px) {
+          .pq-title { font-size: 13.5px; }
         }
         .photo-quality ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 3px; }
         .photo-quality li { margin: 0; line-height: 1.4; }
@@ -306,6 +330,9 @@ export default function PetForm({ status }: { status: PetStatus }) {
         .btn-primary { width: 100%; margin-top: var(--sp-5); justify-content: center; font-size: 15px; padding: 14px; min-height: var(--touch-target); }
         @media (max-width: 480px) {
           .btn-primary { font-size: 16px; padding: 16px; margin-top: var(--sp-4); }
+        }
+        @media (min-width: 1025px) {
+          .btn-primary { font-size: 16px; padding: 16px 24px; margin-top: var(--sp-6); }
         }
         .btn-primary:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
         .error { color: var(--alert); font-size: 13px; margin-top: var(--sp-2); }
@@ -319,10 +346,16 @@ export default function PetForm({ status }: { status: PetStatus }) {
         @media (max-width: 480px) {
           .success-box { padding: var(--sp-5); }
         }
+        @media (min-width: 1025px) {
+          .success-box { padding: var(--sp-7); }
+        }
 
         .progress-text { font-family: var(--font-mono); font-size: 11.5px; color: var(--muted); margin: var(--sp-2) 0 var(--sp-5); text-align: center; letter-spacing: 0.02em; }
         @media (max-width: 480px) {
           .progress-text { font-size: 12px; margin: var(--sp-2) 0 var(--sp-4); }
+        }
+        @media (min-width: 1025px) {
+          .progress-text { font-size: 12.5px; margin: var(--sp-3) 0 var(--sp-6); }
         }
 
         .reward-check {
@@ -332,6 +365,9 @@ export default function PetForm({ status }: { status: PetStatus }) {
         }
         @media (max-width: 480px) {
           .reward-check { font-size: 14px; gap: 10px; }
+        }
+        @media (min-width: 1025px) {
+          .reward-check { font-size: 14px; gap: 12px; margin-top: var(--sp-5); }
         }
         .reward-check input { width: auto; margin: 0; accent-color: var(--accent); }
         .locate-btn {
@@ -343,6 +379,9 @@ export default function PetForm({ status }: { status: PetStatus }) {
         @media (max-width: 480px) {
           .locate-btn { font-size: 14px; padding: 12px 20px; width: 100%; }
         }
+        @media (min-width: 1025px) {
+          .locate-btn { font-size: 14px; padding: 12px 24px; margin-bottom: var(--sp-4); }
+        }
         .locate-btn:hover { background: var(--eyebrow-bg); }
         .locate-btn:disabled { opacity: 0.6; }
         .locate-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -350,6 +389,9 @@ export default function PetForm({ status }: { status: PetStatus }) {
         .nav-row { display: flex; gap: 10px; margin-top: var(--sp-5); }
         @media (max-width: 480px) {
           .nav-row { gap: 12px; margin-top: var(--sp-4); }
+        }
+        @media (min-width: 1025px) {
+          .nav-row { gap: 14px; margin-top: var(--sp-6); }
         }
         .nav-back { background: var(--eyebrow-bg); color: var(--primary); flex: 1; justify-content: center; min-height: var(--touch-target); }
         .nav-next { background: var(--accent); color: #fff; flex: 1; justify-content: center; min-height: var(--touch-target); }
