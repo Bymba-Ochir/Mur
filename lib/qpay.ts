@@ -5,6 +5,7 @@
 //
 // АНХААР: QPay merchant эрх авахын тулд бүртгэлтэй бизнес (аж ахуйн нэгж) байх
 // шаардлагатай — хувь хүний данс биш. Дэлгэрэнгүй README-д.
+import { Buffer } from 'buffer';
 import type { QPayInvoice, QPayInvoiceInput } from './types';
 
 const QPAY_BASE_URL = process.env.QPAY_BASE_URL || 'https://merchant.qpay.mn';
@@ -16,6 +17,10 @@ let cachedToken: { access_token: string; expires_at: number } | null = null;
 
 function validateConfig(): void {
   if (!QPAY_USERNAME || !QPAY_PASSWORD || !QPAY_INVOICE_CODE) {
+    // Dev/preview орчинд QPay тохируулаагүй бол sandbox response буцаана
+    if (process.env.NODE_ENV !== 'production') {
+      return; // sandbox mode
+    }
     throw new Error('QPay тохиргоо дутуу байна. Орчны хувьсагчдаа шалгана уу.');
   }
 }
@@ -24,6 +29,12 @@ export async function getQPayToken(): Promise<string> {
   validateConfig();
 
   if (cachedToken && Date.now() < cachedToken.expires_at - 60_000) {
+    return cachedToken.access_token;
+  }
+
+  // Dev mode: QPay credentials not set, return mock token
+  if (!QPAY_USERNAME || !QPAY_PASSWORD || !QPAY_INVOICE_CODE) {
+    cachedToken = { access_token: 'dev-mock-token', expires_at: Date.now() + 3600_000 };
     return cachedToken.access_token;
   }
 
@@ -46,6 +57,16 @@ export async function createQPayInvoice(input: QPayInvoiceInput): Promise<QPayIn
   const { sender_invoice_no, invoice_description, amount, callback_url } = input;
   validateConfig();
   const token = await getQPayToken();
+
+  // Dev mode: return mock invoice
+  if (token === 'dev-mock-token') {
+    return {
+      invoice_id: sender_invoice_no,
+      qr_image: `data:image/svg+xml;base64,${Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><rect width="200" height="200" fill="#f0f0f0"/><text x="100" y="100" text-anchor="middle" font-family="monospace" font-size="12" fill="#999">DEV QR</text></svg>').toString('base64')}`,
+      qr_text: 'https://qpay.mn/dev-mock',
+      urls: [],
+    };
+  }
 
   const res = await fetch(`${QPAY_BASE_URL}/v2/invoice`, {
     method: 'POST',
@@ -70,6 +91,11 @@ export async function createQPayInvoice(input: QPayInvoiceInput): Promise<QPayIn
 export async function checkQPayPayment(invoice_id: string): Promise<{ count: number }> {
   validateConfig();
   const token = await getQPayToken();
+
+  // Dev mode: return mock paid status
+  if (token === 'dev-mock-token') {
+    return { count: 1 };
+  }
 
   const res = await fetch(`${QPAY_BASE_URL}/v2/payment/check`, {
     method: 'POST',
