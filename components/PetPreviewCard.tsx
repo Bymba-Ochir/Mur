@@ -41,6 +41,7 @@ export default function PetPreviewCard({
         interactive={false}
         imageNode={
           photoPreview ? (
+            // eslint-disable-next-line @next/next/no-img-element
             <img src={photoPreview} alt={`${typeLabel}${color ? ', ' + color : ''}${name ? ', ' + name : ''}`} />
           ) : undefined
         }

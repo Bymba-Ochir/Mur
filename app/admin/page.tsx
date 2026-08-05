@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useAuth } from '../../lib/useAuth';
@@ -20,6 +20,17 @@ export default function AdminPage() {
   const [reportsLoading, setReportsLoading] = useState(true);
   const [busyId, setBusyId] = useState<string | null>(null);
 
+  const load = useCallback(async () => {
+    setReportsLoading(true);
+    try {
+      setReports(await fetchReports());
+    } catch (err) {
+      showToast('Алдаа: ' + getErrorMessage(err), 'error');
+    } finally {
+      setReportsLoading(false);
+    }
+  }, [showToast]);
+
   useEffect(() => {
     if (loading) return;
     if (!user) {
@@ -31,18 +42,7 @@ export default function AdminPage() {
       setChecked(true);
       if (ok) load();
     });
-  }, [user, loading]);
-
-  async function load() {
-    setReportsLoading(true);
-    try {
-      setReports(await fetchReports());
-    } catch (err) {
-      showToast('Алдаа: ' + getErrorMessage(err), 'error');
-    } finally {
-      setReportsLoading(false);
-    }
-  }
+  }, [user, loading, load]);
 
   async function handleDismiss(reportId: string) {
     setBusyId(reportId);

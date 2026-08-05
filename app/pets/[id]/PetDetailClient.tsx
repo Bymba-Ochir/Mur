@@ -83,7 +83,7 @@ export default function PetDetailClient({ id }: { id: string }) {
       await updatePet(id, values);
       setEditing(false);
       await load();
-      showToast('Мэдээлэл хадгалагдлаа', 'success'); // eslint-disable-line
+      showToast('Мэдээлэл хадгалагдлаа', 'success');
     } catch (err) {
       showToast('Алдаа гарлаа: ' + getErrorMessage(err), 'error');
     } finally {

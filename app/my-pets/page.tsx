@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
 import { useAuth } from '../../lib/useAuth';
 import {
@@ -31,21 +31,25 @@ export default function MyPetsPage() {
   const [notifyError, setNotifyError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
-  useEffect(() => {
-    if (user) load();
-    isSubscribed().then(setSubscribed);
-  }, [user]);
-
-  async function load() {
+  const load = useCallback(async () => {
     setPetsLoading(true);
     try {
-      setPets(await fetchMyPets());
+      const data = await fetchMyPets();
+      setPets(data);
     } catch (err) {
       console.error(err);
     } finally {
       setPetsLoading(false);
     }
-  }
+  }, []);
+
+  useEffect(() => {
+    if (user) {
+      // Schedule the load to avoid synchronous setState in effect
+      Promise.resolve().then(load);
+    }
+    isSubscribed().then(setSubscribed);
+  }, [user, load]);
 
   async function handleAdd(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();

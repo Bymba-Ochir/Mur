@@ -96,6 +96,7 @@ export default function PetForm({ status }: { status: PetStatus }) {
             {photo.compressing ? (
               <span role="status">⏳ {photo.compressStatus || 'Зураг оновчлож байна...'}</span>
             ) : photo.preview ? (
+              // eslint-disable-next-line @next/next/no-img-element
               <img src={photo.preview} alt={t('photo_preview_alt')} />
             ) : (
               <span id="photo-hint">{t('photo_hint')}</span>
