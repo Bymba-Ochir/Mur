@@ -43,7 +43,10 @@ export default function ShareButtons({ url, title }: { url: string; title: strin
         .share-btn {
           padding: 9px 14px; border-radius: var(--r-sm); border: none; cursor: pointer;
           font-size: 13px; font-weight: 600; text-decoration: none; display: inline-block;
+          transition: transform .15s ease, box-shadow .2s ease, filter .2s ease;
         }
+        .share-btn:hover { transform: translateY(-1px); box-shadow: var(--shadow-sm); filter: brightness(1.05); }
+        .share-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
         .native { background: var(--brand); color: #fff; }
         .fb { background: #1877F2; color: #fff; }
         .copy { background: var(--eyebrow-bg); color: var(--primary); }

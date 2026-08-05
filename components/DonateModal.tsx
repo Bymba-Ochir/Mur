@@ -187,8 +187,10 @@ export default function DonateModal({ onClose }: { onClose: () => void }) {
         input, textarea { width: 100%; padding: 9px 11px; border: 1.5px solid var(--line); border-radius: var(--r-sm); font-size: 13.5px; background: var(--card); color: var(--ink); font-family: inherit; }
         .checkbox-row { display: flex; align-items: center; gap: 8px; font-weight: 400; color: var(--ink); }
         .checkbox-row input { width: auto; }
-        .submit-btn { width: 100%; margin-top: 16px; padding: 13px; border-radius: var(--r-sm); border: none; background: var(--brand); color: #fff; font-weight: 700; cursor: pointer; font-size: 14px; font-family: var(--font-body); transition: transform 0.12s ease, box-shadow 0.12s ease; box-shadow: var(--shadow-sm); }
-        .submit-btn:hover { transform: translateY(-1px); box-shadow: var(--shadow-md); }
+        .submit-btn { width: 100%; margin-top: 16px; padding: 13px; border-radius: var(--r-md); border: none; background: var(--grad-brand); color: #fff; font-weight: 700; cursor: pointer; font-size: 14px; font-family: var(--font-body); transition: transform 0.15s ease, box-shadow 0.2s ease, filter 0.2s ease; box-shadow: var(--shadow-sm); }
+        .submit-btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: var(--shadow-md); filter: saturate(1.08); }
+        .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .submit-btn:focus-visible { outline: 2.5px solid var(--accent); outline-offset: 2px; }
         .qr-box, .paid-box { text-align: center; }
         .qr-img { width: 200px; height: 200px; margin: 10px auto; border-radius: var(--r-sm); border: 1px solid var(--line); }
         .deep-links { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 10px 0; }

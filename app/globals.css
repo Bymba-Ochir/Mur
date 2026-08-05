@@ -47,12 +47,27 @@
   --sp-5: 24px; --sp-6: 32px; --sp-7: 48px; --sp-8: 64px;
 
   /* Radius scale */
-  --r-sm: 8px; --r-md: 12px; --r-lg: 18px; --r-pill: 999px;
+  --r-sm: 8px; --r-md: 12px; --r-lg: 20px; --r-xl: 28px; --r-pill: 999px;
+
+  /* Gradient — "steppe night → ember trail" */
+  --grad-brand: linear-gradient(135deg, #2B6575, #17414D);
+  --grad-accent: linear-gradient(135deg, #E8935C, #C4622C);
+
+  /* Glassmorphism */
+  --glass-bg: rgba(255, 255, 255, 0.72);
+  --glass-border: rgba(23, 34, 39, 0.08);
+  --glass-blur: saturate(1.4) blur(14px);
 
   /* Shadow */
   --shadow-sm: 0 1px 2px rgba(23, 34, 39, 0.06), 0 1px 1px rgba(23, 34, 39, 0.04);
-  --shadow-md: 0 6px 20px rgba(23, 34, 39, 0.08), 0 2px 6px rgba(23, 34, 39, 0.05);
-  --shadow-lift: 0 12px 32px rgba(23, 34, 39, 0.14);
+  --shadow-md: 0 8px 28px rgba(23, 34, 39, 0.10), 0 2px 8px rgba(23, 34, 39, 0.06);
+  --shadow-lift: 0 16px 40px rgba(23, 34, 39, 0.16), 0 4px 12px rgba(23, 34, 39, 0.08);
+  --shadow-glow: 0 0 0 1px rgba(224, 122, 62, 0.25), 0 8px 30px rgba(224, 122, 62, 0.25);
+
+  /* Fluid type scale */
+  --text-2xs: 0.7rem; --text-xs: 0.8rem; --text-sm: 0.875rem; --text-base: 0.97rem;
+  --text-lg: 1.125rem; --text-xl: 1.375rem; --text-2xl: 1.75rem; --text-3xl: 2.25rem;
+  --text-display: clamp(2.1rem, 6vw, 3.4rem);
 }
 
 [data-theme="dark"] {
@@ -81,8 +96,15 @@
   --overlay: rgba(0, 0, 0, 0.72);
 
   --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
-  --shadow-md: 0 6px 20px rgba(0,0,0,0.35);
-  --shadow-lift: 0 12px 32px rgba(0,0,0,0.45);
+  --shadow-md: 0 8px 28px rgba(0,0,0,0.4);
+  --shadow-lift: 0 16px 40px rgba(0,0,0,0.5);
+  --shadow-glow: 0 0 0 1px rgba(240, 161, 92, 0.3), 0 8px 30px rgba(240, 161, 92, 0.22);
+
+  --grad-brand: linear-gradient(135deg, #2B6575, #123039);
+  --grad-accent: linear-gradient(135deg, #F0A15C, #C4622C);
+
+  --glass-bg: rgba(14, 27, 31, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.08);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -193,25 +215,82 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   text-decoration: none;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
-  transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
+  position: relative;
+  transition: transform 0.15s ease, box-shadow 0.2s ease, filter 0.2s ease;
   box-shadow: var(--shadow-sm);
 }
-.btn:hover { transform: translateY(-1px); box-shadow: var(--shadow-md); }
+.btn:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); filter: saturate(1.08); }
 .btn:active { transform: translateY(0) scale(0.97); }
-.btn-primary { background: var(--brand); color: #fff; }
-.btn-accent { background: var(--accent); color: #fff; }
+.btn:focus-visible { outline: 2.5px solid var(--accent); outline-offset: 2px; }
+.btn-primary { background: var(--grad-brand); color: #fff; }
+.btn-accent { background: var(--grad-accent); color: #fff; }
+.btn-ghost { background: transparent; color: var(--primary); border: 1.5px solid var(--line); box-shadow: none; }
+.btn-ghost:hover { border-color: var(--accent); background: var(--eyebrow-bg); }
 
 select.filter, input.filter {
   padding: 9px 13px;
-  border-radius: var(--r-sm);
+  border-radius: var(--r-md);
   border: 1.5px solid var(--line);
   margin-bottom: var(--sp-2);
   background: var(--card);
   color: var(--ink);
   font-family: var(--font-body);
   font-size: 14px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
+select.filter:focus, input.filter:focus {
+  outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(224,122,62,0.15);
+}
+
+/* Хуудасны нэгдсэн гарчиг */
+.page-header { margin-bottom: var(--sp-5); }
+.page-header .eyebrow { margin-bottom: var(--sp-3); }
+.page-header h1 { font-size: clamp(1.6rem, 4vw, 2.3rem); margin-bottom: var(--sp-2); }
+.page-header p { color: var(--muted); max-width: 560px; line-height: 1.55; }
+
+/* Инпут/select/textarea — нэгдсэн суурь (dark mode-д цагаан болохгүй) */
+.field {
+  width: 100%;
+  padding: 11px 14px;
+  border-radius: var(--r-md);
+  border: 1.5px solid var(--line);
+  background: var(--card);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 14.5px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.field:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(224,122,62,0.16); }
+.field::placeholder { color: var(--muted); }
+textarea.field { min-height: 90px; resize: vertical; }
+
+/* Карт — elevated borderless */
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.card:hover { box-shadow: var(--shadow-md); }
+
+/* Gradient текст */
+.gradient-text {
+  background: var(--grad-accent);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+::selection { background: var(--accent); color: #fff; }
+
+/* Custom scrollbar */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--thumb-bg); border-radius: 999px; border: 2px solid transparent; background-clip: content-box; }
+::-webkit-scrollbar-thumb:hover { background-color: var(--line); }
 
 /* Дахин ашиглагдах skeleton/shimmer — Admin, MyPets зэрэг loading state-д */
 .skel-row {

@@ -88,10 +88,12 @@ export default function ListingsPage() {
 
   return (
     <div>
-      <div className="eyebrow">{t('listings_eyebrow')}</div>
-      <h1 style={{ fontSize: 26, marginBottom: 16 }}>{t('listings_title')}</h1>
+      <div className="page-header">
+        <div className="eyebrow">{t('listings_eyebrow')}</div>
+        <h1>{t('listings_title')}</h1>
+      </div>
 
-      <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 8 }}>
+      <div className="filter-bar">
         <input
           type="text"
           placeholder={t('search_placeholder')}
@@ -122,22 +124,24 @@ export default function ListingsPage() {
       {district && <VolunteerBadge district={district} />}
       {district && <NotifySubscribe district={district} />}
 
-      <div style={{ marginBottom: 20 }}>
-        <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--primary)' }}>
-          {t('match_label')}{' '}
-        </label>
-        <input type="file" accept="image/*" onChange={handleMatchUpload} disabled={!!matching} aria-label="Төстэй байдлаар эрэмбэлэх зураг сонгох" />
-        {matching && <span style={{ fontSize: 12, color: 'var(--muted)' }}> — {typeof matching === 'string' ? matching : 'AI шинжилж байна (эхний удаа 10-30 сек)...'}</span>}
+      <div className="match-upload">
+        <input
+          type="file" id="match-file" accept="image/*"
+          onChange={handleMatchUpload} disabled={!!matching} className="file-input"
+          aria-label="Төстэй байдлаар эрэмбэлэх зураг сонгох"
+        />
+        <label htmlFor="match-file" className="btn btn-ghost">{t('match_label')}</label>
+        {matching && <span className="match-status"> — {typeof matching === 'string' ? matching : 'AI шинжилж байна (эхний удаа 10-30 сек)...'}</span>}
         {matchFile && !matching && !matchError && matchedCount === 0 && (
-          <span style={{ fontSize: 12, color: 'var(--alert)' }}>
-            {' '}— Харьцуулах боломжтой бичлэг олдсонгүй (хуучин бичлэгүүд өөр
+          <span className="match-status err">
+            — Харьцуулах боломжтой бичлэг олдсонгүй (хуучин бичлэгүүд өөр
             embedding-тэй байж болзошгүй — шинээр бүртгэсэн 2 бичлэгээр туршина уу).
           </span>
         )}
         {matchFile && !matching && !matchError && matchedCount != null && matchedCount > 0 && (
-          <span style={{ fontSize: 12, color: 'var(--muted)' }}> — {matchedCount} бичлэгтэй харьцуулж эрэмбэлэгдлээ</span>
+          <span className="match-status"> — {matchedCount} бичлэгтэй харьцуулж эрэмбэлэгдлээ</span>
         )}
-        {matchError && <span style={{ fontSize: 12, color: 'var(--alert)' }}> — {matchError}</span>}
+        {matchError && <span className="match-status err"> — {matchError}</span>}
       </div>
 
       {loading ? (
@@ -145,20 +149,17 @@ export default function ListingsPage() {
           {Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)}
         </div>
       ) : pets.length === 0 ? (
-        <div style={{
-          textAlign: 'center', padding: '48px 20px', background: 'var(--card)',
-          border: '1px dashed var(--line)', borderRadius: 'var(--r-lg)', marginTop: 8,
-        }}>
-          <div style={{ fontSize: 46, marginBottom: 10 }}>🐾</div>
-          <p style={{ fontWeight: 600, color: 'var(--primary)', marginBottom: 4 }}>
+        <div className="empty-state">
+          <div className="empty-icon" aria-hidden="true">🐾</div>
+          <p className="empty-title">
             {search || district || status || type ? t('empty_no_results_title') : t('empty_no_posts_title')}
           </p>
-          <p style={{ color: 'var(--muted)', fontSize: 13.5, marginBottom: 18 }}>
+          <p className="empty-desc">
             {search || district || status || type ? t('empty_no_results_desc') : t('empty_no_posts_desc')}
           </p>
-          <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
+          <div className="empty-actions">
             <Link href="/report-lost" className="btn btn-accent">{t('hero_btn_lost')}</Link>
-            <Link href="/report-found" className="btn btn-primary">{t('hero_btn_found')}</Link>
+            <Link href="/report-found" className="btn btn-ghost">{t('hero_btn_found')}</Link>
           </div>
         </div>
       ) : (
@@ -167,12 +168,11 @@ export default function ListingsPage() {
             {pets.map((p) => <PetCard key={p.id} pet={p} />)}
           </div>
           {hasMore && !matchFile && (
-            <div style={{ textAlign: 'center', marginTop: 'var(--sp-5)' }}>
+            <div className="load-more-wrap">
               <button
                 onClick={handleLoadMore}
                 disabled={loadingMore}
-                className="btn"
-                style={{ background: 'var(--eyebrow-bg)', color: 'var(--primary)' }}
+                className="btn btn-ghost"
               >
                 {loadingMore ? t('loading_more') : t('load_more')}
               </button>
@@ -180,6 +180,25 @@ export default function ListingsPage() {
           )}
         </>
       )}
+
+      <style jsx>{`
+        .filter-bar { display: flex; gap: var(--sp-3); flex-wrap: wrap; margin-bottom: var(--sp-2); }
+        .match-upload { display: flex; align-items: center; gap: var(--sp-2); flex-wrap: wrap; margin-bottom: var(--sp-5); }
+        .file-input { position: absolute; width: 1px; height: 1px; opacity: 0; overflow: hidden; }
+        .file-input:focus-visible + label { outline: 2.5px solid var(--accent); outline-offset: 2px; }
+        .file-input:disabled + label { opacity: 0.6; cursor: not-allowed; }
+        .match-status { font-size: 12px; color: var(--muted); line-height: 1.5; }
+        .match-status.err { color: var(--alert); }
+        .empty-state {
+          text-align: center; padding: 52px 24px; margin-top: var(--sp-2);
+          background: var(--card); border: 1px dashed var(--line); border-radius: var(--r-xl);
+        }
+        .empty-icon { font-size: 44px; margin-bottom: var(--sp-3); }
+        .empty-title { font-weight: 700; color: var(--primary); font-size: 16px; margin-bottom: var(--sp-2); }
+        .empty-desc { color: var(--muted); font-size: 13.5px; margin-bottom: var(--sp-4); }
+        .empty-actions { display: flex; gap: var(--sp-3); justify-content: center; flex-wrap: wrap; }
+        .load-more-wrap { text-align: center; margin-top: var(--sp-6); }
+      `}</style>
     </div>
   );
 }

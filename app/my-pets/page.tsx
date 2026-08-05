@@ -89,26 +89,26 @@ export default function MyPetsPage() {
   if (!user) {
     return (
       <div>
-        <div className="eyebrow">{t('mypets_eyebrow')}</div>
-        <h1 style={{ fontSize: 24, marginBottom: 'var(--sp-3)' }}>{t('mypets_title')}</h1>
-        <p style={{ color: 'var(--muted)' }}>
-          {t('mypets_login_required')}
-        </p>
+        <div className="page-header">
+          <div className="eyebrow">{t('mypets_eyebrow')}</div>
+          <h1>{t('mypets_title')}</h1>
+          <p>{t('mypets_login_required')}</p>
+        </div>
       </div>
     );
   }
 
   return (
     <div style={{ maxWidth: 520 }}>
-      <div className="eyebrow">{t('mypets_eyebrow')}</div>
-      <h1 style={{ fontSize: 24, marginBottom: 'var(--sp-2)' }}>{t('mypets_title')}</h1>
-      <p style={{ color: 'var(--muted)', marginBottom: 'var(--sp-4)', fontSize: 13.5 }}>
-        {t('mypets_desc')}
-      </p>
+      <div className="page-header">
+        <div className="eyebrow">{t('mypets_eyebrow')}</div>
+        <h1>{t('mypets_title')}</h1>
+        <p>{t('mypets_desc')}</p>
+      </div>
 
       {!subscribed ? (
         <div style={{ background: 'var(--success-bg)', padding: 'var(--sp-3)', borderRadius: 'var(--r-md)', marginBottom: 'var(--sp-4)' }}>
-          <button onClick={handleSubscribe} className="btn" style={{ background: 'var(--brand)', color: '#fff' }}>
+          <button onClick={handleSubscribe} className="btn btn-primary">
             {t('mypets_subscribe')}
           </button>
           {notifyError && <p style={{ color: 'var(--alert)', fontSize: 12, marginTop: 'var(--sp-1)' }}>{notifyError}</p>}
@@ -119,23 +119,23 @@ export default function MyPetsPage() {
 
       <form onSubmit={handleAdd} style={{ display: 'flex', gap: 'var(--sp-2)', flexWrap: 'wrap', marginBottom: 'var(--sp-5)' }} aria-label="Шинэ амьтан нэмэх">
         <input
-          value={name} onChange={(e) => setName(e.target.value)}
+          className="field" value={name} onChange={(e) => setName(e.target.value)}
           placeholder={t('mypets_name_ph')} required
           aria-label={t('mypets_name_ph')}
-          style={{ flex: '1 1 140px', padding: 'var(--sp-2)', borderRadius: 'var(--r-sm)', border: '1.5px solid var(--line)' }}
+          style={{ flex: '1 1 140px', width: 'auto' }}
         />
-        <select value={type} onChange={(e) => setType(e.target.value)}
+        <select className="field" value={type} onChange={(e) => setType(e.target.value)}
           aria-label={t('type_label')}
-          style={{ padding: 'var(--sp-2)', borderRadius: 'var(--r-sm)', border: '1.5px solid var(--line)' }}>
+          style={{ width: 'auto' }}>
           <option value="Нохой">{TYPE_LABELS['Нохой']}</option>
           <option value="Муур">{TYPE_LABELS['Муур']}</option>
         </select>
         <input
-          type="date" value={date} onChange={(e) => setDate(e.target.value)}
+          className="field" type="date" value={date} onChange={(e) => setDate(e.target.value)}
           aria-label="Дараагийн вакцины огноо"
-          style={{ padding: 'var(--sp-2)', borderRadius: 'var(--r-sm)', border: '1.5px solid var(--line)' }}
+          style={{ width: 'auto' }}
         />
-        <button type="submit" disabled={busy} className="btn" style={{ background: 'var(--accent)', color: '#fff' }}>
+        <button type="submit" disabled={busy} className="btn btn-accent">
           {t('mypets_add')}
         </button>
       </form>
@@ -163,8 +163,7 @@ export default function MyPetsPage() {
             const st = vaccineStatus(p.nextVaccineDate);
             const label = STATUS_LABEL[st];
             return (
-              <div key={p.id} style={{
-                background: 'var(--card)', border: '1px solid var(--line)', borderRadius: 'var(--r-md)', boxShadow: 'var(--shadow-sm)',
+              <div key={p.id} className="card" style={{
                 padding: 'var(--sp-3)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 'var(--sp-2)', flexWrap: 'wrap',
               }}>
                 <div>
@@ -174,13 +173,14 @@ export default function MyPetsPage() {
                 </div>
                 <div style={{ display: 'flex', gap: 'var(--sp-2)', alignItems: 'center' }}>
                   <input
+                    className="field"
                     type="date"
                     defaultValue={p.nextVaccineDate || ''}
                     onChange={(e) => handleDateChange(p.id, e.target.value)}
                     aria-label={`${p.name}-ийн дараагийн вакцины огноо`}
-                    style={{ padding: 'var(--sp-1)', borderRadius: 'var(--r-sm)', border: '1.5px solid var(--line)', fontSize: 12.5 }}
+                    style={{ width: 'auto', fontSize: 12.5 }}
                   />
-                  <button onClick={() => handleDelete(p.id)} aria-label={`${p.name}-ийг устгах`} style={{
+                  <button onClick={() => handleDelete(p.id)} aria-label={`${p.name}-ийг устгах`} className="danger-link" style={{
                     background: 'none', border: 'none', color: 'var(--alert)', cursor: 'pointer', fontSize: 13,
                   }}>
                     {t('mypets_delete')}
@@ -191,6 +191,11 @@ export default function MyPetsPage() {
           })}
         </div>
       )}
+
+      <style jsx>{`
+        .danger-link { transition: opacity 0.15s ease; }
+        .danger-link:hover { opacity: 0.75; }
+      `}</style>
     </div>
   );
 }

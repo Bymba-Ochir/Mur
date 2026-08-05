@@ -82,27 +82,32 @@ export default function PetCard({ pet }: { pet: Pet }) {
 
       <style jsx>{`
         .pet-card {
-          background: var(--card); border: 1px solid var(--line); border-radius: var(--r-md);
-          overflow: hidden; cursor: pointer; transition: box-shadow .18s ease, transform .18s ease, border-color .18s ease;
+          background: var(--card); border: 1px solid var(--line); border-radius: var(--r-lg);
+          overflow: hidden; cursor: pointer; box-shadow: var(--shadow-sm);
+          transition: box-shadow .22s ease, transform .22s ease, border-color .22s ease;
         }
-        .pet-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); border-color: transparent; }
+        .pet-card:hover { box-shadow: var(--shadow-lift); transform: translateY(-3px); border-color: transparent; }
         .pet-card:focus-visible {
           outline: 2.5px solid var(--accent); outline-offset: 2px;
         }
         .thumb {
           height: 152px; background: var(--thumb-bg); position: relative;
-          display: flex; align-items: center; justify-content: center;
+          display: flex; align-items: center; justify-content: center; overflow: hidden;
         }
+        .thumb :global(img) { transition: transform .35s cubic-bezier(.16,1,.3,1); }
+        .pet-card:hover .thumb :global(img) { transform: scale(1.06); }
         .emoji { color: var(--muted); display: flex; opacity: 0.55; }
         .badge {
-          position: absolute; top: 9px; left: 9px; font-family: var(--font-mono); font-size: 9.5px;
-          padding: 4px 8px; border-radius: var(--r-sm); color: #fff; font-weight: 700; letter-spacing: 0.03em;
+          position: absolute; top: 10px; left: 10px; font-family: var(--font-mono); font-size: 9.5px;
+          padding: 4px 9px; border-radius: var(--r-pill); color: #fff; font-weight: 700; letter-spacing: 0.03em;
+          box-shadow: 0 1px 4px rgba(0,0,0,0.2);
         }
         .badge.lost { background: var(--alert); }
         .badge.found { background: var(--success); }
         .similarity {
-          position: absolute; bottom: 9px; right: 9px; font-family: var(--font-mono); font-size: 10.5px; font-weight: 600;
-          background: rgba(23,34,39,0.85); color: var(--accent); padding: 3px 8px; border-radius: var(--r-sm);
+          position: absolute; bottom: 10px; right: 10px; font-family: var(--font-mono); font-size: 10.5px; font-weight: 600;
+          background: rgba(23,34,39,0.8); color: var(--accent); padding: 3px 9px; border-radius: var(--r-pill);
+          -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
         }
         .info { padding: 14px 15px; }
         h4 { font-family: var(--font-display); font-size: 14.5px; font-weight: 600; margin-bottom: 3px; color: var(--primary); }

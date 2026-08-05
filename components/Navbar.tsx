@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import type { FormEvent } from 'react';
 import { useAuth } from '../lib/useAuth';
 import { isAdmin } from '../lib/adminService';
@@ -12,6 +13,7 @@ import { useLanguage } from '../lib/i18n';
 export default function Navbar() {
   const { user, loginWithEmail, logout } = useAuth();
   const { t } = useLanguage();
+  const pathname = usePathname();
   const [showLogin, setShowLogin] = useState(false);
   const [email, setEmail] = useState('');
   const [sent, setSent] = useState(false);
@@ -50,16 +52,16 @@ export default function Navbar() {
         <span className="brand-name">МӨР</span>
       </Link>
       <nav aria-label="Үндсэн цэс">
-        <Link href="/report-lost" className="nav-link-desktop">{t('nav_lost')}</Link>
-        <Link href="/report-found" className="nav-link-desktop">{t('nav_found')}</Link>
-        <Link href="/listings" className="nav-link-desktop">{t('nav_listings')}</Link>
-        <Link href="/my-pets" className="nav-link-desktop">{t('nav_mypets')}</Link>
-        {admin && <Link href="/admin" className="nav-link-desktop" style={{ color: 'var(--accent)' }}>{t('nav_admin')}</Link>}
+        <Link href="/report-lost" className={`nav-link-desktop${pathname === '/report-lost' ? ' active' : ''}`}>{t('nav_lost')}</Link>
+        <Link href="/report-found" className={`nav-link-desktop${pathname === '/report-found' ? ' active' : ''}`}>{t('nav_found')}</Link>
+        <Link href="/listings" className={`nav-link-desktop${pathname === '/listings' ? ' active' : ''}`}>{t('nav_listings')}</Link>
+        <Link href="/my-pets" className={`nav-link-desktop${pathname === '/my-pets' ? ' active' : ''}`}>{t('nav_mypets')}</Link>
+        {admin && <Link href="/admin" className={`nav-link-desktop${pathname === '/admin' ? ' active' : ''}`} style={{ color: 'var(--accent)' }}>{t('nav_admin')}</Link>}
         <DonateButton />
         <LanguageToggle />
         <ThemeToggle />
         {user ? (
-          <button onClick={logout} className="link-btn">{t('nav_logout_prefix')} ({user.email})</button>
+          <button onClick={logout} className="link-btn">{t('nav_logout_prefix')} <span className="email-hide">({user.email})</span></button>
         ) : (
           <button onClick={() => setShowLogin(true)} className="link-btn">{t('nav_login')}</button>
         )}
@@ -88,7 +90,7 @@ export default function Navbar() {
                   aria-describedby={err ? 'login-error' : undefined}
                 />
                 {err && <p id="login-error" className="err" role="alert">{err}</p>}
-                <button type="submit" className="btn-primary">{t('login_button')}</button>
+                <button type="submit" className="btn btn-primary">{t('login_button')}</button>
               </form>
             )}
             <button className="close" onClick={() => setShowLogin(false)} aria-label="Цонхыг хаах">{t('close')}</button>
@@ -99,29 +101,43 @@ export default function Navbar() {
       <style jsx>{`
         .navbar {
           display: flex; justify-content: space-between; align-items: center;
-          padding: 14px 28px; background: var(--brand); color: #fff;
-          box-shadow: var(--shadow-sm);
+          padding: 12px 28px;
+          background: var(--glass-bg);
+          -webkit-backdrop-filter: var(--glass-blur);
+          backdrop-filter: var(--glass-blur);
+          border-bottom: 1px solid var(--glass-border);
+          color: var(--ink);
           position: sticky; top: 0; z-index: 90;
         }
-        .brand { display: flex; align-items: center; gap: 10px; color: #fff; text-decoration: none; }
+        .brand { display: flex; align-items: center; gap: 10px; color: var(--primary); text-decoration: none; }
         .brand-name { font-family: var(--font-display); font-weight: 700; font-size: 18px; letter-spacing: -0.01em; }
         .brand-mark {
-          width: 32px; height: 32px; border-radius: var(--r-sm); background: var(--accent); color: var(--brand);
-          display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-weight: 700; font-size: 15px;
+          width: 32px; height: 32px; border-radius: 10px;
+          background: var(--grad-accent); color: #fff;
+          display: flex; align-items: center; justify-content: center;
+          font-family: var(--font-display); font-weight: 700; font-size: 15px;
+          box-shadow: var(--shadow-sm);
         }
         nav { display: flex; gap: 20px; align-items: center; }
         @media (max-width: 640px) {
           .nav-link-desktop { display: none; }
-          .navbar { padding: 14px 16px; }
+          .navbar { padding: 12px 16px; }
+          .email-hide { display: none; }
         }
         nav :global(a), .link-btn {
-          color: rgba(255,255,255,0.78); text-decoration: none; font-size: 13.5px; font-weight: 500;
+          color: var(--muted); text-decoration: none; font-size: 13.5px; font-weight: 500;
           background: none; border: none; cursor: pointer; font-family: var(--font-body);
           transition: color 0.15s ease;
         }
-        nav :global(a:hover), .link-btn:hover { color: #fff; }
+        nav :global(a:hover), .link-btn:hover { color: var(--primary); }
+        .nav-link-desktop { position: relative; }
+        .nav-link-desktop.active { color: var(--primary); font-weight: 600; }
+        .nav-link-desktop.active::after {
+          content: ''; position: absolute; left: 0; right: 0; bottom: -6px; height: 2px;
+          border-radius: 2px; background: var(--grad-accent);
+        }
         :global(a:focus-visible), .link-btn:focus-visible {
-          outline: 2px solid #fff; outline-offset: 2px; border-radius: 4px;
+          outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px;
         }
         .overlay {
           position: fixed; inset: 0; background: var(--overlay);
@@ -139,10 +155,7 @@ export default function Navbar() {
           width: 100%; padding: 11px 13px; border: 1.5px solid var(--line); border-radius: var(--r-sm);
           font-size: 14px; margin-bottom: 12px; font-family: var(--font-body); background: var(--card); color: var(--ink);
         }
-        .btn-primary {
-          width: 100%; padding: 12px; border-radius: var(--r-sm); border: none;
-          background: var(--accent); color: #fff; font-weight: 600; cursor: pointer; font-family: var(--font-body); font-size: 14px;
-        }
+        .modal .btn-primary { width: 100%; }
         .err { color: var(--alert); font-size: 12.5px; margin-bottom: 8px; }
         .close { margin-top: 14px; background: none; border: none; color: var(--muted); font-size: 12.5px; cursor: pointer; }
       `}</style>

@@ -55,12 +55,8 @@ export default function VolunteerBadge({ district }: { district: District }) {
       <button
         onClick={handleToggle}
         disabled={busy}
-        style={{
-          background: joined ? 'transparent' : 'var(--brand)',
-          color: joined ? 'var(--muted)' : '#fff',
-          border: joined ? '1px solid var(--line)' : 'none',
-          borderRadius: 'var(--r-sm)', padding: '6px 12px', fontSize: 12, fontWeight: 600, cursor: 'pointer',
-        }}
+        className={joined ? 'btn btn-ghost' : 'btn btn-primary'}
+        style={{ fontSize: 12, padding: '8px 12px' }}
       >
         {joined ? 'Гарах' : '+ Нэгдэх'}
       </button>

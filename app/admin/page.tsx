@@ -78,16 +78,20 @@ export default function AdminPage() {
   if (!admin) {
     return (
       <div>
-        <div className="eyebrow">{t('admin_restricted_eyebrow')}</div>
-        <h1 style={{ fontSize: 22 }}>{t('admin_no_access')}</h1>
+        <div className="page-header">
+          <div className="eyebrow">{t('admin_restricted_eyebrow')}</div>
+          <h1>{t('admin_no_access')}</h1>
+        </div>
       </div>
     );
   }
 
   return (
     <div style={{ maxWidth: 640 }}>
-      <div className="eyebrow">{t('admin_eyebrow')}</div>
-      <h1 style={{ fontSize: 24, marginBottom: 'var(--sp-4)' }}>{t('admin_title')}</h1>
+      <div className="page-header">
+        <div className="eyebrow">{t('admin_eyebrow')}</div>
+        <h1>{t('admin_title')}</h1>
+      </div>
 
       {reportsLoading ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-3)' }}>
@@ -110,9 +114,8 @@ export default function AdminPage() {
           {reports.map((r) => {
             const pet = r.pet;
             return (
-              <div key={r.id} style={{
-                background: 'var(--card)', border: '1px solid var(--line)', borderRadius: 'var(--r-md)', boxShadow: 'var(--shadow-sm)', padding: 'var(--sp-4)',
-                display: 'flex', gap: 'var(--sp-3)', alignItems: 'flex-start', flexWrap: 'wrap',
+              <div key={r.id} className="card" style={{
+                padding: 'var(--sp-4)', display: 'flex', gap: 'var(--sp-3)', alignItems: 'flex-start', flexWrap: 'wrap',
               }}>
                 {pet?.photoURL && (
                   <Image src={pet.photoURL} alt="" width={64} height={64} style={{ borderRadius: 'var(--r-sm)', objectFit: 'cover' }} />
@@ -137,8 +140,8 @@ export default function AdminPage() {
                   <button
                     onClick={() => handleDismiss(r.id)}
                     disabled={busyId === r.id}
-                    className="btn"
-                    style={{ background: 'var(--eyebrow-bg)', color: 'var(--primary)', fontSize: 12.5 }}
+                    className="btn btn-ghost"
+                    style={{ fontSize: 12.5 }}
                   >
                     {t('admin_dismiss')}
                   </button>

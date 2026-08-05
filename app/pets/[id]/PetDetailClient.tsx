@@ -139,7 +139,7 @@ export default function PetDetailClient({ id }: { id: string }) {
       </div>
 
       {!editing ? (
-        <div style={{ background: 'var(--card)', border: '1px solid var(--line)', borderRadius: 'var(--r-md)', boxShadow: 'var(--shadow-sm)', padding: 'var(--sp-4)' }}>
+        <div className="card" style={{ padding: 'var(--sp-4)' }}>
           <p style={{ marginBottom: 'var(--sp-1)' }}><b>{t('detail_type')}</b> {pet.type}{pet.color ? `, ${pet.color}` : ''}</p>
           <p style={{ marginBottom: 'var(--sp-1)' }}><b>{t('detail_district')}</b> {pet.district}</p>
           <p style={{ marginBottom: 'var(--sp-1)' }}><b>{t('detail_place')}</b> {pet.place}</p>
@@ -158,31 +158,24 @@ export default function PetDetailClient({ id }: { id: string }) {
         </div>
       ) : (
         editForm && (
-          <div style={{ background: 'var(--card)', border: '1px solid var(--line)', borderRadius: 'var(--r-md)', boxShadow: 'var(--shadow-sm)', padding: 'var(--sp-4)', display: 'flex', flexDirection: 'column', gap: 'var(--sp-2)' }}>
+          <div className="card" style={{ padding: 'var(--sp-4)', display: 'flex', flexDirection: 'column', gap: 'var(--sp-2)' }}>
             <label htmlFor="edit-name" style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--primary)' }}>{t('name_label')}</label>
-            <input id="edit-name" value={editForm.name} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-              style={{ padding: 'var(--sp-2)', borderRadius: 'var(--r-sm)', border: '1.5px solid var(--line)' }} />
+            <input id="edit-name" className="field" value={editForm.name} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })} />
             <label htmlFor="edit-color" style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--primary)' }}>{t('color_label').replace(' *','')}</label>
-            <input id="edit-color" value={editForm.color} onChange={(e) => setEditForm({ ...editForm, color: e.target.value })}
-              style={{ padding: 'var(--sp-2)', borderRadius: 'var(--r-sm)', border: '1.5px solid var(--line)' }} />
+            <input id="edit-color" className="field" value={editForm.color} onChange={(e) => setEditForm({ ...editForm, color: e.target.value })} />
             <label htmlFor="edit-district" style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--primary)' }}>{t('district_label')}</label>
-            <select id="edit-district" value={editForm.district} onChange={(e) => setEditForm({ ...editForm, district: e.target.value as District })}
-              style={{ padding: 'var(--sp-2)', borderRadius: 'var(--r-sm)', border: '1.5px solid var(--line)' }}>
+            <select id="edit-district" className="field" value={editForm.district} onChange={(e) => setEditForm({ ...editForm, district: e.target.value as District })}>
               {DISTRICTS.map((d) => <option key={d}>{d}</option>)}
             </select>
             <label htmlFor="edit-place" style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--primary)' }}>{t('detail_place').replace(':','')}</label>
-            <input id="edit-place" value={editForm.place} onChange={(e) => setEditForm({ ...editForm, place: e.target.value })}
-              style={{ padding: 'var(--sp-2)', borderRadius: 'var(--r-sm)', border: '1.5px solid var(--line)' }} />
+            <input id="edit-place" className="field" value={editForm.place} onChange={(e) => setEditForm({ ...editForm, place: e.target.value })} />
             <label htmlFor="edit-phone" style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--primary)' }}>{t('phone_label').replace(' *','')}</label>
-            <input id="edit-phone" value={editForm.phone} onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
-              style={{ padding: 'var(--sp-2)', borderRadius: 'var(--r-sm)', border: '1.5px solid var(--line)' }} />
+            <input id="edit-phone" className="field" value={editForm.phone} onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })} />
             <div style={{ display: 'flex', gap: 'var(--sp-2)', marginTop: 'var(--sp-2)' }}>
-              <button onClick={handleSaveEdit} disabled={saving} className="btn"
-                style={{ background: 'var(--brand)', color: '#fff', flex: 1, justifyContent: 'center' }}>
+              <button onClick={handleSaveEdit} disabled={saving} className="btn btn-primary" style={{ flex: 1 }}>
                 {saving ? t('detail_saving') : t('detail_save')}
               </button>
-              <button onClick={() => setEditing(false)} className="btn"
-                style={{ background: 'var(--eyebrow-bg)', color: 'var(--primary)', flex: 1, justifyContent: 'center' }}>
+              <button onClick={() => setEditing(false)} className="btn btn-ghost" style={{ flex: 1 }}>
                 {t('detail_cancel')}
               </button>
             </div>
@@ -192,8 +185,7 @@ export default function PetDetailClient({ id }: { id: string }) {
 
       {isOwner && !editing && (
         <div style={{ display: 'flex', gap: 'var(--sp-2)', marginTop: 'var(--sp-2)' }}>
-          <button onClick={() => setEditing(true)} className="btn"
-            style={{ background: 'var(--eyebrow-bg)', color: 'var(--primary)', flex: 1, justifyContent: 'center', fontSize: 13 }}>
+          <button onClick={() => setEditing(true)} className="btn btn-ghost" style={{ flex: 1, fontSize: 13 }}>
             {t('detail_edit_btn')}
           </button>
           <button onClick={handleDelete} disabled={deleting} className="btn"

@@ -313,8 +313,8 @@ export default function PetForm({ status }: { status: PetStatus }) {
         }
         .pet-form {
           display: flex; flex-direction: column; gap: 4px; max-width: 440px; flex: 1; min-width: 0;
-          background: var(--card); border: 1px solid var(--line); border-radius: var(--r-lg);
-          padding: var(--sp-6); box-shadow: var(--shadow-sm);
+          background: var(--card); border: 1px solid var(--line); border-radius: var(--r-xl);
+          padding: var(--sp-6); box-shadow: var(--shadow-md);
         }
         label { font-size: 12.5px; font-weight: 600; color: var(--primary); margin-top: var(--sp-4); display: block; letter-spacing: 0.01em; }
         label:first-child { margin-top: 0; }

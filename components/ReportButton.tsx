@@ -43,6 +43,7 @@ export default function ReportButton({ petId }: { petId: string }) {
       {!open ? (
         <button
           onClick={() => setOpen(true)}
+          className="report-link"
           style={{ background: 'none', border: 'none', color: 'var(--muted)', fontSize: 12, cursor: 'pointer', textDecoration: 'underline' }}
         >
           {t('report_btn')}
@@ -55,16 +56,26 @@ export default function ReportButton({ petId }: { petId: string }) {
               key={r}
               disabled={busy}
               onClick={() => handleReport(r)}
-              style={{
-                fontSize: 11.5, padding: '4px 9px', borderRadius: 'var(--r-sm)',
-                border: '1px solid var(--line)', background: 'var(--card)', cursor: 'pointer', color: 'var(--primary)',
-              }}
+              className="reason-chip"
             >
               {REASON_LABELS[r]}
             </button>
           ))}
         </div>
       )}
+
+      <style jsx>{`
+        .report-link { transition: color 0.15s ease; }
+        .report-link:hover { color: var(--alert); }
+        .reason-chip {
+          font-size: 11.5px; padding: 4px 9px; border-radius: var(--r-sm);
+          border: 1px solid var(--line); background: var(--card); cursor: pointer; color: var(--primary);
+          transition: transform 0.12s ease, border-color 0.15s ease, background 0.15s ease;
+        }
+        .reason-chip:hover { border-color: var(--accent); background: var(--eyebrow-bg); }
+        .reason-chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+        .reason-chip:disabled { opacity: 0.6; cursor: not-allowed; }
+      `}</style>
     </div>
   );
 }
