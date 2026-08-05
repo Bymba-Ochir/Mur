@@ -22,6 +22,7 @@ const pet: Pet = {
   district: 'Баянзүрх',
   place: 'дэлгүүрийн ойролцоо',
   phone: '99112233',
+  hasReward: false,
   reward: null,
   photoURL: null,
   embedding: null,
@@ -56,6 +57,16 @@ describe('PetCard — утасны дугаар нуух/харуулах', () =
   it('"АЛДСАН" badge зөв харагдана', () => {
     renderCard();
     expect(screen.getByText('АЛДСАН')).toBeInTheDocument();
+  });
+
+  it('hasReward үед "Шагналтай" харагдана, дүн нь нууц', () => {
+    render(
+      <LanguageProvider>
+        <PetCard pet={{ ...pet, hasReward: true, reward: 50000 }} />
+      </LanguageProvider>
+    );
+    expect(screen.getByText('Шагналтай')).toBeInTheDocument();
+    expect(screen.queryByText(/50000/)).not.toBeInTheDocument();
   });
 
   it('зурган бус үед PetIcon (SVG) харагдана', () => {

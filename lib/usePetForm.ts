@@ -26,7 +26,9 @@ export interface PetFormData {
   place: string;
   district: District;
   phone: string;
-  /** Шагналын дүн (raw текст инпут) — хоосон бол null-ээр хадгална */
+  /** "Шагналтай" гэж тэмдэглэх эсэх */
+  hasReward: boolean;
+  /** Шагналын дүн (raw текст инпут) — НУУЦ, хоосон бол null-ээр хадгална */
   reward: string;
 }
 
@@ -149,6 +151,7 @@ export function usePetSubmit({
         {
           ...form,
           status,
+          hasReward: form.hasReward,
           reward: form.reward ? Number(form.reward) : null,
           photoFile,
           lat: coords?.lat,

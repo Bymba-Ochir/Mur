@@ -2,7 +2,7 @@
 import type { HTMLAttributes, ReactNode } from 'react';
 import PetIcon from './PetIcon';
 import { relativeTime } from '../lib/relativeTime';
-import { maskPhone, formatReward } from '../lib/utils';
+import { maskPhone } from '../lib/utils';
 import type { PetStatus, PetType } from '../lib/types';
 
 /**
@@ -24,8 +24,8 @@ export interface PetCardViewProps extends HTMLAttributes<HTMLDivElement> {
   imageNode?: ReactNode;
   createdAt?: string;
   similarity?: number | null;
-  /** Шагналын дүн (₮) — байгаа үед карт дээр харуулна */
-  reward?: number | null;
+  /** "Шагналтай" гэж харуулах (дүнг нууц — зөвхөн тэмдэг харагдана) */
+  hasReward?: boolean;
   rewardLabel?: string;
   /** false + onRevealPhone = утас далд (masked) эхэлнэ */
   revealed?: boolean;
@@ -36,7 +36,7 @@ export interface PetCardViewProps extends HTMLAttributes<HTMLDivElement> {
 
 export default function PetCardView({
   status, badgeLabel, name, type, color, district, place, phone,
-  imageNode, createdAt, similarity, reward, rewardLabel = 'Шагнал',
+  imageNode, createdAt, similarity, hasReward, rewardLabel = 'Шагналтай',
   revealed = true, onRevealPhone, interactive = true,
   ...containerProps
 }: PetCardViewProps) {
@@ -56,7 +56,7 @@ export default function PetCardView({
         <h4>{name || type}</h4>
         <p>{type}{color ? `, ${color}` : ''}</p>
         <p className="place"><span aria-hidden="true">📍</span> {district} — {place}</p>
-        {reward ? <p className="reward"><span aria-hidden="true">🎁</span> {rewardLabel}: {formatReward(reward)}</p> : null}
+        {hasReward ? <p className="reward"><span aria-hidden="true">🎁</span> {rewardLabel}</p> : null}
         {createdAt && <p className="time"><span aria-hidden="true">🕓</span> {relativeTime(createdAt)}</p>}
         {showMasked ? (
           <button

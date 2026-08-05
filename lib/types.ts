@@ -19,7 +19,9 @@ export interface Pet {
   place: string;
   district: District;
   phone: string;
-  /** Алдсан амьтны шагналын дүн (₮); байхгүй бол null */
+  /** "Шагналтай" тэмдэг — нийтэд харагдана */
+  hasReward: boolean;
+  /** Шагналын дүн (₮) — НУУЦ: нийтэд харуулахгүй, зөвхөн хадгалагдана */
   reward: number | null;
   photoURL: string | null;
   embedding: number[] | null;
@@ -40,6 +42,7 @@ export interface PetReportInput {
   place: string;
   district: District;
   phone: string;
+  hasReward?: boolean;
   reward?: number | null;
   photoFile?: File | null;
   lat?: number | null;

@@ -37,7 +37,7 @@ export default function PetCard({ pet }: { pet: Pet }) {
       phone={pet.phone}
       createdAt={pet.createdAt || undefined}
       similarity={pet.similarity}
-      reward={pet.reward}
+      hasReward={pet.hasReward}
       rewardLabel={t('reward_prefix')}
       revealed={revealed}
       onRevealPhone={() => setRevealed(true)}

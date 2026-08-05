@@ -17,7 +17,7 @@ export default function PetForm({ status }: { status: PetStatus }) {
   const TYPE_LABELS: Record<PetType, string> = { 'Нохой': t('type_dog'), 'Муур': t('type_cat'), 'Бусад': t('type_other') };
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<PetFormData>({
-    name: '', type: 'Нохой', color: '', place: '', district: DISTRICTS[0], phone: '', reward: '',
+    name: '', type: 'Нохой', color: '', place: '', district: DISTRICTS[0], phone: '', hasReward: false, reward: '',
   });
 
   const photo = usePhotoUpload();
@@ -25,7 +25,7 @@ export default function PetForm({ status }: { status: PetStatus }) {
 
   // Амжилттай хадгалагдсаны дараа бүх форм төлөвийг цэвэрлэнэ
   function resetAll() {
-    setForm({ name: '', type: 'Нохой', color: '', place: '', district: DISTRICTS[0], phone: '', reward: '' });
+    setForm({ name: '', type: 'Нохой', color: '', place: '', district: DISTRICTS[0], phone: '', hasReward: false, reward: '' });
     setStep(0);
     photo.reset();
     location.reset();
@@ -163,11 +163,23 @@ export default function PetForm({ status }: { status: PetStatus }) {
         <>
           {status === 'lost' && (
             <>
-              <label htmlFor="pet-reward">{t('reward_label')}</label>
-              <input
-                id="pet-reward" name="reward" inputMode="numeric" pattern="[0-9]*"
-                value={form.reward} onChange={handleChange} placeholder={t('reward_placeholder')}
-              />
+              <label className="reward-check" htmlFor="pet-has-reward">
+                <input
+                  id="pet-has-reward" type="checkbox"
+                  checked={form.hasReward}
+                  onChange={(e) => setForm((f) => ({ ...f, hasReward: e.target.checked }))}
+                />
+                <span>🎁 {t('reward_label')}</span>
+              </label>
+              {form.hasReward && (
+                <>
+                  <label htmlFor="pet-reward">{t('reward_amount_label')}</label>
+                  <input
+                    id="pet-reward" name="reward" inputMode="numeric" pattern="[0-9]*"
+                    value={form.reward} onChange={handleChange} placeholder={t('reward_placeholder')}
+                  />
+                </>
+              )}
             </>
           )}
           <label htmlFor="pet-phone">{t('phone_label')}</label>
@@ -214,7 +226,7 @@ export default function PetForm({ status }: { status: PetStatus }) {
         place={form.place}
         phone={form.phone}
         photoPreview={photo.preview}
-        reward={form.reward}
+        hasReward={form.hasReward}
       />
     </div>
 
@@ -265,6 +277,11 @@ export default function PetForm({ status }: { status: PetStatus }) {
 
         .progress-text { font-family: var(--font-mono); font-size: 11.5px; color: var(--muted); margin: var(--sp-2) 0 var(--sp-5); text-align: center; letter-spacing: 0.02em; }
 
+        .reward-check {
+          display: flex; align-items: center; gap: 8px; cursor: pointer;
+          margin-top: var(--sp-4); font-size: 13px; font-weight: 600; color: var(--primary); letter-spacing: 0;
+        }
+        .reward-check input { width: auto; margin: 0; accent-color: var(--accent); }
         .locate-btn {
           padding: 10px 15px; border-radius: var(--r-pill); border: 1.5px solid var(--primary);
           background: transparent; color: var(--primary); font-weight: 600; cursor: pointer; font-size: 13px; margin-bottom: var(--sp-3);

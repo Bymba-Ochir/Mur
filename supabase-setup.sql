@@ -12,6 +12,7 @@ create table if not exists pets (
   place text default '',
   district text default '',
   phone text default '',
+  has_reward boolean not null default false,
   reward integer,
   photo_url text,
   color_signature jsonb,
@@ -24,7 +25,8 @@ create table if not exists pets (
 alter table pets add column if not exists lat double precision;
 alter table pets add column if not exists lng double precision;
 
--- Алдсан амьтны шагналын дүн (₮, заавал биш)
+-- "Шагналтай" тэмдэг (нийтэд харагдана) + шагналын дүн (₮, НУУЦ — нийтэд харуулахгүй)
+alter table pets add column if not exists has_reward boolean not null default false;
 alter table pets add column if not exists reward integer;
 
 -- "Олдлоо" товч, зохиогчийг тэмдэглэх багана

@@ -9,7 +9,7 @@ import type { PetStatus, PetType } from '../lib/types';
  * Картын markup/стиль нь PetCardView-ээс (жагсаалтын карттай нэгдсэн).
  */
 export default function PetPreviewCard({
-  status, name, type, color, district, place, phone, photoPreview, reward,
+  status, name, type, color, district, place, phone, photoPreview, hasReward,
 }: {
   status: PetStatus;
   name: string;
@@ -19,7 +19,7 @@ export default function PetPreviewCard({
   place: string;
   phone: string;
   photoPreview: string | null;
-  reward?: string;
+  hasReward?: boolean;
 }) {
   const { t } = useLanguage();
   const typeLabel = type === 'Муур' ? t('type_cat') : type === 'Нохой' ? t('type_dog') : t('type_other');
@@ -36,7 +36,7 @@ export default function PetPreviewCard({
         district={district}
         place={place}
         phone={phone}
-        reward={reward ? Number(reward) : null}
+        hasReward={hasReward}
         rewardLabel={t('reward_prefix')}
         interactive={false}
         imageNode={

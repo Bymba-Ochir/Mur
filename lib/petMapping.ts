@@ -14,6 +14,7 @@ interface PetRow {
   place: string | null;
   district: string | null;
   phone: string | null;
+  has_reward: boolean | null;
   reward: number | null;
   photo_url: string | null;
   color_signature: unknown; // CLIP vector (JSONB)
@@ -34,6 +35,7 @@ export function mapPetRow(row: PetRow): Pet {
     place: row.place ?? '',
     district: (row.district ?? '') as Pet['district'],
     phone: row.phone ?? '',
+    hasReward: row.has_reward ?? false,
     reward: row.reward ?? null,
     photoURL: row.photo_url,
     embedding: (row.color_signature as number[] | null) ?? null,

@@ -2,7 +2,7 @@
 import { useEffect, useState, useSyncExternalStore } from 'react';
 import { fetchPetById, markResolved, updatePet, deletePet } from '../../../lib/petService';
 import { useAuth } from '../../../lib/useAuth';
-import { maskPhone, formatReward } from '../../../lib/utils';
+import { maskPhone } from '../../../lib/utils';
 import { relativeTime } from '../../../lib/relativeTime';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
@@ -110,7 +110,7 @@ export default function PetDetailClient({ id }: { id: string }) {
   const isOwner = user && pet.createdBy && user.id === pet.createdBy;
 
   return (
-    <div style={{ maxWidth: 480 }}>
+    <div style={{ maxWidth: 960 }}>
       <div className="eyebrow">{pet.status === 'lost' ? t('report_lost_eyebrow') : t('report_found_eyebrow')}</div>
       <h1 style={{ fontSize: 24, marginBottom: 'var(--sp-1)' }}>{title}</h1>
       {pet.createdAt && (
@@ -123,79 +123,88 @@ export default function PetDetailClient({ id }: { id: string }) {
         </div>
       )}
 
-      <div style={{
-        borderRadius: 'var(--r-md)', overflow: 'hidden', background: 'var(--thumb-bg)', height: 260,
-        display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 'var(--sp-4)',
-        opacity: pet.resolved ? 0.6 : 1, position: 'relative',
-      }}>
-        {pet.photoURL ? (
-          <Image
-            src={pet.photoURL}
-            alt={`${pet.type}${pet.name ? ', ' + pet.name : ''}${pet.color ? ', ' + pet.color : ''}`}
-            fill
-            sizes="480px"
-            style={{ objectFit: 'cover' }}
-            priority
-          />
-        ) : (
-          <span style={{ color: 'var(--muted)' }}><PetIcon type={pet.type} size={64} /></span>
-        )}
-      </div>
+      <div className="detail-grid">
+        {/* Зураг — зүүн талд, том */}
+        <div className="detail-media">
+          <div style={{
+            borderRadius: 'var(--r-md)', overflow: 'hidden', background: 'var(--thumb-bg)',
+            aspectRatio: '4 / 3', width: '100%',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            opacity: pet.resolved ? 0.6 : 1, position: 'relative',
+          }}>
+            {pet.photoURL ? (
+              <Image
+                src={pet.photoURL}
+                alt={`${pet.type}${pet.name ? ', ' + pet.name : ''}${pet.color ? ', ' + pet.color : ''}`}
+                fill
+                sizes="(max-width: 800px) 100vw, 520px"
+                style={{ objectFit: 'cover' }}
+                priority
+              />
+            ) : (
+              <span style={{ color: 'var(--muted)' }}><PetIcon type={pet.type} size={64} /></span>
+            )}
+          </div>
+        </div>
 
-      {!editing ? (
-        <div className="card" style={{ padding: 'var(--sp-4)' }}>
-          <p style={{ marginBottom: 'var(--sp-1)' }}><b>{t('detail_type')}</b> {pet.type}{pet.color ? `, ${pet.color}` : ''}</p>
-          <p style={{ marginBottom: 'var(--sp-1)' }}><b>{t('detail_district')}</b> {pet.district}</p>
-          <p style={{ marginBottom: 'var(--sp-1)' }}><b>{t('detail_place')}</b> {pet.place}</p>
-          {pet.reward ? (
-            <p style={{ marginBottom: 'var(--sp-1)' }}><b>🎁 {t('reward_prefix')}</b> {formatReward(pet.reward)}</p>
-          ) : null}
-          {revealed ? (
-            <a href={`tel:${pet.phone}`} style={{ display: 'inline-block', marginTop: 'var(--sp-2)', fontWeight: 700, color: 'var(--primary)' }}>
-              ☎ {pet.phone}
-            </a>
+        {/* Мэдээлэл — баруун талд */}
+        <div className="detail-info">
+          {!editing ? (
+            <div className="card" style={{ padding: 'var(--sp-4)' }}>
+              <p style={{ marginBottom: 'var(--sp-1)' }}><b>{t('detail_type')}</b> {pet.type}{pet.color ? `, ${pet.color}` : ''}</p>
+              <p style={{ marginBottom: 'var(--sp-1)' }}><b>{t('detail_district')}</b> {pet.district}</p>
+              <p style={{ marginBottom: 'var(--sp-1)' }}><b>{t('detail_place')}</b> {pet.place}</p>
+              {pet.hasReward ? (
+                <p style={{ marginBottom: 'var(--sp-1)' }}><b>🎁 {t('reward_prefix')}</b></p>
+              ) : null}
+              {revealed ? (
+                <a href={`tel:${pet.phone}`} style={{ display: 'inline-block', marginTop: 'var(--sp-2)', fontWeight: 700, color: 'var(--primary)' }}>
+                  ☎ {pet.phone}
+                </a>
+              ) : (
+                <button
+                  onClick={() => setRevealed(true)}
+                  style={{ display: 'inline-block', marginTop: 'var(--sp-2)', fontWeight: 700, color: 'var(--primary)', background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: 'inherit' }}
+                >
+                  ☎ {maskPhone(pet.phone)} · {t('detail_show_phone')}
+                </button>
+              )}
+            </div>
           ) : (
+            editForm && (
+              <PetEditForm
+                initial={editForm}
+                onSave={handleSaveEdit}
+                onCancel={() => setEditing(false)}
+                saving={saving}
+              />
+            )
+          )}
+
+          {isOwner && !editing && (
+            <div style={{ display: 'flex', gap: 'var(--sp-2)', marginTop: 'var(--sp-2)' }}>
+              <button onClick={() => setEditing(true)} className="btn btn-ghost" style={{ flex: 1, fontSize: 13 }}>
+                {t('detail_edit_btn')}
+              </button>
+              <button onClick={handleDelete} disabled={deleting} className="btn"
+                style={{ background: 'var(--card)', color: 'var(--alert)', border: '1.5px solid var(--alert)', flex: 1, justifyContent: 'center', fontSize: 13 }}>
+                {deleting ? t('detail_deleting') : t('detail_delete_btn')}
+              </button>
+            </div>
+          )}
+
+          {isOwner && !pet.resolved && !editing && (
             <button
-              onClick={() => setRevealed(true)}
-              style={{ display: 'inline-block', marginTop: 'var(--sp-2)', fontWeight: 700, color: 'var(--primary)', background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: 'inherit' }}
+              onClick={handleResolve}
+              disabled={resolving}
+              className="btn"
+              style={{ marginTop: 'var(--sp-2)', background: 'var(--success)', color: '#fff', width: '100%', justifyContent: 'center' }}
             >
-              ☎ {maskPhone(pet.phone)} · {t('detail_show_phone')}
+              {resolving ? t('detail_resolving') : t('detail_resolve_btn')}
             </button>
           )}
         </div>
-      ) : (
-        editForm && (
-          <PetEditForm
-            initial={editForm}
-            onSave={handleSaveEdit}
-            onCancel={() => setEditing(false)}
-            saving={saving}
-          />
-        )
-      )}
-
-      {isOwner && !editing && (
-        <div style={{ display: 'flex', gap: 'var(--sp-2)', marginTop: 'var(--sp-2)' }}>
-          <button onClick={() => setEditing(true)} className="btn btn-ghost" style={{ flex: 1, fontSize: 13 }}>
-            {t('detail_edit_btn')}
-          </button>
-          <button onClick={handleDelete} disabled={deleting} className="btn"
-            style={{ background: 'var(--card)', color: 'var(--alert)', border: '1.5px solid var(--alert)', flex: 1, justifyContent: 'center', fontSize: 13 }}>
-            {deleting ? t('detail_deleting') : t('detail_delete_btn')}
-          </button>
-        </div>
-      )}
-
-      {isOwner && !pet.resolved && !editing && (
-        <button
-          onClick={handleResolve}
-          disabled={resolving}
-          className="btn"
-          style={{ marginTop: 'var(--sp-2)', background: 'var(--success)', color: '#fff', width: '100%', justifyContent: 'center' }}
-        >
-          {resolving ? t('detail_resolving') : t('detail_resolve_btn')}
-        </button>
-      )}
+      </div>
 
       {pet.lat != null && pet.lng != null && (
         <div style={{ marginTop: 'var(--sp-4)' }}>
@@ -215,6 +224,18 @@ export default function PetDetailClient({ id }: { id: string }) {
       <ReportButton petId={pet.id} />
 
       <SightingsList petId={pet.id} />
+
+      <style jsx>{`
+        .detail-grid {
+          display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+          gap: var(--sp-5); align-items: start; margin-bottom: var(--sp-4);
+        }
+        @media (max-width: 800px) {
+          .detail-grid { grid-template-columns: 1fr; }
+        }
+        .detail-media { min-width: 0; }
+        .detail-info { min-width: 0; display: flex; flex-direction: column; }
+      `}</style>
     </div>
   );
 }
