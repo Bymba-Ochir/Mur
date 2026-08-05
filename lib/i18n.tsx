@@ -96,6 +96,12 @@ const MN = {
   photo_quality_bright: '📸 Гэрэлтэй, бүдэг биш зураг',
   photo_quality_close: '🐾 Амьтныг ойрхон, нүүр нь тодорхой харгдахаар',
   photo_quality_match: 'Зураг сайн байх тусам ижил төстэй олдсон бичлэг таарах магадлал өсдөг.',
+  nf_title: 'Хуудас олдсонгүй',
+  nf_desc: 'Таны хайж буй хуудас байхгүй эсвэл зөөгдсөн байна.',
+  nf_home: '← Нүүр хуудас руу буцах',
+  err_title: 'Алдаа гарлаа',
+  err_desc: 'Уучлаарай, ямар нэгэн зүйл буруу болсон байна. Дахин оролдоно уу.',
+  err_retry: 'Дахин оролдох',
 };
 
 export type TranslationKey = keyof typeof MN;
@@ -192,6 +198,12 @@ const EN: Record<TranslationKey, string> = {
   photo_quality_bright: '📸 Bright and sharp (not blurry)',
   photo_quality_close: '🐾 Pet close-up, face clearly visible',
   photo_quality_match: 'A clearer photo increases the chance of matching a found pet.',
+  nf_title: 'Page not found',
+  nf_desc: 'The page you are looking for does not exist or has been moved.',
+  nf_home: '← Back to home',
+  err_title: 'Something went wrong',
+  err_desc: 'Sorry, something went wrong. Please try again.',
+  err_retry: 'Try again',
 };
 
 export const DICT = { mn: MN, en: EN };

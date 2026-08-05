@@ -3,9 +3,19 @@ import { NextResponse } from 'next/server';
 import { randomBytes } from 'crypto';
 import { createClient } from '@supabase/supabase-js';
 import { createQPayInvoice } from '../../../../lib/qpay';
+import { checkRateLimit, getClientIp } from '../../../../lib/rateLimit';
 
 export async function POST(request: Request) {
   try {
+    // IP-д суурилсан spam хязгаарлалт: 1 минутад 5 хүсэлт
+    const rl = checkRateLimit(`donate:${getClientIp(request)}`, 5, 60_000);
+    if (!rl.allowed) {
+      return NextResponse.json(
+        { error: 'Хэт олон хүсэлт илгээлээ. Түр хүлээгээд дахин оролдоно уу.' },
+        { status: 429, headers: { 'Retry-After': String(rl.retryAfterSec) } },
+      );
+    }
+
     const body = await request.json();
     const { amount, supporterName, message, isAnonymous } = body;
 

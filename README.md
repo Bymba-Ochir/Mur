@@ -5,7 +5,7 @@
 
 ## Технологи
 
-- **Next.js 14** (App Router) — зөвхөн вэб (PWA), React Native-г Үе шат 2-т
+- **Next.js 16** (App Router) + **React 19** — зөвхөн вэб (PWA), React Native-г Үе шат 2-т
 - **Supabase** — Postgres DB + Auth (имэйл magic link) + Storage, **карт шаардахгүй үнэгүй tier**
 - **CLIP embedding — шууд БРАУЗЕР дотор ажиллана** (`@huggingface/transformers`,
   CDN-ээс ачаална). Hugging Face-ийн серверийн Inference API 2025-2026 онд
@@ -276,15 +276,18 @@ npm run test:e2e                  # e2e тестүүдийг ажиллуулн�
 
 **CI/CD pipeline:** `.github/workflows/ci.yml` — GitHub-д `main` руу push/PR
 хийх бүрд автоматаар ажиллана (3 job, зэрэгцээ):
-1. **Quality gate** — `tsc --noEmit` + `next lint` + `vitest run` (гадаад холболт/env шаарддаггүй тул **үргэлж** ажиллана)
+1. **Quality gate** — `tsc --noEmit` + `eslint .` + `vitest run` (гадаад холболт/env шаарддаггүй тул **үргэлж** ажиллана)
 2. **Production build** — `next build` (Supabase-ийн client module-ийг бүтээхэд зориулж dummy env-ээр)
 3. **E2E smoke test** — Playwright chromium; `NEXT_PUBLIC_SUPABASE_URL`/`ANON_KEY`
    GitHub Secrets-д тохируулсан үед л ажиллана (fork-ийн PR-д secrets байхгүй тул skip болно, pipelines блоклогддоггүй)
 
-Lint нь `eslint` + `eslint-config-next` devDependencies + `.eslintrc.json`-ээр
-ажиллана. Vercel-ийн автомат deploy-ыг блоклохын тулд GitHub →
-Settings → Branches дээр `main`-д **"Require status checks"** идэвхжүүлж,
-`quality` check-ийг required болгоно уу.
+Lint нь ESLint 9 flat config (`eslint.config.mjs`, `eslint-config-next@16`-ийн
+native config) + `npm run lint` = `eslint .`-ээр ажиллана. Vercel-ийн автомат
+deploy-ыг блоклохын тулд GitHub → Settings → Branches дээр `main`-д
+**"Require status checks"** идэвхжүүлж, `quality` check-ийг required болгоно уу.
+
+**Security** — аюулгүй байдлын арга хэмжээ, хүлээн зөвшөөрсөн эрсдэл (npm audit),
+эргэн төлөлтийн төлөвлөгөө: `docs/SECURITY.md`
 
 ## Файлын бүтэц
 
@@ -314,6 +317,28 @@ public/sw.js            — Push мэдэгдэл хүлээн авах Service 
 vercel.json             — Vercel Cron Job тохиргоо (вакцины сануулга)
 supabase-setup.sql      — Өгөгдлийн сан, RLS дүрэм, Storage bucket, push_subscriptions, my_pets
 ```
+
+> Бүх эх код `.ts`/`.tsx` болон хөрвүүлэгдсэн (JS→TS бүрэн миграци). Аудит/ops-оор
+> шинээр нэмэгдсэн файлууд:
+>
+> ```
+> docs/
+>   BACKUP.md            — Backup & DR стратеги, restore runbook
+>   SECURITY.md          — Аюулгүй байдлын байр суурь, хүлээн зөвшөөрсөн эрсдэл
+> scripts/
+>   backup-db.sh         — pg_dump backup скрипт (retention + S3/GCS сонголт)
+> lib/
+>   analyticsConsent.ts  — Analytics зөвшөөрөл (beforeSend hook)
+>   rateLimit.ts         — In-memory rate limiter (хандив)
+>   env.ts               — Заавал env шалгалт (fail-fast)
+> components/
+>   AnalyticsProvider.tsx — Analytics/SpeedInsights + мэдэгдэл wrapper
+>   AnalyticsNotice.tsx   — Analytics-мэдэгдэл баннер (i18n)
+> app/
+>   not-found.tsx         — Custom 404
+>   error.tsx             — Error boundary (Sentry-д холбогдсон)
+> eslint.config.mjs       — ESLint 9 flat config
+> ```
 
 ## Дараагийн алхмууд (Үе шат 2)
 
@@ -362,4 +387,34 @@ supabase-setup.sql      — Өгөгдлийн сан, RLS дүрэм, Storage b
 - [x] `next/image` ашиглаж зураг optimize хийсэн ✅ (WebP, responsive sizes, автомат lazy-load — PetCard, PetDetail, Admin)
 - [x] Жагсаалтын хуудаслалт ✅ (24 бичлэг тутам, "Илүү үзэх" товч, Supabase `.range()` ашигласан)
 - [x] Автомат тест (unit + component + e2e) ✅ (Vitest — 28 unit/component test бодитоор ажиллуулж баталгаажуулсан, Playwright — навигаци/форм e2e smoke test, GitHub Actions CI)
+
+### Аудит / Security / Ops (2026-08)
+
+- [x] Security headers ✅ (`next.config.js` — CSP + `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy`, `Permissions-Policy`)
+- [x] Cookie-зөвшөөрөл биш, analytics-мэдэгдэл ✅ (`components/AnalyticsNotice.tsx` — нэргүй/cookie-гүй статистик, Vercel Analytics/Speed Insights-ийг `beforeSend`-ээр зөвшөөрөлд холбосон)
+- [x] Зургийн чанарын заавар + дескриптив alt ✅ (`PetForm.tsx` — гэрэл/ойрхон зөвлөгөө; PetCard/PetPreviewCard/PetDetail alt сайжруулсан)
+- [x] Backup & Disaster Recovery ✅ (`scripts/backup-db.sh` + `docs/BACKUP.md` — pg_dump/retention, storage S3 restore, 3 сценарийн runbook)
+- [x] CI/CD pipeline ✅ (`.github/workflows/ci.yml` — typecheck + eslint + unit тест + build + e2e (secrets байгаа үед))
+- [x] Dead code устгал ✅ (`app/api/embed` — CLIP browser-д шилжсэн, хуучин серверийн HF embedding)
+- [x] Donation rate limit ✅ (`lib/rateLimit.ts` — 1мин/5 хүсэлт/IP, `/api/donations/create`)
+- [x] DB-level pet validation + index ✅ (`supabase-setup.sql` — `validate_pet_input` trigger, 5 index)
+- [x] Custom 404/error хуудас ✅ (`app/not-found.tsx`, `app/error.tsx` — branded, i18n, Sentry-д холбогдсон)
+- [x] Env validation ✅ (`lib/env.ts` — заавал env алга бол fail-fast, `instrumentation.ts`)
+- [x] Sentry v10 + Next.js 16 + React 19 + ESLint 9 upgrade ✅ (`npm audit` 33→5, үлдсэн5 нь зөвхөн dev tooling)
+
 - [ ] React Native апп (iOS/Android)
+
+## Баримт бичиг (docs)
+
+- **`docs/BACKUP.md`** — Backup & Disaster Recovery: RPO/RTO, backup скрипт (cron/GitHub Actions жишээ), restore runbook (3 сценари), storage backup, drill.
+- **`docs/SECURITY.md`** — Аюулгүй байдлын байр суурь (CSP/RLS/rate limit/env validation), хүлээн зөвшөөрсөн эрсдэл (`npm audit`), эргэн төлөлтийн төлөвлөгөө.
+
+Хэрэгтэй тушаалууд:
+
+```bash
+npm run typecheck   # TypeScript шалгалт
+npm run lint        # ESLint (flat config)
+npm test            # unit + component тест
+npm run test:e2e    # Playwright e2e (dev server шаардлагатай)
+DATABASE_URL="postgresql://..." ./scripts/backup-db.sh   # DB backup
+```

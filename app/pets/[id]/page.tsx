@@ -10,8 +10,9 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
-export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
-  const { data: pet } = await supabase.from('pets').select('*').eq('id', params.id).single();
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params;
+  const { data: pet } = await supabase.from('pets').select('*').eq('id', id).single();
 
   if (!pet) {
     return { title: 'МӨР — Бичлэг олдсонгүй' };
@@ -38,6 +39,7 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
   };
 }
 
-export default function PetDetailPage({ params }: { params: { id: string } }) {
-  return <PetDetailClient id={params.id} />;
+export default async function PetDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  return <PetDetailClient id={id} />;
 }

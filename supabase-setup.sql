@@ -202,6 +202,37 @@ create trigger trg_pet_rate_limit
   before insert on pets
   for each row execute function check_pet_rate_limit();
 
+-- 13b. Pet бичлэгийн өгөгдлийг DB түвшинд валидлах (клиентээр тойрч болохгүй)
+-- Утасны дугаар 8 оронтой (эсвэл +976 угтвартай 11 оронтой) байх ёстой.
+-- Хоосон утга нь хуучин/тест бичлэгүүдэд эвдрэл үүсгэхгүйн тулд зөвшөөрөгдөнө.
+create or replace function validate_pet_input()
+returns trigger
+language plpgsql
+as $$
+begin
+  if new.phone is not null and new.phone <> '' then
+    if regexp_replace(new.phone, '\D', '', 'g') !~ '^(976)?[0-9]{8}$' then
+      raise exception 'Утасны дугаар 8 оронтой тоо байх ёстой (жишээ: 99112233)';
+    end if;
+  end if;
+  if new.name is not null and char_length(new.name) > 100 then
+    raise exception 'Нэр хэт урт байна (хамгийн ихдээ 100 тэмдэгт)';
+  end if;
+  if new.color is not null and char_length(new.color) > 100 then
+    raise exception 'Өнгө хэт урт байна (хамгийн ихдээ 100 тэмдэгт)';
+  end if;
+  if new.place is not null and char_length(new.place) > 500 then
+    raise exception 'Байршил хэт урт байна (хамгийн ихдээ 500 тэмдэгт)';
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists trg_validate_pet_input on pets;
+create trigger trg_validate_pet_input
+  before insert or update on pets
+  for each row execute function validate_pet_input();
+
 -- 14. "Би харсан" сэтгэгдэл — олон нийт хамтдаа хайлтад тусалдаг
 create table if not exists sightings (
   id uuid primary key default gen_random_uuid(),
@@ -279,3 +310,10 @@ drop policy if exists "Public read paid donations" on donations;
 create policy "Public read paid donations"
   on donations for select
   using (status = 'paid');
+
+-- 21. Жагсаалтын order/шүүлтийн index-ууд (өгөгдөл өсөхөд хурд)
+create index if not exists pets_created_at_idx on pets (created_at desc);
+create index if not exists pets_district_created_idx on pets (district, created_at desc);
+create index if not exists pets_phone_idx on pets (phone);
+create index if not exists sightings_created_at_idx on sightings (created_at desc);
+create index if not exists reports_created_at_idx on reports (created_at desc);
