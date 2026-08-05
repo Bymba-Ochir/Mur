@@ -31,7 +31,10 @@ export default function PetPreviewCard({
             {status === 'lost' ? t('nav_lost').toUpperCase() : t('nav_found').toUpperCase()}
           </span>
           {photoPreview ? (
-            <img src={photoPreview} alt="" />
+            <img
+              src={photoPreview}
+              alt={`${typeLabel}${color ? ', ' + color : ''}${name ? ', ' + name : ''}`}
+            />
           ) : (
             <span className="emoji"><PetIcon type={type} size={52} /></span>
           )}

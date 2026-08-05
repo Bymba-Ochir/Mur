@@ -9,6 +9,9 @@
 .env*.local
 .env
 
+# backup файлууд (auth.users имэйл зэрэг PII агуулж болно — git-д бүү оруул)
+/backups/
+
 # misc
 .DS_Store
 *.pem

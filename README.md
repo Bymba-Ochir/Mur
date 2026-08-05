@@ -91,7 +91,21 @@ vercel
 
 Vercel dashboard дээр орчны хувьсагчдаа (.env.local-той адил) нэмэхээ мартуузай.
 
-### 6. Push мэдэгдэл (Nearby Alert) тохируулах
+### 7. Backup ба Disaster Recovery
+
+Supabase-ийн үнэгүй tier-д автомат backup байхгүй тул өгөгдөл хамгаалах нь бидний үүрэг.
+Баримтжуулсан стратеги, restore журам: **`docs/BACKUP.md`**. Товчхон:
+
+```bash
+# `.env.local`-д DATABASE_URL нэмээд (Database > Connection string > Direct):
+DATABASE_URL="postgresql://postgres.xxx:ПАСС@db.xxx.supabase.co:5432/postgres" ./scripts/backup-db.sh
+```
+
+Скрипт нь `pg_dump`-ээр бүх өгөгдлийг gzip хийж `./backups/`-д хадгална (14 хоног),
+сонголтоор `BACKUP_DEST`-ээр S3/GCS/local руу хуулна. Автомат схемийн cron эсвэл
+GitHub Actions-ийн жишээг `docs/BACKUP.md` §3.3-аас үзнэ үү.
+
+### 8. Push мэдэгдэл (Nearby Alert) тохируулах
 
 **А. VAPID түлхүүр** — `.env.local.example`-д аль хэдийн жишээ түлхүүрийн хос орсон,
 шууд ашиглаж болно. Өөрийн шинэ түлхүүр хүсвэл:
@@ -124,7 +138,7 @@ npx web-push generate-vapid-keys
 ажиллах ч бодит push ирэхгүй байж болно (Chrome dev тохиолдолд `localhost`-ыг
 тусгайлан HTTPS мэт үзнэ, ажиллах ёстой).
 
-### 7. Вакцины сануулга (retention feature) тохируулах
+### 9. Вакцины сануулга (retention feature) тохируулах
 
 **А. Vercel дээр `CRON_SECRET` нэмэх:**
 1. Дурын нууц урт мөр зохио (жишээ: `openssl rand -hex 16`)
@@ -141,7 +155,7 @@ Vercel Hobby (үнэгүй) план дээр **`vercel.json`-д тохируу�
 
 **Анхаарах зүйл:** Vercel Hobby план дээр Cron Job-ууд **өдөрт нэг удаа** ажиллах хугацааны нарийвчлалтай (яг тухайн минутад биш, ойролцоогоор ажиллаж болно) — энэ бол үнэгүй tier-ийн хязгаарлалт, вакцины сануулгад хангалттай.
 
-### 8. SEO болон PWA суулгах санал
+### 10. SEO болон PWA суулгах санал
 
 **А. Домэйнээ тохируулах:** `.env.local`-д (болон Vercel Environment Variables-д)
 `NEXT_PUBLIC_SITE_URL`-г таны бодит Vercel/өөрийн домэйноор бич (жишээ:
@@ -158,7 +172,7 @@ Vercel Hobby (үнэгүй) план дээр **`vercel.json`-д тохируу�
 "Гэрийн дэлгэц рүү нэмэх" санал автоматаар харагдана. Android/Chrome дээр
 шууд "Нэмэх" товчтой, iOS Safari дээр гарын авлага заавартай харагдана.
 
-### 9. Admin dashboard тохируулах
+### 11. Admin dashboard тохируулах
 
 1. `supabase-setup.sql`-ийг дахин ажиллуулсны дараа, **өөрийгөө admin болгох**:
    - Эхлээд танай апп дээр нэвтэрч (имэйл magic link) байгаа эсэхээ шалга
@@ -171,7 +185,7 @@ Vercel Hobby (үнэгүй) план дээр **`vercel.json`-д тохируу�
 3. `/admin` хуудсанд мэдээлэгдсэн бичлэгүүдийг **"Үл хэрэгсэх"** (report арилгах) эсвэл
    **"Бичлэг устгах"** (pet + report хоёуланг нь устгах) хийж болно
 
-### 10. Spam хамгаалалт, agуулгын шүүлт
+### 12. Spam хамгаалалт, агуулгын шүүлт
 
 - **Rate limiting**: Постгресийн trigger-ээр хэрэгжсэн (`check_pet_rate_limit`) — нэг
   утасны дугаар 1 цагт 5-аас олон удаа бичлэг нийтэлж чадахгүй. Клиент талаас
@@ -180,7 +194,7 @@ Vercel Hobby (үнэгүй) план дээр **`vercel.json`-д тохируу�
   ашиглан зохисгүй агуулга эсвэл нохой/муур бус зургийг илрүүлж, анхааруулга/хориг
   өгнө. Нэмэлт тохиргоо шаардахгүй, `similarity.js`-тэй адил CDN-ээс ачаална.
 
-### 11. Analytics болон Error tracking тохируулах
+### 13. Analytics болон Error tracking тохируулах
 
 **А. Vercel Analytics + Speed Insights (нэмэлт тохиргоо бараг хэрэггүй):**
 1. Vercel Dashboard → project → **"Analytics"** таб → **"Enable"**
@@ -198,7 +212,7 @@ Vercel Hobby (үнэгүй) план дээр **`vercel.json`-д тохируу�
 **DSN тохируулаагүй үед ч апп хэвийн ажиллана** — Sentry автоматаар idle горимд орно,
 build алдаа өгөхгүй.
 
-### 12. Хандив (QPay) тохируулах
+### 14. Хандив (QPay) тохируулах
 
 ⚠️ **Чухал ялгаа бусад үйлчилгээнээс:** QPay merchant эрх авахын тулд **бүртгэлтэй
 бизнес (аж ахуйн нэгж) шаардлагатай** — өмнөх Supabase/Vercel/Resend зэрэг шиг
@@ -218,7 +232,7 @@ build алдаа өгөхгүй.
 **QPay мерчант эрхгүй бол:** `DonateModal.js`-г Messenger/Bank Transfer холбоос руу
 чиглүүлэх энгийн хувилбараар түр орлуулж болно — хэрэгтэй бол хэлээрэй.
 
-### 13. Англи хэл сонголт
+### 15. Англи хэл сонголт
 
 Navbar болон Нүүр хуудас **бүрэн орчуулагдсан** (`lib/i18n.js`). Бусад хуудсыг
 (жагсаалт, мэдэгдэх форм г.м.) ижил загвараар үргэлжлүүлж орчуулж болно — `DICT`
@@ -240,7 +254,7 @@ object-д шинэ түлхүүр нэмээд, тухайн хуудсанд `u
 - **Token систем:** зай (`--sp-*`), радиус (`--r-*`), сүүдэр
   (`--shadow-*`) — бүх компонентод тогтмол ашиглагдана.
 
-### 14. Автомат тест (unit + e2e)
+### 16. Автомат тест (unit + e2e)
 
 **Unit + Component test (Vitest)** — цэвэр функцууд (маскдах, харьцангуй цаг,
 дүүрэг тодорхойлол, вакцины статус) **бас** бодит React component (`PetCard`-ийн
@@ -260,10 +274,17 @@ npm run dev                       # тусдаа terminal дээр dev server а
 npm run test:e2e                  # e2e тестүүдийг ажиллуулна
 ```
 
-**CI:** `.github/workflows/test.yml` — GitHub-д push/PR хийх бүрд unit test
-автоматаар ажиллана (Vitest хурдан бөгөөд гадаад холболт шаардахгүй тул CI-д
-тохиромжтой; e2e-г CI-д нэмэхэд Playwright browser суулгах алхам нэмэлт
-тохируулга шаардана, одоохондоо локал дээр гараар ажиллуулна).
+**CI/CD pipeline:** `.github/workflows/ci.yml` — GitHub-д `main` руу push/PR
+хийх бүрд автоматаар ажиллана (3 job, зэрэгцээ):
+1. **Quality gate** — `tsc --noEmit` + `next lint` + `vitest run` (гадаад холболт/env шаарддаггүй тул **үргэлж** ажиллана)
+2. **Production build** — `next build` (Supabase-ийн client module-ийг бүтээхэд зориулж dummy env-ээр)
+3. **E2E smoke test** — Playwright chromium; `NEXT_PUBLIC_SUPABASE_URL`/`ANON_KEY`
+   GitHub Secrets-д тохируулсан үед л ажиллана (fork-ийн PR-д secrets байхгүй тул skip болно, pipelines блоклогддоггүй)
+
+Lint нь `eslint` + `eslint-config-next` devDependencies + `.eslintrc.json`-ээр
+ажиллана. Vercel-ийн автомат deploy-ыг блоклохын тулд GitHub →
+Settings → Branches дээр `main`-д **"Require status checks"** идэвхжүүлж,
+`quality` check-ийг required болгоно уу.
 
 ## Файлын бүтэц
 

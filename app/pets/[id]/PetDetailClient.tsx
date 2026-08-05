@@ -125,7 +125,14 @@ export default function PetDetailClient({ id }: { id: string }) {
         opacity: pet.resolved ? 0.6 : 1, position: 'relative',
       }}>
         {pet.photoURL ? (
-          <Image src={pet.photoURL} alt={pet.type} fill sizes="480px" style={{ objectFit: 'cover' }} priority />
+          <Image
+            src={pet.photoURL}
+            alt={`${pet.type}${pet.name ? ', ' + pet.name : ''}${pet.color ? ', ' + pet.color : ''}`}
+            fill
+            sizes="480px"
+            style={{ objectFit: 'cover' }}
+            priority
+          />
         ) : (
           <span style={{ color: 'var(--muted)' }}><PetIcon type={pet.type} size={64} /></span>
         )}

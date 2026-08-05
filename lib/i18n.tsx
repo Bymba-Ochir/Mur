@@ -89,6 +89,13 @@ const MN = {
   footer_privacy: 'Нууцлалын бодлого',
   footer_terms: 'Үйлчилгээний нөхцөл',
   footer_rights: 'Бүх эрх хуулиар хамгаалагдсан.',
+  consent_text: 'Аппыг сайжруулахын тулд нэргүй, cookie-гүй ашиглалтын статистик (Vercel Analytics) цуглуулдаг.',
+  consent_accept: 'Зөвшөөрөх',
+  consent_decline: 'Татгалзах',
+  photo_requirements_title: '💡 Зургийн чанарт анхаарах зүйлс',
+  photo_quality_bright: '📸 Гэрэлтэй, бүдэг биш зураг',
+  photo_quality_close: '🐾 Амьтныг ойрхон, нүүр нь тодорхой харгдахаар',
+  photo_quality_match: 'Зураг сайн байх тусам ижил төстэй олдсон бичлэг таарах магадлал өсдөг.',
 };
 
 export type TranslationKey = keyof typeof MN;
@@ -178,6 +185,13 @@ const EN: Record<TranslationKey, string> = {
   footer_privacy: 'Privacy Policy',
   footer_terms: 'Terms of Service',
   footer_rights: 'All rights reserved.',
+  consent_text: 'We collect anonymous, cookie-free usage statistics (Vercel Analytics) to improve the app.',
+  consent_accept: 'Accept',
+  consent_decline: 'Decline',
+  photo_requirements_title: '💡 Photo quality tips',
+  photo_quality_bright: '📸 Bright and sharp (not blurry)',
+  photo_quality_close: '🐾 Pet close-up, face clearly visible',
+  photo_quality_match: 'A clearer photo increases the chance of matching a found pet.',
 };
 
 export const DICT = { mn: MN, en: EN };

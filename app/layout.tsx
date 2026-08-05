@@ -8,8 +8,7 @@ import Onboarding from '../components/Onboarding';
 import PageTransition from '../components/PageTransition';
 import { ToastProvider } from '../components/Toast';
 import { LanguageProvider } from '../lib/i18n';
-import { Analytics } from '@vercel/analytics/react';
-import { SpeedInsights } from '@vercel/speed-insights/next';
+import AnalyticsProvider from '../components/AnalyticsProvider';
 import './globals.css';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://mur-chi.vercel.app';
@@ -70,10 +69,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             <InstallPrompt />
             <Onboarding />
             <BottomNav />
+            <AnalyticsProvider />
           </ToastProvider>
         </LanguageProvider>
-        <Analytics />
-        <SpeedInsights />
       </body>
     </html>
   );

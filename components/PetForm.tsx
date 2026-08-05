@@ -197,6 +197,14 @@ export default function PetForm({ status }: { status: PetStatus }) {
               <span id="photo-hint">{t('photo_hint')}</span>
             )}
           </div>
+          <div className="photo-quality" role="note">
+            <p className="pq-title">{t('photo_requirements_title')}</p>
+            <ul>
+              <li>{t('photo_quality_bright')}</li>
+              <li>{t('photo_quality_close')}</li>
+            </ul>
+            <p className="pq-match">{t('photo_quality_match')}</p>
+          </div>
           <input
             id="photo-input" type="file" accept="image/*" onChange={handlePhoto}
             style={{ display: 'none' }} disabled={compressing}
@@ -326,6 +334,14 @@ export default function PetForm({ status }: { status: PetStatus }) {
         .upload-zone:hover { border-color: var(--accent); background: var(--eyebrow-bg); }
         .upload-zone:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
         .upload-zone img { max-width: 150px; border-radius: var(--r-sm); }
+        .photo-quality {
+          background: var(--eyebrow-bg); border: 1px solid var(--line); border-radius: var(--r-md);
+          padding: 10px 14px; margin-top: var(--sp-3); color: var(--muted); font-size: 12.5px;
+        }
+        .pq-title { font-weight: 700; color: var(--primary); font-size: 12.5px; margin: 0 0 6px; }
+        .photo-quality ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 3px; }
+        .photo-quality li { margin: 0; line-height: 1.4; }
+        .pq-match { margin: 8px 0 0; font-size: 12px; }
         .btn-primary { width: 100%; margin-top: var(--sp-5); justify-content: center; font-size: 15px; padding: 14px; }
         .btn-primary:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
         .error { color: var(--alert); font-size: 13px; margin-top: var(--sp-2); }
