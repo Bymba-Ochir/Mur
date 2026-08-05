@@ -87,13 +87,13 @@ export default function LocationMap({ lat, lng, editable = false, onPick }: Loca
     <div
       ref={containerRef}
       style={{
-        height: 260,
+        height: 'clamp(200px, 50vw, 280px)',
         width: '100%',
         borderRadius: 'var(--r-md)',
         overflow: 'hidden',
         border: '1px solid var(--line)',
         // Force layout so leaflet can measure correctly
-        minHeight: 260,
+        minHeight: 'clamp(200px, 50vw, 280px)',
       }}
     />
   );

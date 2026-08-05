@@ -69,6 +69,12 @@ export default function Home() {
 
       <style jsx>{`
         .hero { position: relative; overflow: hidden; padding: var(--sp-6) 0 var(--sp-7); }
+        @media (max-width: 640px) {
+          .hero { padding: var(--sp-5) 0 var(--sp-6); }
+        }
+        @media (max-width: 480px) {
+          .hero { padding: var(--sp-4) 0 var(--sp-5); }
+        }
         /* Aurora — "steppe night → ember trail" gradient гэрэл */
         .hero::before {
           content: ''; position: absolute; inset: -20% -10%; z-index: 0; pointer-events: none;
@@ -93,8 +99,24 @@ export default function Home() {
         .hero-title {
           font-size: var(--text-display); margin-bottom: var(--sp-4); max-width: 660px; line-height: 1.08;
         }
+        @media (max-width: 640px) {
+          .hero-title { font-size: var(--text-2xl); margin-bottom: var(--sp-3); }
+        }
+        @media (max-width: 480px) {
+          .hero-title { font-size: var(--text-xl); margin-bottom: var(--sp-3); }
+        }
         .hero-desc { color: var(--muted); max-width: 480px; margin-bottom: var(--sp-5); font-size: 16.5px; line-height: 1.6; }
+        @media (max-width: 640px) {
+          .hero-desc { font-size: 15px; margin-bottom: var(--sp-4); }
+        }
+        @media (max-width: 480px) {
+          .hero-desc { font-size: 14.5px; margin-bottom: var(--sp-4); line-height: 1.65; }
+        }
         .hero-actions { display: flex; gap: var(--sp-3); flex-wrap: wrap; }
+        @media (max-width: 480px) {
+          .hero-actions { gap: var(--sp-2); flex-direction: column; }
+          .hero-actions :global(.btn) { width: 100%; justify-content: center; }
+        }
 
         /* Гоёл чимэглэл — ember sparkles + floating paw */
         .hero-decor { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
@@ -148,16 +170,46 @@ export default function Home() {
         }
 
         .how { margin-top: var(--sp-3); animation: rise-in 0.6s cubic-bezier(0.16,1,0.3,1) 0.55s backwards; }
+        @media (max-width: 640px) {
+          .how { margin-top: var(--sp-5); }
+        }
+        @media (max-width: 480px) {
+          .how { margin-top: var(--sp-4); }
+        }
         .how-title { font-size: clamp(1.4rem, 3vw, 1.9rem); margin-bottom: var(--sp-5); }
+        @media (max-width: 640px) {
+          .how-title { margin-bottom: var(--sp-4); }
+        }
+        @media (max-width: 480px) {
+          .how-title { margin-bottom: var(--sp-3); font-size: var(--text-xl); }
+        }
         .trail-wrap { max-width: 520px; margin-bottom: var(--sp-4); }
+        @media (max-width: 480px) {
+          .trail-wrap { margin-bottom: var(--sp-3); }
+        }
         .steps-grid { margin-top: 0; gap: var(--sp-5); }
+        @media (max-width: 640px) {
+          .steps-grid { gap: var(--sp-4); }
+        }
+        @media (max-width: 480px) {
+          .steps-grid { gap: var(--sp-3); }
+        }
         .step-card {
           background: var(--card); border: 1px solid var(--line); border-radius: var(--r-lg);
           padding: var(--sp-5); box-shadow: var(--shadow-sm);
           transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
         }
+        @media (max-width: 640px) {
+          .step-card { padding: var(--sp-4); border-radius: var(--r-md); }
+        }
+        @media (max-width: 480px) {
+          .step-card { padding: var(--sp-3); }
+        }
         .step-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: transparent; }
         .step-desc { color: var(--muted); font-size: 13.5px; line-height: 1.5; }
+        @media (max-width: 480px) {
+          .step-desc { font-size: 14px; line-height: 1.6; }
+        }
 
         @media (prefers-reduced-motion: reduce) {
           .hero::before, .ember, .float-paw { animation: none; }

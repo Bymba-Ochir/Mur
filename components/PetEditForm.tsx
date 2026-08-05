@@ -27,27 +27,27 @@ export default function PetEditForm({
   return (
     <div className="card" style={{ padding: 'var(--sp-4)', display: 'flex', flexDirection: 'column', gap: 'var(--sp-2)' }}>
       <label htmlFor="edit-name" style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--primary)' }}>{t('name_label')}</label>
-      <input id="edit-name" className="field" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+      <input id="edit-name" className="field" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} style={{ minHeight: 'var(--touch-target)', fontSize: 16 }} />
 
       <label htmlFor="edit-color" style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--primary)' }}>{t('color_label').replace(' *', '')}</label>
-      <input id="edit-color" className="field" value={form.color} onChange={(e) => setForm({ ...form, color: e.target.value })} />
+      <input id="edit-color" className="field" value={form.color} onChange={(e) => setForm({ ...form, color: e.target.value })} style={{ minHeight: 'var(--touch-target)', fontSize: 16 }} />
 
       <label htmlFor="edit-district" style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--primary)' }}>{t('district_label')}</label>
-      <select id="edit-district" className="field" value={form.district} onChange={(e) => setForm({ ...form, district: e.target.value as District })}>
+      <select id="edit-district" className="field" value={form.district} onChange={(e) => setForm({ ...form, district: e.target.value as District })} style={{ minHeight: 'var(--touch-target)', fontSize: 16 }}>
         {DISTRICTS.map((d) => <option key={d}>{d}</option>)}
       </select>
 
       <label htmlFor="edit-place" style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--primary)' }}>{t('detail_place').replace(':', '')}</label>
-      <input id="edit-place" className="field" value={form.place} onChange={(e) => setForm({ ...form, place: e.target.value })} />
+      <input id="edit-place" className="field" value={form.place} onChange={(e) => setForm({ ...form, place: e.target.value })} style={{ minHeight: 'var(--touch-target)', fontSize: 16 }} />
 
       <label htmlFor="edit-phone" style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--primary)' }}>{t('phone_label').replace(' *', '')}</label>
-      <input id="edit-phone" className="field" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
+      <input id="edit-phone" className="field" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} style={{ minHeight: 'var(--touch-target)', fontSize: 16 }} />
 
       <div style={{ display: 'flex', gap: 'var(--sp-2)', marginTop: 'var(--sp-2)' }}>
-        <button onClick={() => onSave(form)} disabled={saving} className="btn btn-primary" style={{ flex: 1 }}>
+        <button onClick={() => onSave(form)} disabled={saving} className="btn btn-primary" style={{ flex: 1, minHeight: 'var(--touch-target)' }}>
           {saving ? t('detail_saving') : t('detail_save')}
         </button>
-        <button onClick={onCancel} className="btn btn-ghost" style={{ flex: 1 }}>
+        <button onClick={onCancel} className="btn btn-ghost" style={{ flex: 1, minHeight: 'var(--touch-target)' }}>
           {t('detail_cancel')}
         </button>
       </div>

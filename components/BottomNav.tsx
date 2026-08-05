@@ -61,15 +61,30 @@ export default function BottomNav() {
             position: fixed; bottom: 0; left: 0; right: 0; z-index: 150;
             background: var(--card);
             border-top: 1px solid var(--line);
-            padding: 6px 4px calc(6px + env(safe-area-inset-bottom, 0px));
+            padding: 8px 4px calc(8px + env(safe-area-inset-bottom, 0px));
             box-shadow: 0 -2px 12px rgba(0,0,0,0.06);
+          }
+        }
+        @media (max-width: 400px) {
+          .bottom-nav {
+            padding: 6px 2px calc(6px + env(safe-area-inset-bottom, 0px));
           }
         }
         .bn-item {
           flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px;
           padding: 6px 2px; text-decoration: none; color: var(--muted);
+          min-height: var(--touch-target);
+        }
+        @media (max-width: 400px) {
+          .bn-item {
+            padding: 4px 1px;
+            gap: 1px;
+          }
         }
         .bn-item span { font-size: 10px; font-weight: 600; }
+        @media (max-width: 400px) {
+          .bn-item span { font-size: 9px; }
+        }
         .bn-item.active { color: var(--accent); }
       `}</style>
     </nav>

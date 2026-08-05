@@ -2,7 +2,7 @@
 import { useEffect, useState, useSyncExternalStore } from 'react';
 import { fetchPetById, markResolved, updatePet, deletePet } from '../../../lib/petService';
 import { useAuth } from '../../../lib/useAuth';
-import { maskPhone } from '../../../lib/utils';
+import { maskPhone, formatPhone } from '../../../lib/utils';
 import { relativeTime } from '../../../lib/relativeTime';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
@@ -159,7 +159,7 @@ export default function PetDetailClient({ id }: { id: string }) {
               ) : null}
               {revealed ? (
                 <a href={`tel:${pet.phone}`} style={{ display: 'inline-block', marginTop: 'var(--sp-2)', fontWeight: 700, color: 'var(--primary)' }}>
-                  ☎ {pet.phone}
+                  ☎ {formatPhone(pet.phone)}
                 </a>
               ) : (
                 <button
@@ -231,7 +231,10 @@ export default function PetDetailClient({ id }: { id: string }) {
           gap: var(--sp-5); align-items: start; margin-bottom: var(--sp-4);
         }
         @media (max-width: 800px) {
-          .detail-grid { grid-template-columns: 1fr; }
+          .detail-grid { grid-template-columns: 1fr; gap: var(--sp-4); }
+        }
+        @media (max-width: 480px) {
+          .detail-grid { gap: var(--sp-3); margin-bottom: var(--sp-3); }
         }
         .detail-media { min-width: 0; }
         .detail-info { min-width: 0; display: flex; flex-direction: column; }

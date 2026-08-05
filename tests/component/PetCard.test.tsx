@@ -45,13 +45,13 @@ describe('PetCard — утасны дугаар нуух/харуулах', () =
   it('эхлээд дугаараа маскдсан хэлбэрээр харуулна', () => {
     renderCard();
     expect(screen.getByText(/99\*+33/)).toBeInTheDocument();
-    expect(screen.queryByText('☎ 99112233')).not.toBeInTheDocument();
+    expect(screen.queryByText('☎ 99 11 22 33')).not.toBeInTheDocument();
   });
 
-  it('"Дугаар харах" дарахад бүтэн дугаар гарч ирнэ', () => {
+  it('"Дугаар харах" дарахад бүтэн дугаар гарч ирнэ (форматлагдсан: 99 11 22 33)', () => {
     renderCard();
     fireEvent.click(screen.getByText(/Дугаар харах/));
-    expect(screen.getByText('99112233')).toBeInTheDocument();
+    expect(screen.getByText('99 11 22 33')).toBeInTheDocument();
   });
 
   it('"АЛДСАН" badge зөв харагдана', () => {

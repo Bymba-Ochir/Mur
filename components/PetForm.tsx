@@ -10,6 +10,7 @@ import PawTrail from './PawTrail';
 import { usePhotoUpload, usePetLocation, usePetSubmit, TYPE_VALUES } from '../lib/usePetForm';
 import type { PetFormData } from '../lib/usePetForm';
 import type { PetStatus, PetType } from '../lib/types';
+import { normalizePhone, formatPhone } from '../lib/utils';
 
 export default function PetForm({ status }: { status: PetStatus }) {
   const { t } = useLanguage();
@@ -183,7 +184,15 @@ export default function PetForm({ status }: { status: PetStatus }) {
             </>
           )}
           <label htmlFor="pet-phone">{t('phone_label')}</label>
-          <input id="pet-phone" name="phone" value={form.phone} onChange={handleChange} placeholder={t('phone_placeholder')} required />
+          <input
+            id="pet-phone"
+            name="phone"
+            value={formatPhone(form.phone)}
+            onChange={(e) => setForm((f) => ({ ...f, phone: normalizePhone(e.target.value) }))}
+            placeholder={t('phone_placeholder')}
+            required
+            inputMode="tel"
+          />
 
           {submit.error && <p className="error" role="alert">{submit.error}</p>}
 
@@ -224,7 +233,7 @@ export default function PetForm({ status }: { status: PetStatus }) {
         color={form.color}
         district={form.district}
         place={form.place}
-        phone={form.phone}
+        phone={formatPhone(form.phone)}
         photoPreview={photo.preview}
         hasReward={form.hasReward}
       />
@@ -232,6 +241,9 @@ export default function PetForm({ status }: { status: PetStatus }) {
 
       <style jsx>{`
         .form-layout { display: flex; gap: 48px; align-items: flex-start; }
+        @media (max-width: 860px) {
+          .form-layout { gap: 0; }
+        }
         .preview-col { display: none; position: sticky; top: 100px; }
         @media (min-width: 860px) {
           .preview-col { display: block; }
@@ -241,13 +253,26 @@ export default function PetForm({ status }: { status: PetStatus }) {
           background: var(--card); border: 1px solid var(--line); border-radius: var(--r-xl);
           padding: var(--sp-6); box-shadow: var(--shadow-md);
         }
+        @media (max-width: 640px) {
+          .pet-form { padding: var(--sp-5); border-radius: var(--r-lg); }
+        }
+        @media (max-width: 480px) {
+          .pet-form { padding: var(--sp-4); border-radius: var(--r-md); }
+        }
         label { font-size: 12.5px; font-weight: 600; color: var(--primary); margin-top: var(--sp-4); display: block; letter-spacing: 0.01em; }
         label:first-child { margin-top: 0; }
+        @media (max-width: 480px) {
+          label { font-size: 13px; margin-top: var(--sp-3); }
+        }
 
         input, select {
           padding: 11px 13px; border: 1.5px solid var(--line); border-radius: var(--r-sm);
           font-size: 14.5px; width: 100%; font-family: var(--font-body); background: var(--card); color: var(--ink);
           transition: border-color 0.15s ease;
+          min-height: var(--touch-target);
+        }
+        @media (max-width: 480px) {
+          input, select { font-size: 16px; padding: 12px 14px; }
         }
         input:hover, select:hover { border-color: var(--muted); }
         input:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; border-color: var(--accent); }
@@ -255,6 +280,11 @@ export default function PetForm({ status }: { status: PetStatus }) {
           border: 1.5px dashed var(--line); border-radius: var(--r-md); padding: 28px 20px;
           text-align: center; cursor: pointer; color: var(--muted); background: var(--overcast);
           transition: border-color 0.15s ease, background 0.15s ease;
+          min-height: var(--touch-target);
+          display: flex; align-items: center; justify-content: center;
+        }
+        @media (max-width: 480px) {
+          .upload-zone { padding: 24px 16px; }
         }
         .upload-zone:hover { border-color: var(--accent); background: var(--eyebrow-bg); }
         .upload-zone:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -263,37 +293,66 @@ export default function PetForm({ status }: { status: PetStatus }) {
           background: var(--eyebrow-bg); border: 1px solid var(--line); border-radius: var(--r-md);
           padding: 10px 14px; margin-top: var(--sp-3); color: var(--muted); font-size: 12.5px;
         }
+        @media (max-width: 480px) {
+          .photo-quality { padding: 12px 16px; font-size: 13px; }
+        }
         .pq-title { font-weight: 700; color: var(--primary); font-size: 12.5px; margin: 0 0 6px; }
+        @media (max-width: 480px) {
+          .pq-title { font-size: 13px; }
+        }
         .photo-quality ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 3px; }
         .photo-quality li { margin: 0; line-height: 1.4; }
         .pq-match { margin: 8px 0 0; font-size: 12px; }
-        .btn-primary { width: 100%; margin-top: var(--sp-5); justify-content: center; font-size: 15px; padding: 14px; }
+        .btn-primary { width: 100%; margin-top: var(--sp-5); justify-content: center; font-size: 15px; padding: 14px; min-height: var(--touch-target); }
+        @media (max-width: 480px) {
+          .btn-primary { font-size: 16px; padding: 16px; margin-top: var(--sp-4); }
+        }
         .btn-primary:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
         .error { color: var(--alert); font-size: 13px; margin-top: var(--sp-2); }
+        @media (max-width: 480px) {
+          .error { font-size: 14px; }
+        }
         .success-box {
           padding: var(--sp-6); background: var(--success-bg); border-radius: var(--r-lg); text-align: center;
           border: 1px solid color-mix(in srgb, var(--success) 30%, transparent);
         }
+        @media (max-width: 480px) {
+          .success-box { padding: var(--sp-5); }
+        }
 
         .progress-text { font-family: var(--font-mono); font-size: 11.5px; color: var(--muted); margin: var(--sp-2) 0 var(--sp-5); text-align: center; letter-spacing: 0.02em; }
+        @media (max-width: 480px) {
+          .progress-text { font-size: 12px; margin: var(--sp-2) 0 var(--sp-4); }
+        }
 
         .reward-check {
           display: flex; align-items: center; gap: 8px; cursor: pointer;
           margin-top: var(--sp-4); font-size: 13px; font-weight: 600; color: var(--primary); letter-spacing: 0;
+          min-height: var(--touch-target);
+        }
+        @media (max-width: 480px) {
+          .reward-check { font-size: 14px; gap: 10px; }
         }
         .reward-check input { width: auto; margin: 0; accent-color: var(--accent); }
         .locate-btn {
           padding: 10px 15px; border-radius: var(--r-pill); border: 1.5px solid var(--primary);
           background: transparent; color: var(--primary); font-weight: 600; cursor: pointer; font-size: 13px; margin-bottom: var(--sp-3);
           transition: background 0.15s ease;
+          min-height: var(--touch-target);
+        }
+        @media (max-width: 480px) {
+          .locate-btn { font-size: 14px; padding: 12px 20px; width: 100%; }
         }
         .locate-btn:hover { background: var(--eyebrow-bg); }
         .locate-btn:disabled { opacity: 0.6; }
         .locate-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
         .nav-row { display: flex; gap: 10px; margin-top: var(--sp-5); }
-        .nav-back { background: var(--eyebrow-bg); color: var(--primary); flex: 1; justify-content: center; }
-        .nav-next { background: var(--accent); color: #fff; flex: 1; justify-content: center; }
+        @media (max-width: 480px) {
+          .nav-row { gap: 12px; margin-top: var(--sp-4); }
+        }
+        .nav-back { background: var(--eyebrow-bg); color: var(--primary); flex: 1; justify-content: center; min-height: var(--touch-target); }
+        .nav-next { background: var(--accent); color: #fff; flex: 1; justify-content: center; min-height: var(--touch-target); }
         .nav-next:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
       `}</style>
     </div>

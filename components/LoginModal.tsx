@@ -64,21 +64,38 @@ export default function LoginModal({ onClose }: { onClose: () => void }) {
             position: fixed; inset: 0; background: var(--overlay);
             display: flex; align-items: center; justify-content: center; z-index: 100;
             animation: fadeIn 0.15s ease;
+            padding: var(--sp-4);
           }
           @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
           .modal {
-            background: var(--card); border-radius: var(--r-lg); padding: 28px; max-width: 320px; width: 90%; color: var(--ink);
+            background: var(--card); border-radius: var(--r-lg); padding: 28px; max-width: 320px; width: 100%; color: var(--ink);
             box-shadow: var(--shadow-lift);
+          }
+          @media (max-width: 480px) {
+            .modal { padding: 24px 20px; border-radius: var(--r-md); max-width: 100%; }
           }
           .modal h2 { font-family: var(--font-display); }
           .modal label { font-size: 13px; font-weight: 600; color: var(--primary); display: block; margin-bottom: 6px; }
+          @media (max-width: 480px) {
+            .modal label { font-size: 14px; }
+          }
           .modal input {
             width: 100%; padding: 11px 13px; border: 1.5px solid var(--line); border-radius: var(--r-sm);
             font-size: 14px; margin-bottom: 12px; font-family: var(--font-body); background: var(--card); color: var(--ink);
+            min-height: var(--touch-target);
           }
-          .modal .btn-primary { width: 100%; }
+          @media (max-width: 480px) {
+            .modal input { font-size: 16px; padding: 12px 14px; }
+          }
+          .modal .btn-primary { width: 100%; min-height: var(--touch-target); }
           .err { color: var(--alert); font-size: 12.5px; margin-bottom: 8px; }
-          .close { margin-top: 14px; background: none; border: none; color: var(--muted); font-size: 12.5px; cursor: pointer; }
+          @media (max-width: 480px) {
+            .err { font-size: 13px; }
+          }
+          .close { margin-top: 14px; background: none; border: none; color: var(--muted); font-size: 12.5px; cursor: pointer; min-height: var(--touch-target-sm); }
+          @media (max-width: 480px) {
+            .close { font-size: 13px; margin-top: 16px; }
+          }
         `}</style>
       </div>
     </div>

@@ -2,7 +2,7 @@
 import type { HTMLAttributes, ReactNode } from 'react';
 import PetIcon from './PetIcon';
 import { relativeTime } from '../lib/relativeTime';
-import { maskPhone } from '../lib/utils';
+import { maskPhone, formatPhone } from '../lib/utils';
 import type { PetStatus, PetType } from '../lib/types';
 
 /**
@@ -71,9 +71,9 @@ export default function PetCardView({
             className="phone"
             href={`tel:${phone}`}
             onClick={(e) => e.stopPropagation()}
-            aria-label={`Утсаар холбогдох: ${phone}`}
+            aria-label={`Утсаар холбогдох: ${formatPhone(phone)}`}
           >
-            <span aria-hidden="true">☎</span> {phone}
+            <span aria-hidden="true">☎</span> {formatPhone(phone)}
           </a>
         ) : null}
       </div>
@@ -83,6 +83,9 @@ export default function PetCardView({
           background: var(--card); border: 1px solid var(--line); border-radius: var(--r-lg);
           overflow: hidden; cursor: pointer; box-shadow: var(--shadow-sm);
           transition: box-shadow .22s ease, transform .22s ease, border-color .22s ease;
+        }
+        @media (max-width: 640px) {
+          .pet-card { border-radius: var(--r-md); }
         }
         .pet-card:hover { box-shadow: var(--shadow-lift); transform: translateY(-3px); border-color: transparent; }
         .pet-card:focus-visible {
@@ -94,13 +97,22 @@ export default function PetCardView({
           height: 152px; background: var(--thumb-bg); position: relative;
           display: flex; align-items: center; justify-content: center; overflow: hidden;
         }
-        .thumb :global(img) { transition: transform .35s cubic-bezier(.16,1,.3,1); }
+        @media (max-width: 640px) {
+          .thumb { height: 180px; }
+        }
+        @media (max-width: 400px) {
+          .thumb { height: 160px; }
+        }
+        .thumb :global(img) { transition: transform .35s cubic-bezier(.16,1,.3,1); object-fit: cover; }
         .pet-card:hover .thumb :global(img) { transform: scale(1.06); }
         .emoji { color: var(--muted); display: flex; opacity: 0.55; }
         .badge {
           position: absolute; top: 10px; left: 10px; font-family: var(--font-mono); font-size: 9.5px;
           padding: 4px 9px; border-radius: var(--r-pill); color: #fff; font-weight: 700; letter-spacing: 0.03em;
           box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+        }
+        @media (max-width: 480px) {
+          .badge { font-size: 10px; padding: 5px 10px; top: 12px; left: 12px; }
         }
         .badge.lost { background: var(--alert); }
         .badge.found { background: var(--success); }
@@ -109,12 +121,30 @@ export default function PetCardView({
           background: rgba(23,34,39,0.8); color: var(--accent); padding: 3px 9px; border-radius: var(--r-pill);
           -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
         }
+        @media (max-width: 480px) {
+          .similarity { font-size: 11px; padding: 4px 10px; bottom: 12px; right: 12px; }
+        }
         .info { padding: 14px 15px; }
+        @media (max-width: 480px) {
+          .info { padding: 12px 14px; }
+        }
         h4 { font-family: var(--font-display); font-size: 14.5px; font-weight: 600; margin-bottom: 3px; color: var(--primary); }
+        @media (max-width: 480px) {
+          h4 { font-size: 15px; margin-bottom: 4px; }
+        }
         p { font-size: 12.5px; color: var(--muted); margin: 3px 0; line-height: 1.4; }
+        @media (max-width: 480px) {
+          p { font-size: 13px; margin: 4px 0; }
+        }
         .reward { display: block; margin-top: 6px; font-size: 12.5px; color: var(--accent); font-weight: 600; }
-        .phone { display: block; margin-top: 8px; font-size: 13px; color: var(--primary); font-weight: 600; text-decoration: none; }
-        .reveal-btn { background: none; border: none; padding: 0; cursor: pointer; font-family: inherit; text-align: left; }
+        @media (max-width: 480px) {
+          .reward { margin-top: 8px; font-size: 13px; }
+        }
+        .phone { display: block; margin-top: 8px; font-size: 13px; color: var(--primary); font-weight: 600; text-decoration: none; min-height: var(--touch-target); display: flex; align-items: center; }
+        @media (max-width: 480px) {
+          .phone { margin-top: 10px; font-size: 14px; }
+        }
+        .reveal-btn { background: none; border: none; padding: 0; cursor: pointer; font-family: inherit; text-align: left; width: 100%; }
         .reveal-btn:focus-visible, .phone:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
       `}</style>
     </div>

@@ -183,21 +183,56 @@ export default function ListingsPage() {
 
       <style jsx>{`
         .filter-bar { display: flex; gap: var(--sp-3); flex-wrap: wrap; margin-bottom: var(--sp-2); }
+        @media (max-width: 640px) {
+          .filter-bar { gap: var(--sp-2); }
+        }
+        @media (max-width: 480px) {
+          .filter-bar { gap: var(--sp-2); }
+          .filter-bar :global(.filter) { flex: 1 1 100%; min-width: 0; }
+        }
         .match-upload { display: flex; align-items: center; gap: var(--sp-2); flex-wrap: wrap; margin-bottom: var(--sp-5); }
+        @media (max-width: 640px) {
+          .match-upload { margin-bottom: var(--sp-4); }
+        }
         .file-input { position: absolute; width: 1px; height: 1px; opacity: 0; overflow: hidden; }
         .file-input:focus-visible + label { outline: 2.5px solid var(--accent); outline-offset: 2px; }
         .file-input:disabled + label { opacity: 0.6; cursor: not-allowed; }
         .match-status { font-size: 12px; color: var(--muted); line-height: 1.5; }
+        @media (max-width: 480px) {
+          .match-status { font-size: 13px; line-height: 1.6; width: 100%; margin-top: var(--sp-1); }
+        }
         .match-status.err { color: var(--alert); }
         .empty-state {
           text-align: center; padding: 52px 24px; margin-top: var(--sp-2);
           background: var(--card); border: 1px dashed var(--line); border-radius: var(--r-xl);
         }
+        @media (max-width: 640px) {
+          .empty-state { padding: 40px 20px; margin-top: var(--sp-3); border-radius: var(--r-lg); }
+        }
+        @media (max-width: 480px) {
+          .empty-state { padding: 32px 16px; }
+        }
         .empty-icon { font-size: 44px; margin-bottom: var(--sp-3); }
+        @media (max-width: 480px) {
+          .empty-icon { font-size: 48px; margin-bottom: var(--sp-4); }
+        }
         .empty-title { font-weight: 700; color: var(--primary); font-size: 16px; margin-bottom: var(--sp-2); }
+        @media (max-width: 480px) {
+          .empty-title { font-size: 17px; }
+        }
         .empty-desc { color: var(--muted); font-size: 13.5px; margin-bottom: var(--sp-4); }
+        @media (max-width: 480px) {
+          .empty-desc { font-size: 14px; margin-bottom: var(--sp-5); line-height: 1.6; }
+        }
         .empty-actions { display: flex; gap: var(--sp-3); justify-content: center; flex-wrap: wrap; }
+        @media (max-width: 480px) {
+          .empty-actions { gap: var(--sp-2); flex-direction: column; }
+          .empty-actions :global(.btn) { width: 100%; justify-content: center; }
+        }
         .load-more-wrap { text-align: center; margin-top: var(--sp-6); }
+        @media (max-width: 640px) {
+          .load-more-wrap { margin-top: var(--sp-5); }
+        }
       `}</style>
     </div>
   );

@@ -8,7 +8,8 @@ import { useLocalStorageValue, setLocalStorageValue } from './useLocalStorageSta
 const MN = {
   nav_lost: 'Алдсан', nav_found: 'Олдсон', nav_listings: 'Жагсаалт',
   nav_mypets: 'Миний амьтад', nav_admin: '🛡️ Админ', nav_login: 'Нэвтрэх',
-  nav_logout_prefix: 'Гарах',
+  nav_logout_prefix: 'Гарах', nav_logout: 'Гарах', nav_user_menu_label: 'Хэрэглэгчийн цэс',
+  nav_open_menu: 'Цэсийг нээх', nav_close_menu: 'Цэсийг хаах', nav_menu_title: 'Цэс', nav_guest: 'Зочин',
   login_title: 'Нэвтрэх', login_email_label: 'Имэйл хаяг',
   login_button: 'Нэвтрэх холбоос авах', login_sent: '✅ Нэвтрэх холбоос имэйл рүү тань илгээгдлээ. Имэйлээ шалгаарай.',
   login_error: 'Алдаа гарлаа. Имэйлээ шалгаад дахин оролдоно уу.', close: 'Хаах',
@@ -111,7 +112,8 @@ export type TranslationKey = keyof typeof MN;
 const EN: Record<TranslationKey, string> = {
   nav_lost: 'Lost', nav_found: 'Found', nav_listings: 'Listings',
   nav_mypets: 'My Pets', nav_admin: '🛡️ Admin', nav_login: 'Log in',
-  nav_logout_prefix: 'Log out',
+  nav_logout_prefix: 'Log out', nav_logout: 'Log out', nav_user_menu_label: 'User menu',
+  nav_open_menu: 'Open menu', nav_close_menu: 'Close menu', nav_menu_title: 'Menu', nav_guest: 'Guest',
   login_title: 'Log in', login_email_label: 'Email address',
   login_button: 'Send login link', login_sent: '✅ A login link has been sent to your email. Please check your inbox.',
   login_error: 'Something went wrong. Please check your email and try again.', close: 'Close',
