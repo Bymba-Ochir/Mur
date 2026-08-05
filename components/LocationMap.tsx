@@ -1,4 +1,3 @@
-'use client';
 import { useEffect, useRef } from 'react';
 
 // Улаанбаатар хотын төв (анхдагч байршил)
@@ -31,8 +30,9 @@ export default function LocationMap({ lat, lng, editable = false, onPick }: Loca
       const map = L.map(containerRef.current).setView(center, lat != null ? 15 : 11);
       mapRef.current = map;
 
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap contributors',
+      // CartoDB — OSM-ээс найдвартай, CORS/rate-limit асуудалгүй
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; OpenStreetMap &copy; CARTO',
         maxZoom: 19,
       }).addTo(map);
 
@@ -51,6 +51,14 @@ export default function LocationMap({ lat, lng, editable = false, onPick }: Loca
           onPick?.({ lat: clickLat, lng: clickLng });
         });
       }
+
+      // Leaflet-ийн marker icon URL асуудлыг засах (build-time import)
+      delete (L.Icon.Default.prototype as any)._getIconUrl;
+      L.Icon.Default.mergeOptions({
+        iconRetinaUrl: new URL('leaflet/dist/images/marker-icon-2x.png', import.meta.url).href,
+        iconUrl: new URL('leaflet/dist/images/marker-icon.png', import.meta.url).href,
+        shadowUrl: new URL('leaflet/dist/images/marker-shadow.png', import.meta.url).href,
+      });
     });
 
     return () => {
@@ -78,7 +86,15 @@ export default function LocationMap({ lat, lng, editable = false, onPick }: Loca
   return (
     <div
       ref={containerRef}
-      style={{ height: 260, borderRadius: 'var(--r-md)', overflow: 'hidden', border: '1px solid var(--line)' }}
+      style={{
+        height: 260,
+        width: '100%',
+        borderRadius: 'var(--r-md)',
+        overflow: 'hidden',
+        border: '1px solid var(--line)',
+        // Force layout so leaflet can measure correctly
+        minHeight: 260,
+      }}
     />
   );
 }

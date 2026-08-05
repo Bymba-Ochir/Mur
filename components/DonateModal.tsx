@@ -174,8 +174,23 @@ export default function DonateModal({ onClose }: { onClose: () => void }) {
       </div>
 
       <style jsx>{`
-        .overlay { position: fixed; inset: 0; background: var(--overlay); display: flex; align-items: center; justify-content: center; z-index: 300; padding: 16px; }
-        .modal { background: var(--card); border-radius: var(--r-lg); padding: 24px; max-width: 360px; width: 100%; color: var(--ink); position: relative; max-height: 90vh; overflow-y: auto; }
+        .overlay {
+          position: fixed; inset: 0; background: var(--overlay);
+          display: flex; align-items: center; justify-content: center;
+          z-index: 300; padding: 16px;
+          animation: fadeIn 0.2s ease;
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .modal {
+          background: var(--card); border-radius: var(--r-lg); padding: 24px;
+          max-width: 360px; width: 100%; color: var(--ink); position: relative;
+          max-height: 90vh; overflow-y: auto;
+          animation: slideDown 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        @keyframes slideDown {
+          from { opacity: 0; transform: translateY(-20px) scale(0.95); }
+          to { opacity: 1; transform: translateY(0) scale(1); }
+        }
         .close { position: absolute; top: 14px; right: 14px; background: none; border: none; font-size: 16px; cursor: pointer; color: var(--muted); }
         h2 { font-size: 18px; margin-bottom: 12px; }
         .hint { font-size: 12.5px; color: var(--muted); margin-bottom: 12px; }
