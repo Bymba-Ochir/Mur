@@ -1,127 +1,59 @@
 'use client';
 import { useState } from 'react';
-import type { ChangeEvent, FormEvent, KeyboardEvent } from 'react';
-import { createPetReport } from '../lib/petService';
-import { nearestDistrict } from '../lib/districtCoords';
-import { compressImage } from '../lib/imageCompress';
-import { checkImageContent } from '../lib/contentModeration';
+import type { ChangeEvent, KeyboardEvent } from 'react';
 import { DISTRICTS } from '../lib/districts';
-import type { District } from '../lib/districts';
-import type { PetStatus, PetType } from '../lib/types';
-import { useToast } from './Toast';
 import { useLanguage } from '../lib/i18n';
 import ShareButtons from './ShareButtons';
 import LocationMap from './LocationMap';
 import PetPreviewCard from './PetPreviewCard';
 import PawTrail from './PawTrail';
-import { getErrorMessage } from '../lib/utils';
-
-// Дотоод утга (DB-д хадгалагдах) үргэлж Монгол хэвээр — зөвхөн харагдац орчуулагдана
-const TYPE_VALUES: PetType[] = ['Нохой', 'Муур', 'Бусад'];
-
-interface PetFormData {
-  name: string;
-  type: PetType;
-  color: string;
-  place: string;
-  district: District;
-  phone: string;
-}
+import { usePhotoUpload, usePetLocation, usePetSubmit, TYPE_VALUES } from '../lib/usePetForm';
+import type { PetFormData } from '../lib/usePetForm';
+import type { PetStatus, PetType } from '../lib/types';
 
 export default function PetForm({ status }: { status: PetStatus }) {
-  const showToast = useToast();
   const { t } = useLanguage();
   const STEPS = [t('form_step_photo'), t('form_step_info'), t('form_step_location'), t('form_step_contact')];
   const TYPE_LABELS: Record<PetType, string> = { 'Нохой': t('type_dog'), 'Муур': t('type_cat'), 'Бусад': t('type_other') };
   const [step, setStep] = useState(0);
-
   const [form, setForm] = useState<PetFormData>({
     name: '', type: 'Нохой', color: '', place: '', district: DISTRICTS[0], phone: '',
   });
-  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
-  const [locating, setLocating] = useState(false);
-  const [photoFile, setPhotoFile] = useState<File | null>(null);
-  const [preview, setPreview] = useState<string | null>(null);
-  const [compressing, setCompressing] = useState(false);
-  const [compressStatus, setCompressStatus] = useState('');
-  const [submitting, setSubmitting] = useState(false);
-  const [statusMsg, setStatusMsg] = useState('');
-  const [done, setDone] = useState(false);
-  const [newPetId, setNewPetId] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+
+  const photo = usePhotoUpload();
+  const location = usePetLocation((d) => setForm((f) => ({ ...f, district: d })));
+
+  // Амжилттай хадгалагдсаны дараа бүх форм төлөвийг цэвэрлэнэ
+  function resetAll() {
+    setForm({ name: '', type: 'Нохой', color: '', place: '', district: DISTRICTS[0], phone: '' });
+    setStep(0);
+    photo.reset();
+    location.reset();
+  }
+
+  const submit = usePetSubmit({
+    status,
+    form,
+    photoFile: photo.photoFile,
+    coords: location.coords,
+    onSuccess: resetAll,
+  });
 
   function handleChange(e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
     // DOM нь сонголтын утгыг хязгаарладаг тул ганц cast энд л хангалттай
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }) as PetFormData);
   }
 
-  async function handlePhoto(e: ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setCompressing(true);
-    try {
-      const originalKB = Math.round(file.size / 1024);
-      const compressed = await compressImage(file);
-      const newKB = Math.round(compressed.size / 1024);
-
-      const check = await checkImageContent(compressed, setCompressStatus);
-      if (!check.ok) {
-        showToast(check.reason, 'error');
-        e.target.value = '';
-        return;
-      }
-      if (check.warning) {
-        showToast(check.warning, 'info');
-      }
-
-      setPhotoFile(compressed);
-      setPreview(URL.createObjectURL(compressed));
-      if (originalKB > newKB + 20) {
-        showToast(`Зураг оновчлогдлоо: ${originalKB}KB → ${newKB}KB`, 'success');
-      }
-    } catch {
-      setPhotoFile(file);
-      setPreview(URL.createObjectURL(file));
-    } finally {
-      setCompressing(false);
-      setCompressStatus('');
-    }
-  }
-
-  function openFilePicker() {
-    if (!compressing) document.getElementById('photo-input')?.click();
-  }
-
   function handleUploadKeyDown(e: KeyboardEvent<HTMLDivElement>) {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
-      openFilePicker();
+      photo.openFilePicker();
     }
   }
 
-  function handleUseLocation() {
-    if (!navigator.geolocation) {
-      showToast('Энэ browser байршил тодорхойлохыг дэмждэггүй', 'error');
-      return;
-    }
-    setLocating(true);
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const { latitude, longitude } = pos.coords;
-        setCoords({ lat: latitude, lng: longitude });
-        const guessed = nearestDistrict(latitude, longitude);
-        setForm((f) => ({ ...f, district: guessed }));
-        setLocating(false);
-        showToast(
-          `Байршлыг тодорхойлов: ${guessed} дүүрэг`,
-          'success'
-        );
-      },
-      () => {
-        setLocating(false);
-        showToast('Байршил тодорхойлж чадсангүй. Зөвшөөрөл шалгана уу.', 'error');
-      }
-    );
+  function addAnother() {
+    submit.reset();
+    resetAll();
   }
 
   const canNext = [
@@ -131,49 +63,20 @@ export default function PetForm({ status }: { status: PetStatus }) {
     true,
   ][step];
 
-  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setSubmitting(true);
-    setError(null);
-    setStatusMsg(t('submitting'));
-    try {
-      const id = await createPetReport(
-        { ...form, status, photoFile, lat: coords?.lat, lng: coords?.lng },
-        setStatusMsg
-      );
-      setNewPetId(id);
-      setDone(true);
-      setForm({ name: '', type: 'Нохой', color: '', place: '', district: DISTRICTS[0], phone: '' });
-      setCoords(null);
-      setPhotoFile(null);
-      setPreview(null);
-      setStep(0);
-    } catch (err) {
-      console.error(err);
-      const msg = getErrorMessage(err);
-      setError(msg && msg.includes('олон удаа')
-        ? msg
-        : 'Алдаа гарлаа. Дахин оролдоно уу.');
-    } finally {
-      setSubmitting(false);
-      setStatusMsg('');
-    }
-  }
-
-  if (done) {
-    const petUrl = typeof window !== 'undefined' ? `${window.location.origin}/pets/${newPetId}` : '';
+  if (submit.done) {
+    const petUrl = typeof window !== 'undefined' ? `${window.location.origin}/pets/${submit.newPetId}` : '';
     return (
       <div className="success-box" role="status">
         <p>{t('success_msg')}</p>
         <ShareButtons url={petUrl} title={status === 'lost' ? 'Алдсан амьтан' : 'Олдсон амьтан'} />
-        <button onClick={() => setDone(false)} className="btn" style={{ marginTop: 16 }}>{t('add_another')}</button>
+        <button onClick={addAnother} className="btn" style={{ marginTop: 16 }}>{t('add_another')}</button>
       </div>
     );
   }
 
   return (
     <div className="form-layout">
-    <form onSubmit={handleSubmit} className="pet-form" aria-label={status === 'lost' ? 'Алдсан амьтан мэдэгдэх форм' : 'Олдсон амьтан мэдэгдэх форм'}>
+    <form onSubmit={submit.handleSubmit} className="pet-form" aria-label={status === 'lost' ? 'Алдсан амьтан мэдэгдэх форм' : 'Олдсон амьтан мэдэгдэх форм'}>
       <PawTrail labels={STEPS} current={step} />
       <p className="progress-text" aria-live="polite">{step + 1}/{STEPS.length}: {STEPS[step]}</p>
 
@@ -182,17 +85,17 @@ export default function PetForm({ status }: { status: PetStatus }) {
           <label id="photo-label">{t('photo_label')}</label>
           <div
             className="upload-zone"
-            onClick={openFilePicker}
+            onClick={photo.openFilePicker}
             onKeyDown={handleUploadKeyDown}
             role="button"
             tabIndex={0}
             aria-labelledby="photo-label"
             aria-describedby="photo-hint"
           >
-            {compressing ? (
-              <span role="status">⏳ {compressStatus || 'Зураг оновчлож байна...'}</span>
-            ) : preview ? (
-              <img src={preview} alt={t('photo_preview_alt')} />
+            {photo.compressing ? (
+              <span role="status">⏳ {photo.compressStatus || 'Зураг оновчлож байна...'}</span>
+            ) : photo.preview ? (
+              <img src={photo.preview} alt={t('photo_preview_alt')} />
             ) : (
               <span id="photo-hint">{t('photo_hint')}</span>
             )}
@@ -206,8 +109,8 @@ export default function PetForm({ status }: { status: PetStatus }) {
             <p className="pq-match">{t('photo_quality_match')}</p>
           </div>
           <input
-            id="photo-input" type="file" accept="image/*" onChange={handlePhoto}
-            style={{ display: 'none' }} disabled={compressing}
+            id="photo-input" type="file" accept="image/*" onChange={photo.handlePhoto}
+            style={{ display: 'none' }} disabled={photo.compressing}
             aria-label={t('photo_label')}
           />
         </>
@@ -230,8 +133,8 @@ export default function PetForm({ status }: { status: PetStatus }) {
 
       {step === 2 && (
         <>
-          <button type="button" onClick={handleUseLocation} disabled={locating} className="locate-btn">
-            {locating ? t('locate_loading') : t('locate_btn')}
+          <button type="button" onClick={location.handleUseLocation} disabled={location.locating} className="locate-btn">
+            {location.locating ? t('locate_loading') : t('locate_btn')}
           </button>
 
           <label htmlFor="pet-district">{t('district_label')}</label>
@@ -246,11 +149,11 @@ export default function PetForm({ status }: { status: PetStatus }) {
             {t('map_label')} <span style={{ fontWeight: 400, color: 'var(--muted)' }}>{t('map_optional')}</span>
           </label>
           <div aria-labelledby="map-label" role="application" aria-label={t('map_label')}>
-            <LocationMap lat={coords?.lat} lng={coords?.lng} editable onPick={setCoords} />
+            <LocationMap lat={location.coords?.lat} lng={location.coords?.lng} editable onPick={location.setCoords} />
           </div>
-          {coords && (
+          {location.coords && (
             <p style={{ fontSize: 12, color: 'var(--muted)', marginTop: 4 }} aria-live="polite">
-              📍 {coords.lat.toFixed(4)}, {coords.lng.toFixed(4)}
+              📍 {location.coords.lat.toFixed(4)}, {location.coords.lng.toFixed(4)}
             </p>
           )}
         </>
@@ -261,13 +164,13 @@ export default function PetForm({ status }: { status: PetStatus }) {
           <label htmlFor="pet-phone">{t('phone_label')}</label>
           <input id="pet-phone" name="phone" value={form.phone} onChange={handleChange} placeholder={t('phone_placeholder')} required />
 
-          {error && <p className="error" role="alert">{error}</p>}
+          {submit.error && <p className="error" role="alert">{submit.error}</p>}
 
-          <button type="submit" disabled={submitting} className="btn btn-primary" aria-busy={submitting}>
-            {submitting ? statusMsg || t('submitting') : status === 'lost' ? t('submit_lost') : t('submit_found')}
+          <button type="submit" disabled={submit.submitting} className="btn btn-primary" aria-busy={submit.submitting}>
+            {submit.submitting ? submit.statusMsg || t('submitting') : status === 'lost' ? t('submit_lost') : t('submit_found')}
           </button>
 
-          {submitting && statusMsg.includes('AI') && (
+          {submit.submitting && submit.statusMsg.includes('AI') && (
             <p style={{ fontSize: 12, color: 'var(--muted)', marginTop: 6 }} aria-live="polite">
               Анхны хүсэлт 10-30 секунд удааширч болно, түр хүлээгээрэй...
             </p>
@@ -301,7 +204,7 @@ export default function PetForm({ status }: { status: PetStatus }) {
         district={form.district}
         place={form.place}
         phone={form.phone}
-        photoPreview={preview}
+        photoPreview={photo.preview}
       />
     </div>
 

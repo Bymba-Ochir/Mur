@@ -4,8 +4,8 @@
 // хийгдэх бүрд). Тухайн бичлэгийн дүүрэгт бүртгэлтэй push subscription-уудад
 // "Nearby Alert" мэдэгдэл илгээнэ.
 import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
 import webpush from 'web-push';
+import { createAdminClient } from '../../../lib/supabaseAdmin';
 
 export async function POST(request: Request) {
   // 1. Webhook-ийн нууц түлхүүрээр баталгаажуулна (хэн ч дуудахаас сэргийлнэ)
@@ -29,10 +29,7 @@ export async function POST(request: Request) {
   );
 
   // 3. Service role key-ээр (RLS-г тойрсон) тухайн дүүргийн subscription-уудыг ав
-  const supabaseAdmin = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
+  const supabaseAdmin = createAdminClient();
 
   const { data: subs, error } = await supabaseAdmin
     .from('push_subscriptions')
@@ -40,7 +37,8 @@ export async function POST(request: Request) {
     .eq('district', pet.district);
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error('notify: subscription query алдаа', error);
+    return NextResponse.json({ error: 'Мэдэгдэл илгээхэд алдаа гарлаа' }, { status: 500 });
   }
 
   const statusLabel = pet.status === 'lost' ? 'Алдсан' : 'Олдсон';

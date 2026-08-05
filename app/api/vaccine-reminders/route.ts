@@ -3,8 +3,8 @@
 // Vercel Cron Job-оор өдөр бүр дуудагдана (vercel.json дотор тохируулсан цагаар).
 // Хугацаа болсон/хэтэрсэн амьтдын эзэнд push мэдэгдэл илгээнэ.
 import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
 import webpush from 'web-push';
+import { createAdminClient } from '../../../lib/supabaseAdmin';
 
 export async function GET(request: Request) {
   // Vercel Cron-оос ирсэн хүсэлт эсэхийг шалгана (CRON_SECRET env тохируулсан бол
@@ -20,10 +20,7 @@ export async function GET(request: Request) {
     process.env.VAPID_PRIVATE_KEY!
   );
 
-  const supabaseAdmin = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
+  const supabaseAdmin = createAdminClient();
 
   const today = new Date().toISOString().slice(0, 10);
 
@@ -36,7 +33,8 @@ export async function GET(request: Request) {
     .or(`last_notified_date.is.null,last_notified_date.lt.${today}`);
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error('vaccine-reminders: query алдаа', error);
+    return NextResponse.json({ error: 'Мэдэгдэл илгээхэд алдаа гарлаа' }, { status: 500 });
   }
 
   let sent = 0;

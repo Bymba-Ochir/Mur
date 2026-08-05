@@ -4,8 +4,6 @@ import { fetchPetById, markResolved, updatePet, deletePet } from '../../../lib/p
 import { useAuth } from '../../../lib/useAuth';
 import { maskPhone } from '../../../lib/utils';
 import { relativeTime } from '../../../lib/relativeTime';
-import { DISTRICTS } from '../../../lib/districts';
-import type { District } from '../../../lib/districts';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import ShareButtons from '../../../components/ShareButtons';
@@ -13,19 +11,13 @@ import LocationMap from '../../../components/LocationMap';
 import ReportButton from '../../../components/ReportButton';
 import SightingsList from '../../../components/SightingsList';
 import PetIcon from '../../../components/PetIcon';
+import PetEditForm from '../../../components/PetEditForm';
+import type { PetEditValues } from '../../../components/PetEditForm';
 import { useToast } from '../../../components/Toast';
 import { useLanguage } from '../../../lib/i18n';
 import { fireConfetti } from '../../../lib/confetti';
 import type { Pet } from '../../../lib/types';
 import { getErrorMessage } from '../../../lib/utils';
-
-interface EditForm {
-  name: string;
-  color: string;
-  place: string;
-  district: District;
-  phone: string;
-}
 
 // URL-ийн snapshot — share холбоосын зориулалттай (useSyncExternalStore;
 // effect-д setUrl хийхгүй, SSR-д хоосон string)
@@ -51,7 +43,7 @@ export default function PetDetailClient({ id }: { id: string }) {
   const [resolving, setResolving] = useState(false);
   const [revealed, setRevealed] = useState(false);
   const [editing, setEditing] = useState(false);
-  const [editForm, setEditForm] = useState<EditForm | null>(null);
+  const [editForm, setEditForm] = useState<PetEditValues | null>(null);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
@@ -85,10 +77,10 @@ export default function PetDetailClient({ id }: { id: string }) {
     }
   }
 
-  async function handleSaveEdit() {
+  async function handleSaveEdit(values: PetEditValues) {
     setSaving(true);
     try {
-      await updatePet(id, editForm || {});
+      await updatePet(id, values);
       setEditing(false);
       await load();
       showToast('Мэдээлэл хадгалагдлаа', 'success'); // eslint-disable-line
@@ -170,28 +162,12 @@ export default function PetDetailClient({ id }: { id: string }) {
         </div>
       ) : (
         editForm && (
-          <div className="card" style={{ padding: 'var(--sp-4)', display: 'flex', flexDirection: 'column', gap: 'var(--sp-2)' }}>
-            <label htmlFor="edit-name" style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--primary)' }}>{t('name_label')}</label>
-            <input id="edit-name" className="field" value={editForm.name} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })} />
-            <label htmlFor="edit-color" style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--primary)' }}>{t('color_label').replace(' *','')}</label>
-            <input id="edit-color" className="field" value={editForm.color} onChange={(e) => setEditForm({ ...editForm, color: e.target.value })} />
-            <label htmlFor="edit-district" style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--primary)' }}>{t('district_label')}</label>
-            <select id="edit-district" className="field" value={editForm.district} onChange={(e) => setEditForm({ ...editForm, district: e.target.value as District })}>
-              {DISTRICTS.map((d) => <option key={d}>{d}</option>)}
-            </select>
-            <label htmlFor="edit-place" style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--primary)' }}>{t('detail_place').replace(':','')}</label>
-            <input id="edit-place" className="field" value={editForm.place} onChange={(e) => setEditForm({ ...editForm, place: e.target.value })} />
-            <label htmlFor="edit-phone" style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--primary)' }}>{t('phone_label').replace(' *','')}</label>
-            <input id="edit-phone" className="field" value={editForm.phone} onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })} />
-            <div style={{ display: 'flex', gap: 'var(--sp-2)', marginTop: 'var(--sp-2)' }}>
-              <button onClick={handleSaveEdit} disabled={saving} className="btn btn-primary" style={{ flex: 1 }}>
-                {saving ? t('detail_saving') : t('detail_save')}
-              </button>
-              <button onClick={() => setEditing(false)} className="btn btn-ghost" style={{ flex: 1 }}>
-                {t('detail_cancel')}
-              </button>
-            </div>
-          </div>
+          <PetEditForm
+            initial={editForm}
+            onSave={handleSaveEdit}
+            onCancel={() => setEditing(false)}
+            saving={saving}
+          />
         )
       )}
 

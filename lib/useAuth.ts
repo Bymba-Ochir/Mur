@@ -1,39 +1,4 @@
 // lib/useAuth.ts
-'use client';
-import { useEffect, useState } from 'react';
-import { supabase } from './supabase';
-import type { User } from '@supabase/supabase-js';
-
-export function useAuth() {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      setUser(data.session?.user ?? null);
-      setLoading(false);
-    });
-
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-    });
-
-    return () => listener.subscription.unsubscribe();
-  }, []);
-
-  /**
-   * Имэйл рүү нэвтрэх холбоос (magic link) илгээнэ.
-   * Google/Facebook OAuth тохируулах шаардлагагүй тул MVP-д хамгийн хурдан.
-   */
-  const loginWithEmail = async (email: string): Promise<void> => {
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: { emailRedirectTo: typeof window !== 'undefined' ? window.location.origin : undefined },
-    });
-    if (error) throw error;
-  };
-
-  const logout = () => supabase.auth.signOut();
-
-  return { user, loading, loginWithEmail, logout };
-}
+// Backward-compat re-export. Жинхэнэ хэрэгжилт lib/AuthProvider.tsx-д байна
+// (нэг л AuthProvider context, нэг л auth listener).
+export { useAuth } from './AuthProvider';

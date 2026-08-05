@@ -1,5 +1,6 @@
 // lib/adminService.ts
 import { supabase } from './supabase';
+import { mapPetSummary } from './petMapping';
 import type { Report } from './types';
 
 export async function isAdmin(): Promise<boolean> {
@@ -27,17 +28,7 @@ export async function fetchReports(): Promise<Report[]> {
     id: r.id,
     reason: r.reason,
     createdAt: r.created_at,
-    pet: r.pets
-      ? {
-          id: r.pets.id,
-          status: r.pets.status,
-          name: r.pets.name,
-          type: r.pets.type,
-          photoURL: r.pets.photo_url,
-          district: r.pets.district,
-          place: r.pets.place,
-        }
-      : null,
+    pet: r.pets ? mapPetSummary(r.pets) : null,
   }));
 }
 

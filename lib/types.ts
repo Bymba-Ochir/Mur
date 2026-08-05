@@ -1,6 +1,6 @@
 // lib/types.ts
-// Хуваалцсан домэйн төрлүүд. Каноник `Pet` хэлбэр нь lib/petService.js-ийн
-// hand-mapped camelCase объектуудыг (fetchPetById / fetchPets) толь харуулдаг.
+// Хуваалцсан домэйн төрлүүд. Каноник `Pet` хэлбэр нь lib/petMapping.ts-ийн
+// mapPetRow (DB snake_case → camelCase) хэрэглэдэг.
 import type { District } from './districts';
 
 export type PetStatus = 'lost' | 'found';
@@ -29,8 +29,6 @@ export interface Pet {
   /** rankBySimilarity нэмдэг; DB-ийн шинэ мөрөнд байхгүй */
   similarity?: number;
 }
-
-export type PetWithSimilarity = Pet & { similarity: number };
 
 export interface PetReportInput {
   status: PetStatus;

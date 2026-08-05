@@ -2,48 +2,25 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import type { FormEvent } from 'react';
 import { useAuth } from '../lib/useAuth';
 import { isAdmin } from '../lib/adminService';
 import ThemeToggle from './ThemeToggle';
 import DonateButton from './DonateButton';
 import LanguageToggle from './LanguageToggle';
+import LoginModal from './LoginModal';
 import { useLanguage } from '../lib/i18n';
 
 export default function Navbar() {
-  const { user, loginWithEmail, logout } = useAuth();
+  const { user, logout } = useAuth();
   const { t } = useLanguage();
   const pathname = usePathname();
   const [showLogin, setShowLogin] = useState(false);
-  const [email, setEmail] = useState('');
-  const [sent, setSent] = useState(false);
-  const [err, setErr] = useState<string | null>(null);
   const [admin, setAdmin] = useState(false);
 
   useEffect(() => {
     const task = user ? isAdmin() : Promise.resolve(false);
     task.then(setAdmin);
   }, [user]);
-
-  useEffect(() => {
-    if (!showLogin) return;
-    function handleKey(e: KeyboardEvent) {
-      if (e.key === 'Escape') setShowLogin(false);
-    }
-    window.addEventListener('keydown', handleKey);
-    return () => window.removeEventListener('keydown', handleKey);
-  }, [showLogin]);
-
-  async function handleSend(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setErr(null);
-    try {
-      await loginWithEmail(email);
-      setSent(true);
-    } catch {
-      setErr(t('login_error'));
-    }
-  }
 
   return (
     <header className="navbar">
@@ -67,36 +44,7 @@ export default function Navbar() {
         )}
       </nav>
 
-      {showLogin && (
-        <div className="overlay" onClick={() => setShowLogin(false)}>
-          <div
-            className="modal"
-            onClick={(e) => e.stopPropagation()}
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="login-modal-title"
-          >
-            <h2 id="login-modal-title" style={{ fontSize: 16, marginBottom: 12 }}>{t('login_title')}</h2>
-            {sent ? (
-              <p role="status">{t('login_sent')}</p>
-            ) : (
-              <form onSubmit={handleSend}>
-                <label htmlFor="login-email">{t('login_email_label')}</label>
-                <input
-                  id="login-email"
-                  type="email" required value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="ta@jishee.mn"
-                  aria-describedby={err ? 'login-error' : undefined}
-                />
-                {err && <p id="login-error" className="err" role="alert">{err}</p>}
-                <button type="submit" className="btn btn-primary">{t('login_button')}</button>
-              </form>
-            )}
-            <button className="close" onClick={() => setShowLogin(false)} aria-label="Цонхыг хаах">{t('close')}</button>
-          </div>
-        </div>
-      )}
+      {showLogin && <LoginModal onClose={() => setShowLogin(false)} />}
 
       <style jsx>{`
         .navbar {
@@ -139,25 +87,6 @@ export default function Navbar() {
         :global(a:focus-visible), .link-btn:focus-visible {
           outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px;
         }
-        .overlay {
-          position: fixed; inset: 0; background: var(--overlay);
-          display: flex; align-items: center; justify-content: center; z-index: 100;
-          animation: fadeIn 0.15s ease;
-        }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        .modal {
-          background: var(--card); border-radius: var(--r-lg); padding: 28px; max-width: 320px; width: 90%; color: var(--ink);
-          box-shadow: var(--shadow-lift);
-        }
-        .modal h2 { font-family: var(--font-display); }
-        .modal label { font-size: 13px; font-weight: 600; color: var(--primary); display: block; margin-bottom: 6px; }
-        .modal input {
-          width: 100%; padding: 11px 13px; border: 1.5px solid var(--line); border-radius: var(--r-sm);
-          font-size: 14px; margin-bottom: 12px; font-family: var(--font-body); background: var(--card); color: var(--ink);
-        }
-        .modal .btn-primary { width: 100%; }
-        .err { color: var(--alert); font-size: 12.5px; margin-bottom: 8px; }
-        .close { margin-top: 14px; background: none; border: none; color: var(--muted); font-size: 12.5px; cursor: pointer; }
       `}</style>
     </header>
   );

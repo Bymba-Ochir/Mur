@@ -2,17 +2,17 @@
 // Server component — Facebook/Messenger share хийхэд зурган preview (og:image)
 // зөв харагдахын тулд metadata-г серверт нь тооцоолно.
 import type { Metadata } from 'next';
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from '../../../lib/supabase';
 import PetDetailClient from './PetDetailClient';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params;
-  const { data: pet } = await supabase.from('pets').select('*').eq('id', id).single();
+  // Metadata-д зөвхөн хэрэгтэй багануудыг татна (color_signature vector-г биш)
+  const { data: pet } = await supabase
+    .from('pets')
+    .select('status,type,name,district,place,color,photo_url')
+    .eq('id', id)
+    .single();
 
   if (!pet) {
     return { title: 'МӨР — Бичлэг олдсонгүй' };

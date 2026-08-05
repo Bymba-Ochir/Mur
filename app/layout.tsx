@@ -8,6 +8,7 @@ import Onboarding from '../components/Onboarding';
 import PageTransition from '../components/PageTransition';
 import { ToastProvider } from '../components/Toast';
 import { LanguageProvider } from '../lib/i18n';
+import { AuthProvider } from '../lib/AuthProvider';
 import AnalyticsProvider from '../components/AnalyticsProvider';
 import './globals.css';
 
@@ -61,17 +62,19 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       </head>
       <body>
         <a href="#main-content" className="skip-link">Үндсэн агуулга руу шилжих</a>
-        <LanguageProvider>
-          <ToastProvider>
-            <Navbar />
-            <main id="main-content"><PageTransition>{children}</PageTransition></main>
-            <Footer />
-            <InstallPrompt />
-            <Onboarding />
-            <BottomNav />
-            <AnalyticsProvider />
-          </ToastProvider>
-        </LanguageProvider>
+        <AuthProvider>
+          <LanguageProvider>
+            <ToastProvider>
+              <Navbar />
+              <main id="main-content"><PageTransition>{children}</PageTransition></main>
+              <Footer />
+              <InstallPrompt />
+              <Onboarding />
+              <BottomNav />
+              <AnalyticsProvider />
+            </ToastProvider>
+          </LanguageProvider>
+        </AuthProvider>
       </body>
     </html>
   );

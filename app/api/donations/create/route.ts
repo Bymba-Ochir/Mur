@@ -1,9 +1,9 @@
 // app/api/donations/create/route.ts
 import { NextResponse } from 'next/server';
 import { randomBytes } from 'crypto';
-import { createClient } from '@supabase/supabase-js';
 import { createQPayInvoice } from '../../../../lib/qpay';
 import { checkRateLimit, getClientIp } from '../../../../lib/rateLimit';
+import { createAdminClient } from '../../../../lib/supabaseAdmin';
 
 export async function POST(request: Request) {
   try {
@@ -51,10 +51,7 @@ export async function POST(request: Request) {
 
     const statusToken = randomBytes(32).toString('hex');
 
-    const supabaseAdmin = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    );
+    const supabaseAdmin = createAdminClient();
 
     const { data: donation, error } = await supabaseAdmin
       .from('donations')
@@ -83,6 +80,6 @@ export async function POST(request: Request) {
     });
   } catch (err) {
     console.error('Donation create error:', err);
-    return NextResponse.json({ error: (err instanceof Error ? err.message : String(err)) || 'Хандив үүсгэхэд алдаа гарлаа' }, { status: 500 });
+    return NextResponse.json({ error: 'Хандив үүсгэхэд алдаа гарлаа. Дахин оролдоно уу.' }, { status: 500 });
   }
 }

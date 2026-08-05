@@ -2,15 +2,16 @@
 // Алдсан/олдсон амьтны мэдээллийг Supabase (Postgres + Storage)-д бичих, унших функцууд
 import { supabase } from './supabase';
 import { getImageEmbedding, cosineSimilarityScore } from './similarity';
+import { mapPetRow } from './petMapping';
 import type { Pet, PetStatus, PetFilters, PetReportInput, UpdatePetFields } from './types';
 
 const TABLE = 'pets';
 const BUCKET = 'pet-photos';
 
 /**
- * Зураг Storage bucket-д хуулаад, public URL буцаана
+ * Зураг Storage bucket-д хуулаад, public URL буцаана (зөвхөн дотор ашиглана)
  */
-export async function uploadPetPhoto(file: File, statusFolder: PetStatus): Promise<string> {
+async function uploadPetPhoto(file: File, statusFolder: PetStatus): Promise<string> {
   const path = `${statusFolder}/${Date.now()}_${file.name}`;
   const { error } = await supabase.storage.from(BUCKET).upload(path, file);
   if (error) throw error;
@@ -71,23 +72,7 @@ export async function createPetReport(data: PetReportInput, onProgress?: (messag
 export async function fetchPetById(id: string): Promise<Pet> {
   const { data, error } = await supabase.from(TABLE).select('*').eq('id', id).single();
   if (error) throw error;
-  return {
-    id: data.id,
-    status: data.status,
-    name: data.name,
-    type: data.type,
-    color: data.color,
-    place: data.place,
-    district: data.district,
-    phone: data.phone,
-    photoURL: data.photo_url,
-    embedding: data.color_signature,
-    lat: data.lat,
-    lng: data.lng,
-    resolved: data.resolved,
-    createdBy: data.created_by,
-    createdAt: data.created_at,
-  };
+  return mapPetRow(data);
 }
 
 /**
@@ -120,23 +105,7 @@ export async function fetchPets(filters: PetFilters = {}): Promise<{ pets: Pet[]
   const pageData = hasMore ? data.slice(0, PAGE_SIZE) : data;
 
   return {
-    pets: pageData.map((p): Pet => ({
-      id: p.id,
-      status: p.status,
-      name: p.name,
-      type: p.type,
-      color: p.color,
-      place: p.place,
-      district: p.district,
-      phone: p.phone,
-      photoURL: p.photo_url,
-      embedding: p.color_signature,
-      lat: p.lat,
-      lng: p.lng,
-      resolved: p.resolved,
-      createdBy: p.created_by,
-      createdAt: p.created_at,
-    })),
+    pets: pageData.map(mapPetRow),
     hasMore,
   };
 }
