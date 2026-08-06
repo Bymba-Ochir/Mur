@@ -74,12 +74,13 @@ export default function Navbar() {
     return () => window.removeEventListener('keydown', handleKey);
   }, []);
 
-  // Close mobile menu on link click
   const handleMobileLinkClick = () => {
     setShowMobileMenu(false);
   };
 
-interface NavLinkItem { href: string; label: string; } interface UserMenuItem { href?: string; label: string; isLink: boolean; accent?: boolean; danger?: boolean; onClick?: () => void; }
+  interface NavLinkItem { href: string; label: string; }
+  interface UserMenuItem { href?: string; label: string; isLink: boolean; accent?: boolean; danger?: boolean; onClick?: () => void; }
+
   const navLinks: NavLinkItem[] = [
     { href: '/report-lost', label: t('nav_lost') },
     { href: '/report-found', label: t('nav_found') },
@@ -94,126 +95,117 @@ interface NavLinkItem { href: string; label: string; } interface UserMenuItem { 
   ];
 
   return (
-    <header className="navbar">
-      <Link href="/" className="brand" aria-label="МӨР — Нүүр хуудас">
-        <span className="brand-mark" aria-hidden="true">М</span>
-        <span className="brand-name">МӨР</span>
-      </Link>
+    <header className="navbar-wrap">
+      <header className="navbar">
+        <Link href="/" className="brand" aria-label="МӨР — Нүүр хуудас">
+          <span className="brand-mark" aria-hidden="true">М</span>
+          <span className="brand-name">МӨР</span>
+        </Link>
 
-      {/* Desktop Navigation */}
-      <nav className="nav-desktop" aria-label="Үндсэн цэс">
-        {navLinks.map((link) => (
-          <Link
-            key={link.href}
-            href={link.href}
-            className={`nav-link${pathname === link.href ? ' active' : ''}`}
-            onClick={handleMobileLinkClick}
-          >
-            {link.label}
-          </Link>
-        ))}
-        {admin && (
-          <Link
-            href="/admin"
-            className={`nav-link${pathname === '/admin' ? ' active' : ''}`}
-            style={{ color: 'var(--accent)' }}
-            onClick={handleMobileLinkClick}
-          >
-            {t('nav_admin')}
-          </Link>
-        )}
-        <DonateButton />
-        <LanguageToggle />
-        <ThemeToggle />
-        {user ? (
-          <div className="user-menu" ref={userMenuRef}>
-            <button
-              className="user-btn"
-              onClick={() => setShowUserMenu(!showUserMenu)}
-              aria-expanded={showUserMenu}
-              aria-haspopup="true"
-              aria-label={t('nav_user_menu_label')}
+        {/* Desktop Navigation Links */}
+        <nav className="nav-desktop" aria-label="Үндсэн цэс">
+          {navLinks.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className={`nav-link${pathname === link.href ? ' active' : ''}`}
             >
-              <span className="user-avatar" aria-hidden="true">👤</span>
-              <span className="user-email">{user.email ? truncateEmail(user.email) : ''}</span>
-              <span className="user-chevron" aria-hidden="true">{showUserMenu ? '▲' : '▼'}</span>
+              {link.label}
+            </Link>
+          ))}
+          {admin && (
+            <Link
+              href="/admin"
+              className={`nav-link${pathname === '/admin' ? ' active' : ''}`}
+              style={{ color: 'var(--accent)' }}
+            >
+              {t('nav_admin')}
+            </Link>
+          )}
+        </nav>
+
+        {/* Desktop Actions: Donate + Toggles + User */}
+        <div className="nav-desktop-actions">
+          <DonateButton />
+          <LanguageToggle />
+          <ThemeToggle />
+          {user ? (
+            <div className="user-menu" ref={userMenuRef}>
+              <button
+                className="user-btn"
+                onClick={() => setShowUserMenu(!showUserMenu)}
+                aria-expanded={showUserMenu}
+                aria-haspopup="true"
+                aria-label={t('nav_user_menu_label')}
+              >
+                <span className="user-avatar" aria-hidden="true">👤</span>
+                <span className="user-email">{user.email ? truncateEmail(user.email) : ''}</span>
+                <span className="user-chevron" aria-hidden="true">{showUserMenu ? '▲' : '▼'}</span>
+              </button>
+              {showUserMenu && (
+                <div className="user-dropdown" role="menu">
+                  {userMenuItems.map((item, idx) => (
+                    item.isLink && item.href ? (
+                      <Link
+                        key={idx}
+                        href={item.href}
+                        className={`dropdown-item${item.accent ? ' dropdown-accent' : ''}`}
+                        role="menuitem"
+                        style={item.accent ? { color: 'var(--accent)' } : undefined}
+                        onClick={() => setShowUserMenu(false)}
+                      >
+                        {item.label}
+                      </Link>
+                    ) : (
+                      <button
+                        key={idx}
+                        className={`dropdown-item${item.danger ? ' dropdown-danger' : ''}`}
+                        role="menuitem"
+                        onClick={() => { item.onClick?.(); setShowUserMenu(false); }}
+                      >
+                        {item.label}
+                      </button>
+                    )
+                  ))}
+                </div>
+              )}
+            </div>
+          ) : (
+            <button className="link-btn btn-base" onClick={() => setShowLogin(true)}>
+              {t('nav_login')}
             </button>
-            {showUserMenu && (
-              <div className="user-dropdown" role="menu">
-                {userMenuItems.map((item, idx) => (
-                  item.isLink && item.href ? (
-                    <Link
-                      key={idx}
-                      href={item.href}
-                      className={`dropdown-item${item.accent ? ' dropdown-accent' : ''}`}
-                      role="menuitem"
-                      style={item.accent ? { color: 'var(--accent)' } : undefined}
-                      onClick={handleMobileLinkClick}
-                    >
-                      {item.label}
-                    </Link>
-                  ) : (
-                    <button
-                      key={idx}
-                      className={`dropdown-item${item.danger ? ' dropdown-danger' : ''}`}
-                      role="menuitem"
-                      onClick={item.onClick}
-                    >
-                      {item.label}
-                    </button>
-                  )
-                ))}
-              </div>
-            )}
-          </div>
-        ) : (
-          <button className="link-btn btn-base" onClick={() => setShowLogin(true)}>
-            {t('nav_login')}
+          )}
+        </div>
+
+        {/* Mobile: Hamburger only */}
+        <div className="mobile-actions">
+          <button
+            className={`mobile-menu-btn ${showMobileMenu ? 'active' : ''}`}
+            onClick={() => setShowMobileMenu(!showMobileMenu)}
+            aria-expanded={showMobileMenu}
+            aria-controls="mobile-menu"
+            aria-label={showMobileMenu ? t('nav_close_menu') : t('nav_open_menu')}
+          >
+            <span className="menu-icon">
+              <span className="menu-line"></span>
+              <span className="menu-line"></span>
+              <span className="menu-line"></span>
+            </span>
           </button>
-        )}
-      </nav>
+        </div>
+      </header>
 
-      {/* Mobile Menu Button */}
-      <div className="mobile-actions">
-        <DonateButton />
-        <button
-          className={`mobile-menu-btn ${showMobileMenu ? 'active' : ''}`}
-          onClick={() => setShowMobileMenu(!showMobileMenu)}
-          aria-expanded={showMobileMenu}
-          aria-controls="mobile-menu"
-          aria-label={showMobileMenu ? t('nav_close_menu') : t('nav_open_menu')}
-        >
-          <span className="menu-icon">
-            <span className="menu-line"></span>
-            <span className="menu-line"></span>
-            <span className="menu-line"></span>
-          </span>
-        </button>
-      </div>
-
-      {/* Mobile Navigation Drawer */}
+      {/* Mobile Dropdown Menu */}
       {showMobileMenu && (
         <div
           id="mobile-menu"
-          className="mobile-menu-overlay"
-          onClick={() => setShowMobileMenu(false)}
+          className="mobile-dropdown"
+          ref={mobileMenuRef}
           role="dialog"
           aria-modal="true"
           aria-labelledby="mobile-menu-title"
         >
-          <div className="mobile-menu-panel" ref={mobileMenuRef} onClick={(e) => e.stopPropagation()}>
-            <div className="mobile-menu-header">
-              <h2 id="mobile-menu-title" className="eyebrow">{t('nav_menu_title')}</h2>
-              <button
-                className="mobile-close-btn"
-                onClick={() => setShowMobileMenu(false)}
-                aria-label={t('nav_close_menu')}
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M18 6L6 18M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
+          <div className="mobile-dropdown-inner">
             <nav className="mobile-nav" aria-label="Мобайл цэс">
               {navLinks.map((link) => (
                 <Link
@@ -275,6 +267,14 @@ interface NavLinkItem { href: string; label: string; } interface UserMenuItem { 
       {showLogin && <LoginModal onClose={() => setShowLogin(false)} />}
 
       <style jsx>{`
+        /* ─── Outer wrapper (sticky + dropdown anchor) ─── */
+        .navbar-wrap {
+          position: sticky;
+          top: 0;
+          z-index: 90;
+        }
+
+        /* ─── Navbar bar ─── */
         .navbar {
           display: flex;
           justify-content: space-between;
@@ -286,9 +286,6 @@ interface NavLinkItem { href: string; label: string; } interface UserMenuItem { 
           backdrop-filter: var(--glass-blur);
           border-bottom: 1px solid var(--glass-border);
           color: var(--ink);
-          position: sticky;
-          top: 0;
-          z-index: 90;
           min-height: var(--touch-target);
         }
 
@@ -296,6 +293,7 @@ interface NavLinkItem { href: string; label: string; } interface UserMenuItem { 
           .navbar { padding: var(--sp-4) max(calc((100vw - 1200px) / 2), var(--sp-4)); }
         }
 
+        /* ─── Brand ─── */
         .brand {
           display: flex;
           align-items: center;
@@ -331,7 +329,7 @@ interface NavLinkItem { href: string; label: string; } interface UserMenuItem { 
           .brand-mark { width: 40px; height: 40px; font-size: 15px; }
         }
 
-        /* Desktop Navigation */
+        /* ─── Desktop Nav Links ─── */
         .nav-desktop {
           display: flex;
           align-items: center;
@@ -367,18 +365,31 @@ interface NavLinkItem { href: string; label: string; } interface UserMenuItem { 
           font-weight: 600;
           background: var(--eyebrow-bg);
         }
-        .nav-link:focus-visible,
+
+        /* ─── Desktop Actions Group ─── */
+        .nav-desktop-actions {
+          display: flex;
+          align-items: center;
+          gap: var(--sp-2);
+          flex-shrink: 0;
+        }
+        @media (min-width: 1200px) {
+          .nav-desktop-actions { gap: var(--sp-3); }
+        }
+
+        /* ─── Shared focus-visible ─── */
         .link-btn:focus-visible,
         .user-btn:focus-visible,
         .dropdown-item:focus-visible,
         .mobile-menu-btn:focus-visible,
-        .mobile-nav-link:focus-visible {
+        .mobile-nav-link:focus-visible,
+        .nav-link:focus-visible {
           outline: 2.5px solid var(--accent);
           outline-offset: 2px;
           border-radius: var(--r-sm);
         }
 
-        /* User Menu Dropdown (Desktop) */
+        /* ─── User Menu Dropdown (Desktop) ─── */
         .user-menu { position: relative; }
         .user-btn {
           display: flex;
@@ -453,28 +464,12 @@ interface NavLinkItem { href: string; label: string; } interface UserMenuItem { 
         .dropdown-danger { color: var(--alert); }
         .dropdown-danger:hover { background: var(--alert-bg); }
 
-        /* Mobile Actions Container */
+        /* ─── Mobile: Hamburger only ─── */
         .mobile-actions {
           display: none;
           align-items: center;
-          gap: var(--sp-2);
         }
 
-        .mobile-actions :global(.donate-btn) {
-          min-height: 40px;
-          font-size: 13px;
-          padding: 8px 14px;
-        }
-
-        @media (max-width: 480px) {
-          .mobile-actions :global(.donate-btn) {
-            min-height: 38px;
-            font-size: 12px;
-            padding: 6px 12px;
-          }
-        }
-
-        /* Mobile Menu Button */
         .mobile-menu-btn {
           display: none;
           flex-direction: column;
@@ -489,7 +484,6 @@ interface NavLinkItem { href: string; label: string; } interface UserMenuItem { 
           padding: 0;
           transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
-
         .mobile-menu-btn:hover {
           background: var(--eyebrow-bg);
           border-color: var(--primary);
@@ -502,7 +496,6 @@ interface NavLinkItem { href: string; label: string; } interface UserMenuItem { 
           width: 18px;
           transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
-
         .menu-line {
           height: 2px;
           background: var(--ink);
@@ -510,111 +503,64 @@ interface NavLinkItem { href: string; label: string; } interface UserMenuItem { 
           transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
           transform-origin: center;
         }
-
         .mobile-menu-btn.active .menu-line:nth-child(1) {
           transform: translateY(6px) rotate(45deg);
         }
-
         .mobile-menu-btn.active .menu-line:nth-child(2) {
           opacity: 0;
           transform: scaleX(0);
         }
-
         .mobile-menu-btn.active .menu-line:nth-child(3) {
           transform: translateY(-6px) rotate(-45deg);
         }
 
-        /* Mobile Menu Overlay */
-        .mobile-menu-overlay {
-          position: fixed;
-          inset: 0;
-          background: rgba(0, 0, 0, 0.5);
-          backdrop-filter: blur(8px);
-          -webkit-backdrop-filter: blur(8px);
-          display: flex;
-          justify-content: flex-end;
-          z-index: 200;
-          animation: fadeIn 0.25s ease;
-          padding-bottom: var(--safe-bottom);
-        }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-        .mobile-menu-panel {
-          width: 100%;
-          max-width: 360px;
-          height: 100dvh;
+        /* ─── Mobile Dropdown Panel ─── */
+        .mobile-dropdown {
+          position: absolute;
+          top: 100%;
+          left: 0;
+          right: 0;
           background: var(--card);
-          border-left: 1px solid var(--line);
-          box-shadow: -8px 0 32px rgba(0, 0, 0, 0.2);
-          display: flex;
-          flex-direction: column;
-          animation: slideInRight 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+          border-bottom: 1px solid var(--line);
+          box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+          z-index: 89;
+          max-height: calc(100dvh - 60px);
           overflow-y: auto;
           overscroll-behavior: contain;
+          animation: dropdownSlide 0.25s cubic-bezier(0.16, 1, 0.3, 1);
         }
-        @keyframes slideInRight {
-          from { transform: translateX(100%); }
-          to { transform: translateX(0); }
+        @keyframes dropdownSlide {
+          from { opacity: 0; transform: translateY(-8px); }
+          to { opacity: 1; transform: translateY(0); }
         }
 
-        .mobile-menu-header {
+        .mobile-dropdown-inner {
           display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding: var(--sp-5) var(--sp-4);
-          border-bottom: 1px solid var(--line);
-          background: var(--bg);
-        }
-
-        .mobile-menu-header :global(.eyebrow) {
-          margin-bottom: 0;
-        }
-
-        .mobile-close-btn {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          width: 36px;
-          height: 36px;
-          background: transparent;
-          border: 1.5px solid var(--line);
-          border-radius: var(--r-md);
-          cursor: pointer;
-          color: var(--ink);
-          transition: all 0.2s ease;
-        }
-
-        .mobile-close-btn:hover {
-          background: var(--eyebrow-bg);
-          border-color: var(--primary);
-          transform: rotate(90deg);
+          flex-direction: column;
         }
 
         .mobile-nav {
           display: flex;
           flex-direction: column;
-          padding: var(--sp-4) var(--sp-3);
-          gap: var(--sp-2);
-          flex: 1;
-          overflow-y: auto;
+          padding: var(--sp-3) var(--sp-3) 0;
+          gap: var(--sp-1);
         }
         .mobile-nav-link {
           display: flex;
           align-items: center;
-          min-height: 48px;
-          padding: var(--sp-3) var(--sp-4);
+          min-height: 44px;
+          padding: var(--sp-2) var(--sp-3);
           color: var(--ink);
           text-decoration: none;
           font-family: var(--font-body);
-          font-size: 16px;
+          font-size: 15px;
           font-weight: 500;
           border-radius: var(--r-md);
-          transition: all 0.2s ease;
+          transition: all 0.15s ease;
         }
         .mobile-nav-link:hover {
           background: var(--eyebrow-bg);
           color: var(--primary);
-          transform: translateX(4px);
         }
         .mobile-nav-link.active {
           background: var(--eyebrow-bg);
@@ -623,30 +569,28 @@ interface NavLinkItem { href: string; label: string; } interface UserMenuItem { 
         }
 
         .mobile-menu-actions {
-          margin-top: auto;
-          padding: var(--sp-5) var(--sp-4) calc(var(--sp-6) + var(--safe-bottom));
+          padding: var(--sp-3);
           display: flex;
           flex-direction: column;
-          gap: var(--sp-4);
+          gap: var(--sp-3);
           border-top: 1px solid var(--line);
-          background: var(--bg);
+          margin-top: var(--sp-3);
         }
 
         .mobile-menu-actions :global(.donate-btn) {
           width: 100%;
-          min-height: 48px;
-          font-size: 15px;
-          padding: 12px 20px;
+          min-height: 44px;
+          font-size: 14px;
+          padding: 10px 16px;
         }
 
         .mobile-menu-row {
           display: flex;
           gap: var(--sp-2);
         }
-
         .mobile-menu-row > * {
           flex: 1;
-          min-height: 44px;
+          min-height: 40px;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -655,45 +599,43 @@ interface NavLinkItem { href: string; label: string; } interface UserMenuItem { 
         .mobile-user-section {
           display: flex;
           flex-direction: column;
-          gap: var(--sp-3);
-          padding-top: var(--sp-3);
+          gap: var(--sp-2);
+          padding-top: var(--sp-2);
           border-top: 1px solid var(--line);
         }
         .mobile-user-info {
           display: flex;
           align-items: center;
           gap: var(--sp-3);
-          padding: var(--sp-3);
-          background: var(--card);
-          border-radius: var(--r-lg);
-          border: 1px solid var(--line);
-          font-size: 14px;
+          padding: var(--sp-2) var(--sp-3);
+          background: var(--eyebrow-bg);
+          border-radius: var(--r-md);
+          font-size: 13px;
+          color: var(--muted);
         }
         .mobile-user-actions {
           display: flex;
           flex-direction: column;
           gap: var(--sp-2);
         }
-
         .mobile-user-actions :global(.btn-base) {
-          min-height: 48px;
-          font-size: 15px;
+          min-height: 44px;
+          font-size: 14px;
         }
 
-        /* Responsive Breakpoints */
+        /* ─── Responsive ─── */
         @media (max-width: 768px) {
           .nav-desktop { display: none; }
+          .nav-desktop-actions { display: none; }
           .mobile-actions { display: flex; }
           .mobile-menu-btn { display: flex; }
-          .navbar { padding: var(--sp-3) var(--sp-3); }
+          .navbar { padding: var(--sp-2) var(--sp-3); }
         }
 
         @media (max-width: 480px) {
           .brand-name { font-size: var(--text-lg); }
           .brand-mark { width: 32px; height: 32px; font-size: var(--text-sm); }
           .navbar { padding: var(--sp-2) var(--sp-2); min-height: 52px; }
-          .mobile-menu-panel { max-width: 100%; }
-          .mobile-actions { gap: var(--sp-1); }
         }
 
         @media (max-width: 360px) {
