@@ -393,7 +393,7 @@ supabase-setup.sql              — Бүх хүснэгт (pets, adoptions, conv
 - [x] `lib/similarity.ts`-г CLIP embedding-тэй солих ✅ (browser-based, `@huggingface/transformers`, CDN)
 - [x] Facebook/Messenger руу Share товч нэмэх ✅ (`ShareButtons.tsx`, `/pets/[id]` дэлгэрэнгүй хуудас)
 - [x] Push мэдэгдэл (Nearby Alert) ✅ (`lib/push.ts`, `public/sw.js`, `/api/notify` + Supabase Webhook)
-- [x] Сүүлд харагдсан газрын зураг ✅ (`components/LocationMap.tsx`, OpenStreetMap + Leaflet.js — API key шаардахгүй)
+- [x] Сүүлд харагдсан газрын зураг ✅ (`components/Location .tsx`, OpenStreetMap + Leaflet.js — API key шаардахгүй)
 - [x] Вакцины сануулга feature (retention) ✅ (`/my-pets`, Vercel Cron + push мэдэгдэл)
 - [x] "Олдлоо" товч ✅ (зохиогч л тэмдэглэж чадна, RLS-ээр хамгаалагдсан)
 - [x] Facebook/Messenger share-д зурган preview (og:image) ✅ (`generateMetadata`, server component)
