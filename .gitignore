@@ -8,23 +8,47 @@
 # environment variables (НУУЦ - GitHub-д хэзээ ч бүү оруул)
 .env*.local
 .env
+.env.production
 
-# backup файлууд (auth.users имэйл зэрэг PII агуулж болно — git-д бүү оруул)
+# Claude Code — хувийн тохиргоо, API key агуулж болно
+.claude/settings.json
+.claude/settings.local.json
+
+# backup файлууд (auth.users имэйл зэрэг PII агуулж болно)
 /backups/
 
-# misc
-.DS_Store
-*.pem
+# TypeScript кэш (build үед автоматаар үүсдэг)
+*.tsbuildinfo
 
-# debug
+# Sentry source maps (хувийн түлхүүр агуулж болно)
+sentry.properties
+**/*.js.map
+
+# Testing
+/playwright-report/
+/test-results/
+/blob-report/
+/coverage/
+
+# Vercel
+.vercel
+
+# IDE / editor
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS файлууд
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Debug
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# vercel
-.vercel
-
-# testing
-/playwright-report/
-/test-results/
-/coverage/
+# Misc
+*.pem
+*.log
