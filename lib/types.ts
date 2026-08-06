@@ -340,6 +340,8 @@ export interface SittingListing {
   phone: string;
   price: number | null;
   photoURL: string | null;
+  lat: number | null;
+  lng: number | null;
   createdAt: string;
 }
 
@@ -353,6 +355,8 @@ export interface SittingListingInput {
   phone: string;
   price?: number | null;
   photoFile?: File | null;
+  lat?: number | null;
+  lng?: number | null;
 }
 
 export interface SittingListingFilters {
@@ -371,6 +375,8 @@ export interface UpdateSittingListingFields {
   availability?: string;
   phone?: string;
   price?: number | null;
+  lat?: number | null;
+  lng?: number | null;
 }
 
 export interface ConversationSittingSummary {

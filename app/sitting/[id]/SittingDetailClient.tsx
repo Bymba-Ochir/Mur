@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useSyncExternalStore } from 'react';
 import PetIcon from '../../../components/PetIcon';
+import LocationMap from '../../../components/LocationMap';
 import SittingEditForm from '../../../components/SittingEditForm';
 import type { SittingEditValues } from '../../../components/SittingEditForm';
 import ShareButtons from '../../../components/ShareButtons';
@@ -172,6 +173,13 @@ export default function SittingDetailClient({ id }: { id: string }) {
         </div>
       )}
 
+      {listing.lat != null && listing.lng != null && (
+        <div className="map-section">
+          <p className="map-title">{t('sitting_map_title')}</p>
+          <LocationMap lat={listing.lat} lng={listing.lng} />
+        </div>
+      )}
+
       <div className="back-row">
         <Link href="/sitting" className="btn btn-ghost" style={{ display: 'inline-flex' }}>{t('sitting_back_to_list')}</Link>
       </div>
@@ -205,6 +213,8 @@ export default function SittingDetailClient({ id }: { id: string }) {
         }
         .owner-actions { display: flex; gap: var(--sp-2); margin-top: var(--sp-4); }
         .owner-actions .btn { flex: 1; min-height: var(--touch-target); }
+        .map-section { margin-top: var(--sp-5); }
+        .map-title { font-size: 13px; font-weight: 600; color: var(--primary); margin-bottom: var(--sp-2); }
         .back-row { margin-top: var(--sp-5); }
         .share-section { margin-top: var(--sp-6); text-align: center; }
         .share-hint { font-size: 12px; color: var(--muted); margin-top: var(--sp-2); }

@@ -306,6 +306,7 @@ const MN = {
   sitting_price_per_day: '/ өдөр',
   sitting_cannot_message: 'Өөрийнхөө зартай чат үүсгэх боломжгүй',
   sitting_back_to_list: '← Бүх асрах зар',
+  sitting_map_title: '📍 Асрах байршил',
   chat_deleted_listing: 'Зар устгагдсан',
 };
 
@@ -612,6 +613,7 @@ const EN: Record<TranslationKey, string> = {
   sitting_price_per_day: '/ day',
   sitting_cannot_message: 'Cannot message about your own listing',
   sitting_back_to_list: '← All sitting listings',
+  sitting_map_title: '📍 Sitting location',
   chat_deleted_listing: 'Listing removed',
 };
 

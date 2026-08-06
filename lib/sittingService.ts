@@ -21,6 +21,8 @@ interface SittingRow {
   phone: string | null;
   price: number | null;
   photo_url: string | null;
+  lat: number | null;
+  lng: number | null;
   created_at: string;
 }
 
@@ -37,6 +39,8 @@ function mapSittingRow(row: SittingRow): SittingListing {
     phone: row.phone ?? '',
     price: row.price ?? null,
     photoURL: row.photo_url,
+    lat: row.lat ?? null,
+    lng: row.lng ?? null,
     createdAt: row.created_at,
   };
 }
@@ -74,6 +78,8 @@ export async function createSittingListing(data: SittingListingInput): Promise<s
       phone: data.phone || '',
       price: data.price ?? null,
       photo_url: photoUrl,
+      lat: data.lat ?? null,
+      lng: data.lng ?? null,
     })
     .select()
     .single();
@@ -127,6 +133,8 @@ export async function updateSittingListing(id: string, fields: UpdateSittingList
   if (fields.availability !== undefined) updateData.availability = fields.availability;
   if (fields.phone !== undefined) updateData.phone = fields.phone;
   if (fields.price !== undefined) updateData.price = fields.price;
+  if (fields.lat !== undefined) updateData.lat = fields.lat;
+  if (fields.lng !== undefined) updateData.lng = fields.lng;
 
   const { error } = await supabase
     .from(TABLE)

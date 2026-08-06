@@ -6,6 +6,8 @@ import { useLanguage } from '../lib/i18n';
 import ShareButtons from './ShareButtons';
 import SittingCardView from './SittingCardView';
 import PawTrail from './PawTrail';
+import LocationMap from './LocationMap';
+import { usePetLocation } from '../lib/usePetForm';
 import { compressImage } from '../lib/imageCompress';
 import { createSittingListing } from '../lib/sittingService';
 import { useToast } from './Toast';
@@ -29,6 +31,9 @@ export default function SittingForm() {
   const [district, setDistrict] = useState<District>(DISTRICTS[0]);
   const [place, setPlace] = useState('');
   const [phone, setPhone] = useState('');
+
+  // Газрын зураг дээр байршил тэмдэглэх + geolocation товч (дүүрэг автоматаар таамаглана)
+  const location = usePetLocation((d) => setDistrict(d));
 
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
@@ -59,6 +64,7 @@ export default function SittingForm() {
     setStep(0); setPetType('Нохой'); setDescription(''); setExperience('');
     setAvailability(''); setPrice(''); setDistrict(DISTRICTS[0]); setPlace(''); setPhone('');
     setPhotoFile(null); setPhotoPreview(null); setDone(false); setNewId(null); setError(null);
+    location.reset();
   }
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
@@ -72,6 +78,8 @@ export default function SittingForm() {
         phone: normalizePhone(phone),
         price: price ? Number(price) : null,
         photoFile,
+        lat: location.coords?.lat ?? null,
+        lng: location.coords?.lng ?? null,
       });
       setNewId(id); setDone(true); resetAll();
     } catch (err) {
@@ -140,6 +148,22 @@ export default function SittingForm() {
             </select>
             <label htmlFor="s-place">{t('adoption_place_label')}</label>
             <input id="s-place" value={place} onChange={(e) => setPlace(e.target.value)} placeholder={t('adoption_place_placeholder')} required />
+
+            <button type="button" onClick={location.handleUseLocation} disabled={location.locating} className="locate-btn">
+              {location.locating ? t('locate_loading') : t('locate_btn')}
+            </button>
+            <label id="s-map-label">
+              {t('map_label')} <span style={{ fontWeight: 400, color: 'var(--muted)' }}>{t('map_optional')}</span>
+            </label>
+            <div aria-labelledby="s-map-label" role="application" aria-label={t('map_label')}>
+              <LocationMap lat={location.coords?.lat} lng={location.coords?.lng} editable onPick={location.setCoords} />
+            </div>
+            {location.coords && (
+              <p style={{ fontSize: 12, color: 'var(--muted)', marginTop: 4 }} aria-live="polite">
+                📍 {location.coords.lat.toFixed(4)}, {location.coords.lng.toFixed(4)}
+              </p>
+            )}
+
             <label htmlFor="s-phone">{t('phone_label')}</label>
             <input id="s-phone" value={formatPhone(phone)} onChange={(e) => setPhone(normalizePhone(e.target.value))} placeholder={t('phone_placeholder')} required inputMode="tel" />
             {error && <p className="error" role="alert">{error}</p>}
@@ -203,6 +227,14 @@ export default function SittingForm() {
         }
         .upload-zone:hover { border-color: var(--accent); background: var(--eyebrow-bg); }
         .upload-zone img { max-width: 150px; border-radius: var(--r-sm); }
+        .locate-btn {
+          background: var(--eyebrow-bg); border: 1.5px solid var(--line); border-radius: var(--r-sm);
+          padding: 11px 13px; font-size: 14.5px; width: 100%; color: var(--primary); font-weight: 600;
+          min-height: var(--touch-target); cursor: pointer; margin-top: var(--sp-4); font-family: var(--font-body);
+        }
+        .locate-btn:hover { border-color: var(--accent); }
+        .locate-btn:disabled { opacity: 0.6; cursor: default; }
+        .locate-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
         .btn-primary { width: 100%; margin-top: var(--sp-5); justify-content: center; font-size: 15px; padding: 14px; min-height: var(--touch-target); }
         .btn-primary:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
         .error { color: var(--alert); font-size: 13px; margin-top: var(--sp-2); }

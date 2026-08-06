@@ -655,8 +655,13 @@ create table if not exists sitting_listings (
   phone text default '',
   price integer,
   photo_url text,
+  lat double precision,
+  lng double precision,
   created_at timestamptz default now()
 );
+
+alter table sitting_listings add column if not exists lat double precision;
+alter table sitting_listings add column if not exists lng double precision;
 
 alter table sitting_listings enable row level security;
 

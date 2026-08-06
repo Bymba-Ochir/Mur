@@ -1,7 +1,22 @@
 # МӨР — MVP (Үе шат 1)
 
-Алдсан/олдсон гэрийн тэжээвэр амьтныг олоход туслах платформ. Roadmap-ийн **Үе шат 1**
-(Улаанбаатар, зөвхөн нохой/муур) шатанд тохирсон MVP код.
+Монголын гэрийн тэжээвэр амьтантай холбоотой хэрэгцээг нэгтгэсэн платформ:
+алдсан/олдсон амьтан хайх, үрчлүүлэх, амьтны эрүүл мэнд, мал эмнэлэг, AI зөвлөх,
+асрах үйлчилгээ. Roadmap-ийн **Үе шат 1** (Улаанбаатар, зөвхөн нохой/муур)
+шатанд тохирсон MVP код.
+
+## Онцлогууд
+
+| Онцлог | Хуудас | Тайлбар |
+|---|---|---|
+| Алдсан / Олдсон | `/report-lost`, `/report-found`, `/listings` | Зурган төстэй хайлт (CLIP, browser-based), текстээр хайх, дүүрэг/төрлөөр шүүх |
+| Үрчлүүлэх | `/adoptions`, `/adoptions/new` | Үрчлүүлэх зар, дэлгэрэнгүй + share, эзэн edit/delete |
+| Чат / Мессеж | `/messages` | Амьтны эзэнтэй шууд харилцах (Supabase Realtime) |
+| Эрүүл мэндийн бүртгэл | `/my-pets` | Вакцин, эм, өвчний түүх, цаг авалт, push сануулга |
+| Мал эмнэлэг | `/clinics` | УБ-ын 10 мал эмнэлгийн лавлах + Leaflet газрын зураг + цаг захиалга |
+| AI зөвлөх | `/assistant` | Эрүүл мэндийн зөвлөгөө — Монгол хэлний rule engine + Groq (сонголттой) |
+| Асрах үйлчилгээ | `/sitting`, `/sitting/new` | Аялалын үед амьтныг түр асрах хүн хайх / үйлчилгээ санал болгох |
+| Амьтны профайл | `/profiles/...` | Зурган/түүх/эрүүл мэндийн табуудтай профайл |
 
 ## Технологи
 
@@ -11,7 +26,7 @@
   CDN-ээс ачаална). Hugging Face-ийн серверийн Inference API 2025-2026 онд
   архитектурын хувьд байнга өөрчлөгдөж (endpoint, эрх, дэмжигдэх загвар) тогтворгүй
   болсон тул үүнээс бүрэн ангид, серверийн зардал/токен/rate-limit шаардахгүй
-  клиент талын шийдэл рүү шилжсэн. Дэлгэрэнгүй: `lib/similarity.js`.
+  клиент талын шийдэл рүү шилжсэн. Дэлгэрэнгүй: `lib/similarity.ts`.
 
 ## Яагаад Firebase биш Supabase вэ?
 
@@ -190,9 +205,9 @@ Vercel Hobby (үнэгүй) план дээр **`vercel.json`-д тохируу�
 - **Rate limiting**: Постгресийн trigger-ээр хэрэгжсэн (`check_pet_rate_limit`) — нэг
   утасны дугаар 1 цагт 5-аас олон удаа бичлэг нийтэлж чадахгүй. Клиент талаас
   тойрч болохгүй, `supabase-setup.sql`-ийг дахин ажиллуулахад автоматаар идэвхжинэ.
-- **AI зурган шүүлт**: `lib/contentModeration.js`, CLIP-ийн zero-shot classification
+- **AI зурган шүүлт**: `lib/contentModeration.ts`, CLIP-ийн zero-shot classification
   ашиглан зохисгүй агуулга эсвэл нохой/муур бус зургийг илрүүлж, анхааруулга/хориг
-  өгнө. Нэмэлт тохиргоо шаардахгүй, `similarity.js`-тэй адил CDN-ээс ачаална.
+  өгнө. Нэмэлт тохиргоо шаардахгүй, `similarity.ts`-тэй адил CDN-ээс ачаална.
 
 ### 13. Analytics болон Error tracking тохируулах
 
@@ -229,14 +244,23 @@ build алдаа өгөхгүй.
    ```
 4. Vercel Environment Variables-д мөн адил нэм
 
-**QPay мерчант эрхгүй бол:** `DonateModal.js`-г Messenger/Bank Transfer холбоос руу
+**QPay мерчант эрхгүй бол:** `DonateModal.tsx`-г Messenger/Bank Transfer холбоос руу
 чиглүүлэх энгийн хувилбараар түр орлуулж болно — хэрэгтэй бол хэлээрэй.
 
 ### 15. Англи хэл сонголт
 
-Navbar болон Нүүр хуудас **бүрэн орчуулагдсан** (`lib/i18n.js`). Бусад хуудсыг
-(жагсаалт, мэдэгдэх форм г.м.) ижил загвараар үргэлжлүүлж орчуулж болно — `DICT`
-object-д шинэ түлхүүр нэмээд, тухайн хуудсанд `useLanguage()` hook-оор ашиглана.
+Бүх хуудас **100% орчуулагдсан** (`lib/i18n.tsx`): Navbar, Нүүр, жагсаалт,
+дэлгэрэнгүй, Миний амьтад, Admin, Хандив (QPay), Чат, Мал эмнэлэг, AI зөвлөх,
+Асрах үйлчилгээ, Профайл. Шинэ текст нэмэхэд `DICT` object-ийн MN+EN хоёр
+блокт түлхүүрийг хамт нэмээд, `useLanguage()` hook-оор ашиглана.
+
+### 16. AI зөвлөх (Groq — сонголттой)
+
+`/assistant` нь Монгол хэлний rule engine-ээр ажилладаг тул **нэмэлт тохиргоо
+шаардахгүй** — хоол, шинж тэмдэг, вакцин, арчилгын сэдвээр шууд хариулна.
+Groq-ийн тусламжтай илүү чөлөөтэй хариулт хүсвэл `.env.local`-д `GROQ_API_KEY`
+нэмээд Vercel Environment Variables-д мөн оруулна (model: `llama-3.3-70b-versatile`).
+Түлхүүргүй үед эсвэл API алдаатай үед автоматаар rule engine / fallback руу шилжинэ.
 
 ## Дизайны систем
 
@@ -293,29 +317,53 @@ deploy-ыг блоклохын тулд GitHub → Settings → Branches дээ�
 
 ```
 app/
-  page.js              — Нүүр хуудас
-  report-lost/page.js  — Алдсан амьтан мэдэгдэх
-  report-found/page.js — Олдсон амьтан мэдэгдэх
-  listings/page.js     — Жагсаалт, шүүлтүүр, төстэй байдлаар эрэмбэлэх
-  pets/[id]/page.js    — Тухайн амьтны дэлгэрэнгүй, share хийх хуудас
-  api/notify/route.js  — Push мэдэгдэл илгээх серверийн route (Webhook-оор дуудагдана)
+  page.tsx                    — Нүүр хуудас
+  report-lost/page.tsx        — Алдсан амьтан мэдэгдэх
+  report-found/page.tsx       — Олдсон амьтан мэдэгдэх
+  listings/page.tsx           — Жагсаалт, шүүлтүүр, төстэй байдлаар эрэмбэлэх
+  pets/[id]/page.tsx          — Тухайн амьтны дэлгэрэнгүй, share хийх хуудас
+  adoptions/                  — Үрчлүүлэх (жагсаалт, шинэ, дэлгэрэнгүй)
+  messages/                   — Чат (харилцааны жагсаалт + thread, Realtime)
+  my-pets/                    — "Миний амьтад" + эрүүл мэндийн бүртгэл
+  clinics/page.tsx            — Мал эмнэлгийн лавлах + цаг захиалга
+  assistant/                  — AI зөвлөх чат
+  sitting/                    — Асрах үйлчилгээ (жагсаалт, шинэ, дэлгэрэнгүй)
+  profiles/                   — Амьтны профайл хуудсууд
+  api/notify/route.ts         — Push мэдэгдэл илгээх серверийн route (Webhook-оор дуудагдана)
+  api/assistant/route.ts      — AI зөвлөхийн Groq proxy (сонголттой)
+  api/vaccine-reminders/      — Вакцины сануулгын Vercel Cron route
+  api/donations/              — QPay хандив
 components/
-  Navbar.js            — Навигац + имэйл magic-link login
-  PetForm.js           — Дахин ашиглагдах бүртгэлийн форм
-  PetCard.js           — Жагсаалтын карт (дарахад дэлгэрэнгүй рүү орно)
-  ShareButtons.js       — Facebook/native share/холбоос хуулах товчнууд
-  NotifySubscribe.js    — "Nearby Alert" push мэдэгдэлд бүртгүүлэх товч
-  LocationMap.js        — OpenStreetMap + Leaflet газрын зураг (сонгох/харах)
+  Navbar.tsx                  — Навигац + имэйл magic-link login
+  PetForm.tsx                 — Дахин ашиглагдах бүртгэлийн форм
+  PetCard.tsx                 — Жагсаалтын карт (дарахад дэлгэрэнгүй рүү орно)
+  AdoptionForm.tsx            — Үрчлүүлэх форм (3 алхамт)
+  SittingForm.tsx             — Асрах зарын форм (3 алхамт)
+  MessageButton.tsx           — Чат үүсгэх товч
+  AppointmentModal.tsx        — Эмнэлгийн цаг захиалгын modal
+  PetProfileLayout.tsx        — Амьтны профайлын нийтлэг layout (зураг/түүх/эрүүл мэндийн табууд)
+  ShareButtons.tsx            — Facebook/native share/холбоос хуулах товчнууд
+  NotifySubscribe.tsx         — "Nearby Alert" push мэдэгдэлд бүртгүүлэх товч
+  LocationMap.tsx             — OpenStreetMap + Leaflet газрын зураг (сонгох/харах)
 lib/
-  supabase.js          — Supabase client тохиргоо
-  useAuth.js            — Auth hook
-  petService.js        — Supabase CRUD
-  similarity.js        — Зурган төстэй байдал (CLIP, browser-based, CDN-ээс ачаалдаг)
-  push.js              — Push мэдэгдэлд бүртгүүлэх клиент функцууд
-  vaccineService.js    — "Миний амьтад" вакцины сануулгын CRUD
-public/sw.js            — Push мэдэгдэл хүлээн авах Service Worker
-vercel.json             — Vercel Cron Job тохиргоо (вакцины сануулга)
-supabase-setup.sql      — Өгөгдлийн сан, RLS дүрэм, Storage bucket, push_subscriptions, my_pets
+  supabase.ts                 — Supabase client тохиргоо
+  useAuth.ts                  — Auth hook
+  petService.ts               — Алдсан/олдсон амьтны Supabase CRUD
+  adoptionService.ts          — Үрчлүүлэх CRUD
+  sittingService.ts           — Асрах үйлчилгээний CRUD
+  chatService.ts              — Чат/мессеж CRUD + Realtime
+  clinicService.ts            — Эмнэлэг, цаг захиалгын CRUD
+  petHealthService.ts         — Вакцин/эм/өвчний түүх CRUD
+  vaccineService.ts           — Вакцины статус/сануулгын логик
+  similarity.ts               — Зурган төстэй байдал (CLIP, browser-based, CDN-ээс ачаалдаг)
+  assistant/                  — AI зөвлөх (engine, matcher, knowledge)
+  push.ts                     — Push мэдэгдэлд бүртгүүлэх клиент функцууд
+  i18n.tsx                    — MN/EN бүрэн орчуулга (TranslationKey төрлөөр хамгаалагдсан)
+public/sw.js                    — Push мэдэгдэл хүлээн авах Service Worker
+vercel.json                     — Vercel Cron Job тохиргоо (вакцины сануулга)
+supabase-setup.sql              — Бүх хүснэгт (pets, adoptions, conversations, messages,
+                                  vaccinations, medical_conditions, medications, appointments,
+                                  sitting_listings г.м.), RLS дүрэм, trigger, Storage bucket
 ```
 
 > Бүх эх код `.ts`/`.tsx` болон хөрвүүлэгдсэн (JS→TS бүрэн миграци). Аудит/ops-оор
@@ -342,51 +390,58 @@ supabase-setup.sql      — Өгөгдлийн сан, RLS дүрэм, Storage b
 
 ## Дараагийн алхмууд (Үе шат 2)
 
-- [x] `lib/similarity.js`-г CLIP embedding-тэй солих ✅ (browser-based, `@huggingface/transformers`, CDN)
-- [x] Facebook/Messenger руу Share товч нэмэх ✅ (`ShareButtons.js`, `/pets/[id]` дэлгэрэнгүй хуудас)
-- [x] Push мэдэгдэл (Nearby Alert) ✅ (`lib/push.js`, `public/sw.js`, `/api/notify` + Supabase Webhook)
-- [x] Сүүлд харагдсан газрын зураг ✅ (`components/LocationMap.js`, OpenStreetMap + Leaflet.js — API key шаардахгүй)
+- [x] `lib/similarity.ts`-г CLIP embedding-тэй солих ✅ (browser-based, `@huggingface/transformers`, CDN)
+- [x] Facebook/Messenger руу Share товч нэмэх ✅ (`ShareButtons.tsx`, `/pets/[id]` дэлгэрэнгүй хуудас)
+- [x] Push мэдэгдэл (Nearby Alert) ✅ (`lib/push.ts`, `public/sw.js`, `/api/notify` + Supabase Webhook)
+- [x] Сүүлд харагдсан газрын зураг ✅ (`components/LocationMap.tsx`, OpenStreetMap + Leaflet.js — API key шаардахгүй)
 - [x] Вакцины сануулга feature (retention) ✅ (`/my-pets`, Vercel Cron + push мэдэгдэл)
 - [x] "Олдлоо" товч ✅ (зохиогч л тэмдэглэж чадна, RLS-ээр хамгаалагдсан)
 - [x] Facebook/Messenger share-д зурган preview (og:image) ✅ (`generateMetadata`, server component)
-- [x] Мэдээлэх (report) товч ✅ (`ReportButton.js`, `reports` хүснэгт)
+- [x] Мэдээлэх (report) товч ✅ (`ReportButton.tsx`, `reports` хүснэгт)
 - [x] Өөрийн бичлэгээ засах/устгах ✅ (зохиогч л, RLS-ээр хамгаалагдсан)
 - [x] Текстээр хайх ✅ (нэр/өнгө/байршил/төрлөөр, debounce-той)
 - [x] Утасны дугаар хэсэгчлэн нуух ✅ (`maskPhone`, "Дугаар харах" товч)
-- [x] Google хайлтад олдох (SEO) ✅ (`app/sitemap.js`, `app/robots.js`, OG metadata)
-- [x] PWA "Add to Home Screen" сануулга ✅ (`components/InstallPrompt.js`)
-- [x] Toast мэдэгдэл (alert()-ийн оронд) ✅ (`components/Toast.js`)
-- [x] Skeleton loading ✅ (`components/SkeletonCard.js`)
+- [x] Google хайлтад олдох (SEO) ✅ (`app/sitemap.ts`, `app/robots.ts`, OG metadata)
+- [x] PWA "Add to Home Screen" сануулга ✅ (`components/InstallPrompt.tsx`)
+- [x] Toast мэдэгдэл (alert()-ийн оронд) ✅ (`components/Toast.tsx`)
+- [x] Skeleton loading ✅ (`components/SkeletonCard.tsx`)
 - [x] Сайжруулсан empty state ✅ (icon + CTA товч)
-- [x] Онбординг (эхний удаад 3 алхамт танилцуулга) ✅ (`components/Onboarding.js`)
-- [x] Формын алхамчилсан UI (progress indicator) ✅ (`PetForm.js`, 4 алхамт wizard)
-- [x] Автомат байршил тодорхойлох (Geolocation) ✅ (`lib/districtCoords.js`, gадаад API/зардалгүй)
-- [x] Харьцангуй цаг ("3 цагийн өмнө") ✅ (`lib/relativeTime.js`)
-- [x] Dark mode ✅ (`ThemeToggle.js`, CSS variables, localStorage хадгалалттай)
-- [x] SVG icon (нохой/муур, emoji-ийн оронд) ✅ (`components/PetIcon.js`)
-- [x] Зураг compress хийх (upload-аас өмнө) ✅ (`lib/imageCompress.js`, 1200px хүртэл)
-- [x] Bottom navigation ✅ (`components/BottomNav.js`, ≤640px дэлгэцэнд харагдана, SVG icon)
+- [x] Онбординг (эхний удаад 3 алхамт танилцуулга) ✅ (`components/Onboarding.tsx`)
+- [x] Формын алхамчилсан UI (progress indicator) ✅ (`PetForm.tsx`, 4 алхамт wizard)
+- [x] Автомат байршил тодорхойлох (Geolocation) ✅ (`lib/districtCoords.ts`, gадаад API/зардалгүй)
+- [x] Харьцангуй цаг ("3 цагийн өмнө") ✅ (`lib/relativeTime.ts`)
+- [x] Dark mode ✅ (`ThemeToggle.tsx`, CSS variables, localStorage хадгалалттай)
+- [x] SVG icon (нохой/муур, emoji-ийн оронд) ✅ (`components/PetIcon.tsx`)
+- [x] Зураг compress хийх (upload-аас өмнө) ✅ (`lib/imageCompress.ts`, 1200px хүртэл)
+- [x] Bottom navigation ✅ (`components/BottomNav.tsx`, ≤640px дэлгэцэнд харагдана, SVG icon)
 - [x] Admin/Модератор dashboard ✅ (`/admin`, `admins` хүснэгт, RLS-ээр хамгаалагдсан)
 - [x] Rate limiting (spam хамгаалалт) ✅ (Postgres trigger, клиентээс тойрч болохгүй)
-- [x] AI зурган шүүлт (зохисгүй/хамааралгүй агуулга) ✅ (`lib/contentModeration.js`, CLIP zero-shot)
+- [x] AI зурган шүүлт (зохисгүй/хамааралгүй агуулга) ✅ (`lib/contentModeration.ts`, CLIP zero-shot)
 - [x] Analytics ✅ (Vercel Analytics + Speed Insights, карт шаардахгүй)
 - [x] Error tracking ✅ (Sentry, үнэгүй tier, DSN тохируулаагүй ч апп эвдэрдэггүй)
-- [x] "Би харсан" сэтгэгдэл ✅ (`sightings` хүснэгт, `SightingsList.js`, нэвтрэлт шаардахгүй)
-- [x] Сайн дурын сүлжээ ✅ (`volunteers` хүснэгт, `VolunteerBadge.js`, дүүрэг бүрийн тоог харуулна)
+- [x] "Би харсан" сэтгэгдэл ✅ (`sightings` хүснэгт, `SightingsList.tsx`, нэвтрэлт шаардахгүй)
+- [x] Сайн дурын сүлжээ ✅ (`volunteers` хүснэгт, `VolunteerBadge.tsx`, дүүрэг бүрийн тоог харуулна)
 - [x] Screen reader дэмжлэг (a11y) ✅ (keyboard navigation, aria-label, htmlFor/id, skip-link, focus states)
-- [x] Хандив (QPay) ✅ (`DonateModal.js`, QR код, автомат баталгаажуулалт — бизнесийн данс шаардана)
-- [x] Англи хэл сонголт ✅ (`lib/i18n.js` — **бүх хуудас 100% орчуулагдсан**: Navbar, Нүүр, форм, Жагсаалт, дэлгэрэнгүй, Миний амьтад, Admin, Хандив (QPay))
-- [x] Формын урьдчилан харах карт (preview) ✅ (`PetPreviewCard.js`, баруун талын хоосон зайг ашигласан, ≥860px дэлгэцэнд)
+- [x] Хандив (QPay) ✅ (`DonateModal.tsx`, QR код, автомат баталгаажуулалт — бизнесийн данс шаардана)
+- [x] Англи хэл сонголт ✅ (`lib/i18n.tsx` — **бүх хуудас 100% орчуулагдсан**: Navbar, Нүүр, форм, Жагсаалт, дэлгэрэнгүй, Миний амьтад, Admin, Хандив (QPay), Чат, Мал эмнэлэг, AI зөвлөх, Асрах үйлчилгээ)
+- [x] Формын урьдчилан харах карт (preview) ✅ (`PetPreviewCard.tsx`, баруун талын хоосон зайг ашигласан, ≥860px дэлгэцэнд)
 - [x] Зурган оруулаагүй үед автомат нохой/муур icon ✅ (form preview + жагсаалтад аль хэдийн байсан)
 - [x] Жагсаалтыг амьтны төрлөөр шүүх ✅ (Нохой/Муур/Бусад)
-- [x] Мэргэжлийн түвшний дизайны систем ✅ (`app/globals.css` — өнгө/фонт/зай/сүүдрийн token, `PawTrail.js` гарын үсэг элемент, **бүх хуудсанд** (Listings, PetDetail, MyPets, Admin, DonateModal) нэгдсэн байдлаар тарааж хэрэгжүүлсэн)
+- [x] Мэргэжлийн түвшний дизайны систем ✅ (`app/globals.css` — өнгө/фонт/зай/сүүдрийн token, `PawTrail.tsx` гарын үсэг элемент, **бүх хуудсанд** (Listings, PetDetail, MyPets, Admin, DonateModal) нэгдсэн байдлаар тарааж хэрэгжүүлсэн)
 - [x] Зай (padding/gap/margin) token-жуулсан ✅ (`var(--sp-1)`–`var(--sp-8)`, MyPets/Admin/PetDetail/бусад)
 - [x] Admin, MyPets-ийн empty/loading state сайжруулсан ✅ (skeleton shimmer, icon-тэй empty state)
-- [x] Хуудас шилжилтийн animation ✅ (`PageTransition.js`, App Router-д зориулсан fade+slide, нэмэлт сан шаардахгүй)
-- [x] Confetti/pop micro-interaction ✅ (`lib/confetti.js` — "Амьтан олдлоо" болон хандив амжилттай төлөгдөх мөчид, `prefers-reduced-motion`-той нийцтэй)
+- [x] Хуудас шилжилтийн animation ✅ (`PageTransition.tsx`, App Router-д зориулсан fade+slide, нэмэлт сан шаардахгүй)
+- [x] Confetti/pop micro-interaction ✅ (`lib/confetti.ts` — "Амьтан олдлоо" болон хандив амжилттай төлөгдөх мөчид, `prefers-reduced-motion`-той нийцтэй)
 - [x] `next/image` ашиглаж зураг optimize хийсэн ✅ (WebP, responsive sizes, автомат lazy-load — PetCard, PetDetail, Admin)
 - [x] Жагсаалтын хуудаслалт ✅ (24 бичлэг тутам, "Илүү үзэх" товч, Supabase `.range()` ашигласан)
-- [x] Автомат тест (unit + component + e2e) ✅ (Vitest — 28 unit/component test бодитоор ажиллуулж баталгаажуулсан, Playwright — навигаци/форм e2e smoke test, GitHub Actions CI)
+- [x] Автомат тест (unit + component + e2e) ✅ (Vitest — 38 unit/component test, Playwright — навигаци/форм e2e smoke test, GitHub Actions CI)
+- [x] Үрчлүүлэх (adoptions) ✅ (`/adoptions`, `/adoptions/new`, `/adoptions/[id]` — дэлгэрэнгүй, edit/delete, share, дугаар нуух)
+- [x] Чат / Мессеж ✅ (`/messages`, Supabase Realtime, `MessageButton` — амьтны эзэнтэй шууд холбогдох)
+- [x] Эрүүл мэндийн бүртгэл ✅ (`/my-pets` — вакцин, эм, өвчний түүх, цаг авалт; `vaccinations`/`medical_conditions`/`medications`/`appointments` хүснэгтүүд)
+- [x] Мал эмнэлгийн лавлах ✅ (`/clinics` — 10 эмнэлэг, Leaflet газрын зураг, дүүрэг/үйлчилгээгээр шүүх, цаг захиалга)
+- [x] AI зөвлөх ✅ (`/assistant` — Монгол хэлний rule engine, Groq API сонголттой, "эмчийг орлохгүй" зарчим)
+- [x] Амьтны профайл ✅ (`/profiles/adoption/[id]`, `/profiles/mypet/[id]` — зурган/түүх/эрүүл мэндийн табууд)
+- [x] Асрах үйлчилгээ ✅ (`/sitting` — жагсаалт/шүүлт, 3 алхамт форм, дэлгэрэнгүй + edit/delete; `sitting_listings` хүснэгт)
 
 ### Аудит / Security / Ops (2026-08)
 
