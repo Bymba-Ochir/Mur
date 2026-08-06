@@ -142,7 +142,18 @@ export default function PetDetailClient({ id }: { id: string }) {
                 priority
               />
             ) : (
-              <span style={{ color: 'var(--muted)' }}><PetIcon type={pet.type} size={64} /></span>
+              <span style={{
+                color: 'var(--primary)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: 120,
+                height: 120,
+                background: 'var(--glass-bg)',
+                border: '1px solid var(--glass-border)',
+                borderRadius: '50%',
+                boxShadow: 'var(--shadow-sm)',
+              }}><PetIcon type={pet.type} size={72} /></span>
             )}
           </div>
         </div>

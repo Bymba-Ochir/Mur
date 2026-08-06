@@ -48,7 +48,7 @@ export default function PetCardView({
       <div className="thumb">
         <span className={`badge ${status}`}>{badgeLabel}</span>
         {imageNode ?? (
-          <span className="emoji" aria-hidden="true"><PetIcon type={type} size={44} /></span>
+          <span className="emoji" aria-hidden="true"><PetIcon type={type} size={56} /></span>
         )}
         {similarity != null && <span className="similarity">{similarity}% төстэй</span>}
       </div>
@@ -113,7 +113,20 @@ export default function PetCardView({
         }
         .thumb :global(img) { transition: transform .35s cubic-bezier(.16,1,.3,1); object-fit: cover; width: 100%; height: 100%; }
         .pet-card:hover .thumb :global(img) { transform: scale(1.06); }
-        .emoji { color: var(--muted); display: flex; opacity: 0.55; }
+        .emoji {
+          color: var(--primary);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 80px; height: 80px;
+          background: var(--glass-bg);
+          border: 1px solid var(--glass-border);
+          border-radius: 50%;
+          box-shadow: var(--shadow-sm);
+        }
+        @media (min-width: 1025px) {
+          .emoji { width: 96px; height: 96px; }
+        }
         .badge {
           position: absolute; top: 10px; left: 10px; font-family: var(--font-mono); font-size: 9.5px;
           padding: 4px 9px; border-radius: var(--r-pill); color: #fff; font-weight: 700; letter-spacing: 0.03em;
