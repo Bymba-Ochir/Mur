@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>МӨР — Wireframes</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: system-ui, -apple-system, sans-serif; background: #f5f5f5; color: #333; padding: 24px; max-width: 900px; margin: 0 auto; }
+    h1 { font-size: 28px; margin-bottom: 8px; }
+    h2 { font-size: 20px; margin: 40px 0 12px; color: #2B6575; border-bottom: 2px solid #2B6575; padding-bottom: 8px; }
+    .subtitle { color: #666; margin-bottom: 32px; }
+    .wire { background: #fff; border: 2px solid #ccc; border-radius: 12px; max-width: 420px; margin: 12px 0 24px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    .wire-h { background: #17414D; color: #fff; padding: 12px 16px; display: flex; align-items: center; gap: 10px; font-size: 14px; }
+    .wire-h .bm { background: #E77A3E; color: #17414D; width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; }
+    .wire-b { padding: 16px; }
+    .ey { font-size: 11px; color: #2B6575; font-weight: 600; text-transform: uppercase; margin-bottom: 4px; }
+    .tt { font-size: 22px; font-weight: 700; color: #17414D; margin-bottom: 6px; line-height: 1.2; }
+    .ds { font-size: 13px; color: #888; margin-bottom: 14px; line-height: 1.5; }
+    .bt { display: inline-block; padding: 10px 18px; border-radius: 8px; font-size: 13px; font-weight: 600; text-decoration: none; }
+    .bp { background: #E77A3E; color: #fff; }
+    .bg { background: transparent; border: 1.5px solid #ccc; color: #333; }
+    .fl { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+    .fi { flex: 1; min-width: 80px; padding: 8px 10px; border: 1.5px solid #ddd; border-radius: 8px; font-size: 11px; color: #999; background: #fff; }
+    .cd { background: #fff; border: 1px solid #eee; border-radius: 10px; overflow: hidden; margin-bottom: 10px; }
+    .ci { height: 110px; background: #e0e0e0; display: flex; align-items: center; justify-content: center; color: #aaa; font-size: 28px; }
+    .cb { padding: 10px 12px; }
+    .cb h4 { font-size: 14px; color: #17414D; }
+    .cb p { font-size: 11px; color: #888; margin: 2px 0; }
+    .cb .ph { font-size: 11px; color: #2B6575; font-weight: 600; margin-top: 6px; }
+    .gr { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .mp { height: 140px; background: #e8e8e8; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #999; font-size: 12px; border: 1px dashed #ccc; margin-bottom: 12px; }
+    .ff { margin-bottom: 10px; }
+    .ff label { display: block; font-size: 11px; font-weight: 600; color: #2B6575; margin-bottom: 3px; }
+    .ff input, .ff select, .ff textarea { width: 100%; padding: 9px; border: 1.5px solid #ddd; border-radius: 8px; font-size: 12px; }
+    .ff textarea { height: 55px; resize: none; }
+    .st { display: flex; gap: 4px; margin-bottom: 14px; align-items: center; }
+    .sd { width: 10px; height: 10px; border-radius: 50%; background: #ddd; }
+    .sd.a { background: #E77A3E; width: 22px; border-radius: 5px; }
+    .sl { font-size: 10px; color: #999; }
+    .ch { display: flex; flex-direction: column; gap: 8px; }
+    .bu { padding: 10px 14px; border-radius: 12px; font-size: 12px; max-width: 80%; line-height: 1.5; }
+    .bu.u { background: #E77A3E; color: #fff; align-self: flex-end; border-bottom-right-radius: 4px; }
+    .bu.b { background: #f0f0f0; color: #333; align-self: flex-start; border-bottom-left-radius: 4px; }
+    .tb { display: flex; gap: 2px; background: #f0f0f0; border-radius: 8px; padding: 3px; margin-bottom: 12px; }
+    .tb span { flex: 1; text-align: center; padding: 8px; font-size: 11px; border-radius: 6px; color: #999; }
+    .tb span.a { background: #fff; color: #17414D; font-weight: 600; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .nm { font-size: 12px; color: #2B6575; font-weight: 600; margin-top: 8px; }
+    .dv { height: 1px; background: #eee; margin: 12px 0; }
+    .ft { background: #17414D; color: #fff; padding: 14px; font-size: 11px; text-align: center; }
+    .note { background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 10px; margin: 6px 0 14px; font-size: 11px; color: #92400e; }
+    .note strong { display: block; margin-bottom: 3px; }
+    .pg { font-size: 12px; color: #2B6575; font-weight: 600; margin-bottom: 6px; }
+    .info { font-size: 12px; color: #444; line-height: 1.6; margin: 4px 0; }
+    .info strong { color: #17414D; }
+  </style>
+</head>
+<body>
+
+<h1>МӨР — Wireframes</h1>
+<p class="subtitle">UI/UX wireframe загварууд. Агуулга, байршил, хэрэглэгчийн урсгалыг харуулна.</p>
+
+<!-- 1. Нүүр хуудас -->
+<h2>1. Нүүр хуудас</h2>
+<div class="wire">
+  <div class="wire-h"><div class="bm">М</div><span>МӨР</span></div>
+  <div class="wire-b">
+    <div class="ey">🐾 Улаанбаатараас эхэлж байна</div>
+    <div class="tt" style="font-size:24px;">Алдсан нохой муурыг<br><span style="color:#E77A3E;">гэртээ буцааж</span><br>чадна</div>
+    <p class="ds">Зураг оруулаад, ойр орчмынхонтой шууд холбогдоорой.</p>
+    <div style="display:flex;gap:8px;margin-bottom:16px;">
+      <span class="bt bp">🔴 Алдсан мэдэгдэх →</span>
+      <span class="bt bg">👀 Олсон зургатай</span>
+    </div>
+    <div class="dv"></div>
+    <div class="ey" style="margin-top:8px;">Яаж ажилладаг вэ?</div>
+    <div class="gr" style="margin-top:8px;">
+      <div style="background:#f9f9f9;padding:10px;border-radius:8px;font-size:11px;color:#666;"><strong style="color:#17414D;">① Бүртгэх</strong><br>Зураг, өнгө, газраа оруулна.</div>
+      <div style="background:#f9f9f9;padding:10px;border-radius:8px;font-size:11px;color:#666;"><strong style="color:#17414D;">② Харах</strong><br>Дүүргээр шүүж, төстэйг олох.</div>
+      <div style="background:#f9f9f9;padding:10px;border-radius:8px;font-size:11px;color:#666;"><strong style="color:#17414D;">③ Холбогдох</strong><br>Утсаар шууд холбогдох.</div>
+    </div>
+  </div>
+  <div class="ft">© 2026 МӨР</div>
+</div>
+
+<!-- 2. Жагсаалт -->
+<h2>2. Жагсаалт (Filter + Grid)</h2>
+<div class="wire">
+  <div class="wire-h"><div class="bm">М</div><span>МӨР</span></div>
+  <div class="wire-b">
+    <div class="ey">🔍 Жагсаалт</div>
+    <div class="tt">Алдсан ба олдсон амьтад</div>
+    <div class="fl">
+      <div class="fi" style="flex:2;">🔍 Нэр, өнгө, байршлаар хайх</div>
+      <div class="fi">Бүгд ▾</div>
+      <div class="fi">Бүх төрөл ▾</div>
+      <div class="fi">Бүх дүүрэг ▾</div>
+    </div>
+    <div class="gr">
+      <div class="cd"><div class="ci">🐕</div><div class="cb"><h4>Lucky Boy</h4><p>Нохой, хар</p><p>📍 Баянзүрх — 22 хороо</p><p>🕐 1 долоо хоногийн өмнө</p><div class="ph">☎ 80****80 · Дугаар харах</div></div></div>
+      <div class="cd"><div class="ci">🐈</div><div class="cb"><h4>Миний муур</h4><p>Муур, шар</p><p>📍 Сүхбаатар — 1 хороо</p><p>🕐 3 хоногийн өмнө</p><div class="ph">☎ 99****99 · Дугаар харах</div></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- 3. Асрах зар нэмэх -->
+<h2>3. Асрах зар нэмэх (3 алхамт форм)</h2>
+<div class="wire">
+  <div class="wire-h"><div class="bm">М</div><span>МӨР</span></div>
+  <div class="wire-b">
+    <div class="ey">🏠 Асрах зар</div>
+    <div class="tt">Асрах зар нэмэх</div>
+    <div class="st">
+      <div class="sd"></div><span class="sl">Зураг</span>
+      <div class="sd a"></div><span class="sl" style="color:#17414D;font-weight:600;">Мэдээлэл</span>
+      <div class="sd"></div><span class="sl">Холбоо</span>
+    </div>
+    <div class="pg">2/3: Мэдээлэл</div>
+    <div class="ff"><label>Ямар амьтан асрах вэ</label><select><option>Нохой</option><option>Муур</option><option>Бусад</option><option>Бүгд</option></select></div>
+    <div class="ff"><label>Тайлбар *</label><textarea placeholder="Таны үйлчилгээний талаар..."></textarea></div>
+    <div class="gr">
+      <div class="ff"><label>Туршлага</label><input placeholder="жишээ: 2 жил"></div>
+      <div class="ff"><label>Үнэ (₮)</label><input type="number" placeholder="жишээ: 30000"></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:10px;">
+      <span class="bt bg" style="flex:1;text-align:center;">← Буцах</span>
+      <span class="bt bp" style="flex:1;text-align:center;">Дараах →</span>
+    </div>
+  </div>
+</div>
+
+<!-- 4. Асрах зарын дэлгэрэнгүй -->
+<h2>4. Асрах зарын дэлгэрэнгүй</h2>
+<div class="wire">
+  <div class="wire-h"><div class="bm">М</div><span>МӨР</span></div>
+  <div class="wire-b">
+    <div class="ey">🏠 Асрах үйлчилгээ</div>
+    <div class="tt">Нохой асрах үйлчилгээ</div>
+    <p class="ds">🕐 2 хоногийн өмнө</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div style="background:#e8e8e8;border-radius:8px;height:130px;display:flex;align-items:center;justify-content:center;color:#aaa;font-size:24px;">📷 Зураг</div>
+      <div>
+        <p class="info"><strong>Төрөл:</strong> Нохой</p>
+        <p class="info"><strong>Тайлбар:</strong> Сайн туршлагатай, 2 жил ассан.</p>
+        <p class="info"><strong>Туршлага:</strong> 2 жил</p>
+        <p class="info"><strong>Цаг:</strong> Амралтын өдрүүдэд</p>
+        <p class="info"><strong>Дүүрэг:</strong> Баянзүрх</p>
+        <p class="info"><strong>Үнэ:</strong> <span style="color:#E77A3E;font-weight:600;">₮30,000 / өдөр</span></p>
+        <div class="nm">☎ 99**11 · Дугаар харах</div>
+      </div>
+    </div>
+    <div class="mp">📍 Газрын зураг дээр байршил</div>
+    <div style="display:flex;gap:8px;margin-bottom:10px;">
+      <span class="bt bp" style="flex:1;text-align:center;">✏️ Засах</span>
+      <span class="bt bg" style="flex:1;text-align:center;color:#dc2626;">🗑 Устгах</span>
+    </div>
+    <span class="bt bg" style="width:100%;text-align:center;display:block;">← Бүх асрах зар</span>
+  </div>
+</div>
+
+<!-- 5. AI Зөвлөх -->
+<h2>5. AI Зөвлөх (Чат)</h2>
+<div class="wire" style="max-width:380px;">
+  <div class="wire-h"><div class="bm">М</div><span>МӨР — AI Зөвлөх</span></div>
+  <div class="wire-b" style="display:flex;flex-direction:column;height:260px;">
+    <div class="ch" style="flex:1;">
+      <div class="bu b">🐾 Тавтай морил! Би таны гэрийн тэжээвэр амьтны эрүүл мэндийн зөвлөх.</div>
+      <div class="bu u">Муурын хоолны талаар хэлээрэй</div>
+      <div class="bu b">🐱 Мууранд:<br>• Өндөр уурагтай (30%+)<br>• Чийглэг хоол<br>• Витамин нэмэлт<br><br>⚠️ Энэ зөвлөгөө нь малын эмчийг орлохгүй.</div>
+    </div>
+    <div style="display:flex;gap:6px;margin-top:8px;">
+      <input style="flex:1;padding:9px;border:1.5px solid #ddd;border-radius:20px;font-size:12px;" placeholder="Асуух зүйлээ бичнэ үү...">
+      <button style="width:36px;height:36px;border-radius:50%;border:none;background:#E77A3E;color:#fff;font-size:16px;">➤</button>
+    </div>
+  </div>
+</div>
+
+<!-- 6. Эрүүл мэндийн панель -->
+<h2>6. Эрүүл мэндийн панель</h2>
+<div class="wire" style="max-width:380px;">
+  <div class="wire-h"><div class="bm">М</div><span>МӨР — Миний амьтан</span></div>
+  <div class="wire-b">
+    <div style="text-align:center;margin-bottom:12px;">
+      <div style="width:64px;height:64px;border-radius:50%;background:#e8e8e8;margin:0 auto 8px;display:flex;align-items:center;justify-content:center;font-size:28px;">🐕</div>
+      <div class="tt" style="font-size:16px;">Lucky Boy</div>
+      <p class="ds" style="margin:0;">Нохой · Эрэгтэй · 3 нас</p>
+    </div>
+    <div class="tb">
+      <span>📷 Зураг</span>
+      <span class="a">🩺 Эрүүл мэнд</span>
+      <span>📅 Түүх</span>
+    </div>
+    <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:10px;margin-bottom:10px;">
+      <p style="font-size:12px;font-weight:600;color:#16a34a;">✅ Вакцин: Хэвийн</p>
+      <p style="font-size:11px;color:#666;margin-top:2px;">Дараагийн: 2026-09-01 (Rabies)</p>
+    </div>
+    <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:10px;margin-bottom:10px;">
+      <p style="font-size:12px;font-weight:600;color:#92400e;">💊 Эмүүд: 1 идэвхтэй</p>
+      <p style="font-size:11px;color:#666;margin-top:2px;">Давуулалт: 2026-08-20 хүртэл</p>
+    </div>
+    <div style="display:flex;gap:6px;">
+      <span class="bt bp" style="flex:1;text-align:center;font-size:11px;padding:8px;">💊 Эм нэмэх</span>
+      <span class="bt bg" style="flex:1;text-align:center;font-size:11px;padding:8px;">💉 Вакцин</span>
+      <span class="bt bg" style="flex:1;text-align:center;font-size:11px;padding:8px;">📅 Цаг</span>
+    </div>
+  </div>
+</div>
+
+<!-- 7. Мал эмнэлгийн зураг -->
+<h2>7. Мал эмнэлэг (Map + Цаг захиалга)</h2>
+<div class="wire" style="max-width:420px;">
+  <div class="wire-h"><div class="bm">М</div><span>МӨР — Мал эмнэлэг</span></div>
+  <div class="wire-b">
+    <div class="ey">🏥 Мал эмнэлэг</div>
+    <div class="tt">Мал эмнэлгийн лавлах</div>
+    <div class="mp" style="height:120px;">🗺️ Газрын зураг (10 эмнэлэг)</div>
+    <div class="fl">
+      <div class="fi">🔍 Хайх</div>
+      <div class="fi">Бүх дүүрэг ▾</div>
+    </div>
+    <div class="cd" style="border-left:3px solid #E77A3E;">
+      <div class="cb">
+        <h4>ПетВет эмнэлэг</h4>
+        <p>📍 Хан-Уул — Зайсангийн ам</p>
+        <p>🕐 Өдөр бүр 08:30–19:00</p>
+        <p>🔧 Үзлэг, Вакцин, Мэс засал, Шүд</p>
+        <div class="nm">☎ 99001122</div>
+      </div>
+    </div>
+    <div class="note"><strong>💡 Цаг захиалга:</strong> Эмнэлэг дээр дарахад modal нээгдэнэ → үйлчилгээ + огноо + цаг сонгох → "Захиалах"</div>
+  </div>
+</div>
+
+<!-- 8. Хэрэглэгчийн замнал (User Journey) -->
+<h2>8. Хэрэглэгчийн замнал (User Journey Map)</h2>
+<div style="background:#fff;border:1px solid #ddd;border-radius:12px;padding:20px;margin:12px 0;">
+  <div class="tt" style="font-size:16px;">🚶 "Амьтнаа асуулгах хүн" замнал</div>
+  <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:16px;">
+    <div style="text-align:center;">
+      <div style="width:40px;height:40px;border-radius:50%;background:#E77A3E;color:#fff;display:flex;align-items:center;justify-content:center;margin:0 auto 6px;font-size:18px;">1</div>
+      <p style="font-size:11px;font-weight:600;color:#17414D;">Хайх</p>
+      <p style="font-size:10px;color:#888;">Асрах цэс рүү орох</p>
+    </div>
+    <div style="text-align:center;">
+      <div style="width:40px;height:40px;border-radius:50%;background:#E77A3E;color:#fff;display:flex;align-items:center;justify-content:center;margin:0 auto 6px;font-size:18px;">2</div>
+      <p style="font-size:11px;font-weight:600;color:#17414D;">Шүүх</p>
+      <p style="font-size:10px;color:#888;">Төрөл/дүүрэг сонгох</p>
+    </div>
+    <div style="text-align:center;">
+      <div style="width:40px;height:40px;border-radius:50%;background:#E77A3E;color:#fff;display:flex;align-items:center;justify-content:center;margin:0 auto 6px;font-size:18px;">3</div>
+      <p style="font-size:11px;font-weight:600;color:#17414D;">Харах</p>
+      <p style="font-size:10px;color:#888;">Дэлгэрэнгүй + зураг</p>
+    </div>
+    <div style="text-align:center;">
+      <div style="width:40px;height:40px;border-radius:50%;background:#E77A3E;color:#fff;display:flex;align-items:center;justify-content:center;margin:0 auto 6px;font-size:18px;">4</div>
+      <p style="font-size:11px;font-weight:600;color:#17414D;">Залгах</p>
+      <p style="font-size:10px;color:#888;">Утас нууцлагдана</p>
+    </div>
+    <div style="text-align:center;">
+      <div style="width:40px;height:40px;border-radius:50%;background:#16a34a;color:#fff;display:flex;align-items:center;justify-content:center;margin:0 auto 6px;font-size:18px;">✓</div>
+      <p style="font-size:11px;font-weight:600;color:#17414D;">Амжилт</p>
+      <p style="font-size:10px;color:#888;">Амьтнаа авах</p>
+    </div>
+  </div>
+</div>
+
+<p style="text-align:center;color:#999;font-size:12px;margin-top:40px;">МӨР Wireframes — 2026.08.07</p>
+
+</body>
+</html>
