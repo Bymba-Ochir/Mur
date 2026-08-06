@@ -182,14 +182,6 @@ export default function ListingsPage() {
       )}
 
       <style jsx>{`
-        .filter-bar { display: flex; gap: var(--sp-3); flex-wrap: wrap; margin-bottom: var(--sp-2); }
-        @media (max-width: 640px) {
-          .filter-bar { gap: var(--sp-2); }
-        }
-        @media (max-width: 480px) {
-          .filter-bar { gap: var(--sp-2); }
-          .filter-bar :global(.filter) { flex: 1 1 100%; min-width: 0; }
-        }
         .match-upload { display: flex; align-items: center; gap: var(--sp-2); flex-wrap: wrap; margin-bottom: var(--sp-5); }
         @media (max-width: 640px) {
           .match-upload { margin-bottom: var(--sp-4); }

@@ -472,6 +472,14 @@ select.filter:focus, input.filter:focus {
   outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(224,122,62,0.15);
 }
 
+/* Нэгдсэн filter container — listings, adoptions, sitting, clinics хуудсууд ашиглана */
+.filter-bar { display: flex; gap: var(--sp-3); flex-wrap: wrap; margin-bottom: var(--sp-2); }
+@media (max-width: 640px) { .filter-bar { gap: var(--sp-2); } }
+@media (max-width: 480px) {
+  .filter-bar { gap: var(--sp-2); }
+  .filter-bar select.filter, .filter-bar input.filter { flex: 1 1 100%; min-width: 0; }
+}
+
 /* Хуудасны нэгдсэн гарчиг */
 .page-header { margin-bottom: var(--sp-5); }
 .page-header .eyebrow { margin-bottom: var(--sp-3); }

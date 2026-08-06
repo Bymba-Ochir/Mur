@@ -1,10 +1,13 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useLanguage } from '../lib/i18n';
 
 export default function ShareButtons({ url, title }: { url: string; title: string }) {
   const { t } = useLanguage();
   const [copied, setCopied] = useState(false);
+  // typeof navigator шалгалтыг render path-оос холдуулж, hydration mismatch-ээс сэргийлнэ
+  const [hasNativeShare, setHasNativeShare] = useState(false);
+  useEffect(() => { if (typeof navigator !== 'undefined' && 'share' in navigator) setHasNativeShare(true); }, []);
 
   const fbShareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
 
@@ -26,7 +29,7 @@ export default function ShareButtons({ url, title }: { url: string; title: strin
 
   return (
     <div className="share-row">
-      {typeof navigator !== 'undefined' && 'share' in navigator && (
+      {hasNativeShare && (
         <button onClick={handleNativeShare} className="share-btn native">
           {t('share_native')}
         </button>

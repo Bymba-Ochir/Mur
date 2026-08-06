@@ -1,4 +1,11 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, beforeEach } from '@playwright/test';
+
+// Onboarding модалыг хаах
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.setItem('mur-onboarding-seen', '1');
+  });
+});
 
 test.describe('Алдсан мэдэгдэх форм (4 алхам, submit хийхгүй)', () => {
   test('заавал талбар бөглөөгүй үед "Дараах" товч идэвхгүй', async ({ page }) => {

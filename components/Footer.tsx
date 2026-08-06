@@ -17,7 +17,7 @@ export default function Footer() {
           <Link href="/terms">{t('footer_terms')}</Link>
         </nav>
       </div>
-      <p className="footer-rights">© {new Date().getFullYear()} МӨР · {t('footer_rights')}</p>
+      <p className="footer-rights" suppressHydrationWarning>© {new Date().getFullYear()} МӨР · {t('footer_rights')}</p>
 
       <style jsx>{`
         .footer {
