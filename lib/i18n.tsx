@@ -142,6 +142,24 @@ const MN = {
   detail_gender: 'Хүйс:',
   detail_breed: 'Үүлдэр:',
   detail_description: 'Тайлбар:',
+
+  // ─── Чат (Real-time messaging) ──────────────────────────────────────────
+  nav_messages: '💬 Зурвас',
+  chat_send_btn: '💬 Зурвас бичих',
+  chat_login_required: 'Нэвтэрч ороод зурвас бичнэ үү',
+  chat_starting: 'Харилцаа үүсгэж байна...',
+  chat_cannot_message: 'Өөрийнхөө амьтанд зурвас бичих боломжгүй',
+  chat_list_title: 'Зурвасууд',
+  chat_list_eyebrow: '💬 Зурвасууд',
+  chat_list_desc: 'Таны харилцааны жагсаалт',
+  chat_none: 'Одоогоор зурвас алга',
+  chat_none_desc: 'Амьтны дэлгэрэнгүй хуудаснаас "Зурвас бичих" дарж эхлүүлнэ үү.',
+  chat_not_found: 'Харилцаа олдсонгүй',
+  chat_input_placeholder: 'Зурвас бичих...',
+  chat_submit: 'Илгээх',
+  chat_sending: 'Илгэж байна...',
+  chat_deleted_pet: 'Амьтан устгагдсан',
+  chat_with: 'Хэнтэй:',
 };
 
 export type TranslationKey = keyof typeof MN;
@@ -283,6 +301,24 @@ const EN: Record<TranslationKey, string> = {
   detail_gender: 'Gender:',
   detail_breed: 'Breed:',
   detail_description: 'Description:',
+
+  // ─── Chat ────────────────────────────────────────────────────────────────
+  nav_messages: '💬 Messages',
+  chat_send_btn: '💬 Send message',
+  chat_login_required: 'Log in to send a message',
+  chat_starting: 'Starting conversation...',
+  chat_cannot_message: 'Cannot message about your own pet',
+  chat_list_title: 'Messages',
+  chat_list_eyebrow: '💬 Messages',
+  chat_list_desc: 'Your conversations',
+  chat_none: 'No messages yet',
+  chat_none_desc: 'Start a conversation from a pet\'s detail page.',
+  chat_not_found: 'Conversation not found',
+  chat_input_placeholder: 'Type a message...',
+  chat_submit: 'Send',
+  chat_sending: 'Sending...',
+  chat_deleted_pet: 'Pet removed',
+  chat_with: 'Chat with:',
 };
 
 export const DICT = { mn: MN, en: EN };

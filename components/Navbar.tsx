@@ -91,6 +91,7 @@ export default function Navbar() {
 
   const userMenuItems: UserMenuItem[] = [
     { href: '/my-pets', label: t('nav_mypets'), isLink: true },
+    { href: '/messages', label: t('nav_messages'), isLink: true },
     ...(admin ? [{ href: '/admin', label: t('nav_admin'), isLink: true, accent: true }] : []),
     { label: t('nav_logout'), isLink: false, danger: true, onClick: logout },
   ];
@@ -244,6 +245,9 @@ export default function Navbar() {
                   <div className="mobile-user-actions">
                     <Link href="/my-pets" className="btn-base btn-ghost" onClick={handleMobileLinkClick}>
                       {t('nav_mypets')}
+                    </Link>
+                    <Link href="/messages" className="btn-base btn-ghost" onClick={handleMobileLinkClick}>
+                      {t('nav_messages')}
                     </Link>
                     {admin && (
                       <Link href="/admin" className="btn-base btn-ghost" style={{ color: 'var(--accent)' }} onClick={handleMobileLinkClick}>

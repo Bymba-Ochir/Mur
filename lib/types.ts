@@ -171,3 +171,39 @@ export interface UpdateAdoptionFields {
   place?: string;
   phone?: string;
 }
+
+// ─── Чат (Real-time messaging) ──────────────────────────────────────────────
+
+export interface Conversation {
+  id: string;
+  petId: string;
+  initiatorId: string;
+  ownerId: string;
+  initiatorEmail: string;
+  ownerEmail: string;
+  createdAt: string;
+  pet?: ConversationPetSummary | null;
+}
+
+export interface Message {
+  id: string;
+  conversationId: string;
+  senderId: string;
+  content: string;
+  readAt: string | null;
+  createdAt: string;
+}
+
+export interface ConversationPetSummary {
+  id: string;
+  name: string;
+  type: PetType;
+  status: PetStatus;
+  photoURL: string | null;
+  resolved: boolean;
+}
+
+export interface ConversationPreview extends Conversation {
+  pet: ConversationPetSummary | null;
+  lastMessage: Message | null;
+}

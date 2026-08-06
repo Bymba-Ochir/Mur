@@ -436,3 +436,105 @@ create trigger trg_validate_adoption_input
 -- Жагсаалтын index-ууд
 create index if not exists adoptions_created_at_idx on adoptions (created_at desc);
 create index if not exists adoptions_district_created_idx on adoptions (district, created_at desc);
+
+-- 23. Чат (Real-time messaging) — хэрэглэгчид амьтны эзэнтэй шууд холбогдох
+create table if not exists conversations (
+  id uuid primary key default gen_random_uuid(),
+  pet_id uuid not null references pets(id) on delete cascade,
+  initiator_id uuid not null references auth.users(id) on delete cascade,
+  owner_id uuid not null references auth.users(id) on delete cascade,
+  initiator_email text not null,
+  owner_email text not null,
+  created_at timestamptz default now(),
+  constraint conversations_no_self_chat check (initiator_id <> owner_id),
+  constraint conversations_unique_initiator_per_pet unique (pet_id, initiator_id)
+);
+
+alter table conversations enable row level security;
+
+-- Оролцогчид харилцааны жагсаалтыг уншиж болно
+drop policy if exists "Participants can view conversations" on conversations;
+create policy "Participants can view conversations"
+  on conversations for select to authenticated
+  using (initiator_id = auth.uid() or owner_id = auth.uid());
+
+-- Эхлүүлэгч шинэ харилцаа үүсгэж болно (эзэн нь заавал pets.created_by байх ёстой)
+drop policy if exists "Initiator can create conversation" on conversations;
+create policy "Initiator can create conversation"
+  on conversations for insert to authenticated
+  with check (
+    initiator_id = auth.uid()
+    and owner_id = (select created_by from pets where id = pet_id)
+    and initiator_id <> owner_id
+  );
+
+-- Харилцаа үүсгэхэд имэйлийг автоматаар нөхөх (auth.users унших боломжгүй)
+create or replace function set_conversation_emails()
+returns trigger
+language plpgsql
+security definer
+as $$
+begin
+  select email into new.initiator_email from auth.users where id = new.initiator_id;
+  select email into new.owner_email from auth.users where id = new.owner_id;
+  return new;
+end;
+$$;
+
+drop trigger if exists trg_set_conversation_emails on conversations;
+create trigger trg_set_conversation_emails
+  before insert on conversations
+  for each row execute function set_conversation_emails();
+
+-- Мессежүүд
+create table if not exists messages (
+  id uuid primary key default gen_random_uuid(),
+  conversation_id uuid not null references conversations(id) on delete cascade,
+  sender_id uuid not null references auth.users(id) on delete cascade,
+  content text not null check (char_length(content) between 1 and 2000),
+  read_at timestamptz,
+  created_at timestamptz default now()
+);
+
+alter table messages enable row level security;
+
+-- Оролцогчид мессежүүдийг уншиж болно
+drop policy if exists "Participants can view messages" on messages;
+create policy "Participants can view messages"
+  on messages for select to authenticated
+  using (exists (
+    select 1 from conversations c
+    where c.id = conversation_id
+      and (c.initiator_id = auth.uid() or c.owner_id = auth.uid())
+  ));
+
+-- Оролцогчид мессеж илгээж болно
+drop policy if exists "Participants can send messages" on messages;
+create policy "Participants can send messages"
+  on messages for insert to authenticated
+  with check (
+    sender_id = auth.uid()
+    and exists (
+      select 1 from conversations c
+      where c.id = conversation_id
+        and (c.initiator_id = auth.uid() or c.owner_id = auth.uid())
+    )
+  );
+
+-- Жагсаалтын index-ууд
+create index if not exists conversations_participant_idx on conversations (initiator_id, created_at desc);
+create index if not exists conversations_owner_idx on conversations (owner_id, created_at desc);
+create index if not exists messages_conversation_created_idx on messages (conversation_id, created_at asc);
+
+-- Realtime — зөвхөн messages INSERT идэвхжүүлэх
+do $$
+begin
+  if exists (select 1 from pg_publication where pubname = 'supabase_realtime')
+     and not exists (
+       select 1 from pg_publication_tables
+       where pubname = 'supabase_realtime' and tablename = 'messages'
+     )
+  then
+    alter publication supabase_realtime add table messages;
+  end if;
+end $$;

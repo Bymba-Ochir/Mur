@@ -9,6 +9,7 @@ import Image from 'next/image';
 import ShareButtons from '../../../components/ShareButtons';
 import LocationMap from '../../../components/LocationMap';
 import ReportButton from '../../../components/ReportButton';
+import MessageButton from '../../../components/MessageButton';
 import SightingsList from '../../../components/SightingsList';
 import PetIcon from '../../../components/PetIcon';
 import PetEditForm from '../../../components/PetEditForm';
@@ -180,6 +181,8 @@ export default function PetDetailClient({ id }: { id: string }) {
                   ☎ {maskPhone(pet.phone)} · {t('detail_show_phone')}
                 </button>
               )}
+              {/* Чат товч — зөвхөн бусад хэрэглэгчдэд */}
+              {!editing && <div style={{ marginTop: 'var(--sp-3)' }}><MessageButton pet={pet} /></div>}
             </div>
           ) : (
             editForm && (
