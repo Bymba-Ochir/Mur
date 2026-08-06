@@ -79,8 +79,71 @@ export interface MyPet {
   id: string;
   name: string;
   type: string;
+  photoUrl: string | null;
+  age: string | null;
+  breed: string | null;
+  weight: number | null;
+  nextVaccineName: string | null;
   nextVaccineDate: string | null;
   createdAt: string;
+}
+
+export type UpdateMyPetFields = Partial<{
+  name: string;
+  type: string;
+  age: string | null;
+  breed: string | null;
+  weight: number | null;
+  nextVaccineName: string | null;
+  nextVaccineDate: string | null;
+}>;
+
+export interface Vaccination {
+  id: string;
+  petId: string;
+  vaccineName: string;
+  vaccinationDate: string;
+  vetName: string | null;
+  notes: string | null;
+  createdAt: string;
+}
+
+export interface MedicalCondition {
+  id: string;
+  petId: string;
+  conditionName: string;
+  diagnosisDate: string | null;
+  notes: string | null;
+  createdAt: string;
+}
+
+export interface Medication {
+  id: string;
+  petId: string;
+  name: string;
+  dosage: string | null;
+  frequency: string | null;
+  startDate: string | null;
+  endDate: string | null;
+  nextReminderDate: string | null;
+  lastNotifiedDate: string | null;
+  createdAt: string;
+}
+
+export interface PetHealthData {
+  vaccinations: Vaccination[];
+  conditions: MedicalCondition[];
+  medications: Medication[];
+}
+
+export interface VetClinic {
+  id: string;
+  name: string;
+  district: string;
+  address: string;
+  phone: string;
+  hours: string;
+  note?: string;
 }
 
 export interface ReportPet {

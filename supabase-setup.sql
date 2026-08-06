@@ -538,3 +538,76 @@ begin
     alter publication supabase_realtime add table messages;
   end if;
 end $$;
+
+-- 24. Pet Health (Эрүүл мэндийн хэсэг) ──────────────────────────────────────
+
+-- my_pets — нэмэлт профайл талбарууд
+alter table my_pets add column if not exists age text;
+alter table my_pets add column if not exists breed text;
+alter table my_pets add column if not exists weight numeric(5,2);
+alter table my_pets add column if not exists next_vaccine_name text;
+
+-- Вакцины түүх
+create table if not exists vaccinations (
+  id uuid primary key default gen_random_uuid(),
+  pet_id uuid not null references my_pets(id) on delete cascade,
+  vaccine_name text not null,
+  vaccination_date date not null,
+  vet_name text,
+  notes text,
+  created_at timestamptz default now()
+);
+
+alter table vaccinations enable row level security;
+
+drop policy if exists "Owners manage vaccinations" on vaccinations;
+create policy "Owners manage vaccinations"
+  on vaccinations for all to authenticated
+  using (exists (select 1 from my_pets where id = pet_id and user_id = auth.uid()))
+  with check (exists (select 1 from my_pets where id = pet_id and user_id = auth.uid()));
+
+-- Өвчний мэдээлэл
+create table if not exists medical_conditions (
+  id uuid primary key default gen_random_uuid(),
+  pet_id uuid not null references my_pets(id) on delete cascade,
+  condition_name text not null,
+  diagnosis_date date,
+  notes text,
+  created_at timestamptz default now()
+);
+
+alter table medical_conditions enable row level security;
+
+drop policy if exists "Owners manage medical conditions" on medical_conditions;
+create policy "Owners manage medical conditions"
+  on medical_conditions for all to authenticated
+  using (exists (select 1 from my_pets where id = pet_id and user_id = auth.uid()))
+  with check (exists (select 1 from my_pets where id = pet_id and user_id = auth.uid()));
+
+-- Эмийн мэдээлэл + сануулга
+create table if not exists medications (
+  id uuid primary key default gen_random_uuid(),
+  pet_id uuid not null references my_pets(id) on delete cascade,
+  name text not null,
+  dosage text,
+  frequency text,
+  start_date date,
+  end_date date,
+  next_reminder_date date,
+  last_notified_date date,
+  created_at timestamptz default now()
+);
+
+alter table medications enable row level security;
+
+drop policy if exists "Owners manage medications" on medications;
+create policy "Owners manage medications"
+  on medications for all to authenticated
+  using (exists (select 1 from my_pets where id = pet_id and user_id = auth.uid()))
+  with check (exists (select 1 from my_pets where id = pet_id and user_id = auth.uid()));
+
+-- Indexes
+create index if not exists vaccinations_pet_idx on vaccinations (pet_id);
+create index if not exists medical_conditions_pet_idx on medical_conditions (pet_id);
+create index if not exists medications_pet_idx on medications (pet_id);
+create index if not exists medications_next_reminder_idx on medications (next_reminder_date);

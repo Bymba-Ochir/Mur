@@ -1,25 +1,23 @@
 // lib/vaccineService.ts
 // "Миний амьтад" — хэрэглэгчийн өөрийн бүртгэлтэй амьтад, вакцины хугацааны сануулга
 import { supabase } from './supabase';
-import type { MyPet, VaccineStatus } from './types';
+import type { MyPet, UpdateMyPetFields, VaccineStatus } from './types';
 
 const TABLE = 'my_pets';
 
-// DB мөр (snake_case) → MyPet. RLS-ээс хамааралгүйгээр хэрэглэгчээ шүүх
-// нь чухал тул бүх query-д user_id-г заавал `.eq()` хийнэ.
-function mapMyPetRow(row: {
-  id: string;
-  name: string;
-  type: string;
-  next_vaccine_date: string | null;
-  created_at: string;
-}): MyPet {
+// DB мөр (snake_case) → MyPet
+function mapMyPetRow(row: Record<string, unknown>): MyPet {
   return {
-    id: row.id,
-    name: row.name,
-    type: row.type,
-    nextVaccineDate: row.next_vaccine_date,
-    createdAt: row.created_at,
+    id: row.id as string,
+    name: row.name as string,
+    type: row.type as string,
+    photoUrl: (row.photo_url as string) ?? null,
+    age: (row.age as string) ?? null,
+    breed: (row.breed as string) ?? null,
+    weight: row.weight != null ? Number(row.weight) : null,
+    nextVaccineName: (row.next_vaccine_name as string) ?? null,
+    nextVaccineDate: (row.next_vaccine_date as string) ?? null,
+    createdAt: row.created_at as string,
   };
 }
 
@@ -30,13 +28,15 @@ async function requireUserId(): Promise<string> {
 }
 
 export async function createMyPet({
-  name,
-  type,
-  nextVaccineDate,
+  name, type, age, breed, weight, nextVaccineName, nextVaccineDate,
 }: {
   name: string;
   type: string;
-  nextVaccineDate: string | null;
+  age?: string | null;
+  breed?: string | null;
+  weight?: number | null;
+  nextVaccineName?: string | null;
+  nextVaccineDate?: string | null;
 }): Promise<MyPet> {
   const userId = await requireUserId();
 
@@ -46,6 +46,10 @@ export async function createMyPet({
       user_id: userId,
       name,
       type,
+      age: age || null,
+      breed: breed || null,
+      weight: weight ?? null,
+      next_vaccine_name: nextVaccineName || null,
       next_vaccine_date: nextVaccineDate || null,
     })
     .select()
@@ -67,14 +71,34 @@ export async function fetchMyPets(): Promise<MyPet[]> {
   return data.map(mapMyPetRow);
 }
 
-export async function updateVaccineDate(id: string, nextVaccineDate: string): Promise<void> {
+/**
+ * Амьтны мэдээллийг шинэчлэх (нэмэлт талбарууд)
+ */
+export async function updateMyPet(id: string, fields: UpdateMyPetFields): Promise<void> {
   const userId = await requireUserId();
+  const updateData: Record<string, unknown> = {};
+  if (fields.name !== undefined) updateData.name = fields.name;
+  if (fields.type !== undefined) updateData.type = fields.type;
+  if (fields.age !== undefined) updateData.age = fields.age || null;
+  if (fields.breed !== undefined) updateData.breed = fields.breed || null;
+  if (fields.weight !== undefined) updateData.weight = fields.weight ?? null;
+  if (fields.nextVaccineName !== undefined) updateData.next_vaccine_name = fields.nextVaccineName || null;
+  if (fields.nextVaccineDate !== undefined) {
+    updateData.next_vaccine_date = fields.nextVaccineDate || null;
+    // Сануулгыг дахин идэвхжүүлэх
+    updateData.last_notified_date = null;
+  }
+
   const { error } = await supabase
     .from(TABLE)
-    .update({ next_vaccine_date: nextVaccineDate, last_notified_date: null })
+    .update(updateData)
     .eq('id', id)
     .eq('user_id', userId);
   if (error) throw error;
+}
+
+export async function updateVaccineDate(id: string, nextVaccineDate: string): Promise<void> {
+  return updateMyPet(id, { nextVaccineDate });
 }
 
 export async function deleteMyPet(id: string): Promise<void> {

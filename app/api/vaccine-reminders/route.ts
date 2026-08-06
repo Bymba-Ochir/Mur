@@ -65,5 +65,49 @@ export async function GET(request: Request) {
       .eq('id', pet.id);
   }
 
-  return NextResponse.json({ checked: duePets?.length || 0, sent });
+  // ─── Эмийн сануулга ────────────────────────────────────────────────────────
+  const { data: dueMeds } = await supabaseAdmin
+    .from('medications')
+    .select('id, name, dosage, next_reminder_date, last_notified_date, my_pets(user_id, name)')
+    .lte('next_reminder_date', today)
+    .not('next_reminder_date', 'is', null)
+    .or(`last_notified_date.is.null,last_notified_date.lt.${today}`);
+
+  let medsSent = 0;
+  for (const med of dueMeds || []) {
+    const pet = med.my_pets as unknown as { user_id: string; name: string } | null;
+    if (!pet?.user_id) continue;
+
+    const { data: subs } = await supabaseAdmin
+      .from('push_subscriptions')
+      .select('*')
+      .eq('user_id', pet.user_id);
+
+    const payload = JSON.stringify({
+      title: `💊 ${pet.name}-ийн эмийн сануулга`,
+      body: med.dosage ? `${med.name} — ${med.dosage}` : med.name,
+      url: '/my-pets',
+    });
+
+    for (const sub of subs || []) {
+      try {
+        await webpush.sendNotification({ endpoint: sub.endpoint, keys: sub.keys }, payload);
+        medsSent++;
+      } catch {
+        // subscription хугацаа дууссан — алгасна
+      }
+    }
+
+    await supabaseAdmin
+      .from('medications')
+      .update({ last_notified_date: today })
+      .eq('id', med.id);
+  }
+
+  return NextResponse.json({
+    checked: duePets?.length || 0,
+    sent,
+    medsChecked: dueMeds?.length || 0,
+    medsSent,
+  });
 }
