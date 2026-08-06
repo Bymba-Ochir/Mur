@@ -1,4 +1,4 @@
-import { test, expect, beforeEach } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 
 // Onboarding модалыг хаах — localStorage-д харсан туг тавих
 test.beforeEach(async ({ page }) => {
