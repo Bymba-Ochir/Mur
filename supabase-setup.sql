@@ -611,3 +611,33 @@ create index if not exists vaccinations_pet_idx on vaccinations (pet_id);
 create index if not exists medical_conditions_pet_idx on medical_conditions (pet_id);
 create index if not exists medications_pet_idx on medications (pet_id);
 create index if not exists medications_next_reminder_idx on medications (next_reminder_date);
+
+-- 25. Мал эмнэлгийн цаг захиалга (appointment booking)
+create table if not exists appointments (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  clinic_id text not null,
+  pet_id uuid references my_pets(id) on delete set null,
+  service text not null check (service in ('Үзлэг', 'Вакцин', 'Мэс засал', 'Шүд арчилгаа')),
+  date date not null,
+  time_slot text not null,
+  notes text,
+  status text not null default 'pending' check (status in ('pending', 'confirmed', 'completed', 'cancelled')),
+  created_at timestamptz default now()
+);
+
+alter table appointments enable row level security;
+
+drop policy if exists "Users manage own appointments" on appointments;
+create policy "Users manage own appointments"
+  on appointments for all to authenticated
+  using (auth.uid() = user_id)
+  with check (
+    auth.uid() = user_id
+    and (pet_id is null or exists (
+      select 1 from my_pets where id = pet_id and user_id = auth.uid()
+    ))
+  );
+
+create index if not exists appointments_user_date_idx on appointments (user_id, date desc);
+create index if not exists appointments_clinic_date_idx on appointments (clinic_id, date);

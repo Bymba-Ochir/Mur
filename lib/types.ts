@@ -136,6 +136,8 @@ export interface PetHealthData {
   medications: Medication[];
 }
 
+export type VetService = 'Үзлэг' | 'Вакцин' | 'Мэс засал' | 'Шүд арчилгаа';
+
 export interface VetClinic {
   id: string;
   name: string;
@@ -144,6 +146,33 @@ export interface VetClinic {
   phone: string;
   hours: string;
   note?: string;
+  lat: number;
+  lng: number;
+  services: VetService[];
+}
+
+export type AppointmentStatus = 'pending' | 'confirmed' | 'completed' | 'cancelled';
+
+export interface Appointment {
+  id: string;
+  userId: string;
+  clinicId: string;
+  petId: string | null;
+  service: VetService;
+  date: string;
+  time: string;
+  notes: string | null;
+  status: AppointmentStatus;
+  createdAt: string;
+}
+
+export interface AppointmentInput {
+  clinicId: string;
+  petId?: string | null;
+  service: VetService;
+  date: string;
+  time: string;
+  notes?: string;
 }
 
 export interface ReportPet {
