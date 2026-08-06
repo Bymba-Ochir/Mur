@@ -5,16 +5,16 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useSyncExternalStore } from 'react';
 import PetIcon from '../../../components/PetIcon';
-import AdoptionEditForm from '../../../components/AdoptionEditForm';
-import type { AdoptionEditValues } from '../../../components/AdoptionEditForm';
+import SittingEditForm from '../../../components/SittingEditForm';
+import type { SittingEditValues } from '../../../components/SittingEditForm';
 import ShareButtons from '../../../components/ShareButtons';
 import { useAuth } from '../../../lib/useAuth';
 import { useToast } from '../../../components/Toast';
 import { useLanguage } from '../../../lib/i18n';
-import { fetchAdoptionById, updateAdoption, deleteAdoption } from '../../../lib/adoptionService';
+import { fetchSittingListingById, updateSittingListing, deleteSittingListing } from '../../../lib/sittingService';
 import { relativeTime } from '../../../lib/relativeTime';
-import { maskPhone, formatPhone, getErrorMessage } from '../../../lib/utils';
-import type { Adoption } from '../../../lib/types';
+import { maskPhone, formatPhone, normalizePhone, getErrorMessage } from '../../../lib/utils';
+import type { SittingListing, SittingPetType } from '../../../lib/types';
 
 function subscribeLocation(cb: () => void) {
   window.addEventListener('popstate', cb);
@@ -22,13 +22,13 @@ function subscribeLocation(cb: () => void) {
   return () => { window.removeEventListener('popstate', cb); window.removeEventListener('hashchange', cb); };
 }
 
-export default function AdoptionDetailClient({ id }: { id: string }) {
+export default function SittingDetailClient({ id }: { id: string }) {
   const router = useRouter();
   const { user } = useAuth();
   const showToast = useToast();
   const { t } = useLanguage();
 
-  const [adoption, setAdoption] = useState<Adoption | null>(null);
+  const [listing, setListing] = useState<SittingListing | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [revealed, setRevealed] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -38,22 +38,35 @@ export default function AdoptionDetailClient({ id }: { id: string }) {
   const url = useSyncExternalStore(subscribeLocation, () => typeof window !== 'undefined' ? window.location.href : '');
 
   useEffect(() => {
-    fetchAdoptionById(id)
-      .then(setAdoption)
+    fetchSittingListingById(id)
+      .then(setListing)
       .catch((err) => setError(getErrorMessage(err) || 'Алдаа'));
   }, [id]);
 
-  const isOwner = user && adoption && adoption.createdBy === user.id;
+  const isOwner = user && listing && listing.userId === user.id;
 
-  const genderLabel = adoption?.gender === 'Эрэгтэй' ? t('gender_male')
-    : adoption?.gender === 'Эмэгтэй' ? t('gender_female')
-    : t('gender_unknown');
+  function petTypeLabel(petType: SittingPetType): string {
+    return petType === 'Бүгд' ? t('sitting_pet_type_all')
+      : petType === 'Нохой' ? t('type_dog')
+      : petType === 'Муур' ? t('type_cat')
+      : t('type_other');
+  }
 
-  async function handleSave(values: AdoptionEditValues) {
+  async function handleSave(values: SittingEditValues) {
     setSaving(true);
+    const fields = {
+      petType: values.petType,
+      description: values.description,
+      experience: values.experience,
+      availability: values.availability,
+      price: values.price ? Number(values.price) : null,
+      district: values.district,
+      place: values.place,
+      phone: normalizePhone(values.phone),
+    };
     try {
-      await updateAdoption(id, values);
-      setAdoption((prev) => prev ? { ...prev, ...values } : prev);
+      await updateSittingListing(id, fields);
+      setListing((prev) => prev ? { ...prev, ...fields } : prev);
       setEditing(false);
       showToast(t('detail_save'), 'success');
     } catch (err) {
@@ -67,8 +80,8 @@ export default function AdoptionDetailClient({ id }: { id: string }) {
     if (!confirm(t('detail_delete_confirm'))) return;
     setDeleting(true);
     try {
-      await deleteAdoption(id);
-      router.push('/adoptions');
+      await deleteSittingListing(id);
+      router.push('/sitting');
     } catch (err) {
       showToast(getErrorMessage(err) || 'Алдаа гарлаа', 'error');
       setDeleting(false);
@@ -76,28 +89,29 @@ export default function AdoptionDetailClient({ id }: { id: string }) {
   }
 
   if (error) return <p style={{ color: 'var(--alert)' }}>{error}</p>;
-  if (!adoption) return <p>{t('detail_loading')}</p>;
+  if (!listing) return <p>{t('detail_loading')}</p>;
+
+  const label = petTypeLabel(listing.petType);
 
   return (
     <div>
       <div className="page-header">
-        <div className="eyebrow">{t('adoptions_eyebrow')}</div>
-        <h1>{adoption.type}{adoption.name ? ` — ${adoption.name}` : ''}</h1>
-        <p>{relativeTime(adoption.createdAt)}</p>
+        <div className="eyebrow">{t('sitting_eyebrow')}</div>
+        <h1>{label}</h1>
+        <p>{relativeTime(listing.createdAt)}</p>
       </div>
 
       {editing ? (
-        <AdoptionEditForm
+        <SittingEditForm
           initial={{
-            name: adoption.name,
-            type: adoption.type,
-            age: adoption.age,
-            gender: adoption.gender,
-            breed: adoption.breed,
-            description: adoption.description,
-            district: adoption.district,
-            place: adoption.place,
-            phone: adoption.phone,
+            petType: listing.petType,
+            description: listing.description,
+            experience: listing.experience,
+            availability: listing.availability,
+            price: listing.price != null ? String(listing.price) : '',
+            district: listing.district,
+            place: listing.place,
+            phone: listing.phone,
           }}
           onSave={handleSave}
           onCancel={() => setEditing(false)}
@@ -106,10 +120,10 @@ export default function AdoptionDetailClient({ id }: { id: string }) {
       ) : (
         <div className="detail-grid">
           <div className="media-box">
-            {adoption.photoURL ? (
+            {listing.photoURL ? (
               <Image
-                src={adoption.photoURL}
-                alt={`${adoption.type}${adoption.name ? ' — ' + adoption.name : ''}`}
+                src={listing.photoURL}
+                alt={listing.description || label}
                 fill
                 sizes="(max-width: 800px) 100vw, 520px"
                 style={{ objectFit: 'cover' }}
@@ -120,29 +134,29 @@ export default function AdoptionDetailClient({ id }: { id: string }) {
                 color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center',
                 width: 120, height: 120, background: 'var(--glass-bg)', border: '1px solid var(--glass-border)',
                 borderRadius: '50%', boxShadow: 'var(--shadow-sm)',
-              }}><PetIcon type={adoption.type} size={72} /></span>
+              }}><PetIcon type={listing.petType === 'Бүгд' ? 'Бусад' : listing.petType} size={72} /></span>
             )}
           </div>
 
           <div className="info-card">
-            <p><strong>{t('detail_type')}:</strong> {adoption.type === 'Муур' ? t('type_cat') : adoption.type === 'Нохой' ? t('type_dog') : t('type_other')}</p>
-            {adoption.breed && <p><strong>{t('detail_breed')}</strong> {adoption.breed}</p>}
-            {adoption.age && <p><strong>{t('detail_age')}</strong> {adoption.age}</p>}
-            <p><strong>{t('detail_gender')}</strong> {genderLabel}</p>
-            <p><strong>{t('detail_district')}</strong> {adoption.district}</p>
-            <p><strong>{t('detail_place')}</strong> {adoption.place}</p>
-            {adoption.description && (
+            <p><strong>{t('sitting_pet_type_label')}</strong> {label}</p>
+            {listing.description && (
               <div style={{ marginTop: 'var(--sp-3)' }}>
                 <p><strong>{t('detail_description')}</strong></p>
-                <p style={{ whiteSpace: 'pre-wrap' }}>{adoption.description}</p>
+                <p style={{ whiteSpace: 'pre-wrap' }}>{listing.description}</p>
               </div>
             )}
+            {listing.experience && <p><strong>{t('sitting_detail_experience')}</strong> {listing.experience}</p>}
+            {listing.availability && <p><strong>{t('sitting_detail_availability')}</strong> {listing.availability}</p>}
+            <p><strong>{t('detail_district')}</strong> {listing.district}</p>
+            <p><strong>{t('detail_place')}</strong> {listing.place}</p>
+            <p><strong>{t('sitting_detail_price')}</strong> {listing.price != null ? `₮ ${listing.price.toLocaleString()} ${t('sitting_price_per_day')}` : t('sitting_price_free')}</p>
 
             <div className="phone-section">
               {revealed ? (
-                <a className="phone-link" href={`tel:${adoption.phone}`}>☎ {formatPhone(adoption.phone)}</a>
-              ) : adoption.phone ? (
-                <button className="btn btn-ghost" onClick={() => setRevealed(true)}>☎ {maskPhone(adoption.phone)} · {t('detail_show_phone')}</button>
+                <a className="phone-link" href={`tel:${listing.phone}`}>☎ {formatPhone(listing.phone)}</a>
+              ) : listing.phone ? (
+                <button className="btn btn-ghost" onClick={() => setRevealed(true)}>☎ {maskPhone(listing.phone)} · {t('detail_show_phone')}</button>
               ) : null}
             </div>
 
@@ -158,14 +172,12 @@ export default function AdoptionDetailClient({ id }: { id: string }) {
         </div>
       )}
 
-      <div style={{ textAlign: 'center', marginTop: 'var(--sp-4)' }}>
-        <Link href={`/profiles/adoption/${adoption.id}`} className="btn btn-accent" style={{ display: 'inline-flex' }}>
-          {t('profiles_view_profile')}
-        </Link>
+      <div className="back-row">
+        <Link href="/sitting" className="btn btn-ghost" style={{ display: 'inline-flex' }}>{t('sitting_back_to_list')}</Link>
       </div>
 
       <div className="share-section">
-        <ShareButtons url={url} title={`Үрчлүүлэх ${adoption.type}${adoption.name ? ' — ' + adoption.name : ''}`} />
+        <ShareButtons url={url} title={`Асрах үйлчилгээ — ${label}`} />
         <p className="share-hint">{t('detail_share_hint')}</p>
       </div>
 
@@ -193,6 +205,7 @@ export default function AdoptionDetailClient({ id }: { id: string }) {
         }
         .owner-actions { display: flex; gap: var(--sp-2); margin-top: var(--sp-4); }
         .owner-actions .btn { flex: 1; min-height: var(--touch-target); }
+        .back-row { margin-top: var(--sp-5); }
         .share-section { margin-top: var(--sp-6); text-align: center; }
         .share-hint { font-size: 12px; color: var(--muted); margin-top: var(--sp-2); }
       `}</style>

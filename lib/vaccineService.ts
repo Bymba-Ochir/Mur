@@ -72,6 +72,22 @@ export async function fetchMyPets(): Promise<MyPet[]> {
 }
 
 /**
+ * Ганц "Миний амьтан"-ыг ID-аар татах.
+ * RLS нь зөвхөн эзэмшигчид буцаана.
+ */
+export async function fetchMyPetById(id: string): Promise<MyPet> {
+  const { data, error } = await supabase
+    .from(TABLE)
+    .select('*')
+    .eq('id', id)
+    .maybeSingle();
+
+  if (error) throw error;
+  if (!data) throw new Error('Амьтан олдсонгүй эсвэл таны харьяалалд ороогүй байна.');
+  return mapMyPetRow(data);
+}
+
+/**
  * Амьтны мэдээллийг шинэчлэх (нэмэлт талбарууд)
  */
 export async function updateMyPet(id: string, fields: UpdateMyPetFields): Promise<void> {

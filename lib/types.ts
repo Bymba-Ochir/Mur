@@ -299,3 +299,85 @@ export interface ConversationPreview extends Conversation {
   pet: ConversationPetSummary | null;
   lastMessage: Message | null;
 }
+
+// ─── Pet Profile (Амьтны сошиал профайл) ────────────────────────────────────
+
+export type PetProfileKind = 'adoption' | 'mypet';
+
+export interface PetProfileData {
+  kind: PetProfileKind;
+  id: string;
+  name: string;
+  type: PetType;
+  age: string | null;
+  breed: string | null;
+  gender: AdoptionGender | null;
+  weight: number | null;
+  description: string | null;
+  photoUrl: string | null;
+  phone: string | null;
+  district: string | null;
+  place: string | null;
+  createdAt: string;
+  isOwner: boolean;
+  nextVaccineName?: string | null;
+  nextVaccineDate?: string | null;
+}
+
+// ─── Pet Sitting (Асрах үйлчилгээ) ─────────────────────────────────────────
+
+export type SittingPetType = PetType | 'Бүгд';
+
+export interface SittingListing {
+  id: string;
+  userId: string;
+  petType: SittingPetType;
+  description: string;
+  district: District;
+  place: string;
+  experience: string;
+  availability: string;
+  phone: string;
+  price: number | null;
+  photoURL: string | null;
+  createdAt: string;
+}
+
+export interface SittingListingInput {
+  petType: SittingPetType;
+  description: string;
+  district: District;
+  place: string;
+  experience: string;
+  availability: string;
+  phone: string;
+  price?: number | null;
+  photoFile?: File | null;
+}
+
+export interface SittingListingFilters {
+  petType?: SittingPetType;
+  district?: District;
+  search?: string;
+  page?: number;
+}
+
+export interface UpdateSittingListingFields {
+  petType?: SittingPetType;
+  description?: string;
+  district?: District;
+  place?: string;
+  experience?: string;
+  availability?: string;
+  phone?: string;
+  price?: number | null;
+}
+
+export interface ConversationSittingSummary {
+  id: string;
+  petType: SittingPetType;
+  district: string;
+  place: string;
+  photoURL: string | null;
+  price: number | null;
+}

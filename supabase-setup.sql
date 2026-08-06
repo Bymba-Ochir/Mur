@@ -641,3 +641,99 @@ create policy "Users manage own appointments"
 
 create index if not exists appointments_user_date_idx on appointments (user_id, date desc);
 create index if not exists appointments_clinic_date_idx on appointments (clinic_id, date);
+
+-- 26. Асрах үйлчилгээ (Pet Sitting)
+create table if not exists sitting_listings (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  pet_type text not null default 'Нохой' check (pet_type in ('Нохой', 'Муур', 'Бусад', 'Бүгд')),
+  description text default '',
+  district text default '',
+  place text default '',
+  experience text default '',
+  availability text default '',
+  phone text default '',
+  price integer,
+  photo_url text,
+  created_at timestamptz default now()
+);
+
+alter table sitting_listings enable row level security;
+
+-- Хэн ч уншиж болно
+drop policy if exists "Public read sitting_listings" on sitting_listings;
+create policy "Public read sitting_listings"
+  on sitting_listings for select using (true);
+
+-- Нэвтэрсэн хэрэглэгч шинэ зар үүсгэж болно
+drop policy if exists "Authenticated users can insert sitting" on sitting_listings;
+create policy "Authenticated users can insert sitting"
+  on sitting_listings for insert to authenticated with check (auth.uid() = user_id);
+
+-- Зохиогч өөрийн зарыг засах боломжтой
+drop policy if exists "Owner can update sitting" on sitting_listings;
+create policy "Owner can update sitting"
+  on sitting_listings for update to authenticated
+  using (auth.uid() = user_id)
+  with check (auth.uid() = user_id);
+
+-- Зохиогч өөрийн зарыг устгаж болно
+drop policy if exists "Owner can delete sitting" on sitting_listings;
+create policy "Owner can delete sitting"
+  on sitting_listings for delete to authenticated
+  using (auth.uid() = user_id);
+
+-- Spam хамгаалалт
+create or replace function check_sitting_rate_limit()
+returns trigger
+language plpgsql
+security definer
+as $$
+declare recent_count int;
+begin
+  select count(*) into recent_count
+  from sitting_listings
+  where user_id = new.user_id
+    and created_at > now() - interval '1 hour';
+
+  if recent_count >= 5 then
+    raise exception 'RATE_LIMIT: Хэт олон зар нийтлээ. 1 цагийн дараа дахин оролдоно уу.';
+  end if;
+
+  return new;
+end;
+$$;
+
+drop trigger if exists trg_sitting_rate_limit on sitting_listings;
+create trigger trg_sitting_rate_limit
+  before insert on sitting_listings
+  for each row execute function check_sitting_rate_limit();
+
+-- Валидаци
+create or replace function validate_sitting_input()
+returns trigger
+language plpgsql
+as $$
+begin
+  if new.phone is not null and new.phone <> '' then
+    if regexp_replace(new.phone, '\D', '', 'g') !~ '^(976)?[0-9]{8}$' then
+      raise exception 'Утасны дугаар 8 оронтой тоо байх ёстой';
+    end if;
+  end if;
+  if new.title is not null and char_length(new.title) > 200 then
+    raise exception 'Гарчиг хэт урт байна (хамгийн ихдээ 200 тэмдэгт)';
+  end if;
+  if new.description is not null and char_length(new.description) > 2000 then
+    raise exception 'Тайлбар хэт урт байна (хамгийн ихдээ 2000 тэмдэгт)';
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists trg_validate_sitting_input on sitting_listings;
+create trigger trg_validate_sitting_input
+  before insert or update on sitting_listings
+  for each row execute function validate_sitting_input();
+
+create index if not exists sitting_created_at_idx on sitting_listings (created_at desc);
+create index if not exists sitting_district_idx on sitting_listings (district);

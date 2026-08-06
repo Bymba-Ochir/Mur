@@ -47,7 +47,7 @@ export default function BottomNav() {
   const pathname = usePathname();
 
   // Чат хуудас дээр доод цэсийг нуух (композер бүтэн өргөнтэй байх)
-  if (pathname.startsWith('/messages')) return null;
+  if (pathname.startsWith('/messages') || pathname.startsWith('/assistant')) return null;
 
   return (
     <nav className="bottom-nav" aria-label="Гар утасны доод цэс">

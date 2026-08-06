@@ -1,4 +1,5 @@
 'use client';
+import { useRouter } from 'next/navigation';
 import { useLanguage } from '../lib/i18n';
 import { vaccineStatus } from '../lib/vaccineService';
 import type { MyPet, VaccineStatus } from '../lib/types';
@@ -19,6 +20,7 @@ export default function MyPetCard({
   onDateChange: (date: string) => void;
   onDelete: () => void;
 }) {
+  const router = useRouter();
   const { t } = useLanguage();
   const status = vaccineStatus(pet.nextVaccineDate);
   const label = STATUS_LABEL[status];
@@ -63,6 +65,12 @@ export default function MyPetCard({
         >
           {t('mypets_delete')}
         </button>
+        <button
+          className="profile-link"
+          onClick={(e) => { e.stopPropagation(); router.push(`/profiles/mypet/${pet.id}`); }}
+        >
+          {t('profiles_view_profile')}
+        </button>
       </div>
 
       <style jsx>{`
@@ -79,6 +87,12 @@ export default function MyPetCard({
           opacity: 0.7; transition: opacity 0.15s ease;
         }
         .danger-link:hover { opacity: 1; }
+        .profile-link {
+          background: none; border: 1px solid var(--accent); color: var(--accent);
+          font-size: 11px; cursor: pointer; padding: 4px 10px; font-family: var(--font-body);
+          font-weight: 600; border-radius: var(--r-sm); transition: all 0.15s ease;
+        }
+        .profile-link:hover { background: var(--accent); color: #fff; }
       `}</style>
     </div>
   );
