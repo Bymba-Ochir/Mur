@@ -323,3 +323,116 @@ create index if not exists pets_district_created_idx on pets (district, created_
 create index if not exists pets_phone_idx on pets (phone);
 create index if not exists sightings_created_at_idx on sightings (created_at desc);
 create index if not exists reports_created_at_idx on reports (created_at desc);
+
+-- 22. Үрчлүүлэх (Pet Adoption) — гэр орон хайж буй амьтны зар
+create table if not exists adoptions (
+  id uuid primary key default gen_random_uuid(),
+  name text default '',
+  type text not null,
+  age text default '',
+  gender text default 'Тодорхойгүй' check (gender in ('Эрэгтэй', 'Эмэгтэй', 'Тодорхойгүй')),
+  breed text default '',
+  description text default '',
+  district text default '',
+  place text default '',
+  phone text default '',
+  photo_url text,
+  created_by uuid references auth.users(id) default auth.uid(),
+  created_at timestamptz default now()
+);
+
+alter table adoptions enable row level security;
+
+-- Хэн ч уншиж болно (жагсаалт, дэлгэрэнгүй нээлттэй)
+drop policy if exists "Public read adoptions" on adoptions;
+create policy "Public read adoptions"
+  on adoptions for select using (true);
+
+-- Зөвхөн нэвтэрсэн хэрэглэгч шинэ зар үүсгэж болно
+drop policy if exists "Authenticated users can insert adoptions" on adoptions;
+create policy "Authenticated users can insert adoptions"
+  on adoptions for insert to authenticated with check (true);
+
+-- Зохиогч өөрийн зарыг засах боломжтой
+drop policy if exists "Owner can update own adoption" on adoptions;
+create policy "Owner can update own adoption"
+  on adoptions for update to authenticated
+  using (auth.uid() = created_by)
+  with check (auth.uid() = created_by);
+
+-- Зохиогч өөрийн зарыг устгаж болно
+drop policy if exists "Owner can delete own adoption" on adoptions;
+create policy "Owner can delete own adoption"
+  on adoptions for delete to authenticated
+  using (auth.uid() = created_by);
+
+-- Admin-ууд аль ч зарыг устгаж болно
+drop policy if exists "Admins can delete any adoption" on adoptions;
+create policy "Admins can delete any adoption"
+  on adoptions for delete to authenticated
+  using (auth.uid() in (select user_id from admins));
+
+-- Spam хамгаалалт — нэг утасны дугаар 1цагт хэт олон зар нийтлэхээс сэргийлнэ
+create or replace function check_adoption_rate_limit()
+returns trigger
+language plpgsql
+security definer
+as $$
+declare recent_count int;
+begin
+  select count(*) into recent_count
+  from adoptions
+  where phone = new.phone
+    and created_at > now() - interval '1 hour';
+
+  if recent_count >= 5 then
+    raise exception 'RATE_LIMIT: Хэт олон удаа зар нийтлээ. 1 цагийн дараа дахин оролдоно уу.';
+  end if;
+
+  return new;
+end;
+$$;
+
+drop trigger if exists trg_adoption_rate_limit on adoptions;
+create trigger trg_adoption_rate_limit
+  before insert on adoptions
+  for each row execute function check_adoption_rate_limit();
+
+-- Мэдээллийн валидаци — утасны дугаар + уртын хязгаар
+create or replace function validate_adoption_input()
+returns trigger
+language plpgsql
+as $$
+begin
+  if new.phone is not null and new.phone <> '' then
+    if regexp_replace(new.phone, '\D', '', 'g') !~ '^(976)?[0-9]{8}$' then
+      raise exception 'Утасны дугаар 8 оронтой тоо байх ёстой (жишээ: 99112233)';
+    end if;
+  end if;
+  if new.name is not null and char_length(new.name) > 100 then
+    raise exception 'Нэр хэт урт байна (хамгийн ихдээ 100 тэмдэгт)';
+  end if;
+  if new.breed is not null and char_length(new.breed) > 100 then
+    raise exception 'Үүлдэр хэт урт байна (хамгийн ихдээ 100 тэмдэгт)';
+  end if;
+  if new.age is not null and char_length(new.age) > 100 then
+    raise exception 'Нас хэт урт байна (хамгийн ихдээ 100 тэмдэгт)';
+  end if;
+  if new.place is not null and char_length(new.place) > 500 then
+    raise exception 'Байршил хэт урт байна (хамгийн ихдээ 500 тэмдэгт)';
+  end if;
+  if new.description is not null and char_length(new.description) > 2000 then
+    raise exception 'Тайлбар хэт урт байна (хамгийн ихдээ 2000 тэмдэгт)';
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists trg_validate_adoption_input on adoptions;
+create trigger trg_validate_adoption_input
+  before insert or update on adoptions
+  for each row execute function validate_adoption_input();
+
+-- Жагсаалтын index-ууд
+create index if not exists adoptions_created_at_idx on adoptions (created_at desc);
+create index if not exists adoptions_district_created_idx on adoptions (district, created_at desc);

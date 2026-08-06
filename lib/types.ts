@@ -118,3 +118,56 @@ export interface QPayInvoice {
   qr_text: string;
   urls?: { name: string; description: string; logo?: string; link: string }[];
 }
+
+// ─── Үрчлүүлэх (Pet Adoption) ───────────────────────────────────────────────
+
+export type AdoptionGender = 'Эрэгтэй' | 'Эмэгтэй' | 'Тодорхойгүй';
+
+export interface Adoption {
+  id: string;
+  name: string;
+  type: PetType;
+  age: string;
+  gender: AdoptionGender;
+  breed: string;
+  description: string;
+  district: District;
+  place: string;
+  phone: string;
+  photoURL: string | null;
+  createdBy: string | null;
+  createdAt: string;
+}
+
+export interface AdoptionInput {
+  name: string;
+  type: PetType;
+  age: string;
+  gender: AdoptionGender;
+  breed: string;
+  description: string;
+  place: string;
+  district: District;
+  phone: string;
+  photoFile?: File | null;
+}
+
+export interface AdoptionFilters {
+  type?: PetType;
+  gender?: AdoptionGender;
+  district?: District;
+  search?: string;
+  page?: number;
+}
+
+export interface UpdateAdoptionFields {
+  name?: string;
+  type?: PetType;
+  age?: string;
+  gender?: AdoptionGender;
+  breed?: string;
+  description?: string;
+  district?: District;
+  place?: string;
+  phone?: string;
+}

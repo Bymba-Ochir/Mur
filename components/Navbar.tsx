@@ -85,6 +85,7 @@ export default function Navbar() {
     { href: '/report-lost', label: t('nav_lost') },
     { href: '/report-found', label: t('nav_found') },
     { href: '/listings', label: t('nav_listings') },
+    { href: '/adoptions', label: t('nav_adoptions') },
     { href: '/my-pets', label: t('nav_mypets') },
   ];
 
