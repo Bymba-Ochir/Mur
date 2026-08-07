@@ -71,7 +71,7 @@ export default function ClinicCard({
           display: flex; gap: var(--sp-3); align-items: flex-start;
           transition: border-color 0.15s ease;
         }
-        .clinic-card.selected { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(224,122,62,0.2); }
+        .clinic-card.selected { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(232,114,92,0.2); }
         .chip {
           display: inline-block; font-size: 11px; padding: 2px 8px;
           background: var(--eyebrow-bg); border-radius: var(--r-pill);

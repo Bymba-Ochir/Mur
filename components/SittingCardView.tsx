@@ -130,7 +130,7 @@ export default function SittingCardView({
         @media (min-width: 1025px) {
           .badge { font-size: 10.5px; padding: 6px 12px; bottom: 14px; left: 14px; }
         }
-        .badge.sitting { background: rgba(43,101,117,0.85); color: #fff; border-color: rgba(43,101,117,0.3); }
+        .badge.sitting { background: rgba(61,122,95,0.85); color: #fff; border-color: rgba(61,122,95,0.3); }
         .info { padding: 14px 15px; flex: 1; display: flex; flex-direction: column; gap: 2px; }
         @media (max-width: 480px) { .info { padding: 12px 14px; } }
         @media (min-width: 1025px) { .info { padding: 16px 18px; gap: 3px; } }

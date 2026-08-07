@@ -6,7 +6,7 @@ import ScrollReveal from '../components/ScrollReveal';
 
 // Hero-ийн зөөлөн paw-print хээ (data-URI SVG) — зөвхөн гоёл чимэглэл
 const PAW_PATTERN =
-  "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cg fill='%2317414D'%3E%3Cellipse cx='24' cy='30' rx='11' ry='9'/%3E%3Ccircle cx='10' cy='18' r='5.5'/%3E%3Ccircle cx='38' cy='18' r='5.5'/%3E%3Ccircle cx='17' cy='8' r='5'/%3E%3Ccircle cx='31' cy='8' r='5'/%3E%3C/g%3E%3C/svg%3E\")";
+  "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cg fill='%233D7A5F'%3E%3Cellipse cx='24' cy='30' rx='11' ry='9'/%3E%3Ccircle cx='10' cy='18' r='5.5'/%3E%3Ccircle cx='38' cy='18' r='5.5'/%3E%3Ccircle cx='17' cy='8' r='5'/%3E%3Ccircle cx='31' cy='8' r='5'/%3E%3C/g%3E%3C/svg%3E\")";
 
 export default function Home() {
   const { t } = useLanguage();
@@ -111,9 +111,9 @@ export default function Home() {
         .hero::before {
           content: ''; position: absolute; inset: -20% -10%; z-index: 0; pointer-events: none;
           background:
-            radial-gradient(38% 46% at 18% 28%, rgba(224,122,62,0.22), transparent 70%),
-            radial-gradient(42% 50% at 82% 32%, rgba(43,101,117,0.30), transparent 70%),
-            radial-gradient(50% 60% at 55% 100%, rgba(224,122,62,0.10), transparent 70%);
+            radial-gradient(38% 46% at 18% 28%, rgba(232,114,92,0.18), transparent 70%),
+            radial-gradient(42% 50% at 82% 32%, rgba(61,122,95,0.25), transparent 70%),
+            radial-gradient(50% 60% at 55% 100%, rgba(232,114,92,0.08), transparent 70%);
           filter: blur(16px);
           animation: aurora 14s ease-in-out infinite alternate;
         }
@@ -198,7 +198,7 @@ export default function Home() {
 
         /* CTA glow */
         .hero-actions .btn-accent { box-shadow: var(--shadow-glow); }
-        .hero-actions .btn-accent:hover { box-shadow: 0 0 0 1px rgba(224,122,62,0.35), 0 12px 36px rgba(224,122,62,0.38); }
+        .hero-actions .btn-accent:hover { box-shadow: 0 0 0 1px rgba(232,114,92,0.35), 0 12px 36px rgba(232,114,92,0.35); }
         .hero-actions .arrow { transition: transform 0.2s ease; }
         .hero-actions .btn:hover .arrow { transform: translateX(3px); }
         .hero-trust {

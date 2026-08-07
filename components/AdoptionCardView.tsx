@@ -112,7 +112,7 @@ export default function AdoptionCardView({
         }
         @media (max-width: 480px) { .badge { font-size: 10px; padding: 5px 11px; bottom: 12px; left: 12px; } }
         @media (min-width: 1025px) { .badge { font-size: 10.5px; padding: 6px 12px; bottom: 14px; left: 14px; } }
-        .badge.adopt { background: rgba(224,122,62,0.85); color: #fff; border-color: rgba(224,122,62,0.3); }
+        .badge.adopt { background: rgba(232,114,92,0.85); color: #fff; border-color: rgba(232,114,92,0.3); }
         .info { padding: 14px 15px; flex: 1; display: flex; flex-direction: column; gap: 2px; }
         @media (max-width: 480px) { .info { padding: 12px 14px; } }
         @media (min-width: 1025px) { .info { padding: 16px 18px; gap: 3px; } }

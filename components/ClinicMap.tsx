@@ -143,16 +143,16 @@ function add_user_location(
 ) {
   L.circleMarker(coords, {
     radius: 6,
-    color: '#2B6575',
-    fillColor: '#2B6575',
+    color: '#3D7A5F',
+    fillColor: '#3D7A5F',
     fillOpacity: 0.8,
     weight: 2,
   }).addTo(map).bindPopup('📍 Таны байршил');
 
   L.circle(coords, {
     radius: 2000,
-    color: '#2B6575',
-    fillColor: '#2B6575',
+    color: '#3D7A5F',
+    fillColor: '#3D7A5F',
     fillOpacity: 0.05,
     weight: 1,
   }).addTo(map);

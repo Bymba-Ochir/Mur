@@ -146,7 +146,7 @@ export default function PetCardView({
         @media (min-width: 1025px) {
           .badge { font-size: 10.5px; padding: 6px 12px; bottom: 14px; left: 14px; }
         }
-        .badge.lost { background: rgba(206,86,66,0.85); color: #fff; border-color: rgba(206,86,66,0.3); }
+        .badge.lost { background: rgba(217,79,64,0.85); color: #fff; border-color: rgba(217,79,64,0.3); }
         .badge.found { background: rgba(61,140,104,0.85); color: #fff; border-color: rgba(61,140,104,0.3); }
         .similarity {
           position: absolute; bottom: 10px; right: 10px; font-family: var(--font-mono); font-size: 10.5px; font-weight: 600;
