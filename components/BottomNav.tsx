@@ -67,10 +67,12 @@ export default function BottomNav() {
           .bottom-nav {
             display: flex;
             position: fixed; bottom: 0; left: 0; right: 0; z-index: 150;
-            background: var(--card);
-            border-top: 1px solid var(--line);
+            background: var(--glass-bg);
+            -webkit-backdrop-filter: var(--glass-blur);
+            backdrop-filter: var(--glass-blur);
+            border-top: 1px solid var(--glass-border);
             padding: 8px 4px calc(8px + env(safe-area-inset-bottom, 0px));
-            box-shadow: 0 -2px 12px rgba(0,0,0,0.06);
+            box-shadow: 0 -4px 24px rgba(23,34,39,0.08);
           }
         }
         @media (max-width: 400px) {
@@ -79,10 +81,15 @@ export default function BottomNav() {
           }
         }
         .bn-item {
+          position: relative;
           flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px;
           padding: 6px 2px; text-decoration: none; color: var(--muted);
           min-height: var(--touch-target);
+          transition: color 0.2s ease;
         }
+        .bn-item:active { transform: scale(0.92); }
+        .bn-item > :global(svg) { transition: transform 0.2s cubic-bezier(0.16,1,0.3,1); }
+        .bn-item.active > :global(svg) { transform: translateY(-1px); }
         @media (max-width: 400px) {
           .bn-item {
             padding: 4px 1px;
@@ -97,6 +104,17 @@ export default function BottomNav() {
           .bn-item span { font-size: 10.5px; }
         }
         .bn-item.active { color: var(--accent); }
+        .bn-item.active span { font-weight: 700; }
+        .bn-item.active::after {
+          content: '';
+          position: absolute;
+          top: 2px;
+          width: 20px;
+          height: 3px;
+          border-radius: var(--r-pill);
+          background: var(--accent);
+          transition: transform 0.2s cubic-bezier(0.16,1,0.3,1);
+        }
       `}</style>
     </nav>
   );

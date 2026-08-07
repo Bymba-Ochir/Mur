@@ -150,7 +150,11 @@ export default function ListingsPage() {
         </div>
       ) : pets.length === 0 ? (
         <div className="empty-state">
-          <div className="empty-icon" aria-hidden="true">🐾</div>
+          <div className="empty-icon" aria-hidden="true">
+            <svg width="34" height="34" viewBox="0 0 48 48" fill="currentColor" focusable="false">
+              <ellipse cx="24" cy="30" rx="11" ry="9" /><circle cx="10" cy="18" r="5.5" /><circle cx="38" cy="18" r="5.5" /><circle cx="17" cy="8" r="5" /><circle cx="31" cy="8" r="5" />
+            </svg>
+          </div>
           <p className="empty-title">
             {search || district || status || type ? t('empty_no_results_title') : t('empty_no_posts_title')}
           </p>
@@ -196,7 +200,13 @@ export default function ListingsPage() {
         .match-status.err { color: var(--alert); }
         .empty-state {
           text-align: center; padding: 52px 24px; margin-top: var(--sp-2);
-          background: var(--card); border: 1px dashed var(--line); border-radius: var(--r-xl);
+          background: var(--card); border: 1px solid var(--line); border-radius: var(--r-xl);
+          box-shadow: var(--shadow-sm); position: relative; overflow: hidden;
+        }
+        .empty-state::before {
+          content: ''; position: absolute; inset: -40% -20% auto; height: 80%;
+          background: radial-gradient(60% 60% at 50% 0%, rgba(224,122,62,0.08), transparent 70%);
+          pointer-events: none;
         }
         @media (max-width: 640px) {
           .empty-state { padding: 40px 20px; margin-top: var(--sp-3); border-radius: var(--r-lg); }
@@ -204,15 +214,21 @@ export default function ListingsPage() {
         @media (max-width: 480px) {
           .empty-state { padding: 32px 16px; }
         }
-        .empty-icon { font-size: 44px; margin-bottom: var(--sp-3); }
-        @media (max-width: 480px) {
-          .empty-icon { font-size: 48px; margin-bottom: var(--sp-4); }
+        .empty-icon {
+          position: relative;
+          width: 72px; height: 72px; margin: 0 auto var(--sp-3);
+          display: flex; align-items: center; justify-content: center;
+          background: var(--eyebrow-bg); color: var(--primary);
+          border: 1px solid var(--glass-border); border-radius: 50%;
         }
-        .empty-title { font-weight: 700; color: var(--primary); font-size: 16px; margin-bottom: var(--sp-2); }
+        @media (max-width: 480px) {
+          .empty-icon { width: 76px; height: 76px; margin-bottom: var(--sp-4); }
+        }
+        .empty-title { font-weight: 700; color: var(--primary); font-size: 16px; margin-bottom: var(--sp-2); position: relative; }
         @media (max-width: 480px) {
           .empty-title { font-size: 17px; }
         }
-        .empty-desc { color: var(--muted); font-size: 13.5px; margin-bottom: var(--sp-4); }
+        .empty-desc { color: var(--muted); font-size: 13.5px; margin-bottom: var(--sp-4); position: relative; }
         @media (max-width: 480px) {
           .empty-desc { font-size: 14px; margin-bottom: var(--sp-5); line-height: 1.6; }
         }

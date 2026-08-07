@@ -27,6 +27,15 @@ export default function Navbar() {
   const [admin, setAdmin] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
+  const [scrolled, setScrolled] = useState(false);
+
+  // Scroll-д shadow нэмэх
+  useEffect(() => {
+    function onScroll() { setScrolled(window.scrollY > 8); }
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   // Lock body scroll when mobile menu is open
   useEffect(() => {
@@ -100,7 +109,7 @@ export default function Navbar() {
   ];
 
   return (
-    <header className="navbar-wrap">
+    <header className={`navbar-wrap${scrolled ? ' scrolled' : ''}`}>
       <header className="navbar">
         <Link href="/" className="brand" aria-label="МӨР — Нүүр хуудас">
           <span className="brand-mark" aria-hidden="true">М</span>
@@ -280,7 +289,9 @@ export default function Navbar() {
           position: sticky;
           top: 0;
           z-index: 90;
+          transition: box-shadow 0.3s ease;
         }
+        .navbar-wrap.scrolled { box-shadow: var(--shadow-md); }
 
         /* ─── Navbar bar ─── */
         .navbar {
@@ -332,7 +343,9 @@ export default function Navbar() {
           font-weight: 700;
           font-size: var(--text-base);
           box-shadow: var(--shadow-sm);
+          transition: transform 0.2s cubic-bezier(0.16,1,0.3,1), box-shadow 0.2s ease;
         }
+        .brand:hover .brand-mark { transform: scale(1.06) rotate(-3deg); box-shadow: var(--shadow-md); }
         @media (min-width: 1025px) {
           .brand-mark { width: 40px; height: 40px; font-size: 15px; }
         }
@@ -350,6 +363,7 @@ export default function Navbar() {
           .nav-desktop { gap: var(--sp-3); }
         }
         .nav-link {
+          position: relative;
           display: inline-flex;
           align-items: center;
           justify-content: center;
@@ -372,6 +386,17 @@ export default function Navbar() {
           color: var(--primary);
           font-weight: 600;
           background: var(--eyebrow-bg);
+        }
+        .nav-link.active::after {
+          content: '';
+          position: absolute;
+          bottom: 2px;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 20px;
+          height: 2.5px;
+          border-radius: var(--r-pill);
+          background: var(--accent);
         }
 
         /* ─── Desktop Actions Group ─── */

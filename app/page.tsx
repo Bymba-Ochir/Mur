@@ -2,6 +2,7 @@
 import Link from 'next/link';
 import { useLanguage } from '../lib/i18n';
 import PawTrail from '../components/PawTrail';
+import ScrollReveal from '../components/ScrollReveal';
 
 // Hero-ийн зөөлөн paw-print хээ (data-URI SVG) — зөвхөн гоёл чимэглэл
 const PAW_PATTERN =
@@ -44,26 +45,51 @@ export default function Home() {
             </Link>
             <Link href="/report-found" className="btn btn-ghost">{t('hero_btn_found')}</Link>
           </div>
+
+          <ul className="hero-trust" aria-label="Платформын давуу талууд">
+            <li>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0Z" /><circle cx="12" cy="10" r="3" />
+              </svg>
+              <span>{t('hero_trust_location')}</span>
+            </li>
+            <li>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+                <circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" />
+              </svg>
+              <span>{t('hero_trust_photo')}</span>
+            </li>
+            <li>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92Z" />
+              </svg>
+              <span>{t('hero_trust_direct')}</span>
+            </li>
+          </ul>
         </div>
       </section>
 
       <section className="how">
-        <h2 className="how-title">{t('how_it_works')}</h2>
-
-        <div className="trail-wrap">
-          <PawTrail labels={[t('step1_title'), t('step2_title'), t('step3_title')]} current={2} />
-        </div>
+        <ScrollReveal>
+          <h2 className="how-title">{t('how_it_works')}</h2>
+          <div className="trail-wrap">
+            <PawTrail labels={[t('step1_title'), t('step2_title'), t('step3_title')]} current={2} />
+          </div>
+        </ScrollReveal>
 
         <div className="grid steps-grid">
-          <div className="step-card">
+          <ScrollReveal className="step-card">
+            <span className="step-num" aria-hidden="true">01</span>
             <p className="step-desc">{t('step1_desc')}</p>
-          </div>
-          <div className="step-card">
+          </ScrollReveal>
+          <ScrollReveal className="step-card reveal-delay-1">
+            <span className="step-num" aria-hidden="true">02</span>
             <p className="step-desc">{t('step2_desc')}</p>
-          </div>
-          <div className="step-card">
+          </ScrollReveal>
+          <ScrollReveal className="step-card reveal-delay-2">
+            <span className="step-num" aria-hidden="true">03</span>
             <p className="step-desc">{t('step3_desc')}</p>
-          </div>
+          </ScrollReveal>
         </div>
       </section>
 
@@ -175,6 +201,19 @@ export default function Home() {
         .hero-actions .btn-accent:hover { box-shadow: 0 0 0 1px rgba(224,122,62,0.35), 0 12px 36px rgba(224,122,62,0.38); }
         .hero-actions .arrow { transition: transform 0.2s ease; }
         .hero-actions .btn:hover .arrow { transform: translateX(3px); }
+        .hero-trust {
+          list-style: none; margin: var(--sp-5) 0 0; padding: 0;
+          display: flex; flex-wrap: wrap; gap: var(--sp-2) var(--sp-4);
+        }
+        .hero-trust li {
+          display: inline-flex; align-items: center; gap: 7px;
+          font-size: var(--text-xs); font-weight: 500; color: var(--muted);
+        }
+        .hero-trust svg { color: var(--accent); flex-shrink: 0; }
+        @media (max-width: 480px) {
+          .hero-trust { flex-direction: column; gap: var(--sp-2); margin-top: var(--sp-4); }
+          .hero-trust li { font-size: 13px; }
+        }
 
         /* Стеггердсэн entrance animation */
         .hero-content > * { opacity: 0; animation: rise-in 0.6s cubic-bezier(0.16,1,0.3,1) forwards; }
@@ -182,6 +221,7 @@ export default function Home() {
         .hero-content h1 { animation-delay: 0.15s; }
         .hero-content .hero-desc { animation-delay: 0.25s; }
         .hero-content .hero-actions { animation-delay: 0.35s; }
+        .hero-content .hero-trust { animation-delay: 0.45s; }
         @keyframes rise-in {
           from { opacity: 0; transform: translateY(16px); }
           to { opacity: 1; transform: translateY(0); }
@@ -225,20 +265,27 @@ export default function Home() {
           .steps-grid { gap: var(--sp-6); }
         }
         .step-card {
+          position: relative;
           background: var(--card); border: 1px solid var(--line); border-radius: var(--r-lg);
-          padding: var(--sp-5); box-shadow: var(--shadow-sm);
-          transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+          padding: var(--sp-6) var(--sp-5); box-shadow: var(--shadow-sm); overflow: hidden;
+          transition: transform 0.3s cubic-bezier(0.16,1,0.3,1), box-shadow 0.3s cubic-bezier(0.16,1,0.3,1), border-color 0.3s ease;
         }
         @media (max-width: 640px) {
-          .step-card { padding: var(--sp-4); border-radius: var(--r-md); }
+          .step-card { padding: var(--sp-5) var(--sp-4); border-radius: var(--r-md); }
         }
         @media (max-width: 480px) {
-          .step-card { padding: var(--sp-3); }
+          .step-card { padding: var(--sp-4) var(--sp-3); }
         }
         @media (min-width: 1025px) {
-          .step-card { padding: var(--sp-6); border-radius: var(--r-xl); }
+          .step-card { padding: var(--sp-7) var(--sp-6); border-radius: var(--r-xl); }
         }
-        .step-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: transparent; }
+        .step-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-lift); border-color: transparent; }
+        .step-num {
+          display: block; font-family: var(--font-display); font-weight: 800; line-height: 1;
+          font-size: clamp(2.2rem, 7vw, 3rem);
+          background: var(--grad-accent); -webkit-background-clip: text; background-clip: text;
+          color: transparent; opacity: 0.35; margin-bottom: var(--sp-3);
+        }
         .step-desc { color: var(--muted); font-size: 13.5px; line-height: 1.5; }
         @media (max-width: 480px) {
           .step-desc { font-size: 14px; line-height: 1.6; }

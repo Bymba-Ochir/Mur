@@ -82,7 +82,7 @@ export default function PetCardView({
         .pet-card {
           background: var(--card); border: 1px solid var(--line); border-radius: var(--r-lg);
           overflow: hidden; cursor: pointer; box-shadow: var(--shadow-sm);
-          transition: box-shadow .22s ease, transform .22s ease, border-color .22s ease;
+          transition: transform 0.3s cubic-bezier(0.16,1,0.3,1), box-shadow 0.3s cubic-bezier(0.16,1,0.3,1), border-color 0.3s ease;
           display: flex; flex-direction: column; height: 100%;
         }
         @media (max-width: 640px) {
@@ -91,7 +91,7 @@ export default function PetCardView({
         @media (min-width: 1025px) {
           .pet-card { border-radius: var(--r-xl); }
         }
-        .pet-card:hover { box-shadow: var(--shadow-lift); transform: translateY(-3px); border-color: transparent; }
+        .pet-card:hover { box-shadow: var(--shadow-lift); transform: translateY(-6px); border-color: transparent; }
         .pet-card:focus-visible {
           outline: 2.5px solid var(--accent); outline-offset: 2px;
         }
@@ -111,8 +111,13 @@ export default function PetCardView({
         @media (max-width: 400px) {
           .thumb { height: 160px; }
         }
-        .thumb :global(img) { transition: transform .35s cubic-bezier(.16,1,.3,1); object-fit: cover; width: 100%; height: 100%; }
-        .pet-card:hover .thumb :global(img) { transform: scale(1.06); }
+        .thumb::after {
+          content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 50%;
+          background: linear-gradient(to top, rgba(0,0,0,0.45) 0%, transparent 100%);
+          pointer-events: none; z-index: 1;
+        }
+        .thumb :global(img) { transition: transform 0.4s cubic-bezier(.16,1,.3,1); object-fit: cover; width: 100%; height: 100%; }
+        .pet-card:hover .thumb :global(img) { transform: scale(1.08); }
         .emoji {
           color: var(--primary);
           display: flex;
@@ -128,18 +133,21 @@ export default function PetCardView({
           .emoji { width: 96px; height: 96px; }
         }
         .badge {
-          position: absolute; top: 10px; left: 10px; font-family: var(--font-mono); font-size: 9.5px;
-          padding: 4px 9px; border-radius: var(--r-pill); color: #fff; font-weight: 700; letter-spacing: 0.03em;
-          box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+          position: absolute; bottom: 10px; left: 10px; z-index: 2; font-family: var(--font-mono); font-size: 9.5px;
+          padding: 5px 10px; border-radius: var(--r-pill); font-weight: 700; letter-spacing: 0.03em;
+          backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+          background: rgba(255,255,255,0.85); color: var(--primary);
+          border: 1px solid rgba(255,255,255,0.3);
+          box-shadow: 0 2px 8px rgba(0,0,0,0.15);
         }
         @media (max-width: 480px) {
-          .badge { font-size: 10px; padding: 5px 10px; top: 12px; left: 12px; }
+          .badge { font-size: 10px; padding: 5px 11px; bottom: 12px; left: 12px; }
         }
         @media (min-width: 1025px) {
-          .badge { font-size: 10.5px; padding: 5px 12px; top: 14px; left: 14px; }
+          .badge { font-size: 10.5px; padding: 6px 12px; bottom: 14px; left: 14px; }
         }
-        .badge.lost { background: var(--alert); }
-        .badge.found { background: var(--success); }
+        .badge.lost { background: rgba(206,86,66,0.85); color: #fff; border-color: rgba(206,86,66,0.3); }
+        .badge.found { background: rgba(61,140,104,0.85); color: #fff; border-color: rgba(61,140,104,0.3); }
         .similarity {
           position: absolute; bottom: 10px; right: 10px; font-family: var(--font-mono); font-size: 10.5px; font-weight: 600;
           background: rgba(23,34,39,0.8); color: var(--accent); padding: 3px 9px; border-radius: var(--r-pill);
@@ -151,19 +159,19 @@ export default function PetCardView({
         @media (min-width: 1025px) {
           .similarity { font-size: 11px; padding: 4px 11px; bottom: 14px; right: 14px; }
         }
-        .info { padding: 14px 15px; flex: 1; display: flex; flex-direction: column; }
+        .info { padding: 14px 15px; flex: 1; display: flex; flex-direction: column; gap: 2px; }
         @media (max-width: 480px) {
           .info { padding: 12px 14px; }
         }
         @media (min-width: 1025px) {
-          .info { padding: 16px 18px; }
+          .info { padding: 16px 18px; gap: 3px; }
         }
-        h4 { font-family: var(--font-display); font-size: 14.5px; font-weight: 600; margin-bottom: 3px; color: var(--primary); }
+        h4 { font-family: var(--font-display); font-size: var(--text-lg); font-weight: 700; margin-bottom: 2px; color: var(--primary); line-height: var(--lh-tight); }
         @media (max-width: 480px) {
-          h4 { font-size: 15px; margin-bottom: 4px; }
+          h4 { font-size: 15px; }
         }
         @media (min-width: 1025px) {
-          h4 { font-size: 15.5px; margin-bottom: 6px; }
+          h4 { font-size: var(--text-xl); margin-bottom: 4px; }
         }
         p { font-size: 12.5px; color: var(--muted); margin: 3px 0; line-height: 1.4; }
         @media (max-width: 480px) {
@@ -179,7 +187,13 @@ export default function PetCardView({
         @media (min-width: 1025px) {
           .reward { margin-top: 8px; font-size: 13.5px; }
         }
-        .phone { display: inline-flex; margin-top: 8px; font-size: 13px; color: var(--primary); font-weight: 600; text-decoration: none; min-height: var(--touch-target); align-items: center; }
+        .phone {
+          display: inline-flex; align-items: center; gap: 5px; margin-top: 8px; font-size: 13px;
+          color: var(--primary); font-weight: 600; text-decoration: none; min-height: var(--touch-target);
+          background: var(--eyebrow-bg); padding: 6px 12px; border-radius: var(--r-pill);
+          transition: background 0.15s ease, color 0.15s ease;
+        }
+        .phone:hover { background: var(--primary); color: #fff; }
         @media (max-width: 480px) {
           .phone { margin-top: 10px; font-size: 14px; }
         }
