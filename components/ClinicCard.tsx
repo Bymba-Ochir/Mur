@@ -69,13 +69,18 @@ export default function ClinicCard({
       <style jsx>{`
         .clinic-card {
           display: flex; gap: var(--sp-3); align-items: flex-start;
-          transition: border-color 0.15s ease;
+          transition: transform var(--dur-base) var(--ease-out), box-shadow var(--dur-base) var(--ease-out), border-color var(--dur-base) var(--ease-out);
+        }
+        .clinic-card:hover {
+          transform: translateY(-3px);
+          box-shadow: var(--shadow-md);
+          border-color: var(--primary-light);
         }
         .clinic-card.selected { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(232,114,92,0.2); }
         .chip {
-          display: inline-block; font-size: 11px; padding: 2px 8px;
-          background: var(--eyebrow-bg); border-radius: var(--r-pill);
-          color: var(--muted); font-weight: 500; white-space: nowrap;
+          display: inline-block; font-size: 11px; padding: 3px 10px;
+          background: var(--surface-3); border-radius: var(--r-pill);
+          color: var(--primary); font-weight: 600; white-space: nowrap;
         }
       `}</style>
     </div>

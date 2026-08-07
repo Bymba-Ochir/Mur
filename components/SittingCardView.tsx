@@ -86,7 +86,7 @@ export default function SittingCardView({
         .pet-card {
           background: var(--card); border: 1px solid var(--line); border-radius: var(--r-lg);
           overflow: hidden; cursor: pointer; box-shadow: var(--shadow-sm);
-          transition: transform 0.3s cubic-bezier(0.16,1,0.3,1), box-shadow 0.3s cubic-bezier(0.16,1,0.3,1), border-color 0.3s ease;
+          transition: transform var(--dur-base) var(--ease-out), box-shadow var(--dur-base) var(--ease-out), border-color var(--dur-base) var(--ease-out);
           display: flex; flex-direction: column; height: 100%;
         }
         @media (max-width: 640px) { .pet-card { border-radius: var(--r-md); } }

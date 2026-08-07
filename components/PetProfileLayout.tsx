@@ -195,8 +195,8 @@ export default function PetProfileLayout({
         .chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
         .chip {
           display: inline-block; font-size: 12px; padding: 4px 12px;
-          background: var(--eyebrow-bg); border-radius: var(--r-pill);
-          color: var(--muted); font-weight: 500;
+          background: var(--surface-3); border-radius: var(--r-pill);
+          color: var(--primary); font-weight: 600;
         }
 
         .tab-bar {

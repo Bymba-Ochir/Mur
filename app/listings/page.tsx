@@ -168,6 +168,7 @@ export default function ListingsPage() {
         </div>
       ) : (
         <>
+          <p className="result-count">{pets.length} {t('results_count')}</p>
           <div className="grid">
             {pets.map((p) => <PetCard key={p.id} pet={p} />)}
           </div>

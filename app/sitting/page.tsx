@@ -84,6 +84,7 @@ export default function SittingPage() {
         </div>
       ) : (
         <>
+          <p className="result-count">{listings.length} {t('results_count')}</p>
           <div className="grid">
             {listings.map((l) => <SittingCard key={l.id} listing={l} />)}
           </div>

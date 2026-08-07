@@ -69,13 +69,91 @@ export default function Home() {
         </div>
       </section>
 
+      <section className="services">
+        <div className="eyebrow">{t('services_title')}</div>
+        <h2 className="services-title">{t('services_subtitle')}</h2>
+
+        <div className="services-grid">
+          <Link href="/report-lost" className="service-card">
+            <span className="service-icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" focusable="false">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0Z" /><circle cx="12" cy="10" r="3" />
+              </svg>
+            </span>
+            <h3>{t('services_lost')}</h3>
+            <p>{t('services_lost_desc')}</p>
+            <span className="service-arrow" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" focusable="false"><path d="M3 8h10M9 4l4 4-4 4" /></svg>
+            </span>
+          </Link>
+          <Link href="/report-found" className="service-card">
+            <span className="service-icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" focusable="false">
+                <circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" />
+              </svg>
+            </span>
+            <h3>{t('services_found')}</h3>
+            <p>{t('services_found_desc')}</p>
+            <span className="service-arrow" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" focusable="false"><path d="M3 8h10M9 4l4 4-4 4" /></svg>
+            </span>
+          </Link>
+          <Link href="/adoptions" className="service-card">
+            <span className="service-icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" focusable="false">
+                <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" />
+              </svg>
+            </span>
+            <h3>{t('services_adopt')}</h3>
+            <p>{t('services_adopt_desc')}</p>
+            <span className="service-arrow" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" focusable="false"><path d="M3 8h10M9 4l4 4-4 4" /></svg>
+            </span>
+          </Link>
+          <Link href="/sitting" className="service-card">
+            <span className="service-icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" focusable="false">
+                <circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 3" />
+              </svg>
+            </span>
+            <h3>{t('services_sitting')}</h3>
+            <p>{t('services_sitting_desc')}</p>
+            <span className="service-arrow" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" focusable="false"><path d="M3 8h10M9 4l4 4-4 4" /></svg>
+            </span>
+          </Link>
+          <Link href="/clinics" className="service-card">
+            <span className="service-icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" focusable="false">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" /><path d="M12 22V10" />
+              </svg>
+            </span>
+            <h3>{t('services_clinics')}</h3>
+            <p>{t('services_clinics_desc')}</p>
+            <span className="service-arrow" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" focusable="false"><path d="M3 8h10M9 4l4 4-4 4" /></svg>
+            </span>
+          </Link>
+          <Link href="/assistant" className="service-card">
+            <span className="service-icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" focusable="false">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z" /><path d="M8 9h8M8 13h5" />
+              </svg>
+            </span>
+            <h3>{t('services_assistant')}</h3>
+            <p>{t('services_assistant_desc')}</p>
+            <span className="service-arrow" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" focusable="false"><path d="M3 8h10M9 4l4 4-4 4" /></svg>
+            </span>
+          </Link>
+        </div>
+      </section>
+
       <section className="how">
-        <ScrollReveal>
-          <h2 className="how-title">{t('how_it_works')}</h2>
-          <div className="trail-wrap">
-            <PawTrail labels={[t('step1_title'), t('step2_title'), t('step3_title')]} current={2} />
-          </div>
-        </ScrollReveal>
+        <h2 className="how-title">{t('how_it_works')}</h2>
+        <div className="trail-wrap">
+          <PawTrail labels={[t('step1_title'), t('step2_title'), t('step3_title')]} current={2} />
+        </div>
 
         <div className="grid steps-grid">
           <ScrollReveal className="step-card">
@@ -226,6 +304,53 @@ export default function Home() {
           from { opacity: 0; transform: translateY(16px); }
           to { opacity: 1; transform: translateY(0); }
         }
+
+        .services { margin-top: var(--sp-7); }
+        @media (max-width: 640px) { .services { margin-top: var(--sp-6); } }
+        @media (max-width: 480px) { .services { margin-top: var(--sp-5); } }
+        .services-title { font-size: var(--text-2xl); max-width: 480px; }
+        @media (max-width: 640px) { .services-title { font-size: var(--text-xl); } }
+        .services-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: var(--sp-4);
+          margin-top: var(--sp-5);
+        }
+        @media (max-width: 768px) { .services-grid { grid-template-columns: repeat(2, 1fr); gap: var(--sp-3); } }
+        @media (max-width: 480px) { .services-grid { grid-template-columns: 1fr; gap: var(--sp-3); } }
+        .service-card {
+          position: relative;
+          display: block;
+          background: var(--surface-2);
+          border: 1px solid var(--border-subtle);
+          border-radius: var(--r-lg);
+          padding: var(--sp-5);
+          text-decoration: none;
+          height: 100%;
+          box-shadow: var(--shadow-sm);
+          transition: transform var(--dur-base) var(--ease-out), box-shadow var(--dur-base) var(--ease-out), border-color var(--dur-base) var(--ease-out);
+        }
+        .service-card:hover {
+          transform: translateY(-4px);
+          box-shadow: var(--shadow-md);
+          border-color: var(--primary-light);
+        }
+        .service-icon {
+          display: inline-flex; align-items: center; justify-content: center;
+          width: 48px; height: 48px; border-radius: var(--r-md);
+          background: var(--surface-3); color: var(--primary);
+          margin-bottom: var(--sp-4);
+          transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+        }
+        .service-card:hover .service-icon { background: var(--grad-brand); color: #fff; }
+        .service-card h3 { font-family: var(--font-display); font-size: var(--text-base); font-weight: 700; color: var(--primary); margin-bottom: var(--sp-1); }
+        .service-card p { font-size: var(--text-xs); color: var(--text-secondary); line-height: 1.5; }
+        .service-arrow {
+          position: absolute; top: var(--sp-5); right: var(--sp-4);
+          color: var(--text-tertiary);
+          transition: transform var(--dur-base) var(--ease-out), color var(--dur-base) var(--ease-out);
+        }
+        .service-card:hover .service-arrow { transform: translateX(3px); color: var(--accent); }
 
         .how { margin-top: var(--sp-3); animation: rise-in 0.6s cubic-bezier(0.16,1,0.3,1) 0.55s backwards; }
         @media (max-width: 640px) {

@@ -226,7 +226,10 @@ export default function SittingForm() {
           min-height: var(--touch-target);
         }
         textarea { resize: vertical; min-height: 80px; }
-        input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; border-color: var(--accent); }
+        input:focus-visible, select:focus-visible, textarea:focus-visible {
+          outline: none; border-color: var(--accent);
+          box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 15%, transparent);
+        }
         .upload-zone {
           border: 1.5px dashed var(--line); border-radius: var(--r-md); padding: 28px 20px;
           text-align: center; cursor: pointer; color: var(--muted); background: var(--overcast);

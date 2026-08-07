@@ -101,14 +101,20 @@ export default function MessagesPage() {
       )}
 
       <style jsx>{`
-        .conv-list { display: flex; flex-direction: column; gap: 2px; }
+        .conv-list { display: flex; flex-direction: column; gap: var(--sp-2); }
         .conv-item {
           display: flex; align-items: center; gap: var(--sp-3);
-          padding: var(--sp-3) var(--sp-4); border-radius: var(--r-md);
-          text-decoration: none; color: var(--ink);
-          transition: background 0.15s ease;
+          padding: var(--sp-3) var(--sp-4); border-radius: var(--r-lg);
+          text-decoration: none; color: var(--text-primary);
+          background: var(--surface-2); border: 1px solid var(--border-subtle);
+          box-shadow: var(--shadow-xs);
+          transition: transform var(--dur-base) var(--ease-out), box-shadow var(--dur-base) var(--ease-out), border-color var(--dur-base) var(--ease-out);
         }
-        .conv-item:hover { background: var(--eyebrow-bg); }
+        .conv-item:hover {
+          transform: translateY(-2px);
+          box-shadow: var(--shadow-md);
+          border-color: var(--primary-light);
+        }
         .conv-thumb {
           width: 48px; height: 48px; border-radius: var(--r-md); overflow: hidden;
           background: var(--thumb-bg); position: relative; flex-shrink: 0;
@@ -118,10 +124,10 @@ export default function MessagesPage() {
         .conv-info { flex: 1; min-width: 0; }
         .conv-header { display: flex; justify-content: space-between; align-items: center; gap: var(--sp-2); }
         .conv-name { font-weight: 600; font-size: 14px; }
-        .conv-time { font-size: 11px; color: var(--muted); white-space: nowrap; }
+        .conv-time { font-size: 11px; color: var(--text-tertiary); white-space: nowrap; }
         .conv-pet { font-size: 12px; color: var(--primary); margin: 2px 0; }
         .conv-preview {
-          font-size: 13px; color: var(--muted); white-space: nowrap;
+          font-size: 13px; color: var(--text-secondary); white-space: nowrap;
           overflow: hidden; text-overflow: ellipsis; margin: 2px 0;
         }
       `}</style>

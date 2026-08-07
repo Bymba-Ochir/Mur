@@ -1,13 +1,17 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useSyncExternalStore, useState } from 'react';
 import { useLanguage } from '../lib/i18n';
+
+// Клиент дээр sync render-ээр утгыг тооцно; SSR/hydration-д false (server snapshot).
+// useSyncExternalStore нь effect-д setState хийлгүйгээр hydration-аюулгүй байлгана.
+const emptySubscribe = (): (() => void) => () => {};
+const getServerSnapshot = (): boolean => false;
+const getClientSnapshot = (): boolean => typeof navigator !== 'undefined' && 'share' in navigator;
 
 export default function ShareButtons({ url, title }: { url: string; title: string }) {
   const { t } = useLanguage();
   const [copied, setCopied] = useState(false);
-  // typeof navigator шалгалтыг render path-оос холдуулж, hydration mismatch-ээс сэргийлнэ
-  const [hasNativeShare, setHasNativeShare] = useState(false);
-  useEffect(() => { if (typeof navigator !== 'undefined' && 'share' in navigator) setHasNativeShare(true); }, []);
+  const hasNativeShare = useSyncExternalStore(emptySubscribe, getClientSnapshot, getServerSnapshot);
 
   const fbShareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
 

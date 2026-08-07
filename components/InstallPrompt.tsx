@@ -89,7 +89,7 @@ export default function InstallPrompt() {
         }
         .install-content { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 200px; }
         .install-icon { font-size: 26px; }
-        .install-content p { font-size: 12.5px; color: #C9DCE2; margin-top: 2px; }
+        .install-content p { font-size: 12.5px; color: rgba(255,255,255,0.82); margin-top: 2px; }
         .install-actions { display: flex; gap: 8px; }
         .install-btn { padding: 8px 16px; border-radius: var(--r-pill); border: none; font-weight: 600; font-size: 13px; cursor: pointer; transition: transform .15s ease, box-shadow .2s ease, filter .2s ease; }
         .primary { background: var(--grad-accent); color: #fff; }

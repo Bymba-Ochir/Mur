@@ -74,23 +74,32 @@ export default function MyPetCard({
       </div>
 
       <style jsx>{`
-        .pet-card { display: flex; gap: var(--sp-3); align-items: flex-start; transition: border-color 0.15s ease; }
+        .pet-card {
+          display: flex; gap: var(--sp-3); align-items: flex-start;
+          transition: transform var(--dur-base) var(--ease-out), box-shadow var(--dur-base) var(--ease-out), border-color var(--dur-base) var(--ease-out);
+        }
+        .pet-card:hover {
+          transform: translateY(-3px);
+          box-shadow: var(--shadow-md);
+          border-color: var(--primary-light);
+        }
         .pet-card.selected { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(232,114,92,0.2); }
         .chip {
-          display: inline-block; font-size: 11px; padding: 2px 8px;
-          background: var(--eyebrow-bg); border-radius: var(--r-pill);
-          color: var(--muted); font-weight: 500;
+          display: inline-block; font-size: 11px; padding: 3px 10px;
+          background: var(--surface-3); border-radius: var(--r-pill);
+          color: var(--primary); font-weight: 600;
         }
         .danger-link {
           background: none; border: none; color: var(--alert); font-size: 12px;
           cursor: pointer; padding: 4px 8px; font-family: var(--font-body);
-          opacity: 0.7; transition: opacity 0.15s ease;
+          opacity: 0.7; transition: opacity var(--dur-fast) ease;
         }
         .danger-link:hover { opacity: 1; }
         .profile-link {
           background: none; border: 1px solid var(--accent); color: var(--accent);
           font-size: 11px; cursor: pointer; padding: 4px 10px; font-family: var(--font-body);
-          font-weight: 600; border-radius: var(--r-sm); transition: all 0.15s ease;
+          font-weight: 600; border-radius: var(--r-sm);
+          transition: all var(--dur-fast) var(--ease-out);
         }
         .profile-link:hover { background: var(--accent); color: #fff; }
       `}</style>

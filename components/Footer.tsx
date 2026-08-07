@@ -29,7 +29,7 @@ export default function Footer() {
           .footer { padding-bottom: calc(58px + var(--sp-4)); } /* доод навигац дээр давахгүй */
         }
         @media (min-width: 1025px) {
-          .footer { margin-top: var(--sp-9); padding: var(--sp-7) var(--sp-5) var(--sp-6); }
+          .footer { margin-top: var(--sp-8); padding: var(--sp-7) var(--sp-5) var(--sp-6); }
         }
         .footer-inner {
           max-width: 980px; margin: 0 auto;

@@ -288,7 +288,10 @@ export default function PetForm({ status }: { status: PetStatus }) {
           input, select { font-size: 15px; padding: 12px 16px; }
         }
         input:hover, select:hover { border-color: var(--muted); }
-        input:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; border-color: var(--accent); }
+        input:focus-visible, select:focus-visible {
+          outline: none; border-color: var(--accent);
+          box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 15%, transparent);
+        }
         .upload-zone {
           border: 1.5px dashed var(--line); border-radius: var(--r-md); padding: 28px 20px;
           text-align: center; cursor: pointer; color: var(--muted); background: var(--overcast);

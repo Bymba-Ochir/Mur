@@ -104,6 +104,7 @@ export default function AdoptionsPage() {
         </div>
       ) : (
         <>
+          <p className="result-count">{adoptions.length} {t('results_count')}</p>
           <div className="grid">
             {adoptions.map((a) => <AdoptionCard key={a.id} adoption={a} />)}
           </div>
