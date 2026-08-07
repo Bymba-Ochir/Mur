@@ -70,7 +70,11 @@ export default function AppointmentModal({
   return (
     <div className="overlay" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="appt-title">
-        <button className="close" onClick={onClose} aria-label="✕">✕</button>
+        <button className="close" onClick={onClose} aria-label={t('close')}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+            <path d="M18 6 6 18M6 6l12 12" />
+          </svg>
+        </button>
         <h2 id="appt-title" style={{ fontSize: 18, marginBottom: 12 }}>{t('appt_title')}</h2>
         <p style={{ fontSize: 13, color: 'var(--muted)', marginBottom: 12 }}>
           {t('appt_clinic')} <strong>{clinic.name}</strong>
@@ -128,11 +132,12 @@ export default function AppointmentModal({
           from { opacity: 0; transform: translateY(-20px) scale(0.95); }
           to { opacity: 1; transform: translateY(0) scale(1); }
         }
-        .close { position: absolute; top: 14px; right: 14px; background: none; border: none; font-size: 16px; cursor: pointer; color: var(--muted); }
+        .close { position: absolute; top: 10px; right: 10px; background: none; border: none; cursor: pointer; color: var(--muted); width: var(--touch-target-sm); height: var(--touch-target-sm); display: flex; align-items: center; justify-content: center; border-radius: var(--r-sm); }
+        .close:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
         label { font-size: 12.5px; font-weight: 600; color: var(--primary); display: block; margin-top: 10px; margin-bottom: 4px; }
         select, input, textarea {
-          width: 100%; padding: 9px 11px; border: 1.5px solid var(--line);
-          border-radius: var(--r-sm); font-size: 13.5px; background: var(--card);
+          width: 100%; padding: var(--sp-2) var(--sp-3); border: 1.5px solid var(--line);
+          border-radius: var(--r-sm); font-size: var(--text-base); background: var(--card);
           color: var(--ink); font-family: inherit; min-height: var(--touch-target);
         }
         .submit-btn {

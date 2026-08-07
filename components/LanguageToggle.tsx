@@ -12,11 +12,12 @@ export default function LanguageToggle() {
       {lang === 'mn' ? 'EN' : 'MN'}
       <style jsx>{`
         .lang-btn {
-          background: none; border: 1px solid rgba(255,255,255,0.3); color: #DCE9EC;
-          cursor: pointer; font-size: 11.5px; font-weight: 700; padding: 4px 8px;
-          border-radius: 6px; line-height: 1;
+          background: none; border: 1px solid var(--line); color: var(--ink);
+          cursor: pointer; font-size: 11.5px; font-weight: 700; padding: 6px 10px;
+          min-height: var(--touch-target-sm); border-radius: var(--r-sm); line-height: 1;
+          transition: border-color 0.15s ease, background 0.15s ease;
         }
-        .lang-btn:hover { background: rgba(255,255,255,0.1); }
+        .lang-btn:hover { background: var(--eyebrow-bg); border-color: var(--muted); }
       `}</style>
     </button>
   );

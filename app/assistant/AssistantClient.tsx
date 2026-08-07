@@ -92,7 +92,9 @@ export default function AssistantClient() {
       {/* Толгой */}
       <div className="assistant-header">
         <Link href="/" className="back-link" aria-label={t('assistant_back')}>
-          ←
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+            <path d="M19 12H5M12 19l-7-7 7-7" />
+          </svg>
         </Link>
         <div className="header-info">
           <h1 className="header-title">{t('assistant_title')}</h1>
@@ -105,7 +107,11 @@ export default function AssistantClient() {
         {messages.map((msg) => (
           <div key={msg.id} className={`bubble ${msg.role === 'user' ? 'own' : 'other'}`}>
             {msg.role === 'assistant' && (
-              <span className="bot-avatar">🐾</span>
+              <span className="bot-avatar" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 48 48" fill="currentColor" focusable="false">
+                  <ellipse cx="24" cy="30" rx="11" ry="9" /><circle cx="10" cy="18" r="5.5" /><circle cx="38" cy="18" r="5.5" /><circle cx="17" cy="8" r="5" /><circle cx="31" cy="8" r="5" />
+                </svg>
+              </span>
             )}
             <div className={`bubble-content ${msg.severity === 'emergency' ? 'emergency' : msg.severity === 'caution' ? 'caution' : ''}`}>
               <p className="bubble-text">{msg.text}</p>
@@ -116,7 +122,11 @@ export default function AssistantClient() {
 
         {thinking && (
           <div className="bubble other">
-            <span className="bot-avatar">🐾</span>
+            <span className="bot-avatar" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 48 48" fill="currentColor" focusable="false">
+                <ellipse cx="24" cy="30" rx="11" ry="9" /><circle cx="10" cy="18" r="5.5" /><circle cx="38" cy="18" r="5.5" /><circle cx="17" cy="8" r="5" /><circle cx="31" cy="8" r="5" />
+              </svg>
+            </span>
             <div className="bubble-content">
               <p className="bubble-text typing">{t('assistant_typing')}</p>
             </div>
@@ -157,7 +167,15 @@ export default function AssistantClient() {
             className="send-btn"
             aria-label={t('assistant_send')}
           >
-            ➤
+            {thinking ? (
+              <svg className="spin" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+                <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+              </svg>
+            ) : (
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+                <path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7Z" />
+              </svg>
+            )}
           </button>
         </div>
       </div>
@@ -165,11 +183,17 @@ export default function AssistantClient() {
       <style jsx>{`
         .assistant-page {
           display: flex; flex-direction: column;
-          height: calc(100dvh - 60px);
+          height: calc(100dvh - var(--nav-h) - var(--sp-6) - var(--sp-8) - var(--safe-bottom));
           max-width: 640px; margin: 0 auto; width: 100%;
         }
-        @media (min-width: 769px) {
-          .assistant-page { height: calc(100dvh - 70px); }
+        @media (max-width: 1024px) {
+          .assistant-page { height: calc(100dvh - var(--nav-h) - var(--sp-5) - var(--sp-7) - var(--safe-bottom)); }
+        }
+        @media (max-width: 640px) {
+          .assistant-page { height: calc(100dvh - var(--nav-h) - var(--sp-4) - var(--sp-6) - var(--safe-bottom)); }
+        }
+        @media (max-width: 400px) {
+          .assistant-page { height: calc(100dvh - var(--nav-h) - var(--sp-3) - var(--sp-5) - var(--safe-bottom)); }
         }
 
         .assistant-header {
@@ -180,9 +204,11 @@ export default function AssistantClient() {
           flex-shrink: 0;
         }
         .back-link {
-          font-size: 20px; color: var(--primary); text-decoration: none;
-          min-width: 36px; min-height: 36px; display: flex; align-items: center; justify-content: center;
+          color: var(--primary); text-decoration: none; border-radius: var(--r-sm);
+          min-width: var(--touch-target); min-height: var(--touch-target);
+          display: flex; align-items: center; justify-content: center;
         }
+        .back-link:focus-visible { outline: 2.5px solid var(--accent); outline-offset: 2px; }
         .header-info { flex: 1; min-width: 0; }
         .header-title { font-family: var(--font-display); font-size: 16px; font-weight: 600; color: var(--primary); }
         .header-desc { font-size: 12px; color: var(--muted); }
@@ -200,8 +226,8 @@ export default function AssistantClient() {
 
         .bot-avatar {
           width: 32px; height: 32px; border-radius: 50%;
-          background: var(--eyebrow-bg); display: flex; align-items: center; justify-content: center;
-          font-size: 16px; flex-shrink: 0;
+          background: var(--eyebrow-bg); color: var(--primary);
+          display: flex; align-items: center; justify-content: center; flex-shrink: 0;
         }
 
         .bubble-content {
@@ -209,7 +235,7 @@ export default function AssistantClient() {
           border-radius: var(--r-lg); font-size: 14px; line-height: 1.6;
         }
         .bubble.own .bubble-content {
-          background: var(--accent); color: #fff;
+          background: var(--accent); color: var(--accent-ink);
           border-bottom-right-radius: var(--r-sm);
         }
         .bubble.other .bubble-content {
@@ -226,7 +252,7 @@ export default function AssistantClient() {
         .bubble-time {
           display: block; font-size: 10px; margin-top: 4px; opacity: 0.7; text-align: right;
         }
-        .bubble.own .bubble-time { color: rgba(255,255,255,0.8); }
+        .bubble.own .bubble-time { color: var(--accent-ink); opacity: 0.75; }
         .bubble.other .bubble-time { color: var(--muted); }
 
         .typing::after {
@@ -265,12 +291,14 @@ export default function AssistantClient() {
         .composer-row input:focus { outline: none; border-color: var(--accent); }
         .send-btn {
           width: 44px; height: 44px; border-radius: 50%; border: none;
-          background: var(--accent); color: #fff; font-size: 18px;
+          background: var(--accent); color: var(--accent-ink);
           cursor: pointer; display: flex; align-items: center; justify-content: center;
           transition: transform 0.15s ease;
         }
         .send-btn:hover { transform: scale(1.05); }
         .send-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        .send-btn .spin { animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
       `}</style>
     </div>
   );

@@ -17,7 +17,7 @@ export default function ClinicMap({
   selectedId,
   userCoords,
   onSelect,
-  height = 'clamp(240px, 55vw, 360px)',
+  height = 'clamp(200px, 50vw, 280px)',
 }: ClinicMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<unknown>(null);

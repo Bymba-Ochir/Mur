@@ -28,16 +28,21 @@
   --primary-light: var(--steppe-night-light);
   --brand: var(--steppe-night);
   --accent: var(--ember);
+  --accent-ink: #2B1F16;      /* бараан текст — тод эмбер дээр WCAG AA 4.5:1 */
   --alert: var(--coral-alarm);
   --success: var(--larch-green);
   --success-bg: #EAF4EE;
   --success-text: #29553F;
+  --toast-success-bg: #2F6B4F;
   --muted: #5C6E71;
   --card: var(--paper);
   --line: #DEE6E3;
   --thumb-bg: #E1E9E6;
   --eyebrow-bg: #E6EEEB;
   --overlay: rgba(15, 26, 29, 0.62);
+
+  /* Navbar өндөр — chat/assistant зэрэг бүтэн өндөртэй хуудсууд тооцоололд ашиглана */
+  --nav-h: 68px;
 
   /* Type */
   --font-display: 'Unbounded', system-ui, sans-serif;
@@ -125,16 +130,20 @@
   --primary-light: var(--steppe-night-light);
   --brand: #123039;
   --accent: var(--ember);
+  --accent-ink: #2B1F16;
   --alert: var(--coral-alarm);
   --success: var(--larch-green);
   --success-bg: #14261E;
   --success-text: #8FDCB0;
+  --toast-success-bg: #27604A;
   --muted: #8FA0A0;
   --card: #16262A;
   --line: #253A3F;
   --thumb-bg: #1D3136;
   --eyebrow-bg: #17282C;
   --overlay: rgba(0, 0, 0, 0.72);
+
+  --nav-h: 68px;
 
   --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
   --shadow-md: 0 8px 28px rgba(0,0,0,0.4);
@@ -192,6 +201,10 @@
   --container-xl: 1040px;
   --container-full: 100%;
 }
+
+/* Navbar өндөр — breakpoint бүрээр navbar-ын бодит өндөртэй тааруулна */
+@media (max-width: 768px) { :root { --nav-h: 62px; } }
+@media (max-width: 480px) { :root { --nav-h: 56px; } }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
@@ -317,7 +330,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 /* Accent button */
 .btn-accent {
   background: var(--grad-accent);
-  color: #fff;
+  color: var(--accent-ink);
   box-shadow: var(--shadow-sm);
 }
 .btn-accent:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
@@ -435,7 +448,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 .btn:focus-visible { outline: 2.5px solid var(--accent); outline-offset: 2px; }
 
 .btn-primary { background: var(--grad-brand); color: #fff; }
-.btn-accent { background: var(--grad-accent); color: #fff; }
+.btn-accent { background: var(--grad-accent); color: var(--accent-ink); }
 .btn-ghost { background: transparent; color: var(--primary); border: 1.5px solid var(--line); box-shadow: none; }
 .btn-ghost:hover { border-color: var(--accent); background: var(--eyebrow-bg); }
 

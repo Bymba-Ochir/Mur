@@ -158,7 +158,11 @@ export default function DonateModal({ onClose }: { onClose: () => void }) {
 
         {stage === 'paid' && (
           <div className="paid-box pop-in" role="status">
-            <div style={{ fontSize: 44 }}>🎉</div>
+            <div className="paid-icon" aria-hidden="true">
+              <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" focusable="false">
+                <circle cx="12" cy="12" r="9" /><path d="M8.5 12.5l2.5 2.5 4.5-5" />
+              </svg>
+            </div>
             <p style={{ fontWeight: 700, color: 'var(--success)' }}>{t('donate_thanks')}</p>
             <p className="hint">{finalAmount.toLocaleString()}₮ {t('donate_paid_hint')}</p>
             <button className="submit-btn" onClick={onClose}>{t('donate_close')}</button>
@@ -197,9 +201,9 @@ export default function DonateModal({ onClose }: { onClose: () => void }) {
         .amounts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
         .amount-btn { padding: 10px; border-radius: var(--r-sm); border: 1.5px solid var(--line); background: var(--bg); color: var(--ink); font-weight: 600; cursor: pointer; font-family: var(--font-body); transition: all 0.15s ease; }
         .amount-btn:hover { border-color: var(--accent); }
-        .amount-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+        .amount-btn.active { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
         label { font-size: 12.5px; font-weight: 600; color: var(--primary); display: block; margin-top: 10px; margin-bottom: 4px; }
-        input, textarea { width: 100%; padding: 9px 11px; border: 1.5px solid var(--line); border-radius: var(--r-sm); font-size: 13.5px; background: var(--card); color: var(--ink); font-family: inherit; }
+        input, textarea { width: 100%; padding: var(--sp-2) var(--sp-3); border: 1.5px solid var(--line); border-radius: var(--r-sm); font-size: var(--text-base); background: var(--card); color: var(--ink); font-family: inherit; }
         .checkbox-row { display: flex; align-items: center; gap: 8px; font-weight: 400; color: var(--ink); }
         .checkbox-row input { width: auto; }
         .submit-btn { width: 100%; margin-top: 16px; padding: 13px; border-radius: var(--r-md); border: none; background: var(--grad-brand); color: #fff; font-weight: 700; cursor: pointer; font-size: 14px; font-family: var(--font-body); transition: transform 0.15s ease, box-shadow 0.2s ease, filter 0.2s ease; box-shadow: var(--shadow-sm); }
@@ -207,10 +211,11 @@ export default function DonateModal({ onClose }: { onClose: () => void }) {
         .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
         .submit-btn:focus-visible { outline: 2.5px solid var(--accent); outline-offset: 2px; }
         .qr-box, .paid-box { text-align: center; }
+        .paid-icon { display: flex; justify-content: center; margin-bottom: 8px; color: var(--success); }
         .qr-img { width: 200px; height: 200px; margin: 10px auto; border-radius: var(--r-sm); border: 1px solid var(--line); }
         .deep-links { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 10px 0; }
         .deep-link { display: flex; align-items: center; gap: 4px; font-size: 11.5px; background: var(--eyebrow-bg); color: var(--primary); padding: 5px 10px; border-radius: var(--r-sm); text-decoration: none; }
-        .deep-link img { width: 16px; height: 16px; border-radius: 3px; }
+        .deep-link img { width: 16px; height: 16px; border-radius: var(--r-sm); }
       `}</style>
     </div>
   );

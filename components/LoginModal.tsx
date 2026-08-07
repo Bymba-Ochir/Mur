@@ -40,7 +40,7 @@ export default function LoginModal({ onClose }: { onClose: () => void }) {
         aria-modal="true"
         aria-labelledby="login-modal-title"
       >
-        <h2 id="login-modal-title" style={{ fontSize: 16, marginBottom: 12 }}>{t('login_title')}</h2>
+        <h2 id="login-modal-title" className="login-title">{t('login_title')}</h2>
         {sent ? (
           <p role="status">{t('login_sent')}</p>
         ) : (
@@ -74,14 +74,14 @@ export default function LoginModal({ onClose }: { onClose: () => void }) {
           @media (max-width: 480px) {
             .modal { padding: 24px 20px; border-radius: var(--r-md); max-width: 100%; }
           }
-          .modal h2 { font-family: var(--font-display); }
+          .modal h2 { font-family: var(--font-display); font-size: var(--text-xl); margin: 0 0 var(--sp-3); }
           .modal label { font-size: 13px; font-weight: 600; color: var(--primary); display: block; margin-bottom: 6px; }
           @media (max-width: 480px) {
             .modal label { font-size: 14px; }
           }
           .modal input {
-            width: 100%; padding: 11px 13px; border: 1.5px solid var(--line); border-radius: var(--r-sm);
-            font-size: 14px; margin-bottom: 12px; font-family: var(--font-body); background: var(--card); color: var(--ink);
+            width: 100%; padding: var(--sp-2) var(--sp-3); border: 1.5px solid var(--line); border-radius: var(--r-sm);
+            font-size: var(--text-base); margin-bottom: var(--sp-3); font-family: var(--font-body); background: var(--card); color: var(--ink);
             min-height: var(--touch-target);
           }
           @media (max-width: 480px) {

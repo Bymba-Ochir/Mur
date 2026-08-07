@@ -1,6 +1,6 @@
 'use client';
 import { useState } from 'react';
-import type { ChangeEvent, FormEvent } from 'react';
+import type { ChangeEvent, FormEvent, KeyboardEvent } from 'react';
 import { DISTRICTS } from '../lib/districts';
 import { useLanguage } from '../lib/i18n';
 import ShareButtons from './ShareButtons';
@@ -60,6 +60,13 @@ export default function SittingForm() {
     }
   }
 
+  function handleUploadKeyDown(e: KeyboardEvent<HTMLDivElement>) {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      document.getElementById('sitting-photo-input')?.click();
+    }
+  }
+
   function resetAll() {
     setStep(0); setPetType('Нохой'); setDescription(''); setExperience('');
     setAvailability(''); setPrice(''); setDistrict(DISTRICTS[0]); setPlace(''); setPhone('');
@@ -111,7 +118,7 @@ export default function SittingForm() {
         {step === 0 && (
           <>
             <label id="photo-label">{t('photo_label')}</label>
-            <div className="upload-zone" onClick={() => document.getElementById('sitting-photo-input')?.click()} role="button" tabIndex={0} aria-labelledby="photo-label">
+            <div className="upload-zone" onClick={() => document.getElementById('sitting-photo-input')?.click()} onKeyDown={handleUploadKeyDown} role="button" tabIndex={0} aria-labelledby="photo-label">
               {compressing ? <span>⏳ Зураг оновчлож байна...</span> : photoPreview ? (
                 <img src={photoPreview} alt={t('photo_preview_alt')} />
               ) : <span>{t('photo_hint')}</span>}
@@ -198,13 +205,13 @@ export default function SittingForm() {
       </div>
 
       <style jsx>{`
-        .form-layout { display: flex; gap: 48px; align-items: flex-start; }
+        .form-layout { display: flex; gap: var(--sp-5); align-items: flex-start; }
         @media (max-width: 860px) { .form-layout { gap: 0; } }
-        @media (min-width: 1200px) { .form-layout { gap: 64px; } }
+        @media (min-width: 1200px) { .form-layout { gap: var(--sp-8); } }
         .preview-col { display: none; position: sticky; top: 100px; }
         @media (min-width: 860px) { .preview-col { display: block; } }
         .pet-form {
-          display: flex; flex-direction: column; gap: 4px; max-width: 440px; flex: 1; min-width: 0;
+          display: flex; flex-direction: column; gap: var(--sp-1); max-width: 440px; flex: 1; min-width: 0;
           background: var(--card); border: 1px solid var(--line); border-radius: var(--r-xl);
           padding: var(--sp-6); box-shadow: var(--shadow-md);
         }
@@ -214,8 +221,8 @@ export default function SittingForm() {
         label { font-size: 12.5px; font-weight: 600; color: var(--primary); margin-top: var(--sp-4); display: block; }
         label:first-child { margin-top: 0; }
         input, select, textarea {
-          padding: 11px 13px; border: 1.5px solid var(--line); border-radius: var(--r-sm);
-          font-size: 14.5px; width: 100%; font-family: var(--font-body); background: var(--card); color: var(--ink);
+          padding: var(--sp-2) var(--sp-3); border: 1.5px solid var(--line); border-radius: var(--r-sm);
+          font-size: var(--text-base); width: 100%; font-family: var(--font-body); background: var(--card); color: var(--ink);
           min-height: var(--touch-target);
         }
         textarea { resize: vertical; min-height: 80px; }
@@ -226,10 +233,11 @@ export default function SittingForm() {
           min-height: var(--touch-target); display: flex; align-items: center; justify-content: center;
         }
         .upload-zone:hover { border-color: var(--accent); background: var(--eyebrow-bg); }
+        .upload-zone:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
         .upload-zone img { max-width: 150px; border-radius: var(--r-sm); }
         .locate-btn {
           background: var(--eyebrow-bg); border: 1.5px solid var(--line); border-radius: var(--r-sm);
-          padding: 11px 13px; font-size: 14.5px; width: 100%; color: var(--primary); font-weight: 600;
+          padding: var(--sp-2) var(--sp-3); font-size: var(--text-base); width: 100%; color: var(--primary); font-weight: 600;
           min-height: var(--touch-target); cursor: pointer; margin-top: var(--sp-4); font-family: var(--font-body);
         }
         .locate-btn:hover { border-color: var(--accent); }
@@ -242,7 +250,7 @@ export default function SittingForm() {
         .progress-text { font-family: var(--font-mono); font-size: 11.5px; color: var(--muted); margin: var(--sp-2) 0 var(--sp-5); text-align: center; }
         .nav-row { display: flex; gap: 10px; margin-top: var(--sp-5); }
         .nav-back { background: var(--eyebrow-bg); color: var(--primary); flex: 1; justify-content: center; min-height: var(--touch-target); }
-        .nav-next { background: var(--accent); color: #fff; flex: 1; justify-content: center; min-height: var(--touch-target); }
+        .nav-next { background: var(--accent); color: var(--accent-ink); flex: 1; justify-content: center; min-height: var(--touch-target); }
         .nav-next:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
       `}</style>
     </div>

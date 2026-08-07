@@ -86,6 +86,10 @@ export default function AdoptionDetailClient({ id }: { id: string }) {
         <p>{relativeTime(adoption.createdAt)}</p>
       </div>
 
+      <div className="back-row">
+        <Link href="/adoptions" className="btn btn-ghost" style={{ display: 'inline-flex' }}>{t('adoptions_back_to_list')}</Link>
+      </div>
+
       {editing ? (
         <AdoptionEditForm
           initial={{
@@ -193,6 +197,7 @@ export default function AdoptionDetailClient({ id }: { id: string }) {
         }
         .owner-actions { display: flex; gap: var(--sp-2); margin-top: var(--sp-4); }
         .owner-actions .btn { flex: 1; min-height: var(--touch-target); }
+        .back-row { margin-top: var(--sp-5); }
         .share-section { margin-top: var(--sp-6); text-align: center; }
         .share-hint { font-size: 12px; color: var(--muted); margin-top: var(--sp-2); }
       `}</style>

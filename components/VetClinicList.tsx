@@ -83,11 +83,11 @@ export default function VetClinicList({ embedded = false }: { embedded?: boolean
 
       {/* Шүүлтүүр + Байршил */}
       <div className="filter-bar" style={{ marginTop: 'var(--sp-3)', marginBottom: 'var(--sp-3)' }}>
-        <select className="filter" value={district} onChange={(e) => setDistrict(e.target.value)}>
+        <select className="filter" aria-label={t('filter_all_districts')} value={district} onChange={(e) => setDistrict(e.target.value)}>
           <option value="">{t('filter_all_districts')}</option>
           {DISTRICTS.map((d) => <option key={d}>{d}</option>)}
         </select>
-        <select className="filter" value={service} onChange={(e) => setService(e.target.value as VetService | '')}>
+        <select className="filter" aria-label={t('clinics_service_filter')} value={service} onChange={(e) => setService(e.target.value as VetService | '')}>
           <option value="">{t('clinics_service_filter')}</option>
           {SERVICE_OPTIONS.filter(Boolean).map((s) => (
             <option key={s} value={s!}>{s}</option>
@@ -97,6 +97,7 @@ export default function VetClinicList({ embedded = false }: { embedded?: boolean
           className="filter"
           type="search"
           placeholder={t('search_placeholder')}
+          aria-label={t('search_placeholder')}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />

@@ -241,19 +241,19 @@ export default function PetForm({ status }: { status: PetStatus }) {
     </div>
 
       <style jsx>{`
-        .form-layout { display: flex; gap: 48px; align-items: flex-start; }
+        .form-layout { display: flex; gap: var(--sp-5); align-items: flex-start; }
         @media (max-width: 860px) {
           .form-layout { gap: 0; }
         }
         @media (min-width: 1200px) {
-          .form-layout { gap: 64px; }
+          .form-layout { gap: var(--sp-8); }
         }
         .preview-col { display: none; position: sticky; top: 100px; }
         @media (min-width: 860px) {
           .preview-col { display: block; }
         }
         .pet-form {
-          display: flex; flex-direction: column; gap: 4px; max-width: 440px; flex: 1; min-width: 0;
+          display: flex; flex-direction: column; gap: var(--sp-1); max-width: 440px; flex: 1; min-width: 0;
           background: var(--card); border: 1px solid var(--line); border-radius: var(--r-xl);
           padding: var(--sp-6); box-shadow: var(--shadow-md);
         }
@@ -276,8 +276,8 @@ export default function PetForm({ status }: { status: PetStatus }) {
         }
 
         input, select {
-          padding: 11px 13px; border: 1.5px solid var(--line); border-radius: var(--r-sm);
-          font-size: 14.5px; width: 100%; font-family: var(--font-body); background: var(--card); color: var(--ink);
+          padding: var(--sp-2) var(--sp-3); border: 1.5px solid var(--line); border-radius: var(--r-sm);
+          font-size: var(--text-base); width: 100%; font-family: var(--font-body); background: var(--card); color: var(--ink);
           transition: border-color 0.15s ease;
           min-height: var(--touch-target);
         }
@@ -395,7 +395,7 @@ export default function PetForm({ status }: { status: PetStatus }) {
           .nav-row { gap: 14px; margin-top: var(--sp-6); }
         }
         .nav-back { background: var(--eyebrow-bg); color: var(--primary); flex: 1; justify-content: center; min-height: var(--touch-target); }
-        .nav-next { background: var(--accent); color: #fff; flex: 1; justify-content: center; min-height: var(--touch-target); }
+        .nav-next { background: var(--accent); color: var(--accent-ink); flex: 1; justify-content: center; min-height: var(--touch-target); }
         .nav-next:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
       `}</style>
     </div>

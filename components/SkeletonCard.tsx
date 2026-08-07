@@ -14,9 +14,9 @@ export default function SkeletonCard() {
         .skeleton-card {
           background: var(--card); border: 1px solid var(--line); border-radius: var(--r-lg); overflow: hidden;
         }
-        .skeleton-thumb { height: 150px; background: var(--thumb-bg); }
-        .skeleton-info { padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; }
-        .skeleton-line { height: 11px; border-radius: 4px; background: var(--line); }
+        .skeleton-thumb { height: 152px; background: var(--thumb-bg); }
+        .skeleton-info { padding: var(--sp-3); display: flex; flex-direction: column; gap: var(--sp-2); }
+        .skeleton-line { height: 11px; border-radius: var(--r-sm); background: var(--line); }
       `}</style>
     </div>
   );

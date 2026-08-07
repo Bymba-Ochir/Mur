@@ -13,6 +13,7 @@
 # Claude Code — хувийн тохиргоо, API key агуулж болно
 .claude/settings.json
 .claude/settings.local.json
+/.claude/
 
 # backup файлууд (auth.users имэйл зэрэг PII агуулж болно)
 /backups/

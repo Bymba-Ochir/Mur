@@ -145,7 +145,9 @@ export default function MessageThreadClient({ id }: { id: string }) {
       {/* Толгой хэсэг */}
       <div className="chat-header">
         <Link href="/messages" className="chat-back" aria-label={t('chat_list_title')}>
-          ←
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+            <path d="M19 12H5M12 19l-7-7 7-7" />
+          </svg>
         </Link>
         <div className="chat-header-info">
           <Link href={`/pets/${conv.petId}`} className="chat-pet-link">
@@ -196,18 +198,32 @@ export default function MessageThreadClient({ id }: { id: string }) {
           className="chat-send-btn"
           aria-label={t('chat_submit')}
         >
-          {sending ? '⏳' : '➤'}
+          {sending ? (
+            <svg className="spin" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+              <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+            </svg>
+          ) : (
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+              <path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7Z" />
+            </svg>
+          )}
         </button>
       </div>
 
       <style jsx>{`
         .chat-page {
           display: flex; flex-direction: column;
-          height: calc(100dvh - 60px);
+          height: calc(100dvh - var(--nav-h) - var(--sp-6) - var(--sp-8) - var(--safe-bottom));
           max-width: 640px; margin: 0 auto; width: 100%;
         }
-        @media (min-width: 769px) {
-          .chat-page { height: calc(100dvh - 70px); }
+        @media (max-width: 1024px) {
+          .chat-page { height: calc(100dvh - var(--nav-h) - var(--sp-5) - var(--sp-7) - var(--safe-bottom)); }
+        }
+        @media (max-width: 640px) {
+          .chat-page { height: calc(100dvh - var(--nav-h) - var(--sp-4) - var(--sp-6) - var(--safe-bottom)); }
+        }
+        @media (max-width: 400px) {
+          .chat-page { height: calc(100dvh - var(--nav-h) - var(--sp-3) - var(--sp-5) - var(--safe-bottom)); }
         }
         .chat-header {
           display: flex; align-items: center; gap: var(--sp-3);
@@ -217,9 +233,11 @@ export default function MessageThreadClient({ id }: { id: string }) {
           flex-shrink: 0;
         }
         .chat-back {
-          font-size: 20px; color: var(--primary); text-decoration: none;
-          min-width: 36px; min-height: 36px; display: flex; align-items: center; justify-content: center;
+          color: var(--primary); text-decoration: none; border-radius: var(--r-sm);
+          min-width: var(--touch-target); min-height: var(--touch-target);
+          display: flex; align-items: center; justify-content: center;
         }
+        .chat-back:focus-visible { outline: 2.5px solid var(--accent); outline-offset: 2px; }
         .chat-header-info { flex: 1; min-width: 0; }
         .chat-pet-link {
           display: flex; align-items: center; gap: var(--sp-2);
@@ -241,7 +259,7 @@ export default function MessageThreadClient({ id }: { id: string }) {
         }
         .bubble.own {
           align-self: flex-end;
-          background: var(--accent); color: #fff;
+          background: var(--accent); color: var(--accent-ink);
           border-bottom-right-radius: var(--r-sm);
         }
         .bubble.other {
@@ -254,7 +272,7 @@ export default function MessageThreadClient({ id }: { id: string }) {
           display: block; font-size: 10px; margin-top: 4px;
           opacity: 0.7; text-align: right;
         }
-        .bubble.own .bubble-time { color: rgba(255,255,255,0.8); }
+        .bubble.own .bubble-time { color: var(--accent-ink); opacity: 0.75; }
         .bubble.other .bubble-time { color: var(--muted); }
 
         .chat-composer {
@@ -270,12 +288,14 @@ export default function MessageThreadClient({ id }: { id: string }) {
         .chat-composer input:focus { outline: none; border-color: var(--accent); }
         .chat-send-btn {
           width: 44px; height: 44px; border-radius: 50%; border: none;
-          background: var(--accent); color: #fff; font-size: 18px;
+          background: var(--accent); color: var(--accent-ink);
           cursor: pointer; display: flex; align-items: center; justify-content: center;
           transition: transform 0.15s ease;
         }
         .chat-send-btn:hover { transform: scale(1.05); }
         .chat-send-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        .chat-send-btn .spin { animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
       `}</style>
     </div>
   );
