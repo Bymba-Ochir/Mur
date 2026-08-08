@@ -1,6 +1,7 @@
 'use client';
 import { useMemo, useState } from 'react';
 import { useAuth } from '../lib/useAuth';
+import Button from './ui/Button';
 import { useLanguage } from '../lib/i18n';
 import { useToast } from './Toast';
 import { DISTRICTS } from '../lib/districts';
@@ -101,14 +102,14 @@ export default function VetClinicList({ embedded = false }: { embedded?: boolean
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
-        <button
-          className="btn btn-ghost"
+        <Button
+          variant="ghost"
           onClick={handleLocation}
           disabled={locating}
           style={{ whiteSpace: 'nowrap', minHeight: 'var(--touch-target-sm)' }}
         >
           {locating ? t('clinics_locating') : t('clinics_use_location')}
-        </button>
+        </Button>
       </div>
 
       {/* Эмнэлгүүдийн жагсаалт */}

@@ -12,6 +12,7 @@ import ReportButton from '../../../components/ReportButton';
 import MessageButton from '../../../components/MessageButton';
 import SightingsList from '../../../components/SightingsList';
 import PetIcon from '../../../components/PetIcon';
+import Button from '../../../components/ui/Button';
 import PetEditForm from '../../../components/PetEditForm';
 import type { PetEditValues } from '../../../components/PetEditForm';
 import { useToast } from '../../../components/Toast';
@@ -197,25 +198,25 @@ export default function PetDetailClient({ id }: { id: string }) {
 
           {isOwner && !editing && (
             <div style={{ display: 'flex', gap: 'var(--sp-2)', marginTop: 'var(--sp-2)' }}>
-              <button onClick={() => setEditing(true)} className="btn btn-ghost" style={{ flex: 1, fontSize: 13 }}>
+              <Button variant="ghost" onClick={() => setEditing(true)} style={{ flex: 1, fontSize: 13 }}>
                 {t('detail_edit_btn')}
-              </button>
-              <button onClick={handleDelete} disabled={deleting} className="btn"
+              </Button>
+              <Button variant="ghost" onClick={handleDelete} disabled={deleting}
                 style={{ background: 'var(--card)', color: 'var(--alert)', border: '1.5px solid var(--alert)', flex: 1, justifyContent: 'center', fontSize: 13 }}>
                 {deleting ? t('detail_deleting') : t('detail_delete_btn')}
-              </button>
+              </Button>
             </div>
           )}
 
           {isOwner && !pet.resolved && !editing && (
-            <button
+            <Button
               onClick={handleResolve}
               disabled={resolving}
-              className="btn"
+              variant="primary"
               style={{ marginTop: 'var(--sp-2)', background: 'var(--success)', color: '#fff', width: '100%', justifyContent: 'center' }}
             >
               {resolving ? t('detail_resolving') : t('detail_resolve_btn')}
-            </button>
+            </Button>
           )}
         </div>
       </div>

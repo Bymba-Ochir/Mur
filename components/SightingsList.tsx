@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { createSighting, fetchSightings } from '../lib/sightingService';
 import { relativeTime } from '../lib/relativeTime';
 import { useToast } from './Toast';
+import Button from './ui/Button';
 import { useLanguage } from '../lib/i18n';
 import type { Sighting } from '../lib/types';
 import { getErrorMessage } from '../lib/utils';
@@ -79,9 +80,9 @@ export default function SightingsList({ petId }: { petId: string }) {
             aria-label="Харсан байршил"
             style={{ padding: 'var(--sp-2)', borderRadius: 'var(--r-sm)', border: '1.5px solid var(--line)', fontSize: 13.5, background: 'var(--card)', color: 'var(--ink)' }}
           />
-          <button type="submit" disabled={submitting} className="btn" style={{ background: 'var(--brand)', color: '#fff', fontSize: 13 }}>
+          <Button type="submit" disabled={submitting} variant="primary" style={{ fontSize: 13 }}>
             {submitting ? t('sightings_submitting') : t('sightings_submit')}
-          </button>
+          </Button>
         </form>
       )}
 

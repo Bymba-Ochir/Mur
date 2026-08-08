@@ -3,6 +3,7 @@ import { useState } from 'react';
 import type { ChangeEvent, FormEvent, KeyboardEvent } from 'react';
 import { DISTRICTS } from '../lib/districts';
 import { useLanguage } from '../lib/i18n';
+import Button from './ui/Button';
 import ShareButtons from './ShareButtons';
 import SittingCardView from './SittingCardView';
 import PawTrail from './PawTrail';
@@ -104,7 +105,7 @@ export default function SittingForm() {
       <div className="success-box" role="status">
         <p>{t('sitting_success_msg')}</p>
         <ShareButtons url={url} title="Асрах үйлчилгээ" />
-        <button onClick={() => { setDone(false); setNewId(null); }} className="btn" style={{ marginTop: 16 }}>{t('add_another')}</button>
+        <Button variant="secondary" onClick={() => { setDone(false); setNewId(null); }} style={{ marginTop: 16 }}>{t('add_another')}</Button>
       </div>
     );
   }
@@ -174,16 +175,16 @@ export default function SittingForm() {
             <label htmlFor="s-phone">{t('phone_label')}</label>
             <input id="s-phone" value={formatPhone(phone)} onChange={(e) => setPhone(normalizePhone(e.target.value))} placeholder={t('phone_placeholder')} required inputMode="tel" />
             {error && <p className="error" role="alert">{error}</p>}
-            <button type="submit" disabled={submitting} className="btn btn-primary">
+            <Button type="submit" disabled={submitting} variant="primary" fullWidth className="form-submit">
               {submitting ? statusMsg || t('submitting') : t('sitting_submit')}
-            </button>
+            </Button>
           </>
         )}
 
         <div className="nav-row">
-          {step > 0 && <button type="button" onClick={() => setStep(step - 1)} className="btn nav-back">{t('form_back')}</button>}
+          {step > 0 && <Button type="button" onClick={() => setStep(step - 1)} variant="secondary" style={{ flex: 1 }}>{t('form_back')}</Button>}
           {step < STEPS.length - 1 && (
-            <button type="button" onClick={() => canNext && setStep(step + 1)} disabled={!canNext} className="btn nav-next">{t('form_next')}</button>
+            <Button type="button" onClick={() => canNext && setStep(step + 1)} disabled={!canNext} variant="accent" style={{ flex: 1 }}>{t('form_next')}</Button>
           )}
         </div>
       </form>
@@ -246,15 +247,12 @@ export default function SittingForm() {
         .locate-btn:hover { border-color: var(--accent); }
         .locate-btn:disabled { opacity: 0.6; cursor: default; }
         .locate-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
-        .btn-primary { width: 100%; margin-top: var(--sp-5); justify-content: center; font-size: 15px; padding: 14px; min-height: var(--touch-target); }
-        .btn-primary:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+        .form-submit { margin-top: var(--sp-5); }
         .error { color: var(--alert); font-size: 13px; margin-top: var(--sp-2); }
         .success-box { padding: var(--sp-6); background: var(--success-bg); border-radius: var(--r-lg); text-align: center; border: 1px solid color-mix(in srgb, var(--success) 30%, transparent); }
         .progress-text { font-family: var(--font-mono); font-size: 11.5px; color: var(--muted); margin: var(--sp-2) 0 var(--sp-5); text-align: center; }
         .nav-row { display: flex; gap: 10px; margin-top: var(--sp-5); }
-        .nav-back { background: var(--eyebrow-bg); color: var(--primary); flex: 1; justify-content: center; min-height: var(--touch-target); }
-        .nav-next { background: var(--accent); color: var(--accent-ink); flex: 1; justify-content: center; min-height: var(--touch-target); }
-        .nav-next:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+        .nav-row :global(.btn-base) { flex: 1; justify-content: center; }
       `}</style>
     </div>
   );

@@ -5,6 +5,9 @@ import Image from 'next/image';
 import { useAuth } from '../../lib/useAuth';
 import { isAdmin, fetchReports, dismissReport, adminDeletePet } from '../../lib/adminService';
 import { useToast } from '../../components/Toast';
+import Button from '../../components/ui/Button';
+import EmptyState from '../../components/ui/EmptyState';
+import Icon from '../../components/ui/icons';
 import { relativeTime } from '../../lib/relativeTime';
 import { useLanguage } from '../../lib/i18n';
 import type { Report } from '../../lib/types';
@@ -105,13 +108,7 @@ export default function AdminPage() {
           ))}
         </div>
       ) : reports.length === 0 ? (
-        <div style={{
-          textAlign: 'center', padding: 'var(--sp-6) var(--sp-4)', background: 'var(--card)',
-          border: '1px dashed var(--line)', borderRadius: 'var(--r-lg)',
-        }}>
-          <div style={{ fontSize: 36, marginBottom: 'var(--sp-2)' }}>👍</div>
-          <p style={{ color: 'var(--muted)', fontSize: 13.5 }}>{t('admin_none')}</p>
-        </div>
+        <EmptyState icon={<Icon name="thumb" size={30} />} description={t('admin_none')} />
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-3)' }}>
           {reports.map((r) => {
@@ -140,23 +137,23 @@ export default function AdminPage() {
                   <p style={{ fontSize: 12, color: 'var(--muted)' }}>{relativeTime(r.createdAt)}</p>
                 </div>
                 <div style={{ display: 'flex', gap: 'var(--sp-2)' }}>
-                  <button
+                  <Button
                     onClick={() => handleDismiss(r.id)}
                     disabled={busyId === r.id}
-                    className="btn btn-ghost"
+                    variant="ghost"
                     style={{ fontSize: 12.5 }}
                   >
                     {t('admin_dismiss')}
-                  </button>
+                  </Button>
                   {pet && (
-                    <button
+                    <Button
                       onClick={() => handleDeletePet(r.id, pet.id)}
                       disabled={busyId === r.id}
-                      className="btn"
+                      variant="ghost"
                       style={{ background: 'var(--card)', color: 'var(--alert)', border: '1.5px solid var(--alert)', fontSize: 12.5 }}
                     >
                       {t('admin_delete_pet')}
-                    </button>
+                    </Button>
                   )}
                 </div>
               </div>

@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { useLanguage } from '../lib/i18n';
+import Button from './ui/Button';
 import { useToast } from './Toast';
 import { updateMyPet } from '../lib/vaccineService';
 import { fetchPetHealth } from '../lib/petHealthService';
@@ -62,7 +63,7 @@ export default function PetHealthPanel({
         <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 16, fontWeight: 600, color: 'var(--primary)' }}>
           {pet.name} — {t('health_section_profile')}
         </h2>
-        <button className="btn btn-ghost" style={{ fontSize: 12, padding: '6px 12px', minHeight: 'auto' }} onClick={onClose}>✕</button>
+        <Button variant="ghost" style={{ fontSize: 12, padding: '6px 12px', minHeight: 'auto' }} onClick={onClose}>✕</Button>
       </div>
 
       {/* Профайл засах */}
@@ -87,9 +88,9 @@ export default function PetHealthPanel({
             <input className="field" value={vaxName} onChange={(e) => setVaxName(e.target.value)} placeholder={t('health_next_vaccine_name_ph')} style={{ fontSize: 13, minHeight: 36, width: '100%' }} />
           </div>
         </div>
-        <button className="btn btn-primary" onClick={handleSaveProfile} disabled={saving} style={{ fontSize: 13, minHeight: 36, width: '100%', justifyContent: 'center' }}>
+        <Button variant="primary" onClick={handleSaveProfile} disabled={saving} style={{ fontSize: 13, minHeight: 36, width: '100%', justifyContent: 'center' }}>
           {saving ? t('chat_sending') : t('detail_save')}
-        </button>
+        </Button>
       </div>
 
       {/* Эрүүл мэндийн хүснэгтүүд */}

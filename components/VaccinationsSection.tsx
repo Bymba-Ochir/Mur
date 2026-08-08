@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { useLanguage } from '../lib/i18n';
+import Button from './ui/Button';
 import { useToast } from './Toast';
 import { addVaccination, deleteVaccination } from '../lib/petHealthService';
 import { getErrorMessage } from '../lib/utils';
@@ -43,9 +44,9 @@ export default function VaccinationsSection({
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--sp-3)' }}>
         <h3 style={{ fontSize: 14, fontWeight: 600, color: 'var(--primary)' }}>{t('health_section_vaccinations')}</h3>
-        <button className="btn btn-ghost" style={{ fontSize: 12, padding: '6px 12px', minHeight: 'auto' }} onClick={() => setShowForm(!showForm)}>
+        <Button variant="ghost" style={{ fontSize: 12, padding: '6px 12px', minHeight: 'auto' }} onClick={() => setShowForm(!showForm)}>
           {showForm ? '✕' : t('health_vax_add')}
-        </button>
+        </Button>
       </div>
 
       {showForm && (
@@ -53,9 +54,9 @@ export default function VaccinationsSection({
           <input className="field" placeholder={t('health_vax_name')} value={name} onChange={(e) => setName(e.target.value)} style={{ fontSize: 13, minHeight: 36 }} />
           <input className="field" type="date" value={date} onChange={(e) => setDate(e.target.value)} style={{ fontSize: 13, minHeight: 36 }} />
           <input className="field" placeholder={t('health_vet_name')} value={vetName} onChange={(e) => setVetName(e.target.value)} style={{ fontSize: 13, minHeight: 36 }} />
-          <button className="btn btn-accent" onClick={handleAdd} disabled={busy || !name.trim()} style={{ fontSize: 13, minHeight: 36 }}>
+          <Button variant="accent" onClick={handleAdd} disabled={busy || !name.trim()} style={{ fontSize: 13, minHeight: 36 }}>
             {busy ? t('chat_sending') : t('health_vax_add')}
-          </button>
+          </Button>
         </div>
       )}
 

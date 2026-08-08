@@ -3,6 +3,7 @@ import { useState } from 'react';
 import type { ChangeEvent, KeyboardEvent } from 'react';
 import { DISTRICTS } from '../lib/districts';
 import { useLanguage } from '../lib/i18n';
+import Button from './ui/Button';
 import ShareButtons from './ShareButtons';
 import LocationMap from './LocationMap';
 import PetPreviewCard from './PetPreviewCard';
@@ -70,7 +71,7 @@ export default function PetForm({ status }: { status: PetStatus }) {
       <div className="success-box" role="status">
         <p>{t('success_msg')}</p>
         <ShareButtons url={petUrl} title={status === 'lost' ? 'Алдсан амьтан' : 'Олдсон амьтан'} />
-        <button onClick={addAnother} className="btn" style={{ marginTop: 16 }}>{t('add_another')}</button>
+        <Button variant="secondary" onClick={addAnother} style={{ marginTop: 16 }}>{t('add_another')}</Button>
       </div>
     );
   }
@@ -197,9 +198,9 @@ export default function PetForm({ status }: { status: PetStatus }) {
 
           {submit.error && <p className="error" role="alert">{submit.error}</p>}
 
-          <button type="submit" disabled={submit.submitting} className="btn btn-primary" aria-busy={submit.submitting}>
+          <Button type="submit" disabled={submit.submitting} variant="primary" fullWidth className="form-submit" aria-busy={submit.submitting}>
             {submit.submitting ? submit.statusMsg || t('submitting') : status === 'lost' ? t('submit_lost') : t('submit_found')}
-          </button>
+          </Button>
 
           {submit.submitting && submit.statusMsg.includes('AI') && (
             <p style={{ fontSize: 12, color: 'var(--muted)', marginTop: 6 }} aria-live="polite">
@@ -211,17 +212,18 @@ export default function PetForm({ status }: { status: PetStatus }) {
 
       <div className="nav-row">
         {step > 0 && (
-          <button type="button" onClick={() => setStep(step - 1)} className="btn nav-back">{t('form_back')}</button>
+          <Button type="button" onClick={() => setStep(step - 1)} variant="secondary" style={{ flex: 1 }}>{t('form_back')}</Button>
         )}
         {step < STEPS.length - 1 && (
-          <button
+          <Button
             type="button"
             onClick={() => canNext && setStep(step + 1)}
             disabled={!canNext}
-            className="btn nav-next"
+            variant="accent"
+            style={{ flex: 1 }}
           >
             {t('form_next')}
-          </button>
+          </Button>
         )}
       </div>
     </form>
@@ -331,14 +333,13 @@ export default function PetForm({ status }: { status: PetStatus }) {
         .photo-quality ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 3px; }
         .photo-quality li { margin: 0; line-height: 1.4; }
         .pq-match { margin: 8px 0 0; font-size: 12px; }
-        .btn-primary { width: 100%; margin-top: var(--sp-5); justify-content: center; font-size: 15px; padding: 14px; min-height: var(--touch-target); }
+        .form-submit { margin-top: var(--sp-5); }
         @media (max-width: 480px) {
-          .btn-primary { font-size: 16px; padding: 16px; margin-top: var(--sp-4); }
+          .form-submit { margin-top: var(--sp-4); }
         }
         @media (min-width: 1025px) {
-          .btn-primary { font-size: 16px; padding: 16px 24px; margin-top: var(--sp-6); }
+          .form-submit { margin-top: var(--sp-6); }
         }
-        .btn-primary:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
         .error { color: var(--alert); font-size: 13px; margin-top: var(--sp-2); }
         @media (max-width: 480px) {
           .error { font-size: 14px; }
@@ -397,9 +398,7 @@ export default function PetForm({ status }: { status: PetStatus }) {
         @media (min-width: 1025px) {
           .nav-row { gap: 14px; margin-top: var(--sp-6); }
         }
-        .nav-back { background: var(--eyebrow-bg); color: var(--primary); flex: 1; justify-content: center; min-height: var(--touch-target); }
-        .nav-next { background: var(--accent); color: var(--accent-ink); flex: 1; justify-content: center; min-height: var(--touch-target); }
-        .nav-next:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+        .nav-row :global(.btn-base) { flex: 1; justify-content: center; }
       `}</style>
     </div>
   );

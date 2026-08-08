@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { joinAsVolunteer, leaveAsVolunteer, isVolunteer, fetchVolunteerCounts } from '../lib/volunteerService';
 import { useAuth } from '../lib/useAuth';
+import Button from './ui/Button';
 import { useToast } from './Toast';
 import type { District } from '../lib/districts';
 import { getErrorMessage } from '../lib/utils';
@@ -52,14 +53,14 @@ export default function VolunteerBadge({ district }: { district: District }) {
       <span style={{ fontSize: 13, color: 'var(--primary)' }}>
         🙋 <b>{count}</b> сайн дурын идэвхтэн &quot;{district}&quot; дүүрэгт
       </span>
-      <button
+      <Button
         onClick={handleToggle}
         disabled={busy}
-        className={joined ? 'btn btn-ghost' : 'btn btn-primary'}
+        variant={joined ? 'ghost' : 'primary'}
         style={{ fontSize: 12, padding: '8px 12px' }}
       >
         {joined ? 'Гарах' : '+ Нэгдэх'}
-      </button>
+      </Button>
     </div>
   );
 }

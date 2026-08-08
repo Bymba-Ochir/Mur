@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { DISTRICTS } from '../lib/districts';
 import type { District } from '../lib/districts';
 import { useLanguage } from '../lib/i18n';
+import Button from './ui/Button';
 
 export interface PetEditValues {
   name: string;
@@ -44,12 +45,12 @@ export default function PetEditForm({
       <input id="edit-phone" className="field" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} style={{ minHeight: 'var(--touch-target)', fontSize: 16 }} />
 
       <div style={{ display: 'flex', gap: 'var(--sp-2)', marginTop: 'var(--sp-2)' }}>
-        <button onClick={() => onSave(form)} disabled={saving} className="btn btn-primary" style={{ flex: 1, minHeight: 'var(--touch-target)' }}>
+        <Button onClick={() => onSave(form)} disabled={saving} variant="primary" style={{ flex: 1, minHeight: 'var(--touch-target)' }}>
           {saving ? t('detail_saving') : t('detail_save')}
-        </button>
-        <button onClick={onCancel} className="btn btn-ghost" style={{ flex: 1, minHeight: 'var(--touch-target)' }}>
+        </Button>
+        <Button onClick={onCancel} variant="ghost" style={{ flex: 1, minHeight: 'var(--touch-target)' }}>
           {t('detail_cancel')}
-        </button>
+        </Button>
       </div>
     </div>
   );

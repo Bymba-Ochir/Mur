@@ -3,6 +3,8 @@ import Link from 'next/link';
 import { useLanguage } from '../lib/i18n';
 import PawTrail from '../components/PawTrail';
 import ScrollReveal from '../components/ScrollReveal';
+import Button from '../components/ui/Button';
+import Icon from '../components/ui/icons';
 
 // Hero-ийн зөөлөн paw-print хээ (data-URI SVG) — зөвхөн гоёл чимэглэл
 const PAW_PATTERN =
@@ -37,13 +39,13 @@ export default function Home() {
           </h1>
           <p className="hero-desc">{t('hero_desc')}</p>
           <div className="hero-actions">
-            <Link href="/report-lost" className="btn btn-accent">
+            <Button as="link" href="/report-lost" variant="accent">
               {t('hero_btn_lost')}
               <svg className="arrow" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
                 <path d="M3 8h10M9 4l4 4-4 4" />
               </svg>
-            </Link>
-            <Link href="/report-found" className="btn btn-ghost">{t('hero_btn_found')}</Link>
+            </Button>
+            <Button as="link" href="/report-found" variant="ghost">{t('hero_btn_found')}</Button>
           </div>
 
           <ul className="hero-trust" aria-label="Платформын давуу талууд">
@@ -234,7 +236,7 @@ export default function Home() {
         .hero-actions { display: flex; gap: var(--sp-3); flex-wrap: wrap; }
         @media (max-width: 480px) {
           .hero-actions { gap: var(--sp-2); flex-direction: column; }
-          .hero-actions :global(.btn) { width: 100%; justify-content: center; }
+          .hero-actions :global(.btn-base) { width: 100%; justify-content: center; }
         }
         @media (min-width: 1025px) {
           .hero-actions { gap: var(--sp-4); }
@@ -275,10 +277,10 @@ export default function Home() {
         }
 
         /* CTA glow */
-        .hero-actions .btn-accent { box-shadow: var(--shadow-glow); }
-        .hero-actions .btn-accent:hover { box-shadow: 0 0 0 1px rgba(232,114,92,0.35), 0 12px 36px rgba(232,114,92,0.35); }
+        .hero-actions :global([data-variant='accent']) { box-shadow: var(--shadow-glow); }
+        .hero-actions :global([data-variant='accent']):hover { box-shadow: 0 0 0 1px rgba(232,114,92,0.35), 0 12px 36px rgba(232,114,92,0.35); }
         .hero-actions .arrow { transition: transform 0.2s ease; }
-        .hero-actions .btn:hover .arrow { transform: translateX(3px); }
+        .hero-actions :global(.btn-base):hover .arrow { transform: translateX(3px); }
         .hero-trust {
           list-style: none; margin: var(--sp-5) 0 0; padding: 0;
           display: flex; flex-wrap: wrap; gap: var(--sp-2) var(--sp-4);
@@ -411,6 +413,8 @@ export default function Home() {
           background: var(--grad-accent); -webkit-background-clip: text; background-clip: text;
           color: transparent; opacity: 0.35; margin-bottom: var(--sp-3);
         }
+        /* Dark mode-д watermark тоог илүү уншигдах болгох */
+        :global([data-theme="dark"]) .step-num { opacity: 0.6; }
         .step-desc { color: var(--muted); font-size: 13.5px; line-height: 1.5; }
         @media (max-width: 480px) {
           .step-desc { font-size: 14px; line-height: 1.6; }

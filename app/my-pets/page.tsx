@@ -9,6 +9,9 @@ import { subscribeToVaccineReminders, isSubscribed } from '../../lib/push';
 import { useToast } from '../../components/Toast';
 import { useLanguage } from '../../lib/i18n';
 import MyPetCard from '../../components/MyPetCard';
+import Button from '../../components/ui/Button';
+import EmptyState from '../../components/ui/EmptyState';
+import Icon from '../../components/ui/icons';
 import PetHealthPanel from '../../components/PetHealthPanel';
 import VetClinicList from '../../components/VetClinicList';
 import type { MyPet } from '../../lib/types';
@@ -150,9 +153,9 @@ export default function MyPetsPage() {
           {/* Sanuulga */}
           {!subscribed ? (
             <div style={{ background: 'var(--success-bg)', padding: 'var(--sp-3)', borderRadius: 'var(--r-md)', marginBottom: 'var(--sp-4)' }}>
-              <button onClick={handleSubscribe} className="btn btn-primary">
+              <Button onClick={handleSubscribe} variant="primary">
                 {t('mypets_subscribe')}
-              </button>
+              </Button>
               {notifyError && <p style={{ color: 'var(--alert)', fontSize: 12, marginTop: 'var(--sp-1)' }}>{notifyError}</p>}
             </div>
           ) : (
@@ -180,7 +183,7 @@ export default function MyPetsPage() {
             <div style={{ display: 'flex', gap: 'var(--sp-2)' }}>
               <input className="field" value={vaxName} onChange={(e) => setVaxName(e.target.value)} placeholder={t('health_next_vaccine_name_ph')} style={{ flex: 1 }} />
               <input className="field" type="date" value={date} onChange={(e) => setDate(e.target.value)} style={{ width: 'auto' }} />
-              <button type="submit" disabled={busy} className="btn btn-accent">{t('mypets_add')}</button>
+              <Button type="submit" disabled={busy} variant="accent">{t('mypets_add')}</Button>
             </div>
           </form>
 
@@ -195,13 +198,7 @@ export default function MyPetsPage() {
               ))}
             </div>
           ) : pets.length === 0 ? (
-            <div style={{
-              textAlign: 'center', padding: 'var(--sp-6) var(--sp-4)', background: 'var(--card)',
-              border: '1px dashed var(--line)', borderRadius: 'var(--r-lg)',
-            }}>
-              <div style={{ fontSize: 36, marginBottom: 'var(--sp-2)' }}>💉</div>
-              <p style={{ color: 'var(--muted)', fontSize: 13.5 }}>{t('mypets_none')}</p>
-            </div>
+            <EmptyState icon={<Icon name="vaccine" size={30} />} description={t('mypets_none')} />
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-2)' }}>
               {pets.map((p) => (

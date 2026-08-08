@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
 import { useAuth } from '../lib/useAuth';
 import { useLanguage } from '../lib/i18n';
+import Button from './ui/Button';
 
 /** Имэйл (magic link) нэвтрэх модал — Navbar-аас салгагдсан. */
 export default function LoginModal({ onClose }: { onClose: () => void }) {
@@ -54,7 +55,7 @@ export default function LoginModal({ onClose }: { onClose: () => void }) {
               aria-describedby={err ? 'login-error' : undefined}
             />
             {err && <p id="login-error" className="err" role="alert">{err}</p>}
-            <button type="submit" className="btn btn-primary">{t('login_button')}</button>
+            <Button type="submit" variant="primary">{t('login_button')}</Button>
           </form>
         )}
         <button className="close" onClick={onClose} aria-label="Цонхыг хаах">{t('close')}</button>
@@ -87,7 +88,7 @@ export default function LoginModal({ onClose }: { onClose: () => void }) {
           @media (max-width: 480px) {
             .modal input { font-size: 16px; padding: 12px 14px; }
           }
-          .modal .btn-primary { width: 100%; min-height: var(--touch-target); }
+          .modal :global([data-variant='primary'].btn-base) { width: 100%; min-height: var(--touch-target); }
           .err { color: var(--alert); font-size: 12.5px; margin-bottom: 8px; }
           @media (max-width: 480px) {
             .err { font-size: 13px; }

@@ -9,6 +9,9 @@ import DonateButton from './DonateButton';
 import LanguageToggle from './LanguageToggle';
 import LoginModal from './LoginModal';
 import { useLanguage } from '../lib/i18n';
+import Icon from './ui/icons';
+import type { IconName } from './ui/icons';
+import Button from './ui/Button';
 
 function truncateEmail(email: string): string {
   const [local, domain] = email.split('@');
@@ -87,24 +90,24 @@ export default function Navbar() {
     setShowMobileMenu(false);
   };
 
-  interface NavLinkItem { href: string; label: string; }
-  interface UserMenuItem { href?: string; label: string; isLink: boolean; accent?: boolean; danger?: boolean; onClick?: () => void; }
+  interface NavLinkItem { href: string; label: string; icon?: IconName; }
+  interface UserMenuItem { href?: string; label: string; isLink: boolean; accent?: boolean; danger?: boolean; onClick?: () => void; icon?: IconName; }
 
   const navLinks: NavLinkItem[] = [
-    { href: '/report-lost', label: t('nav_lost') },
-    { href: '/report-found', label: t('nav_found') },
-    { href: '/listings', label: t('nav_listings') },
-    { href: '/adoptions', label: t('nav_adoptions') },
-    { href: '/sitting', label: t('nav_sitting') },
-    { href: '/clinics', label: t('health_tab_clinics') },
-    { href: '/assistant', label: t('assistant_nav') },
-    { href: '/my-pets', label: t('nav_mypets') },
+    { href: '/report-lost', label: t('nav_lost'), icon: 'alert' },
+    { href: '/report-found', label: t('nav_found'), icon: 'eye' },
+    { href: '/listings', label: t('nav_listings'), icon: 'search' },
+    { href: '/adoptions', label: t('nav_adoptions'), icon: 'heart' },
+    { href: '/sitting', label: t('nav_sitting'), icon: 'home' },
+    { href: '/clinics', label: t('health_tab_clinics'), icon: 'cross' },
+    { href: '/assistant', label: t('assistant_nav'), icon: 'bot' },
+    { href: '/my-pets', label: t('nav_mypets'), icon: 'vaccine' },
   ];
 
   const userMenuItems: UserMenuItem[] = [
-    { href: '/my-pets', label: t('nav_mypets'), isLink: true },
-    { href: '/messages', label: t('nav_messages'), isLink: true },
-    ...(admin ? [{ href: '/admin', label: t('nav_admin'), isLink: true, accent: true }] : []),
+    { href: '/my-pets', label: t('nav_mypets'), isLink: true, icon: 'vaccine' },
+    { href: '/messages', label: t('nav_messages'), isLink: true, icon: 'message' },
+    ...(admin ? [{ href: '/admin', label: t('nav_admin'), isLink: true, accent: true, icon: 'shield' as IconName }] : []),
     { label: t('nav_logout'), isLink: false, danger: true, onClick: logout },
   ];
 
@@ -124,6 +127,7 @@ export default function Navbar() {
               href={link.href}
               className={`nav-link${pathname === link.href ? ' active' : ''}`}
             >
+              {link.icon && <Icon name={link.icon} size={16} aria-hidden="true" />}
               {link.label}
             </Link>
           ))}
@@ -133,6 +137,7 @@ export default function Navbar() {
               className={`nav-link${pathname === '/admin' ? ' active' : ''}`}
               style={{ color: 'var(--accent)' }}
             >
+              <Icon name="shield" size={16} aria-hidden="true" />
               {t('nav_admin')}
             </Link>
           )}
@@ -168,6 +173,7 @@ export default function Navbar() {
                         style={item.accent ? { color: 'var(--accent)' } : undefined}
                         onClick={() => setShowUserMenu(false)}
                       >
+                        {item.icon && <Icon name={item.icon} size={16} aria-hidden="true" />}
                         {item.label}
                       </Link>
                     ) : (
@@ -228,6 +234,7 @@ export default function Navbar() {
                   className={`mobile-nav-link${pathname === link.href ? ' active' : ''}`}
                   onClick={handleMobileLinkClick}
                 >
+                  {link.icon && <Icon name={link.icon} size={18} aria-hidden="true" />}
                   {link.label}
                 </Link>
               ))}
@@ -238,6 +245,7 @@ export default function Navbar() {
                   style={{ color: 'var(--accent)' }}
                   onClick={handleMobileLinkClick}
                 >
+                  <Icon name="shield" size={18} aria-hidden="true" />
                   {t('nav_admin')}
                 </Link>
               )}
@@ -255,26 +263,26 @@ export default function Navbar() {
                     <span>{user.email ? truncateEmail(user.email) : t('nav_guest')}</span>
                   </div>
                   <div className="mobile-user-actions">
-                    <Link href="/my-pets" className="btn-base btn-ghost" onClick={handleMobileLinkClick}>
+                    <Button as="link" href="/my-pets" variant="ghost" onClick={handleMobileLinkClick}>
                       {t('nav_mypets')}
-                    </Link>
-                    <Link href="/messages" className="btn-base btn-ghost" onClick={handleMobileLinkClick}>
+                    </Button>
+                    <Button as="link" href="/messages" variant="ghost" onClick={handleMobileLinkClick}>
                       {t('nav_messages')}
-                    </Link>
+                    </Button>
                     {admin && (
-                      <Link href="/admin" className="btn-base btn-ghost" style={{ color: 'var(--accent)' }} onClick={handleMobileLinkClick}>
+                      <Button as="link" href="/admin" variant="ghost" style={{ color: 'var(--accent)' }} onClick={handleMobileLinkClick}>
                         {t('nav_admin')}
-                      </Link>
+                      </Button>
                     )}
-                    <button className="btn-base btn-danger" onClick={logout}>
+                    <Button variant="danger" onClick={logout}>
                       {t('nav_logout')}
-                    </button>
+                    </Button>
                   </div>
                 </div>
               ) : (
-                <button className="btn-base btn-primary" style={{ width: '100%' }} onClick={() => { setShowLogin(true); setShowMobileMenu(false); }}>
+                <Button variant="primary" fullWidth onClick={() => { setShowLogin(true); setShowMobileMenu(false); }}>
                   {t('nav_login')}
-                </button>
+                </Button>
               )}
             </div>
           </div>

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useSyncExternalStore } from 'react';
 import PetIcon from '../../../components/PetIcon';
+import Button from '../../../components/ui/Button';
 import LocationMap from '../../../components/LocationMap';
 import SittingEditForm from '../../../components/SittingEditForm';
 import type { SittingEditValues } from '../../../components/SittingEditForm';
@@ -157,16 +158,16 @@ export default function SittingDetailClient({ id }: { id: string }) {
               {revealed ? (
                 <a className="phone-link" href={`tel:${listing.phone}`}>☎ {formatPhone(listing.phone)}</a>
               ) : listing.phone ? (
-                <button className="btn btn-ghost" onClick={() => setRevealed(true)}>☎ {maskPhone(listing.phone)} · {t('detail_show_phone')}</button>
+                <Button variant="ghost" onClick={() => setRevealed(true)}>☎ {maskPhone(listing.phone)} · {t('detail_show_phone')}</Button>
               ) : null}
             </div>
 
             {isOwner && (
               <div className="owner-actions">
-                <button className="btn btn-ghost" onClick={() => setEditing(true)}>{t('detail_edit_btn')}</button>
-                <button className="btn btn-danger" onClick={handleDelete} disabled={deleting}>
+                <Button variant="ghost" onClick={() => setEditing(true)}>{t('detail_edit_btn')}</Button>
+                <Button variant="danger" onClick={handleDelete} disabled={deleting}>
                   {deleting ? t('detail_deleting') : t('detail_delete_btn')}
-                </button>
+                </Button>
               </div>
             )}
           </div>
@@ -181,7 +182,7 @@ export default function SittingDetailClient({ id }: { id: string }) {
       )}
 
       <div className="back-row">
-        <Link href="/sitting" className="btn btn-ghost" style={{ display: 'inline-flex' }}>{t('sitting_back_to_list')}</Link>
+        <Button as="link" href="/sitting" variant="ghost">{t('sitting_back_to_list')}</Button>
       </div>
 
       <div className="share-section">
@@ -212,7 +213,7 @@ export default function SittingDetailClient({ id }: { id: string }) {
           font-size: 15px; font-weight: 600; color: var(--primary); text-decoration: none;
         }
         .owner-actions { display: flex; gap: var(--sp-2); margin-top: var(--sp-4); }
-        .owner-actions .btn { flex: 1; min-height: var(--touch-target); }
+        .owner-actions :global(.btn-base) { flex: 1; min-height: var(--touch-target); }
         .map-section { margin-top: var(--sp-5); }
         .map-title { font-size: 13px; font-weight: 600; color: var(--primary); margin-bottom: var(--sp-2); }
         .back-row { margin-top: var(--sp-5); }

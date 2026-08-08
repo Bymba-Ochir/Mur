@@ -7,6 +7,7 @@ import PetCard from '../../components/PetCard';
 import NotifySubscribe from '../../components/NotifySubscribe';
 import VolunteerBadge from '../../components/VolunteerBadge';
 import SkeletonCard from '../../components/SkeletonCard';
+import Button from '../../components/ui/Button';
 import Link from 'next/link';
 import { useLanguage } from '../../lib/i18n';
 import { DISTRICTS as DISTRICT_VALUES } from '../../lib/districts';
@@ -130,7 +131,7 @@ export default function ListingsPage() {
           onChange={handleMatchUpload} disabled={!!matching} className="file-input"
           aria-label="Төстэй байдлаар эрэмбэлэх зураг сонгох"
         />
-        <label htmlFor="match-file" className="btn btn-ghost">{t('match_label')}</label>
+        <Button as="label" htmlFor="match-file" variant="ghost">{t('match_label')}</Button>
         {matching && <span className="match-status"> — {typeof matching === 'string' ? matching : 'AI шинжилж байна (эхний удаа 10-30 сек)...'}</span>}
         {matchFile && !matching && !matchError && matchedCount === 0 && (
           <span className="match-status err">
@@ -162,8 +163,8 @@ export default function ListingsPage() {
             {search || district || status || type ? t('empty_no_results_desc') : t('empty_no_posts_desc')}
           </p>
           <div className="empty-actions">
-            <Link href="/report-lost" className="btn btn-accent">{t('hero_btn_lost')}</Link>
-            <Link href="/report-found" className="btn btn-ghost">{t('hero_btn_found')}</Link>
+            <Button as="link" href="/report-lost" variant="accent">{t('hero_btn_lost')}</Button>
+            <Button as="link" href="/report-found" variant="ghost">{t('hero_btn_found')}</Button>
           </div>
         </div>
       ) : (
@@ -174,13 +175,9 @@ export default function ListingsPage() {
           </div>
           {hasMore && !matchFile && (
             <div className="load-more-wrap">
-              <button
-                onClick={handleLoadMore}
-                disabled={loadingMore}
-                className="btn btn-ghost"
-              >
+              <Button onClick={handleLoadMore} disabled={loadingMore} variant="ghost">
                 {loadingMore ? t('loading_more') : t('load_more')}
-              </button>
+              </Button>
             </div>
           )}
         </>
@@ -236,7 +233,7 @@ export default function ListingsPage() {
         .empty-actions { display: flex; gap: var(--sp-3); justify-content: center; flex-wrap: wrap; }
         @media (max-width: 480px) {
           .empty-actions { gap: var(--sp-2); flex-direction: column; }
-          .empty-actions :global(.btn) { width: 100%; justify-content: center; }
+          .empty-actions :global(.btn-base) { width: 100%; justify-content: center; }
         }
         .load-more-wrap { text-align: center; margin-top: var(--sp-6); }
         @media (max-width: 640px) {

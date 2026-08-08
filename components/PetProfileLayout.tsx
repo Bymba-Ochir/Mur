@@ -7,6 +7,7 @@ import { relativeTime } from '../lib/relativeTime';
 import { maskPhone, formatPhone } from '../lib/utils';
 import { vaccineStatus } from '../lib/vaccineService';
 import PetIcon from './PetIcon';
+import Button from './ui/Button';
 import ShareButtons from './ShareButtons';
 import type { PetProfileData } from '../lib/types';
 
@@ -153,9 +154,9 @@ export default function PetProfileLayout({
               {phoneRevealed ? (
                 <a href={`tel:${data.phone}`} className="phone-link">☎ {formatPhone(data.phone)}</a>
               ) : (
-                <button className="btn btn-ghost" onClick={() => setPhoneRevealed(true)} style={{ fontSize: 13, minHeight: 36 }}>
+                <Button variant="ghost" onClick={() => setPhoneRevealed(true)} style={{ fontSize: 13, minHeight: 36 }}>
                   ☎ {maskPhone(data.phone)} · {t('detail_show_phone')}
-                </button>
+                </Button>
               )}
             </div>
           )}

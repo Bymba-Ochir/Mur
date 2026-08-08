@@ -3,6 +3,7 @@ import { useEffect, useState, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
+import Button from '../../../components/ui/Button';
 import { useAuth } from '../../../lib/useAuth';
 import { useToast } from '../../../components/Toast';
 import { useLanguage } from '../../../lib/i18n';
@@ -130,7 +131,7 @@ export default function MessageThreadClient({ id }: { id: string }) {
     return (
       <div style={{ padding: 'var(--sp-6)', textAlign: 'center' }}>
         <p style={{ color: 'var(--alert)', marginBottom: 'var(--sp-3)' }}>{error}</p>
-        <Link href="/messages" className="btn btn-ghost">{t('chat_list_title')}</Link>
+        <Button as="link" href="/messages" variant="ghost">{t('chat_list_title')}</Button>
       </div>
     );
   }

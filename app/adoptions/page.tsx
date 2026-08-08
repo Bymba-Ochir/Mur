@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { fetchAdoptions } from '../../lib/adoptionService';
 import AdoptionCard from '../../components/AdoptionCard';
 import SkeletonCard from '../../components/SkeletonCard';
+import Button from '../../components/ui/Button';
 import Link from 'next/link';
 import { useLanguage } from '../../lib/i18n';
 import { DISTRICTS as DISTRICT_VALUES } from '../../lib/districts';
@@ -61,9 +62,9 @@ export default function AdoptionsPage() {
         <p>{t('adoptions_desc')}</p>
       </div>
 
-      <Link href="/adoptions/new" className="btn btn-accent" style={{ marginBottom: 'var(--sp-4)', display: 'inline-flex' }}>
+      <Button as="link" href="/adoptions/new" variant="accent" style={{ marginBottom: 'var(--sp-4)' }}>
         {t('adoptions_new_btn')}
-      </Link>
+      </Button>
 
       <div className="filter-bar">
         <input
@@ -100,7 +101,7 @@ export default function AdoptionsPage() {
           <p style={{ color: 'var(--muted)', marginBottom: 16 }}>
             {search || type || gender || district ? t('empty_no_results_desc') : t('adoptions_empty_desc')}
           </p>
-          <Link href="/adoptions/new" className="btn btn-accent">{t('adoptions_new_btn')}</Link>
+          <Button as="link" href="/adoptions/new" variant="accent">{t('adoptions_new_btn')}</Button>
         </div>
       ) : (
         <>
@@ -109,9 +110,9 @@ export default function AdoptionsPage() {
             {adoptions.map((a) => <AdoptionCard key={a.id} adoption={a} />)}
           </div>
           {hasMore && (
-            <button onClick={() => load(page + 1)} disabled={loadingMore} className="btn" style={{ display: 'block', margin: 'var(--sp-5) auto 0' }}>
+            <Button onClick={() => load(page + 1)} disabled={loadingMore} variant="ghost" style={{ display: 'block', margin: 'var(--sp-5) auto 0' }}>
               {loadingMore ? t('loading_more') : t('load_more')}
-            </button>
+            </Button>
           )}
         </>
       )}

@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { useLanguage } from '../lib/i18n';
+import Button from './ui/Button';
 import { useToast } from './Toast';
 import { addMedication, deleteMedication, updateMedicationReminder } from '../lib/petHealthService';
 import { getErrorMessage } from '../lib/utils';
@@ -54,9 +55,9 @@ export default function MedicationsSection({
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--sp-3)' }}>
         <h3 style={{ fontSize: 14, fontWeight: 600, color: 'var(--primary)' }}>{t('health_section_medications')}</h3>
-        <button className="btn btn-ghost" style={{ fontSize: 12, padding: '6px 12px', minHeight: 'auto' }} onClick={() => setShowForm(!showForm)}>
+        <Button variant="ghost" style={{ fontSize: 12, padding: '6px 12px', minHeight: 'auto' }} onClick={() => setShowForm(!showForm)}>
           {showForm ? '✕' : t('health_med_add')}
-        </button>
+        </Button>
       </div>
 
       {showForm && (
@@ -76,9 +77,9 @@ export default function MedicationsSection({
               <input className="field" type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} style={{ fontSize: 13, minHeight: 36, width: '100%' }} />
             </div>
           </div>
-          <button className="btn btn-accent" onClick={handleAdd} disabled={busy || !name.trim()} style={{ fontSize: 13, minHeight: 36 }}>
+          <Button variant="accent" onClick={handleAdd} disabled={busy || !name.trim()} style={{ fontSize: 13, minHeight: 36 }}>
             {busy ? t('chat_sending') : t('health_med_add')}
-          </button>
+          </Button>
         </div>
       )}
 

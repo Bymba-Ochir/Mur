@@ -1,5 +1,6 @@
 'use client';
 import { useLanguage } from '../lib/i18n';
+import Button from './ui/Button';
 import { distanceLabel } from '../lib/clinicService';
 import type { VetClinic } from '../lib/types';
 
@@ -55,13 +56,13 @@ export default function ClinicCard({
           ))}
         </div>
         <div style={{ display: 'flex', gap: 'var(--sp-2)', marginTop: 'var(--sp-3)' }}>
-          <a href={`tel:${clinic.phone}`} className="btn btn-ghost" style={{ fontSize: 12, minHeight: 36, minWidth: 'auto' }}>
+          <Button as="anchor" href={`tel:${clinic.phone}`} variant="ghost" style={{ fontSize: 12, minHeight: 36, minWidth: 'auto' }}>
             ☎ {t('clinics_call')}
-          </a>
+          </Button>
           {onBook && (
-            <button className="btn btn-accent" style={{ fontSize: 12, minHeight: 36, flex: 1, justifyContent: 'center' }} onClick={(e) => { e.stopPropagation(); onBook(); }}>
+            <Button variant="accent" style={{ fontSize: 12, minHeight: 36, flex: 1, justifyContent: 'center' }} onClick={(e) => { e.stopPropagation(); onBook(); }}>
               {t('clinics_book')}
-            </button>
+            </Button>
           )}
         </div>
       </div>

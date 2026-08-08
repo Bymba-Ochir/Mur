@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { useLanguage } from '../lib/i18n';
+import Button from './ui/Button';
 import { useToast } from './Toast';
 import { addCondition, deleteCondition } from '../lib/petHealthService';
 import { getErrorMessage } from '../lib/utils';
@@ -42,9 +43,9 @@ export default function ConditionsSection({
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--sp-3)' }}>
         <h3 style={{ fontSize: 14, fontWeight: 600, color: 'var(--primary)' }}>{t('health_section_conditions')}</h3>
-        <button className="btn btn-ghost" style={{ fontSize: 12, padding: '6px 12px', minHeight: 'auto' }} onClick={() => setShowForm(!showForm)}>
+        <Button variant="ghost" style={{ fontSize: 12, padding: '6px 12px', minHeight: 'auto' }} onClick={() => setShowForm(!showForm)}>
           {showForm ? '✕' : t('health_condition_add')}
-        </button>
+        </Button>
       </div>
 
       {showForm && (
@@ -52,9 +53,9 @@ export default function ConditionsSection({
           <input className="field" placeholder={t('health_condition_name')} value={name} onChange={(e) => setName(e.target.value)} style={{ fontSize: 13, minHeight: 36 }} />
           <input className="field" type="date" value={diagnosisDate} onChange={(e) => setDiagnosisDate(e.target.value)} style={{ fontSize: 13, minHeight: 36 }} />
           <textarea className="field" placeholder={t('health_condition_notes')} value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} style={{ fontSize: 13, resize: 'vertical' }} />
-          <button className="btn btn-accent" onClick={handleAdd} disabled={busy || !name.trim()} style={{ fontSize: 13, minHeight: 36 }}>
+          <Button variant="accent" onClick={handleAdd} disabled={busy || !name.trim()} style={{ fontSize: 13, minHeight: 36 }}>
             {busy ? t('chat_sending') : t('health_condition_add')}
-          </button>
+          </Button>
         </div>
       )}
 

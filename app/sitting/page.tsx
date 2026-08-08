@@ -5,6 +5,7 @@ import { useLanguage } from '../../lib/i18n';
 import { fetchSittingListings } from '../../lib/sittingService';
 import SittingCard from '../../components/SittingCard';
 import SkeletonCard from '../../components/SkeletonCard';
+import Button from '../../components/ui/Button';
 import { DISTRICTS } from '../../lib/districts';
 import type { SittingListing, SittingPetType } from '../../lib/types';
 import type { District } from '../../lib/districts';
@@ -48,9 +49,9 @@ export default function SittingPage() {
         <h1>{t('sitting_title')}</h1>
         <p>{t('sitting_desc')}</p>
       </div>
-      <Link href="/sitting/new" className="btn btn-accent" style={{ marginBottom: 'var(--sp-4)', display: 'inline-flex' }}>
+      <Button as="link" href="/sitting/new" variant="accent" style={{ marginBottom: 'var(--sp-4)' }}>
         {t('sitting_new_btn')}
-      </Link>
+      </Button>
       <div className="filter-bar">
         <input type="search" className="filter" placeholder={t('sitting_search_placeholder')} aria-label={t('sitting_search_placeholder')} value={search} onChange={(e) => setSearch(e.target.value)} />
         <select className="filter" aria-label={t('filter_all_types')} value={petType} onChange={(e) => setPetType(e.target.value as SittingPetType | '')}>
@@ -80,7 +81,7 @@ export default function SittingPage() {
               <p style={{ color: 'var(--muted)', marginBottom: 16 }}>{t('sitting_empty_desc')}</p>
             </>
           )}
-          <Link href="/sitting/new" className="btn btn-accent">{t('sitting_new_btn')}</Link>
+          <Button as="link" href="/sitting/new" variant="accent">{t('sitting_new_btn')}</Button>
         </div>
       ) : (
         <>
@@ -89,9 +90,9 @@ export default function SittingPage() {
             {listings.map((l) => <SittingCard key={l.id} listing={l} />)}
           </div>
           {hasMore && (
-            <button onClick={() => load(page + 1)} disabled={loadingMore} className="btn" style={{ display: 'block', margin: 'var(--sp-5) auto 0' }}>
+            <Button onClick={() => load(page + 1)} disabled={loadingMore} variant="ghost" style={{ display: 'block', margin: 'var(--sp-5) auto 0' }}>
               {loadingMore ? t('loading_more') : t('load_more')}
-            </button>
+            </Button>
           )}
         </>
       )}

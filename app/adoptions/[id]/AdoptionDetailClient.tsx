@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useSyncExternalStore } from 'react';
 import PetIcon from '../../../components/PetIcon';
+import Button from '../../../components/ui/Button';
 import AdoptionEditForm from '../../../components/AdoptionEditForm';
 import type { AdoptionEditValues } from '../../../components/AdoptionEditForm';
 import ShareButtons from '../../../components/ShareButtons';
@@ -87,7 +88,7 @@ export default function AdoptionDetailClient({ id }: { id: string }) {
       </div>
 
       <div className="back-row">
-        <Link href="/adoptions" className="btn btn-ghost" style={{ display: 'inline-flex' }}>{t('adoptions_back_to_list')}</Link>
+        <Button as="link" href="/adoptions" variant="ghost">{t('adoptions_back_to_list')}</Button>
       </div>
 
       {editing ? (
@@ -146,16 +147,16 @@ export default function AdoptionDetailClient({ id }: { id: string }) {
               {revealed ? (
                 <a className="phone-link" href={`tel:${adoption.phone}`}>☎ {formatPhone(adoption.phone)}</a>
               ) : adoption.phone ? (
-                <button className="btn btn-ghost" onClick={() => setRevealed(true)}>☎ {maskPhone(adoption.phone)} · {t('detail_show_phone')}</button>
+                <Button variant="ghost" onClick={() => setRevealed(true)}>☎ {maskPhone(adoption.phone)} · {t('detail_show_phone')}</Button>
               ) : null}
             </div>
 
             {isOwner && (
               <div className="owner-actions">
-                <button className="btn btn-ghost" onClick={() => setEditing(true)}>{t('detail_edit_btn')}</button>
-                <button className="btn btn-danger" onClick={handleDelete} disabled={deleting}>
+                <Button variant="ghost" onClick={() => setEditing(true)}>{t('detail_edit_btn')}</Button>
+                <Button variant="danger" onClick={handleDelete} disabled={deleting}>
                   {deleting ? t('detail_deleting') : t('detail_delete_btn')}
-                </button>
+                </Button>
               </div>
             )}
           </div>
@@ -163,9 +164,9 @@ export default function AdoptionDetailClient({ id }: { id: string }) {
       )}
 
       <div style={{ textAlign: 'center', marginTop: 'var(--sp-4)' }}>
-        <Link href={`/profiles/adoption/${adoption.id}`} className="btn btn-accent" style={{ display: 'inline-flex' }}>
+        <Button as="link" href={`/profiles/adoption/${adoption.id}`} variant="accent">
           {t('profiles_view_profile')}
-        </Link>
+        </Button>
       </div>
 
       <div className="share-section">
@@ -196,7 +197,7 @@ export default function AdoptionDetailClient({ id }: { id: string }) {
           font-size: 15px; font-weight: 600; color: var(--primary); text-decoration: none;
         }
         .owner-actions { display: flex; gap: var(--sp-2); margin-top: var(--sp-4); }
-        .owner-actions .btn { flex: 1; min-height: var(--touch-target); }
+        .owner-actions :global(.btn-base) { flex: 1; min-height: var(--touch-target); }
         .back-row { margin-top: var(--sp-5); }
         .share-section { margin-top: var(--sp-6); text-align: center; }
         .share-hint { font-size: 12px; color: var(--muted); margin-top: var(--sp-2); }
