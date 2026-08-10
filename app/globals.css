@@ -1,7 +1,7 @@
 @import 'leaflet/dist/leaflet.css';
 
 /* ═══════════════════════════════════════════════════════
-   МӨР — Design tokens: "Гэрлэн бүрх" (Porch-light)
+   МӨР — Design tokens: Indigo / Coral / Sky
    Dark by default. Light override via [data-theme="light"].
    ═══════════════════════════════════════════════════════ */
 :root {
@@ -23,13 +23,16 @@
   --alert-light: #E87A8A;
   --alert-deep: #B83A4F;
 
-  --success: #56C7E8;
-  --success-bg: rgba(86, 199, 232, 0.10);
-  --success-text: #1A6F85;
-  --toast-success-bg: #1A6F85;
+  --success: #35B779;
+  --success-bg: rgba(53, 183, 121, 0.10);
+  --success-text: #187A4D;
+  --toast-success-bg: #187A4D;
 
   --warning: #FFD166;          /* Yellow — alerts, vaccine, "last seen" */
   --confirmed: #35B779;        /* Green — "Олдлоо", approved */
+  --found: #56C7E8;            /* Sky blue — found pets, chat */
+  --found-deep: #3BA7C4;
+  --assistant: #8178F7;
 
   --ink: #171A2B;              /* Dark navy — primary text */
   --muted: #5C6078;            /* Secondary text */
@@ -126,12 +129,15 @@
   --alert: #D9485F;
   --alert-light: #E87A8A;
   --alert-deep: #B83A4F;
-  --success: #56C7E8;
-  --success-bg: rgba(86, 199, 232, 0.12);
-  --success-text: #A3E4F5;
-  --toast-success-bg: #1A6F85;
+  --success: #35B779;
+  --success-bg: rgba(53, 183, 121, 0.14);
+  --success-text: #83E3B5;
+  --toast-success-bg: #187A4D;
+  --found: #56C7E8;
+  --found-deep: #3BA7C4;
+  --assistant: #A49EFC;
 
-  --ink: #F5F0E6;
+  --ink: #F7F8FC;
   --muted: #B7BAC2;
   --line: rgba(183, 188, 196, 0.14);
   --card: #1F2634;
@@ -143,7 +149,7 @@
   --surface-1: #171C27;
   --surface-2: #1F2634;
   --surface-3: #26304A;
-  --text-primary: #F5F0E6;
+  --text-primary: #F7F8FC;
   --text-secondary: #B7BAC2;
   --text-tertiary: #7D818C;
   --text-on-accent: #FFFFFF;
@@ -211,7 +217,8 @@ html { -webkit-text-size-adjust: 100%; }
 
 body {
   background:
-    radial-gradient(1200px 600px at 15% -10%, rgba(240, 169, 58, 0.07), transparent 60%),
+    radial-gradient(1000px 520px at 12% -8%, rgba(98, 91, 246, 0.10), transparent 62%),
+    radial-gradient(760px 460px at 92% 8%, rgba(86, 199, 232, 0.06), transparent 66%),
     var(--overcast);
   color: var(--ink);
   font-family: var(--font-body);
@@ -336,7 +343,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 .field-base:focus-visible {
   outline: none;
   border-color: var(--border-focus);
-  box-shadow: 0 0 0 3px rgba(46, 111, 224, 0.16);
+  box-shadow: 0 0 0 3px rgba(98, 91, 246, 0.16);
 }
 @media (max-width: 480px) {
   .field-base { font-size: 16px; }
@@ -410,7 +417,7 @@ select.filter:hover, input.filter:hover { border-color: var(--muted); }
 select.filter:focus-visible, input.filter:focus-visible {
   outline: none;
   border-color: var(--border-focus);
-  box-shadow: 0 0 0 3px rgba(46, 111, 224, 0.12);
+  box-shadow: 0 0 0 3px rgba(98, 91, 246, 0.12);
 }
 @media (max-width: 768px) {
   select.filter, input.filter { flex: 1 1 calc(50% - var(--sp-2)); }
@@ -470,7 +477,7 @@ select.filter:focus-visible, input.filter:focus-visible {
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
   min-height: var(--touch-target);
 }
-.field:focus { outline: none; border-color: var(--border-focus); box-shadow: 0 0 0 3px rgba(46, 111, 224, 0.12); }
+.field:focus { outline: none; border-color: var(--border-focus); box-shadow: 0 0 0 3px rgba(98, 91, 246, 0.12); }
 .field::placeholder { color: var(--muted); }
 textarea.field { min-height: 90px; resize: vertical; }
 @media (max-width: 480px) {

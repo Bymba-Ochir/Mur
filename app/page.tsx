@@ -15,7 +15,7 @@ export default function Home() {
   return (
     <div className="home">
       <section className="hero">
-        {/* "Гэрлэн бүрх" ambient glows */}
+        {/* Indigo / Coral ambient glows */}
         <div className="hero-glow g1" aria-hidden="true" />
         <div className="hero-glow g2" aria-hidden="true" />
 
@@ -36,7 +36,7 @@ export default function Home() {
                   <path d="M3 8h10M9 4l4 4-4 4" />
                 </svg>
               </Button>
-              <Button as="link" href="/report-found" variant="ghost">{t('hero_btn_found')}</Button>
+              <Button as="link" href="/report-found" variant="secondary">{t('hero_btn_found')}</Button>
             </div>
 
             <ul className="hero-trust" aria-label="Платформын давуу талууд">
@@ -309,7 +309,7 @@ export default function Home() {
           box-shadow: var(--shadow-md);
           animation: float 7s ease-in-out infinite reverse;
         }
-        .hero-card-mini .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+        .hero-card-mini .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--confirmed); flex-shrink: 0; box-shadow: 0 0 0 4px color-mix(in srgb, var(--confirmed) 18%, transparent); }
         .hero-card-mini p { font-size: 11.5px; color: var(--text-secondary); font-weight: 600; }
         @media (max-width: 900px) { .hero-card-mini { right: 8%; } }
 
@@ -352,26 +352,27 @@ export default function Home() {
           transition: transform var(--dur-base) var(--ease-out), box-shadow var(--dur-base) var(--ease-out), border-color var(--dur-base) var(--ease-out);
         }
         .service-card:nth-child(-n + 2) { grid-column: span 3; }
-        .service-card:nth-child(1) .service-icon { background: linear-gradient(135deg, #FF8A8A, #FF6B6B); }
-        .service-card:nth-child(2) .service-icon,
-        .service-card:nth-child(5) .service-icon,
-        .service-card:nth-child(6) .service-icon { background: linear-gradient(135deg, #7DD8F0, #56C7E8); }
-        .service-card:nth-child(6) .service-icon { background: linear-gradient(135deg, #A49EFC, #8178F7); }
+        .service-card:nth-child(1) { --feature-color: var(--accent); --feature-soft: #FF8A8A; }
+        .service-card:nth-child(2) { --feature-color: var(--found); --feature-soft: #7DD8F0; }
+        .service-card:nth-child(3) { --feature-color: var(--primary); --feature-soft: #8178F7; }
+        .service-card:nth-child(4) { --feature-color: var(--found); --feature-soft: #7DD8F0; }
+        .service-card:nth-child(5) { --feature-color: var(--clinic); --feature-soft: #56C7E8; }
+        .service-card:nth-child(6) { --feature-color: var(--assistant); --feature-soft: #A49EFC; }
         @media (max-width: 900px) { .service-card, .service-card:nth-child(-n + 2) { grid-column: span 3; } }
         @media (max-width: 600px) { .service-card, .service-card:nth-child(-n + 2) { grid-column: span 6; } }
         .service-card:hover {
           transform: translateY(-4px);
           box-shadow: var(--shadow-md);
-          border-color: var(--primary-light);
+          border-color: color-mix(in srgb, var(--feature-color) 55%, var(--border-subtle));
         }
         .service-icon {
           display: inline-flex; align-items: center; justify-content: center;
           width: 48px; height: 48px; border-radius: var(--r-md);
-          background: var(--surface-3); color: var(--primary);
+          background: linear-gradient(135deg, var(--feature-soft), var(--feature-color)); color: #FFFFFF;
           margin-bottom: var(--sp-4);
           transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
         }
-        .service-card:hover .service-icon { background: var(--grad-brand); color: var(--text-on-accent); }
+        .service-card:hover .service-icon { transform: scale(1.06) rotate(-3deg); box-shadow: 0 8px 20px color-mix(in srgb, var(--feature-color) 24%, transparent); }
         .service-card h3 { font-family: var(--font-display); font-size: var(--text-base); font-weight: 700; color: var(--text-primary); margin-bottom: var(--sp-1); }
         .service-card p { font-size: var(--text-xs); color: var(--text-secondary); line-height: 1.5; }
         .service-arrow {
@@ -379,7 +380,7 @@ export default function Home() {
           color: var(--text-tertiary);
           transition: transform var(--dur-base) var(--ease-out), color var(--dur-base) var(--ease-out);
         }
-        .service-card:hover .service-arrow { transform: translateX(3px); color: var(--accent); }
+        .service-card:hover .service-arrow { transform: translateX(3px); color: var(--feature-color); }
 
         .how { margin-top: 0; padding: var(--sp-9) 0; animation: rise-in 0.6s cubic-bezier(0.16,1,0.3,1) 0.55s backwards; }
         @media (max-width: 640px) { .how { margin-top: var(--sp-5); } }

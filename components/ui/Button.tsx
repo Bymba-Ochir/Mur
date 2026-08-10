@@ -42,9 +42,11 @@ const VARIANTS: Record<ButtonVariant, string> = {
     &:active { transform: translateY(0); box-shadow: var(--shadow-xs); }
   `,
   secondary: `
-    background: var(--surface-3);
-    color: var(--primary);
-    &:hover { background: var(--border-subtle); }
+    background: linear-gradient(135deg, #7DD8F0, var(--found));
+    color: #103B47;
+    box-shadow: var(--shadow-sm);
+    &:hover { background: linear-gradient(135deg, var(--found), var(--found-deep)); box-shadow: var(--shadow-md); transform: translateY(-1px); }
+    &:active { transform: translateY(0); box-shadow: var(--shadow-xs); }
   `,
   ghost: `
     background: transparent;
