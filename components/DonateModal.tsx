@@ -4,6 +4,7 @@ import { useToast } from './Toast';
 import { useLanguage } from '../lib/i18n';
 import { fireConfetti } from '../lib/confetti';
 import { getErrorMessage } from '../lib/utils';
+import { createPortal } from 'react-dom';
 
 const AMOUNTS = [3000, 5000, 10000, 20000];
 
@@ -93,7 +94,9 @@ export default function DonateModal({ onClose }: { onClose: () => void }) {
     }
   }
 
-  return (
+  if (typeof document === 'undefined') return null;
+
+  return createPortal(
     <div className="overlay" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="donate-title">
         <button className="close" onClick={onClose} aria-label={t('donate_close')}>✕</button>
@@ -180,15 +183,17 @@ export default function DonateModal({ onClose }: { onClose: () => void }) {
       <style jsx>{`
         .overlay {
           position: fixed; inset: 0; background: var(--overlay);
-          display: flex; align-items: center; justify-content: center;
-          z-index: 300; padding: 16px;
+          display: flex; align-items: flex-start; justify-content: center;
+          z-index: 1000; padding: max(24px, 5vh) 16px 24px;
+          overflow-y: auto; overscroll-behavior: contain;
           animation: fadeIn 0.2s ease;
         }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         .modal {
           background: var(--card); border-radius: var(--r-lg); padding: 24px;
           max-width: 360px; width: 100%; color: var(--ink); position: relative;
-          max-height: 90vh; overflow-y: auto;
+          max-height: none; overflow: visible;
+          box-shadow: var(--shadow-lift);
           animation: slideDown 0.35s cubic-bezier(0.16, 1, 0.3, 1);
         }
         @keyframes slideDown {
@@ -216,7 +221,13 @@ export default function DonateModal({ onClose }: { onClose: () => void }) {
         .deep-links { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 10px 0; }
         .deep-link { display: flex; align-items: center; gap: 4px; font-size: 11.5px; background: var(--eyebrow-bg); color: var(--primary); padding: 5px 10px; border-radius: var(--r-sm); text-decoration: none; }
         .deep-link img { width: 16px; height: 16px; border-radius: var(--r-sm); }
+        @media (max-width: 480px) {
+          .overlay { padding: 12px; align-items: flex-start; }
+          .modal { max-width: 100%; padding: 20px 16px; border-radius: var(--r-md); }
+          input, textarea { font-size: 16px; }
+        }
       `}</style>
-    </div>
+    </div>,
+    document.body,
   );
 }

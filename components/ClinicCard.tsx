@@ -30,8 +30,8 @@ export default function ClinicCard({
       role={onSelect ? 'button' : undefined}
       tabIndex={onSelect ? 0 : undefined}
     >
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 'var(--sp-2)' }}>
+      <div className="clinic-content">
+        <div className="clinic-heading">
           <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 15, fontWeight: 600, color: 'var(--primary)' }}>
             {clinic.name}
           </h3>
@@ -50,17 +50,17 @@ export default function ClinicCard({
             {t('clinics_note')} {clinic.note}
           </p>
         )}
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 6 }}>
+        <div className="clinic-services">
           {clinic.services.map((s) => (
             <span key={s} className="chip">{t(SERVICE_I18N[s] as 'service_exam')}</span>
           ))}
         </div>
-        <div style={{ display: 'flex', gap: 'var(--sp-2)', marginTop: 'var(--sp-3)' }}>
+        <div className="clinic-actions">
           <Button as="anchor" href={`tel:${clinic.phone}`} variant="ghost" style={{ fontSize: 12, minHeight: 36, minWidth: 'auto' }}>
             ☎ {t('clinics_call')}
           </Button>
           {onBook && (
-            <Button variant="accent" style={{ fontSize: 12, minHeight: 36, flex: 1, justifyContent: 'center' }} onClick={(e) => { e.stopPropagation(); onBook(); }}>
+            <Button variant="primary" style={{ fontSize: 12, minHeight: 36, minWidth: 148, background: 'var(--clinic)', justifyContent: 'center' }} onClick={(e) => { e.stopPropagation(); onBook(); }}>
               {t('clinics_book')}
             </Button>
           )}
@@ -70,8 +70,13 @@ export default function ClinicCard({
       <style jsx>{`
         .clinic-card {
           display: flex; gap: var(--sp-3); align-items: flex-start;
+          padding: var(--sp-5);
           transition: transform var(--dur-base) var(--ease-out), box-shadow var(--dur-base) var(--ease-out), border-color var(--dur-base) var(--ease-out);
         }
+        .clinic-content { flex: 1; min-width: 0; }
+        .clinic-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--sp-2); }
+        .clinic-services { display: flex; flex-wrap: wrap; gap: 5px; margin-top: var(--sp-2); }
+        .clinic-actions { display: flex; justify-content: flex-end; gap: var(--sp-2); margin-top: var(--sp-4); }
         .clinic-card:hover {
           transform: translateY(-3px);
           box-shadow: var(--shadow-md);
@@ -82,6 +87,11 @@ export default function ClinicCard({
           display: inline-block; font-size: 11px; padding: 3px 10px;
           background: var(--surface-3); border-radius: var(--r-pill);
           color: var(--primary); font-weight: 600; white-space: nowrap;
+        }
+        @media (max-width: 640px) {
+          .clinic-card { padding: var(--sp-4); }
+          .clinic-actions { justify-content: stretch; }
+          .clinic-actions :global(.btn-base) { flex: 1; min-width: 0 !important; }
         }
       `}</style>
     </div>
