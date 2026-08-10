@@ -5,21 +5,25 @@
    Dark by default. Light override via [data-theme="light"].
    ═══════════════════════════════════════════════════════ */
 :root {
+  --brand-primary: #625BF6;
+  --brand-action: #FF6B6B;
+  --brand-secondary: #56C7E8;
+  --clinic: #3BA7C4;
   /* ── Color Palette — Indigo + Coral + Sky blue ── */
-  --primary: #625BF6;          /* Indigo — brand, links, primary actions */
+  --primary: #625BF6;
   --primary-light: #8178F7;
   --primary-dark: #4A3DE0;
   --brand: #625BF6;
 
-  --accent: #FF6B6B;           /* Coral — CTA, "Алдсан", action */
+  --accent: #FF6B6B;
   --accent-deep: #E05555;
   --accent-ink: #FFFFFF;
 
-  --alert: #D9485F;            /* Deep red — urgent, danger */
+  --alert: #D9485F;
   --alert-light: #E87A8A;
   --alert-deep: #B83A4F;
 
-  --success: #56C7E8;          /* Sky blue — "Олдсон", clinics, chat */
+  --success: #56C7E8;
   --success-bg: rgba(86, 199, 232, 0.10);
   --success-text: #1A6F85;
   --toast-success-bg: #1A6F85;
@@ -117,41 +121,38 @@
   --primary-light: #A49EFC;
   --primary-dark: #625BF6;
   --brand: #8178F7;
-
-  --accent: #FF8A8A;
-  --accent-deep: #FF6B6B;
-
-  --alert: #FF8A8A;
-  --alert-light: #FFB0B0;
-  --alert-deep: #E85D5D;
-
-  --success: #7DD8F0;
+  --accent: #FF6B6B;
+  --accent-deep: #E05555;
+  --alert: #D9485F;
+  --alert-light: #E87A8A;
+  --alert-deep: #B83A4F;
+  --success: #56C7E8;
   --success-bg: rgba(86, 199, 232, 0.12);
   --success-text: #A3E4F5;
-  --toast-success-bg: #1A5A6A;
+  --toast-success-bg: #1A6F85;
 
-  --ink: #E8E9F0;
-  --muted: #8B8FA8;
-  --line: rgba(255, 255, 255, 0.08);
-  --card: #1C1F33;
-  --overcast: #0D0F1A;
-  --thumb-bg: #252942;
-  --eyebrow-bg: #F1EEE5;
-  --overlay: rgba(27, 27, 24, 0.4);
+  --ink: #F5F0E6;
+  --muted: #B7BAC2;
+  --line: rgba(183, 188, 196, 0.14);
+  --card: #1F2634;
+  --overcast: #12161F;
+  --thumb-bg: #26304A;
+  --eyebrow-bg: #1F2634;
+  --overlay: rgba(0, 0, 0, 0.55);
 
-  --surface-1: #F7F5EF;
-  --surface-2: #FFFFFF;
-  --surface-3: #F1EEE5;
-  --text-primary: #1B1B18;
-  --text-secondary: #5C5C54;
-  --text-tertiary: #8C8C82;
+  --surface-1: #171C27;
+  --surface-2: #1F2634;
+  --surface-3: #26304A;
+  --text-primary: #F5F0E6;
+  --text-secondary: #B7BAC2;
+  --text-tertiary: #7D818C;
   --text-on-accent: #FFFFFF;
-  --border-subtle: rgba(255, 255, 255, 0.08);
-  --border-strong: rgba(255, 255, 255, 0.16);
-  --border-focus: #A49EFC;
+  --border-subtle: rgba(183, 188, 196, 0.14);
+  --border-strong: rgba(183, 188, 196, 0.28);
+  --border-focus: #8178F7;
 
-  --glass-bg: rgba(13, 15, 26, 0.78);
-  --glass-border: rgba(255, 255, 255, 0.06);
+  --glass-bg: rgba(23, 28, 39, 0.78);
+  --glass-border: rgba(183, 188, 196, 0.14);
 
   --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.2);
   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.25), 0 1px 3px rgba(0, 0, 0, 0.15);
@@ -219,14 +220,14 @@ body {
   transition: background 0.3s ease, color 0.3s ease;
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
-  padding-top: calc(var(--nav-h) + 24px);
+  padding-top: 88px;
 }
 @media (max-width: 640px) {
   body { padding-top: calc(var(--nav-h) + 12px); }
 }
 
 main {
-  max-width: var(--container-xl);
+  max-width: 1240px;
   margin: 0 auto;
   padding: var(--sp-6) var(--sp-4) calc(var(--sp-8) + var(--safe-bottom));
   min-height: calc(100vh - 120px);
@@ -277,7 +278,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   font-family: var(--font-body);
   font-size: var(--text-sm);
   font-weight: 600;
-  border-radius: var(--r-md);
+  border-radius: var(--r-pill);
   border: none;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
@@ -304,11 +305,11 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 .btn-accent:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
 
 .btn-ghost {
-  background: transparent;
-  color: var(--primary);
-  border: 1.5px solid var(--line);
+  background: var(--surface-2);
+  color: var(--text-primary);
+  border: 1px solid var(--border-subtle);
 }
-.btn-ghost:hover { background: var(--eyebrow-bg); border-color: var(--primary-light); }
+.btn-ghost:hover { background: var(--surface-3); border-color: var(--border-strong); }
 
 .btn-danger {
   background: var(--alert);

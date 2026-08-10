@@ -21,7 +21,10 @@ export default function Home() {
 
         <div className="hero-inner">
           <div className="hero-content">
-            <div className="eyebrow">{t('hero_eyebrow')}</div>
+            <div className="eyebrow">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M12 21s-7-4.5-9.5-9C.7 8.3 2 4.8 5.4 4.1 7.6 3.6 9.8 4.6 12 7c2.2-2.4 4.4-3.4 6.6-2.9 3.4.7 4.7 4.2 2.9 7.9C19 16.5 12 21 12 21z" /></svg>
+              {t('hero_eyebrow')}
+            </div>
             <h1 className="hero-title">
               {t('hero_title_1')} <span className="gradient-text">{t('hero_title_accent')}</span> {t('hero_title_2')}
             </h1>
@@ -190,7 +193,7 @@ export default function Home() {
       </section>
 
       <style jsx>{`
-        .hero { position: relative; overflow: hidden; padding: var(--sp-6) 0 var(--sp-7); }
+        .hero { position: relative; overflow: hidden; padding: var(--sp-8) 0; }
         @media (max-width: 640px) { .hero { padding: var(--sp-5) 0 var(--sp-6); } }
         @media (max-width: 480px) { .hero { padding: var(--sp-4) 0 var(--sp-5); } }
         @media (min-width: 1025px) { .hero { padding: var(--sp-8) 0 calc(var(--sp-8) + var(--sp-4)); } }
@@ -225,7 +228,7 @@ export default function Home() {
         .hero-content { max-width: 720px; }
         @media (min-width: 1025px) { .hero-content { max-width: 800px; } }
         .hero-title {
-          font-size: var(--text-display); margin-bottom: var(--sp-4); line-height: 1.08;
+          font-size: clamp(2.6rem, 5.4vw, 4.4rem); margin-bottom: var(--sp-5); line-height: 1.06;
         }
         @media (max-width: 640px) { .hero-title { font-size: var(--text-2xl); margin-bottom: var(--sp-3); } }
         @media (max-width: 480px) { .hero-title { font-size: var(--text-xl); margin-bottom: var(--sp-3); } }
@@ -238,6 +241,7 @@ export default function Home() {
         @media (max-width: 480px) { .hero-desc { font-size: 14.5px; margin-bottom: var(--sp-4); line-height: 1.65; } }
         @media (min-width: 1025px) { .hero-desc { font-size: 17px; margin-bottom: var(--sp-6); max-width: 540px; line-height: 1.7; } }
         .hero-actions { display: flex; gap: var(--sp-3); flex-wrap: wrap; }
+        .hero-title :global(.gradient-text) { background: none; color: var(--accent); }
         @media (max-width: 480px) {
           .hero-actions { gap: var(--sp-2); flex-direction: column; }
           .hero-actions :global(.btn-base) { width: 100%; justify-content: center; }
@@ -288,7 +292,7 @@ export default function Home() {
         .hero-card-photo svg { color: var(--surface-2); opacity: 0.9; }
         .status-chip {
           position: absolute; top: 12px; left: 12px;
-          background: var(--alert); color: var(--text-on-accent);
+          background: var(--accent); color: var(--text-on-accent);
           font-size: 11px; font-weight: 700; letter-spacing: 0.03em;
           padding: 5px 11px; border-radius: var(--r-pill);
         }
@@ -322,19 +326,18 @@ export default function Home() {
           to { opacity: 1; transform: translateY(0); }
         }
 
-        .services { margin-top: var(--sp-7); }
+        .services { margin-top: 0; padding: var(--sp-9) 0; }
         @media (max-width: 640px) { .services { margin-top: var(--sp-6); } }
         @media (max-width: 480px) { .services { margin-top: var(--sp-5); } }
-        .services-title { font-size: var(--text-2xl); max-width: 480px; }
+        .services-title { font-size: clamp(1.8rem, 3.2vw, 2.6rem); max-width: 640px; line-height: 1.15; }
         @media (max-width: 640px) { .services-title { font-size: var(--text-xl); } }
         .services-grid {
           display: grid;
-          grid-template-columns: repeat(3, 1fr);
+          grid-template-columns: repeat(6, 1fr);
           gap: var(--sp-4);
           margin-top: var(--sp-5);
         }
-        @media (max-width: 768px) { .services-grid { grid-template-columns: repeat(2, 1fr); gap: var(--sp-3); } }
-        @media (max-width: 480px) { .services-grid { grid-template-columns: 1fr; gap: var(--sp-3); } }
+        @media (max-width: 900px) { .services-grid { gap: var(--sp-3); } }
         .service-card {
           position: relative;
           display: block;
@@ -343,10 +346,19 @@ export default function Home() {
           border-radius: var(--r-lg);
           padding: var(--sp-5);
           text-decoration: none;
+          grid-column: span 2;
           height: 100%;
           box-shadow: var(--shadow-sm);
           transition: transform var(--dur-base) var(--ease-out), box-shadow var(--dur-base) var(--ease-out), border-color var(--dur-base) var(--ease-out);
         }
+        .service-card:nth-child(-n + 2) { grid-column: span 3; }
+        .service-card:nth-child(1) .service-icon { background: linear-gradient(135deg, #FF8A8A, #FF6B6B); }
+        .service-card:nth-child(2) .service-icon,
+        .service-card:nth-child(5) .service-icon,
+        .service-card:nth-child(6) .service-icon { background: linear-gradient(135deg, #7DD8F0, #56C7E8); }
+        .service-card:nth-child(6) .service-icon { background: linear-gradient(135deg, #A49EFC, #8178F7); }
+        @media (max-width: 900px) { .service-card, .service-card:nth-child(-n + 2) { grid-column: span 3; } }
+        @media (max-width: 600px) { .service-card, .service-card:nth-child(-n + 2) { grid-column: span 6; } }
         .service-card:hover {
           transform: translateY(-4px);
           box-shadow: var(--shadow-md);
@@ -369,7 +381,7 @@ export default function Home() {
         }
         .service-card:hover .service-arrow { transform: translateX(3px); color: var(--accent); }
 
-        .how { margin-top: var(--sp-3); animation: rise-in 0.6s cubic-bezier(0.16,1,0.3,1) 0.55s backwards; }
+        .how { margin-top: 0; padding: var(--sp-9) 0; animation: rise-in 0.6s cubic-bezier(0.16,1,0.3,1) 0.55s backwards; }
         @media (max-width: 640px) { .how { margin-top: var(--sp-5); } }
         @media (max-width: 480px) { .how { margin-top: var(--sp-4); } }
         @media (min-width: 1025px) { .how { margin-top: var(--sp-7); } }
