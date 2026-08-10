@@ -1,73 +1,73 @@
 @import 'leaflet/dist/leaflet.css';
 
 /* ═══════════════════════════════════════════════════════
-   МӨР — Design tokens v3: "Гэрлэн бүрх" (Porch-light)
-   A warm dark aesthetic — the porch light left on for a
-   pet that will come home. Deep navy night (trust/calm) +
-   glowing blue (hope) + warm amber (action).
-   Dark by default; `[data-theme="light"]` overrides to warm cream.
+   МӨР — Design tokens v4: "Indigo · Coral · Sky"
+   Light default: Cloud white bg + Indigo brand + Coral CTA + Sky blue secondary.
+   Dark mode via [data-theme="dark"]: dark navy bg.
    ═══════════════════════════════════════════════════════ */
 :root {
-  /* ── Color Palette — night navy + blue + amber ── */
-  --primary: #2E6FE0;          /* glowing blue — brand, links, primary actions */
-  --primary-light: #5B90ED;    /* hover / border tint of primary */
-  --primary-dark: #1F52B8;     /* deeper blue — gradient deep end */
+  /* ── Color Palette ── */
+  --primary: #625BF6;          /* Indigo — brand, links, primary actions */
+  --primary-light: #8178F7;    /* lighter indigo */
+  --primary-dark: #4A3DE0;     /* deeper indigo */
+  --brand: #625BF6;
 
-  --brand: #2E6FE0;            /* brand blue (buttons, accents) */
+  --accent: #FF6B6B;           /* Coral — CTA, "lost", action */
+  --accent-deep: #E05555;
+  --accent-ink: #FFFFFF;
 
-  --accent: #F2A63D;           /* warm amber — secondary action, adopt, glow */
-  --accent-deep: #D97E1F;      /* deeper amber */
-  --accent-ink: #1A1206;       /* text on amber surfaces */
+  --alert: #D9485F;            /* Deep coral — urgent, danger */
+  --alert-light: #E87A8A;
 
-  --alert: #FF6B57;            /* coral — errors, "lost" status */
-  --alert-light: #FF9682;
-  --alert-deep: #C93E2C;       /* danger hover */
+  --success: #56C7E8;          /* Sky blue — "found", clinics, chat */
+  --success-bg: rgba(86,199,232,0.10);
+  --success-text: #1A6F85;
+  --toast-success-bg: #1A6F85;
 
-  --success: #3DD68C;          /* fresh green — "found", success */
-  --success-bg: rgba(61, 214, 140, 0.12);
-  --success-text: #7CE8B6;
-  --toast-success-bg: #1F4A38;
+  --warning: #FFD166;          /* Yellow — alerts, vaccine, "last seen" */
 
-  --ink: #F5F0E6;              /* primary text (warm off-white) */
-  --muted: #B7BAC2;            /* secondary text */
-  --line: rgba(183, 188, 196, 0.14);      /* borders */
-  --card: #1F2634;             /* card / input surface */
-  --overcast: #12161F;         /* page background (deep navy) */
-  --thumb-bg: #26304A;         /* scrollbar thumb */
-  --eyebrow-bg: #26304A;       /* pill / chip / ghost hover surface */
-  --overlay: rgba(0, 0, 0, 0.7);
+  --confirmed: #35B779;        /* Green — "Олдлоо", approved */
+
+  --ink: #171A2B;              /* primary text (dark navy) */
+  --muted: #5C6078;            /* secondary text */
+  --line: rgba(23, 26, 43, 0.08);
+  --card: #FFFFFF;
+  --overcast: #F7F8FC;         /* page background (cloud white) */
+  --thumb-bg: #EEEDF5;
+  --eyebrow-bg: rgba(98,91,246,0.07);
+  --overlay: rgba(23, 26, 43, 0.5);
 
   /* ── Semantic surface / text / border layer ── */
-  --surface-1: #12161F;
-  --surface-2: #1F2634;
-  --surface-3: #26304A;
-  --text-primary: #F5F0E6;
-  --text-secondary: #B7BAC2;
-  --text-tertiary: #7D818C;
-  --text-on-accent: #FFFFFF;   /* text on blue/green surfaces */
-  --border-subtle: rgba(183, 188, 196, 0.14);
-  --border-strong: rgba(183, 188, 196, 0.28);
-  --border-focus: var(--primary-light);
+  --surface-1: #F7F8FC;
+  --surface-2: #FFFFFF;
+  --surface-3: #EEEDF5;
+  --text-primary: #171A2B;
+  --text-secondary: #5C6078;
+  --text-tertiary: #9094A8;
+  --text-on-accent: #FFFFFF;
+  --border-subtle: rgba(23, 26, 43, 0.08);
+  --border-strong: rgba(23, 26, 43, 0.16);
+  --border-focus: var(--primary);
 
   /* ── Glassmorphism ── */
-  --glass-bg: rgba(23, 28, 39, 0.78);       /* navy-tinted dock/navbar */
-  --glass-border: rgba(255, 255, 255, 0.08);
-  --glass-blur: saturate(150%) blur(18px);
+  --glass-bg: rgba(255, 255, 255, 0.85);
+  --glass-border: rgba(98, 91, 246, 0.06);
+  --glass-blur: saturate(1.4) blur(16px);
 
-  /* ── Shadows — night, black-based ── */
-  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.3);
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.25), 0 1px 3px rgba(0, 0, 0, 0.15);
-  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.3), 0 2px 8px rgba(0, 0, 0, 0.15);
-  --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.35), 0 4px 12px rgba(0, 0, 0, 0.2);
-  --shadow-lift: 0 26px 52px rgba(0, 0, 0, 0.55), 0 8px 20px rgba(0, 0, 0, 0.25);
-  --shadow-glow: 0 0 0 1px rgba(46, 111, 224, 0.25), 0 8px 32px rgba(46, 111, 224, 0.2);
-  --shadow-glow-ember: 0 0 0 1px rgba(242, 166, 61, 0.25), 0 8px 32px rgba(242, 166, 61, 0.18);
+  /* ── Shadows — soft, neutral ── */
+  --shadow-xs: 0 1px 2px rgba(23, 26, 43, 0.04);
+  --shadow-sm: 0 2px 8px rgba(23, 26, 43, 0.05), 0 1px 3px rgba(23, 26, 43, 0.03);
+  --shadow-md: 0 8px 24px rgba(23, 26, 43, 0.08), 0 2px 8px rgba(23, 26, 43, 0.03);
+  --shadow-lg: 0 16px 40px rgba(23, 26, 43, 0.10), 0 4px 12px rgba(23, 26, 43, 0.05);
+  --shadow-lift: 0 24px 56px rgba(23, 26, 43, 0.14), 0 8px 20px rgba(23, 26, 43, 0.07);
+  --shadow-glow: 0 0 0 1px rgba(98, 91, 246, 0.2), 0 8px 32px rgba(98, 91, 246, 0.15);
+  --shadow-glow-ember: 0 0 0 1px rgba(255, 107, 107, 0.2), 0 8px 32px rgba(255, 107, 107, 0.12);
 
   /* ── Gradients ── */
-  --grad-brand: linear-gradient(135deg, #5B90ED, #2E6FE0);
-  --grad-accent: linear-gradient(135deg, #F7B84A, #D97E1F);
+  --grad-brand: linear-gradient(135deg, #8178F7, #625BF6);
+  --grad-accent: linear-gradient(135deg, #FF8A8A, #FF6B6B);
 
-  /* ── Motion — durations & easing ── */
+  /* ── Motion ── */
   --dur-fast: 150ms;
   --dur-base: 250ms;
   --dur-slow: 400ms;
@@ -75,7 +75,7 @@
   --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
   --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
 
-  /* ── Spacing scale — generous, fluid ── */
+  /* ── Spacing ── */
   --sp-1: clamp(4px, 0.8vw, 5px);
   --sp-2: clamp(8px, 1.6vw, 10px);
   --sp-3: clamp(12px, 2.4vw, 16px);
@@ -85,7 +85,7 @@
   --sp-7: clamp(48px, 9.6vw, 64px);
   --sp-8: clamp(64px, 12.8vw, 80px);
 
-  /* ── Border radius — soft, generous ── */
+  /* ── Border radius ── */
   --r-sm: clamp(8px, 1.6vw, 10px);
   --r-md: clamp(12px, 2.4vw, 14px);
   --r-lg: clamp(16px, 3.2vw, 22px);
@@ -130,64 +130,67 @@
 }
 
 /* ═══════════════════════════════════════
-   Light Theme (warm cream override)
+   Dark Theme (dark navy override)
    ═══════════════════════════════════════ */
-[data-theme="light"] {
-  --primary: #2E6FE0;
-  --primary-light: #5B90ED;
-  --primary-dark: #1F52B8;
-  --brand: #2E6FE0;
+[data-theme="dark"] {
+  --primary: #8178F7;
+  --primary-light: #A49EFC;
+  --primary-dark: #625BF6;
+  --brand: #8178F7;
 
-  --accent: #D97E1F;
-  --accent-deep: #B96A12;
-  --accent-ink: #1A1206;
+  --accent: #FF8A8A;
+  --accent-deep: #FF6B6B;
+  --accent-ink: #FFFFFF;
 
-  --alert: #D64F3A;
-  --alert-light: #E8786A;
-  --alert-deep: #B03A28;
+  --alert: #FF8A8A;
+  --alert-light: #FFB0B0;
 
-  --success: #1F8F5A;
-  --success-bg: #E4F6EC;
-  --success-text: #145C3A;
-  --toast-success-bg: #2F6B4F;
+  --success: #7DD8F0;
+  --success-bg: rgba(86, 199, 232, 0.12);
+  --success-text: #A3E4F5;
+  --toast-success-bg: #1A5A6A;
 
-  --ink: #1B1B18;
-  --muted: #5C5C54;
-  --line: rgba(27, 27, 24, 0.10);
-  --card: #FFFFFF;
-  --overcast: #F7F5EF;
-  --thumb-bg: #E8E6DF;
-  --eyebrow-bg: #F1EEE5;
-  --overlay: rgba(0, 0, 0, 0.4);
+  --warning: #FFD166;
 
-  --surface-1: #F7F5EF;
-  --surface-2: #FFFFFF;
-  --surface-3: #F1EEE5;
-  --text-primary: #1B1B18;
-  --text-secondary: #5C5C54;
-  --text-tertiary: #8C8C82;
+  --confirmed: #4FD99A;
+
+  --ink: #E8E9F0;
+  --muted: #8B8FA8;
+  --line: rgba(255, 255, 255, 0.08);
+  --card: #1C1F33;
+  --overcast: #0D0F1A;
+  --thumb-bg: #252942;
+  --eyebrow-bg: rgba(129, 120, 247, 0.10);
+  --overlay: rgba(0, 0, 0, 0.6);
+
+  --surface-1: #0D0F1A;
+  --surface-2: #1C1F33;
+  --surface-3: #252942;
+  --text-primary: #E8E9F0;
+  --text-secondary: #8B8FA8;
+  --text-tertiary: #5C6078;
   --text-on-accent: #FFFFFF;
-  --border-subtle: rgba(27, 27, 24, 0.10);
-  --border-strong: rgba(27, 27, 24, 0.20);
-  --border-focus: var(--primary);
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.16);
+  --border-focus: var(--primary-light);
 
-  --glass-bg: rgba(255, 255, 255, 0.86);
-  --glass-border: rgba(0, 0, 0, 0.06);
+  --glass-bg: rgba(13, 15, 26, 0.78);
+  --glass-border: rgba(255, 255, 255, 0.06);
 
-  --shadow-xs: 0 1px 2px rgba(27, 27, 24, 0.05);
-  --shadow-sm: 0 2px 8px rgba(27, 27, 24, 0.06), 0 1px 3px rgba(27, 27, 24, 0.04);
-  --shadow-md: 0 8px 24px rgba(27, 27, 24, 0.08), 0 2px 8px rgba(27, 27, 24, 0.04);
-  --shadow-lg: 0 16px 40px rgba(27, 27, 24, 0.10), 0 4px 12px rgba(27, 27, 24, 0.06);
-  --shadow-lift: 0 26px 52px rgba(27, 27, 24, 0.14), 0 8px 20px rgba(27, 27, 24, 0.08);
-  --shadow-glow: 0 0 0 1px rgba(46, 111, 224, 0.2), 0 8px 32px rgba(46, 111, 224, 0.12);
-  --shadow-glow-ember: 0 0 0 1px rgba(217, 126, 31, 0.2), 0 8px 32px rgba(217, 126, 31, 0.12);
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.2);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.25), 0 1px 3px rgba(0, 0, 0, 0.15);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.3), 0 2px 8px rgba(0, 0, 0, 0.15);
+  --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.35), 0 4px 12px rgba(0, 0, 0, 0.2);
+  --shadow-lift: 0 24px 56px rgba(0, 0, 0, 0.45), 0 8px 20px rgba(0, 0, 0, 0.2);
+  --shadow-glow: 0 0 0 1px rgba(129, 120, 247, 0.25), 0 8px 32px rgba(129, 120, 247, 0.18);
+  --shadow-glow-ember: 0 0 0 1px rgba(255, 138, 138, 0.2), 0 8px 32px rgba(255, 138, 138, 0.15);
 }
 
 /* ═══════════════════════════════════════
    Navbar height responsive
    ═══════════════════════════════════════ */
-@media (max-width: 768px) { :root, [data-theme="light"] { --nav-h: 62px; } }
-@media (max-width: 480px) { :root, [data-theme="light"] { --nav-h: 56px; } }
+@media (max-width: 768px) { :root, [data-theme="dark"] { --nav-h: 62px; } }
+@media (max-width: 480px) { :root, [data-theme="dark"] { --nav-h: 56px; } }
 
 /* ═══════════════════════════════════════
    Reduced motion
@@ -230,9 +233,7 @@
 html { -webkit-text-size-adjust: 100%; }
 
 body {
-  background:
-    radial-gradient(1200px 600px at 15% -10%, rgba(242, 166, 61, 0.06), transparent 60%),
-    var(--overcast);
+  background: var(--overcast);
   color: var(--ink);
   font-family: var(--font-body);
   font-size: 15.5px;
@@ -318,7 +319,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 
 .btn-accent {
   background: var(--grad-accent);
-  color: var(--accent-ink);
+  color: var(--text-on-accent);
   box-shadow: var(--shadow-sm);
 }
 .btn-accent:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
@@ -355,7 +356,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 .field-base:focus-visible {
   outline: none;
   border-color: var(--border-focus);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 15%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 15%, transparent);
 }
 @media (max-width: 480px) {
   .field-base { font-size: 16px; }
@@ -377,7 +378,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   font-size: var(--text-xs);
   font-weight: 600;
   letter-spacing: 0.02em;
-  color: var(--primary-light);
+  color: var(--primary);
   background: var(--eyebrow-bg);
   padding: 6px 14px;
   border-radius: var(--r-pill);
@@ -429,7 +430,7 @@ select.filter:hover, input.filter:hover { border-color: var(--muted); }
 select.filter:focus-visible, input.filter:focus-visible {
   outline: none;
   border-color: var(--border-focus);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 12%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 12%, transparent);
 }
 @media (max-width: 768px) {
   select.filter, input.filter { flex: 1 1 calc(50% - var(--sp-2)); }
@@ -461,7 +462,7 @@ select.filter:focus-visible, input.filter:focus-visible {
 .page-header { margin-bottom: var(--sp-5); }
 .page-header .eyebrow { margin-bottom: var(--sp-3); }
 .page-header h1 { font-size: clamp(1.6rem, 4vw, 2.3rem); margin-bottom: var(--sp-2); }
-.page-header p { color: var(--muted); max-width: 560px; line-height: 1.55; }
+.page-header p { color: var(--text-secondary); max-width: 560px; line-height: 1.55; }
 
 @media (max-width: 640px) {
   .page-header { margin-bottom: var(--sp-4); }
@@ -489,7 +490,7 @@ select.filter:focus-visible, input.filter:focus-visible {
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
   min-height: var(--touch-target);
 }
-.field:focus { outline: none; border-color: var(--border-focus); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 12%, transparent); }
+.field:focus { outline: none; border-color: var(--border-focus); box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 12%, transparent); }
 .field::placeholder { color: var(--muted); }
 textarea.field { min-height: 90px; resize: vertical; }
 @media (max-width: 480px) {
@@ -534,12 +535,12 @@ textarea.field { min-height: 90px; resize: vertical; }
 .skel-row { position: relative; overflow: hidden; }
 .skel-row::after {
   content: ''; position: absolute; inset: 0;
-  background: linear-gradient(90deg, transparent 25%, rgba(255,255,255,0.08) 50%, transparent 75%);
+  background: linear-gradient(90deg, transparent 25%, rgba(23,26,43,0.06) 50%, transparent 75%);
   background-size: 200% 100%;
   animation: skel-shimmer 1.4s ease infinite;
 }
-[data-theme="light"] .skel-row::after {
-  background: linear-gradient(90deg, transparent 25%, rgba(27,27,24,0.08) 50%, transparent 75%);
+[data-theme="dark"] .skel-row::after {
+  background: linear-gradient(90deg, transparent 25%, rgba(255,255,255,0.06) 50%, transparent 75%);
   background-size: 200% 100%;
 }
 @keyframes skel-shimmer {
@@ -584,10 +585,8 @@ textarea.field { min-height: 90px; resize: vertical; }
 }
 
 /* ═══════════════════════════════════════
-   "Гэрлэн бүрх" — ambient glows & floating dock helpers
+   Ambient glow helpers
    ═══════════════════════════════════════ */
-
-/* Soft radial glow behind hero visuals */
 .hero-glow {
   position: absolute;
   border-radius: 50%;

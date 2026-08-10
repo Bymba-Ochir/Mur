@@ -8,8 +8,8 @@ export default function ThemeToggle() {
   // localStorage-тэй синхрончлогдсон theme — useSyncExternalStore (SSR-аюулгүй)
   const saved = useLocalStorageValue(THEME_KEY);
 
-  // v3 "Гэрлэн бүрх" нь харанхуй-default — хадгалсан сонголтгүй үед 'dark'
-  const theme = (saved === 'dark' || saved === 'light') ? saved : 'dark';
+  // v4 "Indigo · Coral · Sky" — system preference эсвэл light default
+  const theme = (saved === 'dark' || saved === 'light') ? saved : 'light';
 
   // localStorage/системийн утга өөрчлөгдөхөд <html data-theme> DOM-д бичих
   // (setState биш тул effect дотор зөвшөөрөгдөнө; FOUC-аас layout.tsx-ийн

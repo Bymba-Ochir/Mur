@@ -51,7 +51,7 @@ export default function ClinicMap({
         zoomControl: true,
       });
 
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
         attribution: '&copy; <a href="https://carto.com/">CARTO</a>',
         maxZoom: 19,
       }).addTo(map);
@@ -143,16 +143,16 @@ function add_user_location(
 ) {
   L.circleMarker(coords, {
     radius: 6,
-    color: '#2E6FE0',
-    fillColor: '#2E6FE0',
+    color: '#625BF6',
+    fillColor: '#625BF6',
     fillOpacity: 0.8,
     weight: 2,
   }).addTo(map).bindPopup('📍 Таны байршил');
 
   L.circle(coords, {
     radius: 2000,
-    color: '#2E6FE0',
-    fillColor: '#2E6FE0',
+    color: '#625BF6',
+    fillColor: '#625BF6',
     fillOpacity: 0.05,
     weight: 1,
   }).addTo(map);
