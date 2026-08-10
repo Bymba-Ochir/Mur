@@ -616,6 +616,114 @@ textarea.field { min-height: 90px; resize: vertical; }
   .navbar-wrap .brand-mark { width: 28px; height: 28px; flex-basis: 28px; }
 }
 
+/* Home cards are rendered through Link/ScrollReveal components, so these
+   structural styles must be global instead of relying only on styled-jsx. */
+.home .service-card {
+  --feature-color: var(--primary);
+  --feature-soft: var(--primary-light);
+  position: relative;
+  display: block;
+  grid-column: span 2;
+  min-height: 190px;
+  padding: var(--sp-5);
+  overflow: hidden;
+  color: var(--text-primary);
+  background: var(--surface-2);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-sm);
+  text-decoration: none;
+  transition: transform var(--dur-base) var(--ease-out), box-shadow var(--dur-base) var(--ease-out), border-color var(--dur-base) var(--ease-out);
+}
+.home .service-card:nth-child(-n + 2) { grid-column: span 3; }
+.home .service-card:nth-child(1) { --feature-color: var(--accent); --feature-soft: #FF8A8A; }
+.home .service-card:nth-child(2) { --feature-color: var(--found); --feature-soft: #7DD8F0; }
+.home .service-card:nth-child(3) { --feature-color: var(--primary); --feature-soft: #8178F7; }
+.home .service-card:nth-child(4) { --feature-color: var(--found); --feature-soft: #7DD8F0; }
+.home .service-card:nth-child(5) { --feature-color: var(--clinic); --feature-soft: #56C7E8; }
+.home .service-card:nth-child(6) { --feature-color: var(--assistant); --feature-soft: #A49EFC; }
+.home .service-card:hover {
+  transform: translateY(-5px);
+  border-color: color-mix(in srgb, var(--feature-color) 55%, var(--border-subtle));
+  box-shadow: var(--shadow-md);
+}
+.home .service-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  margin-bottom: var(--sp-4);
+  color: #FFFFFF;
+  background: linear-gradient(135deg, var(--feature-soft), var(--feature-color));
+  border-radius: var(--r-md);
+  box-shadow: 0 7px 18px color-mix(in srgb, var(--feature-color) 18%, transparent);
+  transition: transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
+}
+.home .service-card:hover .service-icon {
+  transform: scale(1.06) rotate(-3deg);
+  box-shadow: 0 9px 22px color-mix(in srgb, var(--feature-color) 26%, transparent);
+}
+.home .service-card h3 {
+  margin-bottom: var(--sp-1);
+  color: var(--text-primary);
+  font-family: var(--font-display);
+  font-size: var(--text-base);
+  font-weight: 700;
+}
+.home .service-card p {
+  max-width: 32ch;
+  color: var(--text-secondary);
+  font-size: var(--text-xs);
+  line-height: 1.55;
+}
+.home .service-arrow {
+  position: absolute;
+  top: var(--sp-5);
+  right: var(--sp-4);
+  color: var(--text-tertiary);
+  transition: transform var(--dur-base) var(--ease-out), color var(--dur-base) var(--ease-out);
+}
+.home .service-card:hover .service-arrow { color: var(--feature-color); transform: translateX(3px); }
+
+.home .step-card {
+  position: relative;
+  min-height: 180px;
+  padding: var(--sp-6) var(--sp-5);
+  overflow: hidden;
+  background: var(--surface-2);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--dur-base) var(--ease-out), box-shadow var(--dur-base) var(--ease-out), border-color var(--dur-base) var(--ease-out);
+}
+.home .step-card:hover { transform: translateY(-5px); border-color: rgba(98, 91, 246, 0.24); box-shadow: var(--shadow-md); }
+.home .step-num {
+  display: block;
+  margin-bottom: var(--sp-3);
+  color: var(--accent);
+  font-family: var(--font-display);
+  font-size: clamp(2.2rem, 7vw, 3rem);
+  font-weight: 800;
+  line-height: 1;
+  opacity: 0.42;
+}
+.home .step-desc { color: var(--text-secondary); font-size: 13.5px; line-height: 1.55; }
+
+@media (max-width: 900px) {
+  .home .service-card,
+  .home .service-card:nth-child(-n + 2) { grid-column: span 3; }
+}
+@media (max-width: 600px) {
+  .home .service-card,
+  .home .service-card:nth-child(-n + 2) { grid-column: span 6; min-height: 0; }
+}
+@media (max-width: 480px) {
+  .home .service-card { padding: var(--sp-4); border-radius: var(--r-md); }
+  .home .service-arrow { top: var(--sp-4); }
+  .home .step-card { min-height: 0; padding: var(--sp-4); border-radius: var(--r-md); }
+}
+
 /* ═══════════════════════════════════════
    Scrollbar
    ═══════════════════════════════════════ */
