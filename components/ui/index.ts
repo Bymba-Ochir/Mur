@@ -7,3 +7,5 @@ export { default as Modal } from './Modal';
 export { default as Toast, type ToastTone } from './Toast';
 export { default as Avatar } from './Avatar';
 export { default as Skeleton } from './Skeleton';
+export { default as EmptyState } from './EmptyState';
+export { default as Icon, type IconName } from './icons';

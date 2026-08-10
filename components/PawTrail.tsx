@@ -45,8 +45,8 @@ export default function PawTrail({ labels, current }: { labels: string[]; curren
           background: var(--card); border: 2px solid var(--line); color: var(--line);
           transition: all 0.25s ease;
         }
-        .paw.active { background: var(--accent); border-color: var(--accent); color: #fff; box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 20%, transparent); }
-        .paw.done { background: var(--primary); border-color: var(--primary); color: #fff; }
+        .paw.active { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 20%, transparent); }
+        .paw.done { background: var(--primary); border-color: var(--primary); color: var(--text-on-accent); }
         .trail-label {
           font-size: 10.5px; font-weight: 600; color: var(--muted); text-align: center;
           font-family: var(--font-body);

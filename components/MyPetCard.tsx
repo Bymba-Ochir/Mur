@@ -83,7 +83,7 @@ export default function MyPetCard({
           box-shadow: var(--shadow-md);
           border-color: var(--primary-light);
         }
-        .pet-card.selected { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(232,114,92,0.2); }
+        .pet-card.selected { border-color: var(--border-focus); box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 20%, transparent); }
         .chip {
           display: inline-block; font-size: 11px; padding: 3px 10px;
           background: var(--surface-3); border-radius: var(--r-pill);
@@ -101,7 +101,7 @@ export default function MyPetCard({
           font-weight: 600; border-radius: var(--r-sm);
           transition: all var(--dur-fast) var(--ease-out);
         }
-        .profile-link:hover { background: var(--accent); color: #fff; }
+        .profile-link:hover { background: var(--accent); color: var(--text-on-accent); }
       `}</style>
     </div>
   );

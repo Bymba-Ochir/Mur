@@ -46,7 +46,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
               (function() {
                 try {
                   var saved = localStorage.getItem('mur-theme');
-                  var theme = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+                  var theme = saved || 'dark';
                   document.documentElement.setAttribute('data-theme', theme);
                 } catch (e) {}
               })();

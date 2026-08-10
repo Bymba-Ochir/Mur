@@ -55,7 +55,7 @@ const VARIANTS: Record<ButtonVariant, string> = {
   danger: `
     background: var(--alert);
     color: var(--text-on-accent);
-    &:hover { background: #c44435; }
+    &:hover { background: var(--alert-deep); }
   `,
 };
 

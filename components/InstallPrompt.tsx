@@ -80,7 +80,7 @@ export default function InstallPrompt() {
       <style jsx>{`
         .install-banner {
           position: fixed; bottom: 0; left: 0; right: 0; z-index: 140;
-          background: var(--brand); color: #fff; padding: 14px 18px;
+          background: var(--brand); color: var(--text-on-accent); padding: 14px 18px;
           display: flex; align-items: center; justify-content: space-between; gap: 12px;
           flex-wrap: wrap; box-shadow: 0 -4px 16px rgba(0,0,0,0.15);
         }
@@ -89,14 +89,14 @@ export default function InstallPrompt() {
         }
         .install-content { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 200px; }
         .install-icon { font-size: 26px; }
-        .install-content p { font-size: 12.5px; color: rgba(255,255,255,0.82); margin-top: 2px; }
+        .install-content p { font-size: 12.5px; color: color-mix(in srgb, var(--text-on-accent) 82%, transparent); margin-top: 2px; }
         .install-actions { display: flex; gap: 8px; }
         .install-btn { padding: 8px 16px; border-radius: var(--r-pill); border: none; font-weight: 600; font-size: 13px; cursor: pointer; transition: transform .15s ease, box-shadow .2s ease, filter .2s ease; }
-        .primary { background: var(--grad-accent); color: #fff; }
+        .primary { background: var(--grad-accent); color: var(--accent-ink); }
         .primary:hover { filter: saturate(1.08); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
-        .ghost { background: transparent; color: #fff; border: 1px solid rgba(255,255,255,0.35); }
-        .ghost:hover { background: rgba(255,255,255,0.12); }
-        .install-btn:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+        .ghost { background: transparent; color: var(--text-on-accent); border: 1px solid color-mix(in srgb, var(--text-on-accent) 35%, transparent); }
+        .ghost:hover { background: color-mix(in srgb, var(--text-on-accent) 12%, transparent); }
+        .install-btn:focus-visible { outline: 2px solid var(--text-on-accent); outline-offset: 2px; }
       `}</style>
     </div>
   );

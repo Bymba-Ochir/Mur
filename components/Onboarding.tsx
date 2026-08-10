@@ -87,12 +87,12 @@ export default function Onboarding() {
         .onb-dot.active { background: var(--accent); width: 20px; border-radius: 4px; }
         .onb-next {
           width: 100%; padding: 12px; border-radius: var(--r-md); border: none;
-          background: var(--grad-brand); color: #fff; font-weight: 600; cursor: pointer; font-size: 14px;
+          background: var(--grad-brand); color: var(--text-on-accent); font-weight: 600; cursor: pointer; font-size: 14px;
           box-shadow: var(--shadow-sm);
           transition: transform 0.15s ease, box-shadow 0.2s ease, filter 0.2s ease;
         }
         .onb-next:hover { transform: translateY(-1px); box-shadow: var(--shadow-md); filter: saturate(1.08); }
-        .onb-next:focus-visible { outline: 2.5px solid var(--accent); outline-offset: 2px; }
+        .onb-next:focus-visible { outline: 2.5px solid var(--border-focus); outline-offset: 2px; }
       `}</style>
     </div>
   );

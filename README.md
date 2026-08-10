@@ -5,6 +5,10 @@
 асрах үйлчилгээ. Roadmap-ийн **Үе шат 1** (Улаанбаатар, зөвхөн нохой/муур)
 шатанд тохирсон MVP код.
 
+> **Одоогийн байдал:** Бүх функц идэвхтэй ажиллаж байна. Frontend redesign
+> ("Dusk Meadow" v2 дизайн систем) Phase 1 дууссан — `components/ui/` primitive
+> сан байна, гол хуудсуудад хэсэгчлэн нэвтрүүлж байна (доороос "Дизайны систем"-ыг үзнэ үү).
+
 ## Онцлогууд
 
 | Онцлог | Хуудас | Тайлбар |
@@ -17,11 +21,14 @@
 | AI зөвлөх | `/assistant` | Эрүүл мэндийн зөвлөгөө — Монгол хэлний rule engine + Groq (сонголттой) |
 | Асрах үйлчилгээ | `/sitting`, `/sitting/new` | Аялалын үед амьтныг түр асрах хүн хайх / үйлчилгээ санал болгох |
 | Амьтны профайл | `/profiles/...` | Зурган/түүх/эрүүл мэндийн табуудтай профайл |
+| Бусад | `/privacy`, `/terms`, `/admin` | Хуулийн хуудас, admin dashboard (модератор) |
 
 ## Технологи
 
 - **Next.js 16** (App Router) + **React 19** — зөвхөн вэб (PWA), React Native-г Үе шат 2-т
 - **Supabase** — Postgres DB + Auth (имэйл magic link) + Storage, **карт шаардахгүй үнэгүй tier**
+- **Дизайн систем** — CSS variables суурьтай **"Dusk Meadow" v2** (Tailwind config алга);
+  `components/ui/` доор primitive сан (Button, Input, Card, Modal, Badge, Toast г.м.)
 - **CLIP embedding — шууд БРАУЗЕР дотор ажиллана** (`@huggingface/transformers`,
   CDN-ээс ачаална). Hugging Face-ийн серверийн Inference API 2025-2026 онд
   архитектурын хувьд байнга өөрчлөгдөж (endpoint, эрх, дэмжигдэх загвар) тогтворгүй
@@ -68,7 +75,13 @@ Vercel-ийн үнэгүй `*.vercel.app` домэйнээр эхэлж болн
 
 1. Зүүн цэснээс **SQL Editor** сонго
 2. **"New query"** дараад энэ репо доторх `supabase-setup.sql` файлын бүх агуулгыг хуулж буулга
-3. **"Run"** дар — энэ нь хүснэгт, аюулгүй байдлын дүрэм, Storage bucket-ыг бүгдийг нь нэг дор үүсгэнэ
+3. **"Run"** дар — энэ нь хүснэгт (pets, adoptions, conversations, messages,
+   vaccinations, medical_conditions, medications, appointments, sitting_listings,
+   reports, sightings, volunteers, donations, push_subscriptions г.м.), аюулгүй байдлын
+   дүрэм (RLS), trigger, Storage bucket-ыг бүгдийг нь нэг дор үүсгэнэ.
+
+> RLS дүрэм / trigger өөрчлөх бол `supabase-setup.sql` дээр **drop + create** хийж
+> (IF NOT EXISTS ашиглаад) дахин ажиллуулна.
 
 ### 3. Орчны хувьсагч авах
 
@@ -262,48 +275,81 @@ Groq-ийн тусламжтай илүү чөлөөтэй хариулт хүс
 нэмээд Vercel Environment Variables-д мөн оруулна (model: `llama-3.3-70b-versatile`).
 Түлхүүргүй үед эсвэл API алдаатай үед автоматаар rule engine / fallback руу шилжинэ.
 
-## Дизайны систем
+## Дизайны систем — "Dusk Meadow" v2
 
-**Концепц:** "Steppe night → ember trail" — Улаанбаатарын үдшийн тэнгэрийн гүн
-цэнхэр (амьтан алдагдаж, хайлт эхэлдэг цаг) + найдвар илэрхийлсэн дулаан
-улбар шар өнгө. "Мөр" гэдэг үг өөрөө **зам/мөр** гэсэн утгатай тул **PawTrail**
-(мөрний зам) гэсэн гарын үсэг элементийг зөвхөн жинхэнэ дараалалтай агуулгад
-(Нүүр хуудасны "Яаж ажилладаг вэ", 4 алхамт мэдэгдэх форм) ашигласан.
+**Концепц:** Дулаан, органик, premium pet-care гоо зүй — итгэл/тайвшрал илэрхийлсэн
+**гүн sage ногоон** (`#3D7A5F`) + найрсаг/үйлдлийн **terracotta коралл**
+(`#E8725C`). Хуучин "Steppe night" (гүн цэнхэр) системийн оронд 2026-08-ны
+redesign-д v2 болгон сольсон.
 
-- **Фонт:** Дэлгэрэнгүй гарчигт `Unbounded` (geometric, тод шинжтэй), үндсэн
-  текстэд `Inter`, badge/timestamp-д `JetBrains Mono` — бүгд Кирилл дэмждэг.
-- **Өнгө:** `app/globals.css`-ийн эхэнд нэрлэсэн palette (`--steppe-night`,
-  `--ember`, `--coral-alarm`, `--larch-green`, `--overcast`) — дулаан cream/
-  terracotta эсвэл хар/acid хослолыг зориудаар зайлсхийсэн.
-- **Token систем:** зай (`--sp-*`), радиус (`--r-*`), сүүдэр
-  (`--shadow-*`) — бүх компонентод тогтмол ашиглагдана.
+- **Фонт:** Гарчигт `Unbounded` (geometric, тод шинжтэй), үндсэн текстэд `Inter`,
+  badge/timestamp-д `JetBrains Mono` — бүгд Кирилл дэмждэг.
+- **Semantic давхаргууд:** `--surface-1/2/3` (дэвсгэр/карт/нь тодруулга),
+  `--text-primary/secondary/tertiary`, `--border-subtle/strong/focus`.
+- **Glassmorphism:** `--glass-bg`/`--glass-border`/`--glass-blur` — navbar г.м.
+  наалдсан элементүүдэд.
+- **Token систем** (`app/globals.css` `:root`):
+  - Зай `--sp-1..8` — 4px grid суурьтай, `clamp()`-тай fluid scale
+  - Радиус `--r-sm/md/lg/xl/pill` — зөөлөн, өгөөмөр
+  - Сүүдэр `--shadow-xs..lg/lift/glow` — байгаль-нэгдсэн, давхрагатай
+  - Motion `--dur-fast 150ms / base 250ms / slow 400ms` + `--ease-out/in-out/bounce`
+  - Typography `--text-2xs..display-lg` — clamp() суурьтай 10 алхам
+  - **Dark mode:** `[data-theme="dark"]` — `ThemeToggle`-ээр солигдоно
+- **Primitive сан:** `components/ui/` — `Button`, `Input`, `Card`, `Badge`, `Modal`,
+  `Toast`, `Avatar`, `Skeleton`, `EmptyState`, `icons`. Бүх компонент эдгээрийг
+  ашиглана (redesign-ийн ахиц доор).
+- **Гарын үсэг элемент:** `PawTrail` — зөвхөн жинхэнэ дараалалтай агуулгад
+  (Нүүр хуудасны "Яаж ажилладаг вэ", 4 алхамт мэдэгдэх форм).
 
-### 16. Автомат тест (unit + e2e)
+### Frontend redesign — үргэлжилж буй ажил
 
-**Unit + Component test (Vitest)** — цэвэр функцууд (маскдах, харьцангуй цаг,
-дүүрэг тодорхойлол, вакцины статус) **бас** бодит React component (`PetCard`-ийн
-дугаар нуух/харуулах логик) jsdom орчинд, Supabase холбогдохгүй, хурдан:
+Төлөвлөгөө: `CLAUDE.md` дахь "Frontend Redesign Төлөвлөгөө" (§0–8). Фазууд:
+
+- ✅ **Phase 1 — Foundation:** `globals.css` v2 tokens + `components/ui/` primitive сан
+- 🔄 **Phase 2 — Reference:** Нүүр хуудас, Navbar v2 руу шилжсэн; Footer/BottomNav амжиж байна
+- 🔄 **Phase 3–8:** Гол composite (Card гэр бүл) болон хуудсууд хэсэгчлэн
+  `components/ui/` руу шилжсэн — `app/page.tsx`, `listings`, `adoptions`, `my-pets`,
+  `admin`, `messages/[id]`, `sitting` г.м.
+- ⏳ Үлдсэн: форм хуудсууд, профайл, assistant, clinics, static/legal хуудсууд,
+  mobile/tablet/desktop бүрэн QA
+
+> Дүрэм: `lib/` доторх бизнес логик өөрчлөгддөггүй, зөвхөн UI давхарга.
+> Шинэ текст нэмвэл `lib/i18n.tsx`-ийн MN+EN хоёуланд нь нэмнэ.
+
+## Тест (unit + e2e)
+
+### Unit + Component test (Vitest)
+
+Цэвэр функцууд (маскдах, харьцангуй цаг, дүүрэг тодорхойлол, вакцины статус) **бас**
+бодит React component (`PetCard`-ийн дугаар нуух/харуулах логик) jsdom орчинд,
+Supabase холбогдохгүй, хурдан:
 ```bash
-npm test          # нэг удаа ажиллуулна
+npm test            # нэг удаа ажиллуулна
 npm run test:watch  # код өөрчлөгдөх бүрд автоматаар дахин ажиллана
 ```
 
-**E2E smoke test (Playwright)** — навигаци, хэл/theme сэлгэх, 4 алхамт форм
-(validation, "Дараах" идэвхжих/идэвхгүй болох)-ыг бодит browser дээр шалгана.
-Supabase-руу бодит бичлэг үүсгэдэггүй (submit хийхгүй, зөвхөн клиент талын
-харагдац шалгадаг):
+### E2E smoke test (Playwright)
+
+Навигаци, хэл/theme сэлгэх, 4 алхамт форм (validation, "Дараах" идэвхжих/идэвхгүй
+болох)-ыг бодит browser дээр шалгана. Supabase-руу бодит бичлэг үүсгэдэггүй
+(submit хийхгүй, зөвхөн клиент талын харагдац шалгадаг):
 ```bash
 npx playwright install chromium   # эхний удаа browser суулгана
 npm run dev                       # тусдаа terminal дээр dev server асаана
 npm run test:e2e                  # e2e тестүүдийг ажиллуулна
 ```
 
-**CI/CD pipeline:** `.github/workflows/ci.yml` — GitHub-д `main` руу push/PR
-хийх бүрд автоматаар ажиллана (3 job, зэрэгцээ):
-1. **Quality gate** — `tsc --noEmit` + `eslint .` + `vitest run` (гадаад холболт/env шаарддаггүй тул **үргэлж** ажиллана)
-2. **Production build** — `next build` (Supabase-ийн client module-ийг бүтээхэд зориулж dummy env-ээр)
+### CI/CD pipeline
+
+`.github/workflows/ci.yml` — GitHub-д `main` руу push/PR хийх бүрд автоматаар
+ажиллана (3 job, зэрэгцээ):
+1. **Quality gate** — `tsc --noEmit` + `eslint .` + `vitest run` (гадаад холболт/env
+   шаарддаггүй тул **үргэлж** ажиллана)
+2. **Production build** — `next build` (Supabase-ийн client module-ийг бүтээхэд
+   зориулж dummy env-ээр)
 3. **E2E smoke test** — Playwright chromium; `NEXT_PUBLIC_SUPABASE_URL`/`ANON_KEY`
-   GitHub Secrets-д тохируулсан үед л ажиллана (fork-ийн PR-д secrets байхгүй тул skip болно, pipelines блоклогддоггүй)
+   GitHub Secrets-д тохируулсан үед л ажиллана (fork-ийн PR-д secrets байхгүй тул
+   skip болно, pipelines блоклогддоггүй)
 
 Lint нь ESLint 9 flat config (`eslint.config.mjs`, `eslint-config-next@16`-ийн
 native config) + `npm run lint` = `eslint .`-ээр ажиллана. Vercel-ийн автомат
@@ -317,53 +363,64 @@ deploy-ыг блоклохын тулд GitHub → Settings → Branches дээ�
 
 ```
 app/
-  page.tsx                    — Нүүр хуудас
-  report-lost/page.tsx        — Алдсан амьтан мэдэгдэх
+  page.tsx                    — Нүүр хуудас (v2 дизайн)
+  layout.tsx                  — Root layout (Analytics, Theme, PWA, Sentry)
+  report-lost/page.tsx        — Алдсан амьтан мэдэгдэх (4 алхамт форм)
   report-found/page.tsx       — Олдсон амьтан мэдэгдэх
   listings/page.tsx           — Жагсаалт, шүүлтүүр, төстэй байдлаар эрэмбэлэх
-  pets/[id]/page.tsx          — Тухайн амьтны дэлгэрэнгүй, share хийх хуудас
+  pets/[id]/page.tsx          — Амьтны дэлгэрэнгүй, share хийх хуудас
   adoptions/                  — Үрчлүүлэх (жагсаалт, шинэ, дэлгэрэнгүй)
   messages/                   — Чат (харилцааны жагсаалт + thread, Realtime)
-  my-pets/                    — "Миний амьтад" + эрүүл мэндийн бүртгэл
+  my-pets/page.tsx            — "Миний амьтад" + эрүүл мэндийн бүртгэл
   clinics/page.tsx            — Мал эмнэлгийн лавлах + цаг захиалга
-  assistant/                  — AI зөвлөх чат
+  assistant/                  — AI зөвлөх чат (rule engine + Groq)
   sitting/                    — Асрах үйлчилгээ (жагсаалт, шинэ, дэлгэрэнгүй)
-  profiles/                   — Амьтны профайл хуудсууд
-  api/notify/route.ts         — Push мэдэгдэл илгээх серверийн route (Webhook-оор дуудагдана)
-  api/assistant/route.ts      — AI зөвлөхийн Groq proxy (сонголттой)
-  api/vaccine-reminders/      — Вакцины сануулгын Vercel Cron route
-  api/donations/              — QPay хандив
+  profiles/                   — Амьтны профайл хуудсууд (adoption/mypet)
+  admin/page.tsx              — Модератор dashboard (reports, устгах)
+  privacy/, terms/            — Хуулийн хуудас (LegalContent)
+  not-found.tsx, error.tsx, global-error.tsx  — Branded 404/error
+  sitemap.ts, robots.ts       — SEO
+  api/
+    notify/route.ts           — Push мэдэгдэл илгээх серверийн route (Webhook-оор)
+    assistant/route.ts        — AI зөвлөхийн Groq proxy (сонголттой)
+    vaccine-reminders/        — Вакцины сануулгын Vercel Cron route
+    donations/                — QPay хандив (create/status)
+    qpay/callback/            — QPay төлбөрийн callback
 components/
-  Navbar.tsx                  — Навигац + имэйл magic-link login
-  PetForm.tsx                 — Дахин ашиглагдах бүртгэлийн форм
-  PetCard.tsx                 — Жагсаалтын карт (дарахад дэлгэрэнгүй рүү орно)
-  AdoptionForm.tsx            — Үрчлүүлэх форм (3 алхамт)
-  SittingForm.tsx             — Асрах зарын форм (3 алхамт)
-  MessageButton.tsx           — Чат үүсгэх товч
-  AppointmentModal.tsx        — Эмнэлгийн цаг захиалгын modal
-  PetProfileLayout.tsx        — Амьтны профайлын нийтлэг layout (зураг/түүх/эрүүл мэндийн табууд)
-  ShareButtons.tsx            — Facebook/native share/холбоос хуулах товчнууд
-  NotifySubscribe.tsx         — "Nearby Alert" push мэдэгдэлд бүртгүүлэх товч
-  LocationMap.tsx             — OpenStreetMap + Leaflet газрын зураг (сонгох/харах)
+  ui/                         — Design system primitives (v2 "Dusk Meadow")
+    Button, Input, Card, Badge, Modal, Toast, Avatar, Skeleton, EmptyState, icons
+  Navbar.tsx, BottomNav.tsx, Footer.tsx — Навигаци + имэйл magic-link login
+  PetForm.tsx / PetEditForm.tsx / PetPreviewCard.tsx — Дахин ашиглагдах форм + preview
+  PetCard.tsx / PetCardView.tsx / PetIcon.tsx — Жагсаалтын карт
+  AdoptionForm / AdoptionCard / AdoptionPreviewCard / AdoptionCardView
+  SittingForm / SittingCard / SittingCardView
+  ClinicCard.tsx, ClinicMap.tsx, VetClinicList.tsx, AppointmentModal.tsx
+  MyPetCard.tsx, PetHealthPanel.tsx, VaccinationsSection.tsx,
+  MedicationsSection.tsx, ConditionsSection.tsx, AppointmentsSection.tsx
+  MessageButton.tsx, ShareButtons.tsx, SightingsList.tsx, VolunteerBadge.tsx,
+  ReportButton.tsx, NotifySubscribe.tsx, LocationMap.tsx
+  LoginModal.tsx, DonateModal.tsx, DonateButton.tsx, InstallPrompt.tsx,
+  Onboarding.tsx, LanguageToggle.tsx, ThemeToggle.tsx, PageTransition.tsx,
+  PawTrail.tsx, ScrollReveal.tsx, AnalyticsProvider.tsx, AnalyticsNotice.tsx
 lib/
-  supabase.ts                 — Supabase client тохиргоо
-  useAuth.ts                  — Auth hook
-  petService.ts               — Алдсан/олдсон амьтны Supabase CRUD
-  adoptionService.ts          — Үрчлүүлэх CRUD
-  sittingService.ts           — Асрах үйлчилгээний CRUD
-  chatService.ts              — Чат/мессеж CRUD + Realtime
-  clinicService.ts            — Эмнэлэг, цаг захиалгын CRUD
-  petHealthService.ts         — Вакцин/эм/өвчний түүх CRUD
-  vaccineService.ts           — Вакцины статус/сануулгын логик
-  similarity.ts               — Зурган төстэй байдал (CLIP, browser-based, CDN-ээс ачаалдаг)
-  assistant/                  — AI зөвлөх (engine, matcher, knowledge)
-  push.ts                     — Push мэдэгдэлд бүртгүүлэх клиент функцууд
+  supabase.ts / supabaseAdmin.ts — Supabase client (public / server admin)
+  AuthProvider.tsx, useAuth.ts, useLocalStorageState.ts
+  petService / adoptionService / sittingService / chatService / clinicService /
+  petHealthService / vaccineService / sightingService / volunteerService / adminService
+  appointmentService.ts, qpay.ts, push.ts
+  similarity.ts               — Зурган төстэй байдал (CLIP, browser-based, CDN-ээс)
+  contentModeration.ts        — AI зурган шүүлт (CLIP zero-shot)
+  assistant/                  — AI зөвлөх (engine, matcher, knowledge, types)
+  usePetForm.ts, useAdoptionForm.ts, petMapping.ts, adoptionMapping.ts
+  districts.ts, districtCoords.ts, vetClinics.ts, imageCompress.ts,
+  relativeTime.ts, confetti.ts, rateLimit.ts, analyticsConsent.ts, env.ts
   i18n.tsx                    — MN/EN бүрэн орчуулга (TranslationKey төрлөөр хамгаалагдсан)
-public/sw.js                    — Push мэдэгдэл хүлээн авах Service Worker
-vercel.json                     — Vercel Cron Job тохиргоо (вакцины сануулга)
-supabase-setup.sql              — Бүх хүснэгт (pets, adoptions, conversations, messages,
-                                  vaccinations, medical_conditions, medications, appointments,
-                                  sitting_listings г.м.), RLS дүрэм, trigger, Storage bucket
+  utils.ts, types.ts
+public/sw.js                  — Push мэдэгдэл хүлээн авах Service Worker
+public/manifest.json, icon-192.png, icon-512.png — PWA
+vercel.json                   — Vercel Cron Job тохиргоо (вакцины сануулга)
+supabase-setup.sql            — Бүх хүснэгт, RLS дүрэм, trigger, Storage bucket
+eslint.config.mjs             — ESLint 9 flat config
 ```
 
 > Бүх эх код `.ts`/`.tsx` болон хөрвүүлэгдсэн (JS→TS бүрэн миграци). Аудит/ops-оор
@@ -373,19 +430,13 @@ supabase-setup.sql              — Бүх хүснэгт (pets, adoptions, conv
 > docs/
 >   BACKUP.md            — Backup & DR стратеги, restore runbook
 >   SECURITY.md          — Аюулгүй байдлын байр суурь, хүлээн зөвшөөрсөн эрсдэл
+>   UX-FLOWS.md          — Хэрэглэгчийн flow + wireframe (mermaid)
+>   wireframes.html      — Харагдац загвар (вэб дээр үзэх боломжтой)
 > scripts/
 >   backup-db.sh         — pg_dump backup скрипт (retention + S3/GCS сонголт)
-> lib/
->   analyticsConsent.ts  — Analytics зөвшөөрөл (beforeSend hook)
->   rateLimit.ts         — In-memory rate limiter (хандив)
->   env.ts               — Заавал env шалгалт (fail-fast)
-> components/
->   AnalyticsProvider.tsx — Analytics/SpeedInsights + мэдэгдэл wrapper
->   AnalyticsNotice.tsx   — Analytics-мэдэгдэл баннер (i18n)
-> app/
->   not-found.tsx         — Custom 404
->   error.tsx             — Error boundary (Sentry-д холбогдсон)
-> eslint.config.mjs       — ESLint 9 flat config
+> instrumentation.ts     — Env validation (fail-fast) + Sentry
+> tests/
+>   unit/, component/, e2e/  — Vitest + Playwright тестүүд
 > ```
 
 ## Дараагийн алхмууд (Үе шат 2)
@@ -393,7 +444,7 @@ supabase-setup.sql              — Бүх хүснэгт (pets, adoptions, conv
 - [x] `lib/similarity.ts`-г CLIP embedding-тэй солих ✅ (browser-based, `@huggingface/transformers`, CDN)
 - [x] Facebook/Messenger руу Share товч нэмэх ✅ (`ShareButtons.tsx`, `/pets/[id]` дэлгэрэнгүй хуудас)
 - [x] Push мэдэгдэл (Nearby Alert) ✅ (`lib/push.ts`, `public/sw.js`, `/api/notify` + Supabase Webhook)
-- [x] Сүүлд харагдсан газрын зураг ✅ (`components/Location .tsx`, OpenStreetMap + Leaflet.js — API key шаардахгүй)
+- [x] Сүүлд харагдсан газрын зураг ✅ (`components/LocationMap.tsx`, OpenStreetMap + Leaflet.js — API key шаардахгүй)
 - [x] Вакцины сануулга feature (retention) ✅ (`/my-pets`, Vercel Cron + push мэдэгдэл)
 - [x] "Олдлоо" товч ✅ (зохиогч л тэмдэглэж чадна, RLS-ээр хамгаалагдсан)
 - [x] Facebook/Messenger share-д зурган preview (og:image) ✅ (`generateMetadata`, server component)
@@ -408,7 +459,7 @@ supabase-setup.sql              — Бүх хүснэгт (pets, adoptions, conv
 - [x] Сайжруулсан empty state ✅ (icon + CTA товч)
 - [x] Онбординг (эхний удаад 3 алхамт танилцуулга) ✅ (`components/Onboarding.tsx`)
 - [x] Формын алхамчилсан UI (progress indicator) ✅ (`PetForm.tsx`, 4 алхамт wizard)
-- [x] Автомат байршил тодорхойлох (Geolocation) ✅ (`lib/districtCoords.ts`, gадаад API/зардалгүй)
+- [x] Автомат байршил тодорхойлох (Geolocation) ✅ (`lib/districtCoords.ts`, гадаад API/зардалгүй)
 - [x] Харьцангуй цаг ("3 цагийн өмнө") ✅ (`lib/relativeTime.ts`)
 - [x] Dark mode ✅ (`ThemeToggle.tsx`, CSS variables, localStorage хадгалалттай)
 - [x] SVG icon (нохой/муур, emoji-ийн оронд) ✅ (`components/PetIcon.tsx`)
@@ -427,14 +478,14 @@ supabase-setup.sql              — Бүх хүснэгт (pets, adoptions, conv
 - [x] Формын урьдчилан харах карт (preview) ✅ (`PetPreviewCard.tsx`, баруун талын хоосон зайг ашигласан, ≥860px дэлгэцэнд)
 - [x] Зурган оруулаагүй үед автомат нохой/муур icon ✅ (form preview + жагсаалтад аль хэдийн байсан)
 - [x] Жагсаалтыг амьтны төрлөөр шүүх ✅ (Нохой/Муур/Бусад)
-- [x] Мэргэжлийн түвшний дизайны систем ✅ (`app/globals.css` — өнгө/фонт/зай/сүүдрийн token, `PawTrail.tsx` гарын үсэг элемент, **бүх хуудсанд** (Listings, PetDetail, MyPets, Admin, DonateModal) нэгдсэн байдлаар тарааж хэрэгжүүлсэн)
+- [x] Мэргэжлийн түвшний дизайны систем ✅ (**v2 "Dusk Meadow"** — `app/globals.css`-д semantic surface/text/border, glassmorphism, motion, fluid spacing/typography token; `components/ui/` primitive сан; **redesign Phase 1 дууссан**, хуудсуудад хэсэгчлэн нэвтрүүлж байна)
 - [x] Зай (padding/gap/margin) token-жуулсан ✅ (`var(--sp-1)`–`var(--sp-8)`, MyPets/Admin/PetDetail/бусад)
 - [x] Admin, MyPets-ийн empty/loading state сайжруулсан ✅ (skeleton shimmer, icon-тэй empty state)
 - [x] Хуудас шилжилтийн animation ✅ (`PageTransition.tsx`, App Router-д зориулсан fade+slide, нэмэлт сан шаардахгүй)
 - [x] Confetti/pop micro-interaction ✅ (`lib/confetti.ts` — "Амьтан олдлоо" болон хандив амжилттай төлөгдөх мөчид, `prefers-reduced-motion`-той нийцтэй)
 - [x] `next/image` ашиглаж зураг optimize хийсэн ✅ (WebP, responsive sizes, автомат lazy-load — PetCard, PetDetail, Admin)
 - [x] Жагсаалтын хуудаслалт ✅ (24 бичлэг тутам, "Илүү үзэх" товч, Supabase `.range()` ашигласан)
-- [x] Автомат тест (unit + component + e2e) ✅ (Vitest — 38 unit/component test, Playwright — навигаци/форм e2e smoke test, GitHub Actions CI)
+- [x] Автомат тест (unit + component + e2e) ✅ (Vitest — unit/component test, Playwright — навигаци/форм e2e smoke test, GitHub Actions CI)
 - [x] Үрчлүүлэх (adoptions) ✅ (`/adoptions`, `/adoptions/new`, `/adoptions/[id]` — дэлгэрэнгүй, edit/delete, share, дугаар нуух)
 - [x] Чат / Мессеж ✅ (`/messages`, Supabase Realtime, `MessageButton` — амьтны эзэнтэй шууд холбогдох)
 - [x] Эрүүл мэндийн бүртгэл ✅ (`/my-pets` — вакцин, эм, өвчний түүх, цаг авалт; `vaccinations`/`medical_conditions`/`medications`/`appointments` хүснэгтүүд)
@@ -453,16 +504,18 @@ supabase-setup.sql              — Бүх хүснэгт (pets, adoptions, conv
 - [x] Dead code устгал ✅ (`app/api/embed` — CLIP browser-д шилжсэн, хуучин серверийн HF embedding)
 - [x] Donation rate limit ✅ (`lib/rateLimit.ts` — 1мин/5 хүсэлт/IP, `/api/donations/create`)
 - [x] DB-level pet validation + index ✅ (`supabase-setup.sql` — `validate_pet_input` trigger, 5 index)
-- [x] Custom 404/error хуудас ✅ (`app/not-found.tsx`, `app/error.tsx` — branded, i18n, Sentry-д холбогдсон)
+- [x] Custom 404/error хуудас ✅ (`app/not-found.tsx`, `app/error.tsx`, `app/global-error.tsx` — branded, i18n, Sentry-д холбогдсон)
 - [x] Env validation ✅ (`lib/env.ts` — заавал env алга бол fail-fast, `instrumentation.ts`)
 - [x] Sentry v10 + Next.js 16 + React 19 + ESLint 9 upgrade ✅ (`npm audit` 33→5, үлдсэн5 нь зөвхөн dev tooling)
 
 - [ ] React Native апп (iOS/Android)
+- [ ] Frontend redesign үлдсэн фаз (Phase 2–8) — `components/ui/`-г бүх хуудсанд нэвтрүүлэх
 
 ## Баримт бичиг (docs)
 
 - **`docs/BACKUP.md`** — Backup & Disaster Recovery: RPO/RTO, backup скрипт (cron/GitHub Actions жишээ), restore runbook (3 сценари), storage backup, drill.
 - **`docs/SECURITY.md`** — Аюулгүй байдлын байр суурь (CSP/RLS/rate limit/env validation), хүлээн зөвшөөрсөн эрсдэл (`npm audit`), эргэн төлөлтийн төлөвлөгөө.
+- **`docs/UX-FLOWS.md`** — Хэрэглэгчийн flow (mermaid диаграм) + wireframe (ASCII), `wireframes.html`-тэй хамт.
 
 Хэрэгтэй тушаалууд:
 

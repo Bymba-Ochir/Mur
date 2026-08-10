@@ -12,10 +12,10 @@ interface BadgeProps {
 
 const TONES: Record<BadgeTone, string> = {
   default: `background: var(--surface-3); color: var(--primary);`,
-  primary: `background: var(--primary); color: #fff;`,
+  primary: `background: var(--primary); color: var(--text-on-accent);`,
   accent: `background: var(--accent); color: var(--accent-ink);`,
-  success: `background: var(--success); color: #fff;`,
-  alert: `background: var(--alert); color: #fff;`,
+  success: `background: var(--success); color: var(--text-on-accent);`,
+  alert: `background: var(--alert); color: var(--text-on-accent);`,
   neutral: `background: var(--border-subtle); color: var(--text-secondary);`,
 };
 

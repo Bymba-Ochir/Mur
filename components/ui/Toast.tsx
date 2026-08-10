@@ -38,7 +38,7 @@ export default function Toast({ tone = 'success', children }: ToastProps) {
           display: inline-flex;
           align-items: center;
           gap: var(--sp-2);
-          color: #fff;
+          color: var(--text-on-accent);
           font-size: var(--text-sm);
           font-weight: 500;
           padding: var(--sp-3) var(--sp-4);

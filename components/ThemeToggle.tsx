@@ -1,32 +1,15 @@
 'use client';
-import { useLayoutEffect, useSyncExternalStore } from 'react';
+import { useLayoutEffect } from 'react';
 import { useLocalStorageValue, setLocalStorageValue } from '../lib/useLocalStorageState';
 
 const THEME_KEY = 'mur-theme';
-const DARK_QUERY = '(prefers-color-scheme: dark)';
-
-/** Системийн dark mode идэвхтэй эсэх — useSyncExternalStore ашиглан hydration-аюулгүй */
-function useSystemDark(): boolean {
-  return useSyncExternalStore(
-    (cb) => {
-      const mql = window.matchMedia(DARK_QUERY);
-      mql.addEventListener('change', cb);
-      return () => mql.removeEventListener('change', cb);
-    },
-    () => window.matchMedia(DARK_QUERY).matches,
-    () => false, // SSR: хоёр талд бүх юм ижил байх — 'light' рендерлэнэ
-  );
-}
 
 export default function ThemeToggle() {
   // localStorage-тэй синхрончлогдсон theme — useSyncExternalStore (SSR-аюулгүй)
   const saved = useLocalStorageValue(THEME_KEY);
-  const systemDark = useSystemDark();
 
-  // saved байвал түүнийг, үгүй бол системийн сонголтоор тодорхойлно
-  const theme = (saved === 'dark' || saved === 'light') ? saved
-    : systemDark ? 'dark'
-    : 'light';
+  // v3 "Гэрлэн бүрх" нь харанхуй-default — хадгалсан сонголтгүй үед 'dark'
+  const theme = (saved === 'dark' || saved === 'light') ? saved : 'dark';
 
   // localStorage/системийн утга өөрчлөгдөхөд <html data-theme> DOM-д бичих
   // (setState биш тул effect дотор зөвшөөрөгдөнө; FOUC-аас layout.tsx-ийн

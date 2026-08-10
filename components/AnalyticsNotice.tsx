@@ -51,7 +51,7 @@ export default function AnalyticsNotice() {
           border: none; border-radius: var(--r-sm); padding: 8px 14px;
           font-weight: 600; font-size: 13px; cursor: pointer;
         }
-        .accept { background: var(--brand); color: #fff; }
+        .accept { background: var(--brand); color: var(--text-on-accent); }
         .decline { background: transparent; color: var(--muted); border: 1px solid var(--line); }
       `}</style>
     </div>

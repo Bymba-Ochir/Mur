@@ -203,7 +203,7 @@ export default function ListingsPage() {
         }
         .empty-state::before {
           content: ''; position: absolute; inset: -40% -20% auto; height: 80%;
-          background: radial-gradient(60% 60% at 50% 0%, rgba(224,122,62,0.08), transparent 70%);
+          background: radial-gradient(60% 60% at 50% 0%, color-mix(in srgb, var(--accent) 8%, transparent), transparent 70%);
           pointer-events: none;
         }
         @media (max-width: 640px) {

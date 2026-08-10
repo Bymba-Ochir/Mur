@@ -102,7 +102,7 @@ export default function AppointmentsSection({
           cursor: pointer; font-family: var(--font-body); font-weight: 600;
           transition: all 0.15s ease;
         }
-        .cancel-btn:hover { background: var(--alert); color: #fff; }
+        .cancel-btn:hover { background: var(--alert); color: var(--text-on-accent); }
       `}</style>
     </div>
   );

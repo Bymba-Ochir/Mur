@@ -68,12 +68,12 @@ export function ToastProvider({ children }: { children: ReactNode }) {
         }
         .toast {
           display: flex; align-items: center; gap: var(--sp-2);
-          background: var(--ink); color: #fff; padding: var(--sp-3) var(--sp-4); border-radius: var(--r-sm);
+          background: var(--ink); color: var(--text-on-accent); padding: var(--sp-3) var(--sp-4); border-radius: var(--r-sm);
           font-size: var(--text-sm); box-shadow: var(--shadow-md); cursor: pointer;
           pointer-events: auto; animation: slideUp 0.25s ease-out;
         }
         .toast-icon { display: inline-flex; flex-shrink: 0; }
-        .toast:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+        .toast:focus-visible { outline: 2px solid var(--text-on-accent); outline-offset: 2px; }
         .toast-error { background: var(--alert); }
         .toast-success { background: var(--toast-success-bg); animation: slideUpBounce 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
         .toast-info { background: var(--brand); }

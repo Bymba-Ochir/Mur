@@ -143,7 +143,7 @@ export default function AppointmentModal({
         .submit-btn {
           width: 100%; margin-top: 16px; padding: 13px;
           border-radius: var(--r-md); border: none;
-          background: var(--grad-brand); color: #fff;
+          background: var(--grad-brand); color: var(--text-on-accent);
           font-weight: 700; cursor: pointer; font-size: 14px;
           font-family: var(--font-body);
           transition: transform 0.15s ease, box-shadow 0.2s ease;

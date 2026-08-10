@@ -53,8 +53,8 @@ export default function ShareButtons({ url, title }: { url: string; title: strin
           transition: transform .15s ease, box-shadow .2s ease, filter .2s ease;
         }
         .share-btn:hover { transform: translateY(-1px); box-shadow: var(--shadow-sm); filter: brightness(1.05); }
-        .share-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-        .native { background: var(--brand); color: #fff; }
+        .share-btn:focus-visible { outline: 2px solid var(--border-focus); outline-offset: 2px; }
+        .native { background: var(--brand); color: var(--text-on-accent); }
         .fb { background: #1877F2; color: #fff; }
         .copy { background: var(--eyebrow-bg); color: var(--primary); }
       `}</style>

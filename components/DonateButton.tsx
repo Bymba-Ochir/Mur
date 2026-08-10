@@ -15,7 +15,7 @@ export default function DonateButton() {
       <style jsx>{`
         .donate-btn {
           background: var(--grad-accent);
-          color: #fff;
+          color: var(--accent-ink);
           border: none;
           padding: 8px 16px;
           border-radius: var(--r-pill);

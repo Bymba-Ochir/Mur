@@ -92,7 +92,7 @@ export default function SittingCardView({
         @media (max-width: 640px) { .pet-card { border-radius: var(--r-md); } }
         @media (min-width: 1025px) { .pet-card { border-radius: var(--r-xl); } }
         .pet-card:hover { box-shadow: var(--shadow-lift); transform: translateY(-6px); border-color: transparent; }
-        .pet-card:focus-visible { outline: 2.5px solid var(--accent); outline-offset: 2px; }
+        .pet-card:focus-visible { outline: 2.5px solid var(--border-focus); outline-offset: 2px; }
         .pet-card.static { cursor: default; }
         .pet-card.static:hover { transform: none; box-shadow: var(--shadow-sm); border-color: var(--line); }
         .thumb {
@@ -120,9 +120,9 @@ export default function SittingCardView({
           position: absolute; bottom: 10px; left: 10px; z-index: 2; font-family: var(--font-mono); font-size: 9.5px;
           padding: 5px 10px; border-radius: var(--r-pill); font-weight: 700; letter-spacing: 0.03em;
           backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-          background: rgba(255,255,255,0.85); color: var(--primary);
-          border: 1px solid rgba(255,255,255,0.3);
-          box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+          background: var(--surface-2); color: var(--text-primary);
+          border: 1px solid var(--border-subtle);
+          box-shadow: var(--shadow-xs);
         }
         @media (max-width: 480px) {
           .badge { font-size: 10px; padding: 5px 11px; bottom: 12px; left: 12px; }
@@ -130,11 +130,11 @@ export default function SittingCardView({
         @media (min-width: 1025px) {
           .badge { font-size: 10.5px; padding: 6px 12px; bottom: 14px; left: 14px; }
         }
-        .badge.sitting { background: rgba(61,122,95,0.85); color: #fff; border-color: rgba(61,122,95,0.3); }
+        .badge.sitting { background: var(--primary); color: var(--text-on-accent); border-color: transparent; }
         .info { padding: 14px 15px; flex: 1; display: flex; flex-direction: column; gap: 2px; }
         @media (max-width: 480px) { .info { padding: 12px 14px; } }
         @media (min-width: 1025px) { .info { padding: 16px 18px; gap: 3px; } }
-        h4 { font-family: var(--font-display); font-size: var(--text-lg); font-weight: 700; margin-bottom: 2px; color: var(--primary); line-height: var(--lh-tight); }
+        h4 { font-family: var(--font-display); font-size: var(--text-lg); font-weight: 700; margin-bottom: 2px; color: var(--text-primary); line-height: var(--lh-tight); }
         @media (max-width: 480px) { h4 { font-size: 15px; } }
         @media (min-width: 1025px) { h4 { font-size: var(--text-xl); margin-bottom: 4px; } }
         .pet-type { font-size: 12.5px; color: var(--muted); margin: 2px 0; }
@@ -152,10 +152,10 @@ export default function SittingCardView({
           background: var(--eyebrow-bg); padding: 6px 12px; border-radius: var(--r-pill);
           transition: background 0.15s ease, color 0.15s ease;
         }
-        .phone:hover { background: var(--primary); color: #fff; }
+        .phone:hover { background: var(--primary); color: var(--text-on-accent); }
         .phone .icon { flex-shrink: 0; opacity: 0.85; }
         .reveal-btn { background: none; border: none; padding: 0; cursor: pointer; font-family: inherit; text-align: left; width: 100%; }
-        .reveal-btn:focus-visible, .phone:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+        .reveal-btn:focus-visible, .phone:focus-visible { outline: 2px solid var(--border-focus); outline-offset: 2px; }
       `}</style>
     </div>
   );

@@ -72,7 +72,7 @@ export default function BottomNav() {
             backdrop-filter: var(--glass-blur);
             border-top: 1px solid var(--glass-border);
             padding: 8px 4px calc(8px + env(safe-area-inset-bottom, 0px));
-            box-shadow: 0 -4px 24px rgba(23,34,39,0.08);
+            box-shadow: 0 -4px 24px rgba(0,0,0,0.10);
           }
         }
         @media (max-width: 400px) {
