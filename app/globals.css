@@ -264,7 +264,7 @@ h3 { font-size: var(--text-xl); }
   h3 { font-size: var(--text-lg); }
 }
 
-a { color: inherit; }
+a { color: inherit; text-decoration: none; }
 a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, [tabindex]:focus-visible {
   outline: 2px solid var(--amber-glow, var(--primary-light));
   outline-offset: 2px;
@@ -507,6 +507,114 @@ textarea.field { min-height: 90px; resize: vertical; }
 }
 
 ::selection { background: var(--primary); color: var(--text-on-accent); }
+
+/* ═══════════════════════════════════════
+   Navbar structural fallback
+   These rules keep the dock intact before/without client hydration.
+   ═══════════════════════════════════════ */
+.navbar-wrap {
+  position: fixed;
+  top: 16px;
+  left: 0;
+  right: 0;
+  z-index: 90;
+  display: flex;
+  justify-content: center;
+  padding: 0 var(--sp-5);
+  pointer-events: none;
+}
+.navbar-wrap > .navbar {
+  pointer-events: auto;
+  width: min(1160px, 100%);
+  height: 60px;
+  padding: 0 var(--sp-4);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  flex-wrap: nowrap;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-sm);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+}
+.navbar-wrap .brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  flex: 0 0 auto;
+  text-decoration: none;
+}
+.navbar-wrap .brand-mark {
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 32px;
+  border-radius: 9px;
+  background: var(--grad-brand);
+}
+.navbar-wrap .brand-name {
+  display: inline-block;
+  font-family: var(--font-display);
+  font-size: var(--text-base);
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+}
+.navbar-wrap .nav-links {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex: 1 1 auto;
+  min-width: 0;
+  padding-left: var(--sp-3);
+}
+.navbar-wrap .nav-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 13px;
+  border-radius: var(--r-pill);
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+  text-decoration: none;
+}
+.navbar-wrap .nav-link:hover,
+.navbar-wrap .nav-link.active {
+  color: var(--text-primary);
+  background: var(--surface-3);
+}
+.navbar-wrap .nav-divider { flex: 0 0 1px; width: 1px; height: 20px; background: var(--border-subtle); }
+.navbar-wrap .icon-rail,
+.navbar-wrap .nav-right,
+.navbar-wrap .mobile-actions { display: flex; align-items: center; }
+.navbar-wrap .nav-right { gap: var(--sp-2); margin-left: auto; flex: 0 0 auto; }
+.navbar-wrap .mobile-actions { display: none; }
+
+@media (max-width: 1040px) {
+  .navbar-wrap .nav-links,
+  .navbar-wrap .nav-divider,
+  .navbar-wrap .icon-rail { display: none; }
+  .navbar-wrap .mobile-actions { display: flex; }
+}
+@media (max-width: 768px) {
+  .navbar-wrap { padding: 0 var(--sp-3); }
+  .navbar-wrap > .navbar { height: 52px; }
+}
+@media (max-width: 640px) {
+  .navbar-wrap .nav-right { display: none; }
+}
+@media (max-width: 480px) {
+  .navbar-wrap { padding: 0 var(--sp-2); }
+  .navbar-wrap > .navbar { height: 48px; padding: 0 var(--sp-2); }
+  .navbar-wrap .brand-mark { width: 28px; height: 28px; flex-basis: 28px; }
+}
 
 /* ═══════════════════════════════════════
    Scrollbar
