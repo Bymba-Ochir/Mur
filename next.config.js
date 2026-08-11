@@ -12,7 +12,7 @@ const nextConfig = {
   // Security headers. CSP-г аппын бодит хэрэгцээнд тааруулсан:
   // - 'unsafe-inline' script: layout-ийн theme script (dangerouslySetInnerHTML)
   // - 'unsafe-inline' style: styled-jsx
-  // - 'unsafe-eval' + jsdelivr/huggingface.co + blob: — browser-ийн CLIP
+  // - 'unsafe-eval' + jsdelivr/Hugging Face CDN + blob: — browser-ийн DINOv2
   //   (transformers.js/ONNX runtime, lib/similarity.ts) заагдсан CDN-ээс ачаалагддаг
   // - supabase storage/realtime, Sentry, fonts, unpkg (leaflet.css)
   async headers() {
@@ -22,7 +22,7 @@ const nextConfig = {
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com",
       "font-src 'self' https://fonts.gstatic.com data:",
       "img-src 'self' data: blob: https://*.supabase.co https://firebasestorage.googleapis.com https://*.tile.openstreetmap.org https://*.basemaps.cartocdn.com",
-      "connect-src 'self' blob: https://*.supabase.co wss://*.supabase.co https://cdn.jsdelivr.net https://huggingface.co https://*.huggingface.co https://*.sentry.io https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com",
+      "connect-src 'self' blob: https://*.supabase.co wss://*.supabase.co https://cdn.jsdelivr.net https://huggingface.co https://*.huggingface.co https://*.hf.co https://*.sentry.io https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com",
       "worker-src 'self' blob:",
       "frame-ancestors 'none'",
       "base-uri 'self'",
