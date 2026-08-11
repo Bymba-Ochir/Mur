@@ -13,6 +13,7 @@ export default function LoginModal({ onClose }: { onClose: () => void }) {
   const [email, setEmail] = useState('');
   const [sent, setSent] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const [sending, setSending] = useState(false);
 
   useEffect(() => {
     function handleKey(e: KeyboardEvent) {
@@ -25,11 +26,19 @@ export default function LoginModal({ onClose }: { onClose: () => void }) {
   async function handleSend(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setErr(null);
+    setSending(true);
     try {
-      await loginWithEmail(email);
+      await Promise.race([
+        loginWithEmail(email.trim()),
+        new Promise<never>((_, reject) => setTimeout(() => reject(new Error('TIMEOUT')), 15000)),
+      ]);
       setSent(true);
-    } catch {
-      setErr(t('login_error'));
+    } catch (error) {
+      setErr(error instanceof Error && error.message === 'TIMEOUT'
+        ? 'Хүсэлт удаж байна. Интернэт болон Supabase тохиргоогоо шалгаад дахин оролдоно уу.'
+        : t('login_error'));
+    } finally {
+      setSending(false);
     }
   }
 
@@ -51,12 +60,16 @@ export default function LoginModal({ onClose }: { onClose: () => void }) {
             <input
               id="login-email"
               type="email" required value={email}
+              autoFocus
+              disabled={sending}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="ta@jishee.mn"
               aria-describedby={err ? 'login-error' : undefined}
             />
             {err && <p id="login-error" className="err" role="alert">{err}</p>}
-            <Button type="submit" variant="primary">{t('login_button')}</Button>
+            <Button type="submit" variant="primary" disabled={sending || !email.trim()} aria-busy={sending}>
+              {sending ? 'Илгээж байна…' : t('login_button')}
+            </Button>
           </form>
         )}
         <button className="close" onClick={onClose} aria-label="Цонхыг хаах">{t('close')}</button>
