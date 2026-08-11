@@ -12,7 +12,9 @@ const BUCKET = 'pet-photos';
  * Зураг Storage bucket-д хуулаад, public URL буцаана (зөвхөн дотор ашиглана)
  */
 async function uploadPetPhoto(file: File, statusFolder: PetStatus): Promise<string> {
-  const path = `${statusFolder}/${Date.now()}_${file.name}`;
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('Зураг оруулахын тулд нэвтэрнэ үү');
+  const path = `${user.id}/${statusFolder}/${Date.now()}_${file.name}`;
   const { error } = await supabase.storage.from(BUCKET).upload(path, file);
   if (error) throw error;
   const { data } = supabase.storage.from(BUCKET).getPublicUrl(path);

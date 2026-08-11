@@ -2,7 +2,7 @@ import { supabase } from './supabase';
 import { mapPetSummary } from './petMapping';
 import type { Report, VetClinic, VetService } from './types';
 
-export type AdminTab = 'dashboard' | 'reports' | 'listings' | 'users' | 'adoptions' | 'sitting' | 'clinics' | 'appointments' | 'donations' | 'system' | 'audit';
+export type AdminTab = 'dashboard' | 'reports' | 'chatReports' | 'listings' | 'users' | 'adoptions' | 'sitting' | 'clinics' | 'appointments' | 'donations' | 'system' | 'audit';
 
 export interface AdminStats {
   users: number; pets: number; activePets: number; resolvedPets: number;
@@ -13,6 +13,7 @@ export interface AdminUser { user_id: string; email: string; created_at: string;
 export interface AdminListing { id: string; kind: 'pet'|'adoption'|'sitting'; title: string; subtitle: string; status: string; hidden: boolean; createdAt: string; }
 export interface AdminAppointment { id: string; clinic_id: string; service: string; date: string; time_slot: string; status: string; notes: string | null; created_at: string; }
 export interface AdminDonation { id: string; amount: number; supporter_name: string | null; is_anonymous: boolean; status: string; invoice_id: string | null; created_at: string; }
+export interface ChatReport { id:string; conversation_id:string; reported_user_id:string; reason:string; status:string; created_at:string; }
 export interface AuditLog { id: number; action: string; target_type: string; target_id: string | null; reason: string | null; metadata: Record<string, unknown>; created_at: string; }
 export interface SystemHealth { databaseSize: number; petPhotos: number; failedDonations: number; stalePendingDonations: number; overdueAppointments: number; lastAuditAt: string | null; }
 
@@ -47,6 +48,8 @@ export async function resolveReport(reportId: string, status: 'resolved'|'dismis
   await writeAudit(`report_${status}`, 'report', reportId, note);
 }
 export const dismissReport = (id: string) => resolveReport(id, 'dismissed');
+export async function fetchChatReports():Promise<ChatReport[]> { const {data,error}=await supabase.from('chat_reports').select('*').eq('status','open').order('created_at',{ascending:false});throwIf(error);return(data||[]) as ChatReport[]; }
+export async function resolveChatReport(id:string,status:'resolved'|'dismissed'){const{error}=await supabase.from('chat_reports').update({status}).eq('id',id);throwIf(error);await writeAudit(`chat_report_${status}`,'chat_report',id);}
 
 export async function fetchAdminListings(kind: 'pet'|'adoption'|'sitting'): Promise<AdminListing[]> {
   if (kind === 'pet') {

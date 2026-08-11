@@ -13,6 +13,8 @@ import {
   sendMessage,
   subscribeToMessages,
   otherParticipant,
+  blockConversationUser,
+  reportConversation,
 } from '../../../lib/chatService';
 import { relativeTime } from '../../../lib/relativeTime';
 import { getErrorMessage } from '../../../lib/utils';
@@ -30,6 +32,7 @@ export default function MessageThreadClient({ id }: { id: string }) {
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [blocked, setBlocked] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -118,6 +121,20 @@ export default function MessageThreadClient({ id }: { id: string }) {
     }
   }
 
+  async function handleReport() {
+    if (!conv) return;
+    const reason = window.prompt('Мэдээлэх шалтгаанаа бичнэ үү (3–500 тэмдэгт)')?.trim();
+    if (!reason) return;
+    try { await reportConversation(conv, reason); showToast('Админд мэдээллээ', 'success'); }
+    catch (err) { showToast(getErrorMessage(err), 'error'); }
+  }
+
+  async function handleBlock() {
+    if (!conv || !window.confirm('Энэ хэрэглэгчийг block хийх үү? Дахин мессеж солилцох боломжгүй болно.')) return;
+    try { await blockConversationUser(conv); setBlocked(true); showToast('Хэрэглэгчийг block хийлээ', 'success'); }
+    catch (err) { showToast(getErrorMessage(err), 'error'); }
+  }
+
   if (authLoading || loading) {
     return <p style={{ padding: 'var(--sp-6)' }}>{t('detail_loading')}</p>;
   }
@@ -161,6 +178,10 @@ export default function MessageThreadClient({ id }: { id: string }) {
           </Link>
           <span className="chat-other">{other}</span>
         </div>
+        <div className="chat-safety">
+          <button onClick={handleReport}>Мэдээлэх</button>
+          <button onClick={handleBlock}>Block</button>
+        </div>
       </div>
 
       {/* Мессежүүд */}
@@ -190,12 +211,12 @@ export default function MessageThreadClient({ id }: { id: string }) {
           onKeyDown={handleKeyDown}
           placeholder={t('chat_input_placeholder')}
           maxLength={2000}
-          disabled={sending}
+          disabled={sending || blocked}
           aria-label={t('chat_input_placeholder')}
         />
         <button
           onClick={handleSend}
-          disabled={!input.trim() || sending}
+          disabled={!input.trim() || sending || blocked}
           className="chat-send-btn"
           aria-label={t('chat_submit')}
         >
@@ -247,6 +268,9 @@ export default function MessageThreadClient({ id }: { id: string }) {
         .chat-pet-thumb { width: 32px; height: 32px; position: relative; flex-shrink: 0; }
         .chat-pet-name { font-weight: 600; font-size: 14px; }
         .chat-other { font-size: 12px; color: var(--muted); }
+        .chat-safety { display:flex; gap:4px; flex-wrap:wrap; justify-content:flex-end; }
+        .chat-safety button { border:0; background:transparent; color:var(--muted); cursor:pointer; padding:7px; font-size:11px; }
+        .chat-safety button:last-child { color:var(--alert); }
 
         .chat-messages {
           flex: 1; overflow-y: auto; padding: var(--sp-4);

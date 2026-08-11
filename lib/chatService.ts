@@ -184,6 +184,28 @@ export async function sendMessage(conversationId: string, content: string): Prom
   return mapMessageRow(data as MessageRow);
 }
 
+/** Нөгөө хэрэглэгчийг block хийнэ. RLS нь зөвхөн өөрийн block-г зөвшөөрнө. */
+export async function blockConversationUser(conversation: Conversation): Promise<void> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('Нэвтэрнэ үү');
+  const blockedId = conversation.initiatorId === user.id ? conversation.ownerId : conversation.initiatorId;
+  const { error } = await supabase.from('user_blocks').upsert({ blocker_id:user.id, blocked_id:blockedId });
+  if (error) throw error;
+}
+
+/** Чатын зөрчлийг admin-д мэдээлнэ. Нэг conversation-д нэг report. */
+export async function reportConversation(conversation: Conversation, reason: string): Promise<void> {
+  const clean = reason.trim();
+  if (clean.length < 3 || clean.length > 500) throw new Error('Шалтгаан 3–500 тэмдэгт байна');
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('Нэвтэрнэ үү');
+  const reportedId = conversation.initiatorId === user.id ? conversation.ownerId : conversation.initiatorId;
+  const { error } = await supabase.from('chat_reports').insert({
+    reporter_id:user.id, conversation_id:conversation.id, reported_user_id:reportedId, reason:clean,
+  });
+  if (error) throw error;
+}
+
 /**
  * Хэрэглэгчийн харилцааны жагсаалт (сүүлийн мессежтэй)
  */

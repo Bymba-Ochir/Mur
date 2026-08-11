@@ -12,7 +12,9 @@ const PAGE_SIZE = 24;
  * Зураг Storage bucket-д хуулаад, public URL буцаана
  */
 async function uploadAdoptionPhoto(file: File): Promise<string> {
-  const path = `adoptions/${Date.now()}_${file.name}`;
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('Зураг оруулахын тулд нэвтэрнэ үү');
+  const path = `${user.id}/adoptions/${Date.now()}_${file.name}`;
   const { error } = await supabase.storage.from(BUCKET).upload(path, file);
   if (error) throw error;
   const { data } = supabase.storage.from(BUCKET).getPublicUrl(path);

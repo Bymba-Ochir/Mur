@@ -11,13 +11,14 @@ import {
   moderateListing, fetchAdminUsers, moderateUser, fetchAdminAppointments,
   updateAppointmentStatus, fetchAdminDonations, fetchAdminClinics, saveClinic,
   deleteClinic, fetchSystemHealth, fetchAuditLogs,
+  fetchChatReports, resolveChatReport,
   type AdminTab, type AdminStats, type AdminListing, type AdminUser,
-  type AdminAppointment, type AdminDonation, type AuditLog, type SystemHealth,
+  type AdminAppointment, type AdminDonation, type AuditLog, type SystemHealth, type ChatReport,
 } from '../../lib/adminService';
 import type { Report, VetClinic, VetService } from '../../lib/types';
 
 const TABS: {id:AdminTab;label:string}[]=[
-  {id:'dashboard',label:'Тойм'},{id:'reports',label:'Report'},{id:'listings',label:'Алдсан/Олдсон'},
+  {id:'dashboard',label:'Тойм'},{id:'reports',label:'Зарын report'},{id:'chatReports',label:'Чатын report'},{id:'listings',label:'Алдсан/Олдсон'},
   {id:'adoptions',label:'Үрчлүүлэлт'},{id:'sitting',label:'Асрах'},{id:'users',label:'Хэрэглэгч'},
   {id:'clinics',label:'Эмнэлэг'},{id:'appointments',label:'Цаг захиалга'},
   {id:'donations',label:'Хандив'},{id:'system',label:'Систем'},{id:'audit',label:'Audit'},
@@ -33,10 +34,12 @@ export default function AdminPage(){
   const [appointments,setAppointments]=useState<AdminAppointment[]>([]); const [donations,setDonations]=useState<AdminDonation[]>([]);
   const [clinics,setClinics]=useState<VetClinic[]>([]); const [clinicForm,setClinicForm]=useState<VetClinic|null>(null);
   const [health,setHealth]=useState<SystemHealth|null>(null); const [logs,setLogs]=useState<AuditLog[]>([]);
+  const [chatReports,setChatReports]=useState<ChatReport[]>([]);
 
   const loadTab=useCallback(async(current:AdminTab)=>{setBusy(true);try{
     if(current==='dashboard')setStats(await fetchAdminStats());
     if(current==='reports')setReports(await fetchReports());
+    if(current==='chatReports')setChatReports(await fetchChatReports());
     if(current==='listings')setItems(await fetchAdminListings('pet'));
     if(current==='adoptions')setItems(await fetchAdminListings('adoption'));
     if(current==='sitting')setItems(await fetchAdminListings('sitting'));
@@ -73,6 +76,8 @@ export default function AdminPage(){
     {tab==='dashboard'&&<section><h2>Ерөнхий үзүүлэлт</h2><div className="stat-grid">{statCards.map(([k,v])=><article className="stat" key={String(k)}><span>{k}</span><strong>{v}</strong></article>)}</div></section>}
 
     {tab==='reports'&&<section><SectionTitle title="Мэдээлэгдсэн зар" count={reports.length}/><div className="admin-list">{reports.map(r=><article className="admin-row" key={r.id}><div><strong>{r.reason}</strong><p>{r.pet?<><Link href={`/pets/${r.pet.id}`}>{r.pet.name||r.pet.type}</Link> · {r.pet.district}</>:'Зар устсан'}</p><small>{relativeTime(r.createdAt)}</small></div><div className="actions"><Button size="sm" variant="ghost" disabled={busy} onClick={()=>act(()=>resolveReport(r.id,'dismissed'),'Report хаагдлаа')}>Үл хэрэгсэх</Button><Button size="sm" variant="primary" disabled={busy} onClick={()=>act(()=>resolveReport(r.id,'resolved'),'Шийдвэрлэгдлээ')}>Шийдвэрлэх</Button></div></article>)}</div></section>}
+
+    {tab==='chatReports'&&<section><SectionTitle title="Мэдээлэгдсэн чат" count={chatReports.length}/><div className="admin-list">{chatReports.map(r=><article className="admin-row" key={r.id}><div><strong>{r.reason}</strong><p>Conversation: {r.conversation_id} · User: {r.reported_user_id}</p><small>{relativeTime(r.created_at)}</small></div><div className="actions"><Button size="sm" variant="ghost" onClick={()=>act(()=>resolveChatReport(r.id,'dismissed'),'Report хаагдлаа')}>Үл хэрэгсэх</Button><Button size="sm" onClick={()=>act(()=>resolveChatReport(r.id,'resolved'),'Шийдвэрлэгдлээ')}>Шийдвэрлэх</Button></div></article>)}</div></section>}
 
     {(['listings','adoptions','sitting'] as AdminTab[]).includes(tab)&&<section><SectionTitle title={tab==='listings'?'Алдсан/олдсон зар':tab==='adoptions'?'Үрчлүүлэх зар':'Асрах үйлчилгээ'} count={items.length}/><div className="admin-list">{items.map(x=><article className="admin-row" key={x.id}><div><strong>{x.title}</strong><p>{x.subtitle} · <Status value={x.status}/></p><small>{relativeTime(x.createdAt)}</small></div><div className="actions">{x.kind==='pet'&&<Button size="sm" variant="ghost" onClick={()=>act(()=>moderateListing(x,'resolve'),'Олдсон гэж тэмдэглэлээ')}>Олдлоо</Button>}<Button size="sm" variant={x.hidden?'primary':'ghost'} onClick={()=>act(()=>moderateListing(x,x.hidden?'show':'hide'),x.hidden?'Нээлээ':'Нуув')}>{x.hidden?'Нээх':'Нуух'}</Button>{x.kind!=='pet'&&<Button size="sm" variant="primary" onClick={()=>act(()=>moderateListing(x,'approve'),'Баталлаа')}>Батлах</Button>}<Button size="sm" variant="danger" onClick={()=>act(()=>moderateListing(x,'reject','Admin татгалзав'),'Татгалзлаа')}>Татгалзах</Button></div></article>)}</div></section>}
 

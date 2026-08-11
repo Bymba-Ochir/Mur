@@ -58,7 +58,7 @@ export async function createSittingListing(data: SittingListingInput): Promise<s
   let photoUrl: string | null = null;
 
   if (data.photoFile) {
-    const path = `sitting/${Date.now()}_${data.photoFile.name}`;
+    const path = `${userId}/sitting/${Date.now()}_${data.photoFile.name}`;
     const { error: uploadErr } = await supabase.storage.from(BUCKET).upload(path, data.photoFile);
     if (uploadErr) throw uploadErr;
     const { data: urlData } = supabase.storage.from(BUCKET).getPublicUrl(path);

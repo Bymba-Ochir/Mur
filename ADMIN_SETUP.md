@@ -8,6 +8,10 @@ Admin Center нь тойм, report, зарын модераци, хэрэглэ�
 Supabase Dashboard → SQL Editor хэсэгт `supabase-admin.sql` файлын бүх агуулгыг
 хуулж нэг удаа ажиллуулна.
 
+Дараа нь `supabase-production-hardening.sql` файлыг мөн бүтнээр нь ажиллуулна.
+Энэ нь storage ownership, chat block/report, message rate limit, appointment slot
+давхцал болон архивын хамгаалалтыг нэмнэ.
+
 Энэ migration нь:
 
 - модерацийн багана, RLS policy;
@@ -37,6 +41,10 @@ npm run dev
 ```
 
 Дараа нь admin хэрэглэгчээр нэвтэрч `/admin` хуудсыг нээнэ.
+
+Vercel → Project Settings → Environment Variables хэсэгт `.env.example`-ийн
+шаардлагатай утгуудыг тохируулна. Бүртгэл устгах API ажиллахын тулд
+`SUPABASE_SERVICE_ROLE_KEY` заавал серверийн environment variable байна.
 
 ## Аюулгүй ажиллагаа
 
