@@ -1,9 +1,9 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image';
 import type { KeyboardEvent } from 'react';
 import PetCardView from './PetCardView';
+import PetImageGallery from './PetImageGallery';
 import { useLanguage } from '../lib/i18n';
 import type { Pet } from '../lib/types';
 import { getBreedLabel } from '../lib/petBreeds';
@@ -12,6 +12,7 @@ export default function PetCard({ pet }: { pet: Pet }) {
   const router = useRouter();
   const { t, lang } = useLanguage();
   const [revealed, setRevealed] = useState(false);
+  const images = pet.photoURLs?.length ? pet.photoURLs : pet.photoURL ? [pet.photoURL] : [];
 
   const cardLabel = `${pet.status === 'lost' ? 'Алдсан' : 'Олдсон'} ${pet.type}${pet.name ? ', нэр ' + pet.name : ''}, ${pet.district}, ${pet.place}. Дэлгэрэнгүй үзэх.`;
 
@@ -46,13 +47,10 @@ export default function PetCard({ pet }: { pet: Pet }) {
       revealed={revealed}
       onRevealPhone={() => setRevealed(true)}
       imageNode={
-        pet.photoURL ? (
-          <Image
-            src={pet.photoURL}
+        images.length ? (
+          <PetImageGallery
+            images={images}
             alt={`${pet.type}${pet.name ? ' — ' + pet.name : ''}, ${pet.color || ''}`}
-            fill
-            sizes="(max-width: 640px) 45vw, 220px"
-            style={{ objectFit: 'cover' }}
           />
         ) : undefined
       }
