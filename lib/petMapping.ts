@@ -26,6 +26,11 @@ interface PetRow {
   created_by: string | null;
   created_at: string;
   embedding_version?: string | null;
+  view_count?: number | null;
+  favorite_count?: number | null;
+  urgent?: boolean | null;
+  expires_at?: string | null;
+  updated_at?: string | null;
 }
 
 export function mapPetRow(row: PetRow): Pet {
@@ -50,6 +55,11 @@ export function mapPetRow(row: PetRow): Pet {
     createdBy: row.created_by,
     createdAt: row.created_at,
     embeddingVersion: row.embedding_version ?? null,
+    viewCount: row.view_count ?? 0,
+    favoriteCount: row.favorite_count ?? 0,
+    urgent: row.urgent ?? false,
+    expiresAt: row.expires_at ?? null,
+    updatedAt: row.updated_at ?? null,
   };
 }
 

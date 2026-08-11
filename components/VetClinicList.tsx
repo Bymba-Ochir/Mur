@@ -1,12 +1,11 @@
 'use client';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useAuth } from '../lib/useAuth';
 import Button from './ui/Button';
 import { useLanguage } from '../lib/i18n';
 import { useToast } from './Toast';
 import { DISTRICTS } from '../lib/districts';
-import { searchClinics, findNearestClinics, fetchPublicClinics } from '../lib/clinicService';
-import { VET_CLINICS } from '../lib/vetClinics';
+import { searchClinics, findNearestClinics } from '../lib/clinicService';
 import ClinicMap from './ClinicMap';
 import ClinicCard from './ClinicCard';
 import AppointmentModal from './AppointmentModal';
@@ -30,17 +29,14 @@ export default function VetClinicList({ embedded = false }: { embedded?: boolean
   const [bookingClinic, setBookingClinic] = useState<VetClinic | null>(null);
   const [showLogin, setShowLogin] = useState(false);
   const [apptRefreshKey, setApptRefreshKey] = useState(0);
-  const [clinics, setClinics] = useState<VetClinic[]>(VET_CLINICS);
-
-  useEffect(() => { fetchPublicClinics().then(setClinics).catch(() => undefined); }, []);
 
   const filtered = useMemo(() => {
-    let list = searchClinics({ district, service, query }, clinics);
+    let list = searchClinics({ district, service, query });
     if (userCoords) {
       list = findNearestClinics(userCoords[0], userCoords[1], list, 20);
     }
     return list;
-  }, [district, service, query, userCoords, clinics]);
+  }, [district, service, query, userCoords]);
 
   function handleLocation() {
     if (!navigator.geolocation) {

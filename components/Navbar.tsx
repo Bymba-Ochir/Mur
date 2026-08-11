@@ -113,6 +113,7 @@ export default function Navbar() {
   const railLinks = allLinks.slice(4);
 
   const userMenuItems: UserMenuItem[] = [
+    { href: '/saved', label: 'Хадгалсан зүйлс', isLink: true, icon: 'search' },
     { href: '/my-pets', label: t('nav_mypets'), isLink: true, icon: 'vaccine' },
     { href: '/messages', label: t('nav_messages'), isLink: true, icon: 'message' },
     ...(admin ? [{ href: '/admin', label: t('nav_admin'), isLink: true, accent: true, icon: 'shield' as IconName }] : []),

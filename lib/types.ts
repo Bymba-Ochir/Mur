@@ -38,6 +38,11 @@ export interface Pet {
   hybridScore?: number;
   matchReasons?: string[];
   embeddingVersion?: string | null;
+  viewCount?: number;
+  favoriteCount?: number;
+  urgent?: boolean;
+  expiresAt?: string | null;
+  updatedAt?: string | null;
 }
 
 export interface PetReportInput {
@@ -51,6 +56,7 @@ export interface PetReportInput {
   phone: string;
   hasReward?: boolean;
   reward?: number | null;
+  urgent?: boolean;
   photoFile?: File | null;
   photoFiles?: File[];
   lat?: number | null;

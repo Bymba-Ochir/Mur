@@ -31,6 +31,7 @@ export interface PetFormData {
   hasReward: boolean;
   /** Шагналын дүн (raw текст инпут) — НУУЦ, хоосон бол null-ээр хадгална */
   reward: string;
+  urgent: boolean;
 }
 
 async function imageQualityWarning(file: File): Promise<string | null> {
@@ -176,6 +177,7 @@ export function usePetSubmit({
           status,
           hasReward: form.hasReward,
           reward: form.reward ? Number(form.reward) : null,
+          urgent: form.urgent,
           photoFile,
           photoFiles,
           lat: coords?.lat,

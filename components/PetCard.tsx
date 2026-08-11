@@ -40,6 +40,7 @@ export default function PetCard({ pet }: { pet: Pet }) {
       createdAt={pet.createdAt || undefined}
       similarity={pet.similarity}
       hybridScore={pet.hybridScore}
+      urgent={pet.urgent}
       hasReward={pet.hasReward}
       rewardLabel={t('reward_prefix')}
       revealed={revealed}

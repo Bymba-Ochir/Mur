@@ -20,7 +20,7 @@ export default function PetForm({ status }: { status: PetStatus }) {
   const TYPE_LABELS: Record<PetType, string> = { 'Нохой': t('type_dog'), 'Муур': t('type_cat'), 'Бусад': t('type_other') };
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<PetFormData>({
-    name: '', type: 'Нохой', breed: '', color: '', place: '', district: DISTRICTS[0], phone: '', hasReward: false, reward: '',
+    name: '', type: 'Нохой', breed: '', color: '', place: '', district: DISTRICTS[0], phone: '', hasReward: false, reward: '', urgent: false,
   });
 
   const photo = usePhotoUpload();
@@ -28,7 +28,7 @@ export default function PetForm({ status }: { status: PetStatus }) {
 
   // Амжилттай хадгалагдсаны дараа бүх форм төлөвийг цэвэрлэнэ
   function resetAll() {
-    setForm({ name: '', type: 'Нохой', breed: '', color: '', place: '', district: DISTRICTS[0], phone: '', hasReward: false, reward: '' });
+    setForm({ name: '', type: 'Нохой', breed: '', color: '', place: '', district: DISTRICTS[0], phone: '', hasReward: false, reward: '', urgent: false });
     setStep(0);
     photo.reset();
     location.reset();
@@ -177,6 +177,10 @@ export default function PetForm({ status }: { status: PetStatus }) {
 
       {step === 3 && (
         <>
+          <label className="reward-check" htmlFor="pet-urgent">
+            <input id="pet-urgent" type="checkbox" checked={form.urgent} onChange={(e) => setForm((f) => ({ ...f, urgent: e.target.checked }))} />
+            <span>⚠️ Яаралтай нөхцөлтэй (гэмтсэн, зам дээр эсвэл аюултай газар)</span>
+          </label>
           {status === 'lost' && (
             <>
               <label className="reward-check" htmlFor="pet-has-reward">

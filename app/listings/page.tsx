@@ -14,12 +14,16 @@ import { DISTRICTS as DISTRICT_VALUES } from '../../lib/districts';
 import type { District } from '../../lib/districts';
 import type { Pet, PetStatus, PetType } from '../../lib/types';
 import { getErrorMessage } from '../../lib/utils';
+import { saveSearch } from '../../lib/listingService';
+import { useToast } from '../../components/Toast';
+import PetResultsMap from '../../components/PetResultsMap';
 
 // Шүүлтүүрийн "Бүгд" сонголт (хоосон) 9 дүүргийн өмнө явна
 const DISTRICTS: (District | '')[] = ['', ...DISTRICT_VALUES];
 
 export default function ListingsPage() {
   const { t } = useLanguage();
+  const showToast = useToast();
   const [status, setStatus] = useState<PetStatus | ''>('');
   const [type, setType] = useState<PetType | ''>('');
   const [district, setDistrict] = useState<District | ''>('');
@@ -31,6 +35,8 @@ export default function ListingsPage() {
   const [hasMore, setHasMore] = useState(false);
   const [matchFile, setMatchFile] = useState<File | null>(null);
   const [matchIntent, setMatchIntent] = useState<PetStatus>('lost');
+  const [sortBy, setSortBy] = useState<'newest' | 'match' | 'popular'>('newest');
+  const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
   const [matching, setMatching] = useState<boolean | string>(false);
   const [matchError, setMatchError] = useState<string | null>(null);
   const [matchedCount, setMatchedCount] = useState<number | null>(null);
@@ -127,6 +133,11 @@ export default function ListingsPage() {
     setMatchError(null);
   }
 
+  const sortedPets = [...pets].sort((a, b) => sortBy === 'match'
+    ? (b.hybridScore ?? b.similarity ?? 0) - (a.hybridScore ?? a.similarity ?? 0)
+    : sortBy === 'popular' ? (b.favoriteCount ?? 0) - (a.favoriteCount ?? 0)
+    : new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
   return (
     <div>
       <div className="page-header">
@@ -164,6 +175,15 @@ export default function ListingsPage() {
 
       {district && <VolunteerBadge district={district} />}
       {district && <NotifySubscribe district={district} />}
+
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', margin: '12px 0' }}>
+        <select className="filter" value={sortBy} onChange={(e) => setSortBy(e.target.value as typeof sortBy)} aria-label="Эрэмбэлэх">
+          <option value="newest">Хамгийн шинэ</option><option value="match">AI тохирол өндөр</option><option value="popular">Хамгийн их хадгалсан</option>
+        </select>
+        <Button variant="ghost" onClick={() => setViewMode((mode) => mode === 'list' ? 'map' : 'list')}>{viewMode === 'list' ? 'Газрын зураг' : 'Жагсаалт'}</Button>
+        <Button variant="ghost" onClick={async () => { try { await saveSearch({ status: status || undefined, petType: type || undefined, district: district || undefined, searchText: search }); showToast('Хайлт хадгалагдлаа. Шинэ зарын мэдэгдэл авах боломжтой.', 'success'); } catch { showToast('Хайлт хадгалахын тулд нэвтэрнэ үү', 'info'); } }}>Хайлтаа хадгалах</Button>
+        <Button as="link" href="/saved" variant="ghost">Хадгалсан зүйлс</Button>
+      </div>
 
       <div className="match-upload">
         <select className="filter match-intent" value={matchIntent} onChange={(e) => setMatchIntent(e.target.value as PetStatus)} aria-label="Оруулж буй зургийн статус">
@@ -215,9 +235,7 @@ export default function ListingsPage() {
       ) : (
         <>
           <p className="result-count">{pets.length} {t('results_count')}</p>
-          <div className="grid">
-            {pets.map((p) => <PetCard key={p.id} pet={p} />)}
-          </div>
+          {viewMode === 'map' ? <PetResultsMap pets={sortedPets} /> : <div className="grid">{sortedPets.map((p) => <PetCard key={p.id} pet={p} />)}</div>}
           {hasMore && !matchFile && (
             <div className="load-more-wrap">
               <Button onClick={handleLoadMore} disabled={loadingMore} variant="ghost">

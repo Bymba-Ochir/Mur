@@ -59,6 +59,7 @@ export async function createPetReport(data: PetReportInput, onProgress?: (messag
       district: data.district || '',
       phone: data.phone || '',
       has_reward: data.hasReward ?? false,
+      urgent: data.urgent ?? false,
       reward: data.reward ?? null,
       photo_url: photoUrl,
       photo_urls: photoUrls,
@@ -69,6 +70,11 @@ export async function createPetReport(data: PetReportInput, onProgress?: (messag
       lat: data.lat ?? null,
       lng: data.lng ?? null,
   };
+
+  if (imageHash) {
+    const duplicate = await supabase.from(TABLE).select('id').eq('image_hash', imageHash).eq('status', data.status).eq('resolved', false).limit(1);
+    if (!duplicate.error && duplicate.data?.length) throw new Error('Ижил зурагтай идэвхтэй зар өмнө нь нийтлэгдсэн байна. Өмнөх зараа шинэчилнэ үү.');
+  }
 
   let result = await supabase.from(TABLE).insert(payload).select().single();
 
@@ -111,6 +117,7 @@ export async function fetchPets(filters: PetFilters = {}): Promise<{ pets: Pet[]
   if (district) q = q.eq('district', district);
   if (type) q = q.eq('type', type);
   if (!includeResolved) q = q.eq('resolved', false);
+  if (!includeResolved) q = q.or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`);
   if (search && search.trim()) {
     const s = search.trim().replace(/[%_]/g, '');
     q = q.or(`name.ilike.%${s}%,breed.ilike.%${s}%,color.ilike.%${s}%,place.ilike.%${s}%,type.ilike.%${s}%`);
