@@ -109,7 +109,6 @@ export default function Navbar() {
   const userMenuItems: UserMenuItem[] = [
     { href: '/my-pets', label: t('nav_mypets'), isLink: true, icon: 'vaccine' },
     { href: '/messages', label: t('nav_messages'), isLink: true, icon: 'message' },
-    { href: '/settings', label: 'Тохиргоо', isLink: true, icon: 'settings' },
     ...(admin ? [{ href: '/admin', label: t('nav_admin'), isLink: true, accent: true, icon: 'shield' as IconName }] : []),
     { label: t('nav_logout'), isLink: false, danger: true, onClick: logout },
   ];
@@ -423,7 +422,8 @@ export default function Navbar() {
         .nav-link:hover { color: var(--text-primary); background: var(--surface-3); }
         .nav-link.active { color: var(--text-primary); background: var(--surface-3); font-weight: 600; }
 
-        @media (max-width: 1040px) {
+        /* Medium desktop: preserve the action rail without squeezing the CTA. */
+        @media (max-width: 1180px) {
           .nav-links { display: none; }
           .nav-divider { display: none; }
         }
@@ -436,7 +436,7 @@ export default function Navbar() {
           flex-shrink: 0;
           margin: 0 var(--sp-1);
         }
-        @media (max-width: 1040px) {
+        @media (max-width: 1180px) {
           .nav-divider { display: none; }
         }
 
