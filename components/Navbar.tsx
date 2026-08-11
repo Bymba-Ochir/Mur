@@ -755,6 +755,7 @@ export default function Navbar() {
         /* ─── Responsive: ≤640px hide toggles from nav-right (use hamburger) ─── */
         @media (max-width: 640px) {
           .nav-right { display: none; }
+          .mobile-actions { margin-left: auto; }
         }
       `}</style>
     </header>

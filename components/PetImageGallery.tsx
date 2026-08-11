@@ -43,6 +43,8 @@ export default function PetImageGallery({ images, alt }: PetImageGalleryProps) {
       onMouseLeave={() => { setHovered(false); setActive(0); }}
       onMouseMove={(event) => {
         if (photos.length < 2) return;
+        if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+        if ((event.target as HTMLElement).closest('.arrow')) return;
         const rect = event.currentTarget.getBoundingClientRect();
         const ratio = Math.min(.999, Math.max(0, (event.clientX - rect.left) / rect.width));
         setActive(Math.floor(ratio * photos.length));
@@ -68,8 +70,20 @@ export default function PetImageGallery({ images, alt }: PetImageGalleryProps) {
       ))}
 
       {photos.length > 1 && <>
-        <button className="arrow previous" type="button" aria-label="Өмнөх зураг" onClick={(event) => { event.stopPropagation(); move(-1); }}>‹</button>
-        <button className="arrow next" type="button" aria-label="Дараах зураг" onClick={(event) => { event.stopPropagation(); move(1); }}>›</button>
+        <button
+          className="arrow previous" type="button" aria-label="Өмнөх зураг"
+          onPointerDown={(event) => event.stopPropagation()}
+          onTouchStart={(event) => event.stopPropagation()}
+          onTouchEnd={(event) => event.stopPropagation()}
+          onClick={(event) => { event.preventDefault(); event.stopPropagation(); move(-1); }}
+        >‹</button>
+        <button
+          className="arrow next" type="button" aria-label="Дараах зураг"
+          onPointerDown={(event) => event.stopPropagation()}
+          onTouchStart={(event) => event.stopPropagation()}
+          onTouchEnd={(event) => event.stopPropagation()}
+          onClick={(event) => { event.preventDefault(); event.stopPropagation(); move(1); }}
+        >›</button>
         <div className="indicators" aria-hidden="true">
           {photos.map((_, index) => <span key={index} className={index === active ? 'active' : ''} />)}
         </div>
