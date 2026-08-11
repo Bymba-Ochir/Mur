@@ -147,7 +147,7 @@ export default function Navbar() {
               data-tip={link.label}
               aria-label={link.label}
             >
-              {link.icon && <Icon name={link.icon} size={16} />}
+              {link.icon && <Icon name={link.icon} size={17} />}
             </Link>
           ))}
           {admin && (
@@ -157,7 +157,7 @@ export default function Navbar() {
               data-tip={t('nav_admin')}
               aria-label={t('nav_admin')}
             >
-              <Icon name="shield" size={16} />
+              <Icon name="shield" size={17} />
             </Link>
           )}
         </div>
@@ -444,16 +444,17 @@ export default function Navbar() {
         .icon-rail {
           display: flex;
           align-items: center;
-          gap: 2px;
+          gap: clamp(4px, 0.45vw, 8px);
           background: var(--surface-2);
           border: 1px solid var(--border-subtle);
           border-radius: var(--r-pill);
-          padding: 3px;
+          padding: 5px 7px;
           flex-shrink: 0;
         }
         .icon-rail-btn {
-          width: 34px;
-          height: 34px;
+          width: clamp(34px, 2.7vw, 38px);
+          height: 36px;
+          flex: 0 0 auto;
           border-radius: var(--r-pill);
           display: flex;
           align-items: center;
@@ -488,6 +489,11 @@ export default function Navbar() {
 
         @media (max-width: 1040px) {
           .icon-rail { display: none; }
+        }
+
+        @media (min-width: 1041px) and (max-width: 1100px) {
+          .icon-rail { gap: 4px; padding-inline: 5px; }
+          .icon-rail-btn { width: 34px; }
         }
 
         /* ─── Right side actions ─── */
