@@ -73,6 +73,7 @@ export default function ListingsPage() {
     setMatchFile(file);
     setMatching(true);
     setMatchError(null);
+    setMatchedCount(null);
     try {
       const embedding = await getImageEmbedding(file, (msg) => setMatching(msg));
       setPets((prev) => {

@@ -25,7 +25,7 @@ async function getClassifier(onProgress?: (message: string) => void): Promise<an
       const { pipeline, env } = await import(/* webpackIgnore: true */ CDN_URL);
       env.allowLocalModels = false;
       return pipeline('zero-shot-image-classification', 'Xenova/clip-vit-base-patch16', {
-        quantized: true,
+        dtype: 'q8',
         progress_callback: (p: { status: string; progress?: number }) => {
           if (p.status === 'progress' && onProgress) {
             onProgress(`Зургийг шалгаж байна... ${Math.round(p.progress || 0)}%`);

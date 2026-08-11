@@ -24,7 +24,7 @@ async function getEmbedder(onProgress?: (message: string) => void): Promise<any>
       const { pipeline, env } = await import(/* webpackIgnore: true */ CDN_URL);
       env.allowLocalModels = false;
       return pipeline('image-feature-extraction', 'Xenova/clip-vit-base-patch16', {
-        quantized: true,
+        dtype: 'q8',
         progress_callback: (p: { status: string; progress?: number }) => {
           if (p.status === 'progress' && onProgress) {
             onProgress(`Загвар татаж байна... ${Math.round(p.progress || 0)}%`);
