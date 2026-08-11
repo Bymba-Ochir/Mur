@@ -30,6 +30,7 @@ alter table pets add column if not exists breed text default '';
 create extension if not exists vector with schema extensions;
 alter table pets add column if not exists image_embedding extensions.vector(512);
 alter table pets add column if not exists embedding_version text;
+alter table pets add column if not exists image_hash text;
 
 -- "Шагналтай" тэмдэг (нийтэд харагдана) + шагналын дүн (₮, НУУЦ — нийтэд харуулахгүй)
 alter table pets add column if not exists has_reward boolean not null default false;

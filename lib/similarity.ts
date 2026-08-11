@@ -65,6 +65,13 @@ export async function getImageEmbedding(file: File, onProgress?: (message: strin
   }
 }
 
+/** Яг ижил файлыг загварын онооноос үл хамааран найдвартай таних SHA-256. */
+export async function getImageHash(file: File): Promise<string> {
+  const bytes = await file.arrayBuffer();
+  const digest = await crypto.subtle.digest('SHA-256', bytes);
+  return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, '0')).join('');
+}
+
 /**
  * Хоёр embedding vector-ийн cosine similarity-г 0-100 оноогоор буцаана
  */

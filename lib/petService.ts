@@ -1,7 +1,7 @@
 // lib/petService.ts
 // Алдсан/олдсон амьтны мэдээллийг Supabase (Postgres + Storage)-д бичих, унших функцууд
 import { supabase } from './supabase';
-import { getImageEmbedding, cosineSimilarityScore, EMBEDDING_VERSION } from './similarity';
+import { getImageEmbedding, getImageHash, cosineSimilarityScore, EMBEDDING_VERSION } from './similarity';
 import { mapPetRow } from './petMapping';
 import type { Pet, PetStatus, PetFilters, PetReportInput, UpdatePetFields } from './types';
 
@@ -27,11 +27,15 @@ async function uploadPetPhoto(file: File, statusFolder: PetStatus): Promise<stri
 export async function createPetReport(data: PetReportInput, onProgress?: (message: string) => void): Promise<string> {
   let photoUrl: string | null = null;
   let embedding: number[] | null = null;
+  let imageHash: string | null = null;
 
   if (data.photoFile) {
     photoUrl = await uploadPetPhoto(data.photoFile, data.status);
     try {
-      embedding = await getImageEmbedding(data.photoFile, onProgress);
+      [embedding, imageHash] = await Promise.all([
+        getImageEmbedding(data.photoFile, onProgress),
+        getImageHash(data.photoFile),
+      ]);
     } catch (err) {
       // Embedding амжилтгүй бол ч мэдэгдлийг нийтлэхэд саад болгохгүй —
       // зөвхөн "төстэй байдал" функц тухайн бичлэгт ажиллахгүй болно
@@ -54,6 +58,7 @@ export async function createPetReport(data: PetReportInput, onProgress?: (messag
       color_signature: embedding, // багана нэрээ хуучнаар үлдээсэн, одоо CLIP vector хадгална
       image_embedding: embedding,
       embedding_version: embedding ? EMBEDDING_VERSION : null,
+      image_hash: imageHash,
       lat: data.lat ?? null,
       lng: data.lng ?? null,
   };
@@ -61,8 +66,8 @@ export async function createPetReport(data: PetReportInput, onProgress?: (messag
   let result = await supabase.from(TABLE).insert(payload).select().single();
 
   // Migration хараахан ажиллаагүй deployment дээр зар нийтлэхийг эвдэхгүй.
-  if (result.error && /image_embedding|embedding_version|schema cache/i.test(result.error.message)) {
-    const { image_embedding: _vector, embedding_version: _version, ...legacyPayload } = payload;
+  if (result.error && /image_embedding|embedding_version|image_hash|schema cache/i.test(result.error.message)) {
+    const { image_embedding: _vector, embedding_version: _version, image_hash: _hash, ...legacyPayload } = payload;
     result = await supabase.from(TABLE).insert(legacyPayload).select().single();
   }
 
@@ -187,9 +192,10 @@ export function rankBySimilarity(targetEmbedding: number[] | null, pets: Pet[]):
  * Migration ажиллаагүй бол null буцааж UI хуучин browser fallback ашиглана.
  */
 export async function fetchPetMatches({
-  embedding, status, type, breed, color, district, lat, lng, limit = 20,
+  embedding, imageHash, status, type, breed, color, district, lat, lng, limit = 20,
 }: {
   embedding: number[];
+  imageHash?: string;
   status?: PetStatus;
   type?: Pet['type'];
   breed?: string;
@@ -201,6 +207,7 @@ export async function fetchPetMatches({
 }): Promise<Pet[] | null> {
   const { data, error } = await supabase.rpc('match_pets_hybrid', {
     query_embedding: embedding,
+    query_image_hash: imageHash || null,
     query_status: status ?? null,
     query_type: type ?? null,
     query_breed: breed || null,

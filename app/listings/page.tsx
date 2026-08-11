@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { ChangeEvent } from 'react';
 import { fetchPets, fetchPetMatches, rankBySimilarity } from '../../lib/petService';
-import { getImageEmbedding } from '../../lib/similarity';
+import { getImageEmbedding, getImageHash } from '../../lib/similarity';
 import PetCard from '../../components/PetCard';
 import NotifySubscribe from '../../components/NotifySubscribe';
 import VolunteerBadge from '../../components/VolunteerBadge';
@@ -81,10 +81,14 @@ export default function ListingsPage() {
     const controller = new AbortController();
     matchAbortRef.current = controller;
     try {
-      const embedding = await getImageEmbedding(file, (msg) => setMatching(msg), controller.signal);
+      const [embedding, imageHash] = await Promise.all([
+        getImageEmbedding(file, (msg) => setMatching(msg), controller.signal),
+        getImageHash(file),
+      ]);
       setMatching('Бүх зар дундаас тохирол хайж байна...');
       const databaseMatches = await fetchPetMatches({
         embedding,
+        imageHash,
         status: status || undefined,
         type: type || undefined,
         district: district || undefined,
