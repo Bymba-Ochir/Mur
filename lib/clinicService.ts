@@ -1,6 +1,7 @@
 // lib/clinicService.ts
 // Мал эмнэлгийн газрын байршил, хайх, ойролцоох функцууд
 import { VET_CLINICS } from './vetClinics';
+import { supabase } from './supabase';
 import type { VetClinic, VetService } from './types';
 
 /**
@@ -19,6 +20,16 @@ export function haversineKm(lat1: number, lng1: number, lat2: number, lng2: numb
 }
 
 export type ClinicWithDistance = VetClinic & { distanceKm: number };
+
+export async function fetchPublicClinics(): Promise<VetClinic[]> {
+  const { data, error } = await supabase.from('vet_clinics').select('*').eq('is_active', true).order('name');
+  if (error || !data || data.length === 0) return VET_CLINICS;
+  return data.map((x) => ({
+    id: x.id, name: x.name, district: x.district, address: x.address,
+    phone: x.phone, hours: x.hours, note: x.note || undefined,
+    lat: x.lat, lng: x.lng, services: x.services as VetService[],
+  }));
+}
 
 /**
  * Хамгийн ойр N эмнэлгийг haversine-аар эрэмбэлээд буцаана
@@ -42,8 +53,8 @@ export function searchClinics(opts: {
   district?: string;
   service?: VetService | '';
   query?: string;
-}): VetClinic[] {
-  let result = [...VET_CLINICS];
+}, clinics: VetClinic[] = VET_CLINICS): VetClinic[] {
+  let result = [...clinics];
 
   if (opts.district) {
     result = result.filter((c) => c.district === opts.district);
