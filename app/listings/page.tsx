@@ -60,7 +60,7 @@ export default function ListingsPage() {
     else setLoadingMore(true);
     try {
       const { pets: data, hasMore: more } = await fetchPets({
-        status: matchIntent,
+        status: status || undefined,
         type: type || undefined,
         district: district || undefined,
         search: search || undefined,
@@ -145,70 +145,79 @@ export default function ListingsPage() {
         <h1>{t('listings_title')}</h1>
       </div>
 
-      <div className="filter-bar">
-        <input
-          type="text"
-          placeholder={t('search_placeholder')}
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="filter"
-          aria-label={t('search_placeholder')}
-          style={{ flex: '1 1 220px', minWidth: 180 }}
-        />
-        <select className="filter" value={status} onChange={(e) => setStatus(e.target.value as PetStatus | '')} aria-label="Статусаар шүүх">
-          <option value="">{t('filter_all')}</option>
-          <option value="lost">{t('filter_lost')}</option>
-          <option value="found">{t('filter_found')}</option>
-        </select>
-        <select className="filter" value={type} onChange={(e) => setType(e.target.value as PetType | '')} aria-label="Төрлөөр шүүх">
-          <option value="">{t('filter_all_types')}</option>
-          <option value="Нохой">{t('type_dog')}</option>
-          <option value="Муур">{t('type_cat')}</option>
-          <option value="Бусад">{t('type_other')}</option>
-        </select>
-        <select className="filter" value={district} onChange={(e) => setDistrict(e.target.value as District | '')} aria-label="Дүүргээр шүүх">
-          {DISTRICTS.map((d) => (
-            <option key={d} value={d}>{d || t('filter_all_districts')}</option>
-          ))}
-        </select>
-      </div>
+      <section className="search-panel" aria-label="Зарын хайлт ба шүүлтүүр">
+        <div className="search-row">
+          <label className="search-field">
+            <span className="field-label">Хайх</span>
+            <input
+              type="search"
+              placeholder={t('search_placeholder')}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="filter"
+              aria-label={t('search_placeholder')}
+            />
+          </label>
+          <label>
+            <span className="field-label">Төлөв</span>
+            <select className="filter" value={status} onChange={(e) => setStatus(e.target.value as PetStatus | '')}>
+              <option value="">{t('filter_all')}</option>
+              <option value="lost">{t('filter_lost')}</option>
+              <option value="found">{t('filter_found')}</option>
+            </select>
+          </label>
+          <label>
+            <span className="field-label">Амьтны төрөл</span>
+            <select className="filter" value={type} onChange={(e) => setType(e.target.value as PetType | '')}>
+              <option value="">{t('filter_all_types')}</option>
+              <option value="Нохой">{t('type_dog')}</option>
+              <option value="Муур">{t('type_cat')}</option>
+              <option value="Бусад">{t('type_other')}</option>
+            </select>
+          </label>
+          <label>
+            <span className="field-label">Байршил</span>
+            <select className="filter" value={district} onChange={(e) => setDistrict(e.target.value as District | '')}>
+              {DISTRICTS.map((d) => <option key={d} value={d}>{d || t('filter_all_districts')}</option>)}
+            </select>
+          </label>
+        </div>
+
+        <div className="toolbar-row">
+          <label className="sort-field">
+            <span className="field-label">Эрэмбэлэх</span>
+            <select className="filter" value={sortBy} onChange={(e) => setSortBy(e.target.value as typeof sortBy)}>
+              <option value="newest">Хамгийн шинэ</option>
+              <option value="match">AI тохирол өндөр</option>
+              <option value="popular">Хамгийн их хадгалсан</option>
+            </select>
+          </label>
+          <div className="toolbar-actions">
+            {(search || status || type || district) && <Button variant="ghost" onClick={() => { setSearch(''); setStatus(''); setType(''); setDistrict(''); }}>Шүүлтүүр цэвэрлэх</Button>}
+            <Button variant="ghost" onClick={() => setViewMode((mode) => mode === 'list' ? 'map' : 'list')}>{viewMode === 'list' ? 'Газрын зураг' : 'Жагсаалт'}</Button>
+            <Button variant="ghost" onClick={async () => { try { await saveSearch({ status: status || undefined, petType: type || undefined, district: district || undefined, searchText: search }); showToast('Хайлт хадгалагдлаа. Шинэ зарын мэдэгдэл авах боломжтой.', 'success'); } catch { showToast('Хайлт хадгалахын тулд нэвтэрнэ үү', 'info'); } }}>Хайлтаа хадгалах</Button>
+            <Button as="link" href="/saved" variant="ghost">Хадгалсан зүйлс</Button>
+          </div>
+        </div>
+
+        <div className="ai-search-row">
+          <div className="ai-copy"><strong>Зургаар төстэй амьтан хайх</strong><span>AI зураг харьцуулж, боломжит тохирлыг эрэмбэлнэ.</span></div>
+          <select className="filter match-intent" value={matchIntent} onChange={(e) => setMatchIntent(e.target.value as PetStatus)} aria-label="Оруулж буй зургийн статус">
+            <option value="lost">Алдсан амьтны зураг</option>
+            <option value="found">Олсон амьтны зураг</option>
+          </select>
+          <input type="file" id="match-file" accept="image/*" onChange={handleMatchUpload} disabled={!!matching} className="file-input" aria-label="Төстэй байдлаар эрэмбэлэх зураг сонгох" />
+          <Button as="label" htmlFor="match-file" variant="primary">Зураг сонгох</Button>
+          {matching && <Button variant="ghost" onClick={cancelMatching}>{t('match_cancel')}</Button>}
+        </div>
+        {matching && <p className="match-status">{typeof matching === 'string' ? matching : 'AI шинжилж байна (эхний удаа 10–30 секунд)...'}</p>}
+        {matchFile && !matching && !matchError && matchedCount === 0 && <p className="match-status err">Харьцуулах боломжтой шинэ embedding-тэй бичлэг олдсонгүй.</p>}
+        {matchFile && !matching && !matchError && matchedCount != null && matchedCount > 0 && <p className="match-status">{matchedCount} {t('match_results')} · {matchSource === 'database' ? t('match_all_database') : t('match_browser_fallback')}</p>}
+        {matchError && <p className="match-status err">{matchError}</p>}
+      </section>
 
       {district && <VolunteerBadge district={district} />}
       {district && <NotifySubscribe district={district} />}
-
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', margin: '12px 0' }}>
-        <select className="filter" value={sortBy} onChange={(e) => setSortBy(e.target.value as typeof sortBy)} aria-label="Эрэмбэлэх">
-          <option value="newest">Хамгийн шинэ</option><option value="match">AI тохирол өндөр</option><option value="popular">Хамгийн их хадгалсан</option>
-        </select>
-        <Button variant="ghost" onClick={() => setViewMode((mode) => mode === 'list' ? 'map' : 'list')}>{viewMode === 'list' ? 'Газрын зураг' : 'Жагсаалт'}</Button>
-        <Button variant="ghost" onClick={async () => { try { await saveSearch({ status: status || undefined, petType: type || undefined, district: district || undefined, searchText: search }); showToast('Хайлт хадгалагдлаа. Шинэ зарын мэдэгдэл авах боломжтой.', 'success'); } catch { showToast('Хайлт хадгалахын тулд нэвтэрнэ үү', 'info'); } }}>Хайлтаа хадгалах</Button>
-        <Button as="link" href="/saved" variant="ghost">Хадгалсан зүйлс</Button>
-      </div>
-
-      <div className="match-upload">
-        <select className="filter match-intent" value={matchIntent} onChange={(e) => setMatchIntent(e.target.value as PetStatus)} aria-label="Оруулж буй зургийн статус">
-          <option value="lost">Алдсан амьтны зураг</option>
-          <option value="found">Олсон амьтны зураг</option>
-        </select>
-        <input
-          type="file" id="match-file" accept="image/*"
-          onChange={handleMatchUpload} disabled={!!matching} className="file-input"
-          aria-label="Төстэй байдлаар эрэмбэлэх зураг сонгох"
-        />
-        <Button as="label" htmlFor="match-file" variant="ghost">{t('match_label')}</Button>
-        {matching && <span className="match-status"> — {typeof matching === 'string' ? matching : 'AI шинжилж байна (эхний удаа 10-30 сек)...'}</span>}
-        {matching && <Button variant="ghost" onClick={cancelMatching}>{t('match_cancel')}</Button>}
-        {matchFile && !matching && !matchError && matchedCount === 0 && (
-          <span className="match-status err">
-            — Харьцуулах боломжтой бичлэг олдсонгүй (хуучин бичлэгүүд өөр
-            embedding-тэй байж болзошгүй — шинээр бүртгэсэн 2 бичлэгээр туршина уу).
-          </span>
-        )}
-        {matchFile && !matching && !matchError && matchedCount != null && matchedCount > 0 && (
-          <span className="match-status"> — {matchedCount} {t('match_results')} · {matchSource === 'database' ? t('match_all_database') : t('match_browser_fallback')}</span>
-        )}
-        {matchError && <span className="match-status err"> — {matchError}</span>}
-      </div>
 
       {loading ? (
         <div className="grid">
@@ -247,18 +256,64 @@ export default function ListingsPage() {
       )}
 
       <style jsx>{`
-        .match-upload { display: flex; align-items: center; gap: var(--sp-2); flex-wrap: wrap; margin-bottom: var(--sp-5); }
-        @media (max-width: 640px) {
-          .match-upload { margin-bottom: var(--sp-4); }
+        .search-panel {
+          margin-bottom: var(--sp-5); padding: 20px;
+          background: var(--card); border: 1px solid var(--line); border-radius: var(--r-xl);
+          box-shadow: var(--shadow-sm);
         }
+        .search-row {
+          display: grid; grid-template-columns: minmax(260px, 1.7fr) repeat(3, minmax(150px, 1fr));
+          gap: 12px; align-items: end;
+        }
+        .search-row label, .sort-field { min-width: 0; }
+        .field-label {
+          display: block; margin: 0 0 7px 3px; color: var(--muted);
+          font-size: 11px; font-weight: 700; letter-spacing: .04em;
+        }
+        .search-panel .filter { width: 100%; min-width: 0; }
+        .toolbar-row {
+          display: flex; align-items: end; justify-content: space-between; gap: 14px;
+          margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--line);
+        }
+        .sort-field { width: min(260px, 100%); flex: 0 0 240px; }
+        .toolbar-actions { display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap; }
+        .ai-search-row {
+          display: grid; grid-template-columns: minmax(230px, 1fr) minmax(190px, 260px) auto auto;
+          align-items: center; gap: 10px; margin-top: 16px; padding: 15px;
+          background: var(--eyebrow-bg); border: 1px solid var(--glass-border); border-radius: var(--r-lg);
+        }
+        .ai-copy { display: flex; flex-direction: column; gap: 3px; }
+        .ai-copy strong { color: var(--primary); font-size: 14px; }
+        .ai-copy span { color: var(--muted); font-size: 11.5px; line-height: 1.45; }
         .file-input { position: absolute; width: 1px; height: 1px; opacity: 0; overflow: hidden; }
         .file-input:focus-visible + label { outline: 2.5px solid var(--accent); outline-offset: 2px; }
         .file-input:disabled + label { opacity: 0.6; cursor: not-allowed; }
-        .match-status { font-size: 12px; color: var(--muted); line-height: 1.5; }
-        @media (max-width: 480px) {
-          .match-status { font-size: 13px; line-height: 1.6; width: 100%; margin-top: var(--sp-1); }
-        }
+        .match-status { margin: 10px 4px 0; font-size: 12px; color: var(--muted); line-height: 1.5; }
         .match-status.err { color: var(--alert); }
+        @media (max-width: 1100px) {
+          .search-row { grid-template-columns: minmax(240px, 1.5fr) repeat(2, minmax(150px, 1fr)); }
+          .search-row label:last-child { grid-column: span 1; }
+          .ai-search-row { grid-template-columns: 1fr minmax(190px, 240px) auto; }
+          .ai-search-row :global(.btn-base:last-child) { grid-column: 3; }
+        }
+        @media (max-width: 760px) {
+          .search-panel { padding: 15px; border-radius: var(--r-lg); }
+          .search-row { grid-template-columns: 1fr 1fr; }
+          .search-field { grid-column: 1 / -1; }
+          .toolbar-row { align-items: stretch; flex-direction: column; }
+          .sort-field { width: 100%; flex-basis: auto; }
+          .toolbar-actions { justify-content: stretch; display: grid; grid-template-columns: 1fr 1fr; }
+          .toolbar-actions :global(.btn-base) { justify-content: center; width: 100%; }
+          .ai-search-row { grid-template-columns: 1fr 1fr; }
+          .ai-copy { grid-column: 1 / -1; }
+        }
+        @media (max-width: 480px) {
+          .search-panel { padding: 12px; }
+          .search-row, .ai-search-row, .toolbar-actions { grid-template-columns: 1fr; }
+          .search-field, .ai-copy { grid-column: auto; }
+          .ai-search-row :global(.btn-base), .ai-search-row .filter { width: 100%; justify-content: center; }
+          .match-status { font-size: 13px; line-height: 1.6; }
+        }
         .empty-state {
           text-align: center; padding: 52px 24px; margin-top: var(--sp-2);
           background: var(--card); border: 1px solid var(--line); border-radius: var(--r-xl);
