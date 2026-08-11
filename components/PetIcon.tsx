@@ -1,235 +1,90 @@
 import type { PetType } from "../lib/types";
 
-function CatIcon({ size }: { size: number }) {
+type IconProps = {
+  size: number;
+};
+
+const sharedSvgProps = {
+  viewBox: "0 0 24 24",
+  fill: "none",
+  xmlns: "http://www.w3.org/2000/svg",
+  "aria-hidden": true,
+  focusable: false,
+} as const;
+
+function CatIcon({ size }: IconProps) {
   return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 64 64"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-hidden="true"
-    >
-      <g>
-        {/* ears */}
-        <path
-          d="M16 25L10 8L27 19"
-          fill="currentColor"
-          fillOpacity=".12"
-          stroke="currentColor"
-          strokeWidth="2.5"
-          strokeLinejoin="round"
-        />
-
-        <path
-          d="M48 25L54 8L37 19"
-          fill="currentColor"
-          fillOpacity=".12"
-          stroke="currentColor"
-          strokeWidth="2.5"
-          strokeLinejoin="round"
-        />
-
-        {/* head */}
-        <circle cx="32" cy="35" r="20" fill="currentColor" fillOpacity=".08" />
-
-        <circle
-          cx="32"
-          cy="35"
-          r="20"
-          stroke="currentColor"
-          strokeWidth="2.5"
-        />
-
-        {/* eyes */}
-        <circle cx="24" cy="33" r="3.2" fill="currentColor" />
-        <circle cx="40" cy="33" r="3.2" fill="currentColor" />
-
-        {/* eye shine */}
-        <circle cx="25" cy="32" r="1" fill="white" />
-        <circle cx="41" cy="32" r="1" fill="white" />
-
-        {/* cheeks */}
-        <circle cx="18" cy="40" r="2" fill="#ff9fba" opacity=".7" />
-
-        <circle cx="46" cy="40" r="2" fill="#ff9fba" opacity=".7" />
-
-        {/* nose */}
-        <path d="M29 39L32 41L35 39" fill="currentColor" />
-
-        {/* mouth */}
-        <path
-          d="M27 43C29 46 35 46 37 43"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-        />
-
-        {/* whiskers */}
-        <path
-          d="M8 38L18 40M8 44L18 43"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-        />
-
-        <path
-          d="M56 38L46 40M56 44L46 43"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-        />
-      </g>
-    </svg>
-  );
-}
-
-function DogIcon({ size }: { size: number }) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 64 64"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-hidden="true"
-    >
-      {/* ears */}
-
+    <svg {...sharedSvgProps} width={size} height={size}>
       <path
-        d="M16 24C7 19 5 28 8 35C10 40 16 41 20 37"
+        d="M5.75 9.05 5.2 3.9l4.13 2.5A9.4 9.4 0 0 1 12 6c.93 0 1.82.14 2.67.4l4.13-2.5-.55 5.15A7.85 7.85 0 0 1 20 14c0 4.1-3.58 6.5-8 6.5S4 18.1 4 14c0-1.88.66-3.58 1.75-4.95Z"
         fill="currentColor"
-        fillOpacity=".12"
+        fillOpacity="0.1"
         stroke="currentColor"
-        strokeWidth="2.5"
-      />
-
-      <path
-        d="M48 24C57 19 59 28 56 35C54 40 48 41 44 37"
-        fill="currentColor"
-        fillOpacity=".12"
-        stroke="currentColor"
-        strokeWidth="2.5"
-      />
-
-      {/* face */}
-
-      <ellipse
-        cx="32"
-        cy="36"
-        rx="21"
-        ry="19"
-        fill="currentColor"
-        fillOpacity=".08"
-      />
-
-      <ellipse
-        cx="32"
-        cy="36"
-        rx="21"
-        ry="19"
-        stroke="currentColor"
-        strokeWidth="2.5"
-      />
-
-      {/* eyes */}
-
-      <circle cx="24" cy="33" r="3.2" fill="currentColor" />
-
-      <circle cx="40" cy="33" r="3.2" fill="currentColor" />
-
-      <circle cx="25" cy="32" r="1" fill="white" />
-
-      <circle cx="41" cy="32" r="1" fill="white" />
-
-      {/* nose */}
-
-      <ellipse cx="32" cy="40" rx="5" ry="4" fill="currentColor" />
-
-      <ellipse cx="33.5" cy="39" rx="1.5" ry="1" fill="white" opacity=".6" />
-
-      {/* smile */}
-
-      <path
-        d="M32 44V47"
-        stroke="currentColor"
-        strokeWidth="2"
+        strokeWidth="1.8"
         strokeLinecap="round"
+        strokeLinejoin="round"
       />
-
+      <path d="M8.5 12.5h.01M15.5 12.5h.01" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
       <path
-        d="M25 48C28 52 36 52 39 48"
+        d="m10.4 15.1 1.6 1.1 1.6-1.1M12 16.2v1.25"
         stroke="currentColor"
-        strokeWidth="2"
+        strokeWidth="1.6"
         strokeLinecap="round"
+        strokeLinejoin="round"
       />
-
-      {/* tongue */}
-
-      <path d="M28 50C30 56 34 56 36 50" fill="#ff8fab" />
+      <path d="m7.6 15.25-3.1-.4m3.35 2.05-2.9.75m11.45-2.4 3.1-.4m-3.35 2.05 2.9.75" stroke="currentColor" strokeWidth="1.35" strokeLinecap="round" />
     </svg>
   );
 }
 
-function PawIcon({ size }: { size: number }) {
+function DogIcon({ size }: IconProps) {
   return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 64 64"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-hidden="true"
-    >
-      {/* toes */}
-
-      <circle cx="32" cy="16" r="6" fill="currentColor" />
-
-      <circle cx="18" cy="25" r="5" fill="currentColor" />
-
-      <circle cx="46" cy="25" r="5" fill="currentColor" />
-
-      <circle cx="14" cy="37" r="4.5" fill="currentColor" />
-
-      <circle cx="50" cy="37" r="4.5" fill="currentColor" />
-
-      {/* pad */}
-
+    <svg {...sharedSvgProps} width={size} height={size}>
       <path
-        d="
-        M20 42
-        C20 32 44 32 44 42
-        C44 52 36 55 32 55
-        C28 55 20 52 20 42Z
-        "
+        d="M7.2 7.25 4.55 5.5a1.5 1.5 0 0 0-2.3 1.27v2.88a4.1 4.1 0 0 0 3.1 3.98V15c0 3.45 2.98 5.5 6.65 5.5s6.65-2.05 6.65-5.5v-1.37a4.1 4.1 0 0 0 3.1-3.98V6.77a1.5 1.5 0 0 0-2.3-1.27L16.8 7.25A8.15 8.15 0 0 0 12 5.75c-1.8 0-3.45.56-4.8 1.5Z"
         fill="currentColor"
+        fillOpacity="0.1"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
       />
-
-      {/* shine */}
-
-      <ellipse cx="37" cy="45" rx="3" ry="2" fill="white" opacity=".2" />
+      <path d="M8.5 12.25h.01M15.5 12.25h.01" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+      <path
+        d="M10.1 15.1c.35-.8 1.04-1.2 1.9-1.2s1.55.4 1.9 1.2c-.4.7-1.08 1.05-1.9 1.05s-1.5-.35-1.9-1.05ZM12 16.15v1.3m0 0c-.75 0-1.25-.22-1.6-.65m1.6.65c.75 0 1.25-.22 1.6-.65"
+        stroke="currentColor"
+        strokeWidth="1.55"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   );
 }
 
-export default function PetIcon({
-  type,
-  size = 40,
-}: {
-  type: PetType;
-  size?: number;
-}) {
-  switch (type) {
-    case "Муур":
-      return <CatIcon size={size} />;
+function OtherPetIcon({ size }: IconProps) {
+  return (
+    <svg {...sharedSvgProps} width={size} height={size}>
+      <path
+        d="M7.3 18.85c-1.35-1.45-.62-3.83 1.28-4.48.75-.26 1.27-.92 1.42-1.7.2-1.04 1.02-1.77 2-1.77s1.8.73 2 1.77c.15.78.67 1.44 1.42 1.7 1.9.65 2.63 3.03 1.28 4.48-1.16 1.24-2.7 1.18-4.7.15-2 1.03-3.54 1.09-4.7-.15Z"
+        fill="currentColor"
+        fillOpacity="0.1"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M6.95 11.15c1.17-.3 1.76-1.88 1.3-3.53-.45-1.65-1.77-2.74-2.94-2.43-1.18.3-1.76 1.88-1.31 3.53.46 1.65 1.78 2.74 2.95 2.43Zm10.1 0c-1.17-.3-1.76-1.88-1.3-3.53.45-1.65 1.77-2.74 2.94-2.43 1.18.3 1.76 1.88 1.31 3.53-.46 1.65-1.78 2.74-2.95 2.43ZM12 9.3c1.2 0 2.17-1.4 2.17-3.13S13.2 3.05 12 3.05 9.83 4.45 9.83 6.17 10.8 9.3 12 9.3Z"
+        fill="currentColor"
+        fillOpacity="0.1"
+        stroke="currentColor"
+        strokeWidth="1.65"
+      />
+    </svg>
+  );
+}
 
-    case "Нохой":
-      return <DogIcon size={size} />;
-
-    case "Бусад":
-      return <PawIcon size={size} />;
-
-    default:
-      return <PawIcon size={size} />;
-  }
+export default function PetIcon({ type, size = 40 }: { type: PetType; size?: number }) {
+  if (type === "Муур") return <CatIcon size={size} />;
+  if (type === "Нохой") return <DogIcon size={size} />;
+  return <OtherPetIcon size={size} />;
 }
