@@ -15,6 +15,7 @@ export interface Pet {
   status: PetStatus;
   name: string;
   type: PetType;
+  breed?: string;
   color: string;
   place: string;
   district: District;
@@ -38,6 +39,7 @@ export interface PetReportInput {
   status: PetStatus;
   name: string;
   type: PetType;
+  breed: string;
   color: string;
   place: string;
   district: District;

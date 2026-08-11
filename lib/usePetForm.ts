@@ -22,6 +22,7 @@ export const TYPE_VALUES: PetType[] = ['Нохой', 'Муур', 'Бусад'];
 export interface PetFormData {
   name: string;
   type: PetType;
+  breed: string;
   color: string;
   place: string;
   district: District;

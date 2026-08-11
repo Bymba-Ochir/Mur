@@ -8,6 +8,7 @@ create table if not exists pets (
   status text not null check (status in ('lost', 'found')),
   name text default '',
   type text not null,
+  breed text default '',
   color text default '',
   place text default '',
   district text default '',
@@ -24,6 +25,7 @@ create table if not exists pets (
 -- Хуучин төсөлд lat/lng багана байхгүй бол нэмнэ (аюулгүй, дахин ажиллуулж болно)
 alter table pets add column if not exists lat double precision;
 alter table pets add column if not exists lng double precision;
+alter table pets add column if not exists breed text default '';
 
 -- "Шагналтай" тэмдэг (нийтэд харагдана) + шагналын дүн (₮, НУУЦ — нийтэд харуулахгүй)
 alter table pets add column if not exists has_reward boolean not null default false;

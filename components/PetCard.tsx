@@ -6,10 +6,11 @@ import type { KeyboardEvent } from 'react';
 import PetCardView from './PetCardView';
 import { useLanguage } from '../lib/i18n';
 import type { Pet } from '../lib/types';
+import { getBreedLabel } from '../lib/petBreeds';
 
 export default function PetCard({ pet }: { pet: Pet }) {
   const router = useRouter();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const [revealed, setRevealed] = useState(false);
 
   const cardLabel = `${pet.status === 'lost' ? 'Алдсан' : 'Олдсон'} ${pet.type}${pet.name ? ', нэр ' + pet.name : ''}, ${pet.district}, ${pet.place}. Дэлгэрэнгүй үзэх.`;
@@ -31,6 +32,7 @@ export default function PetCard({ pet }: { pet: Pet }) {
       badgeLabel={pet.status === 'lost' ? 'АЛДСАН' : 'ОЛДСОН'}
       name={pet.name}
       type={pet.type}
+      breed={pet.breed ? getBreedLabel(pet.breed, lang) : undefined}
       color={pet.color}
       district={pet.district}
       place={pet.place}

@@ -16,6 +16,7 @@ import { fetchAdoptionById, updateAdoption, deleteAdoption } from '../../../lib/
 import { relativeTime } from '../../../lib/relativeTime';
 import { maskPhone, formatPhone, getErrorMessage } from '../../../lib/utils';
 import type { Adoption } from '../../../lib/types';
+import { getBreedLabel } from '../../../lib/petBreeds';
 
 function subscribeLocation(cb: () => void) {
   window.addEventListener('popstate', cb);
@@ -27,7 +28,7 @@ export default function AdoptionDetailClient({ id }: { id: string }) {
   const router = useRouter();
   const { user } = useAuth();
   const showToast = useToast();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
 
   const [adoption, setAdoption] = useState<Adoption | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -131,7 +132,7 @@ export default function AdoptionDetailClient({ id }: { id: string }) {
 
           <div className="info-card">
             <p><strong>{t('detail_type')}:</strong> {adoption.type === 'Муур' ? t('type_cat') : adoption.type === 'Нохой' ? t('type_dog') : t('type_other')}</p>
-            {adoption.breed && <p><strong>{t('detail_breed')}</strong> {adoption.breed}</p>}
+            {adoption.breed && <p><strong>{t('detail_breed')}</strong> {getBreedLabel(adoption.breed, lang)}</p>}
             {adoption.age && <p><strong>{t('detail_age')}</strong> {adoption.age}</p>}
             <p><strong>{t('detail_gender')}</strong> {genderLabel}</p>
             <p><strong>{t('detail_district')}</strong> {adoption.district}</p>

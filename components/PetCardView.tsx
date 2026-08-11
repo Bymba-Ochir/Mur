@@ -16,6 +16,7 @@ export interface PetCardViewProps extends HTMLAttributes<HTMLDivElement> {
   badgeLabel: string;
   name: string;
   type: PetType;
+  breed?: string;
   color: string;
   district: string;
   place: string;
@@ -35,7 +36,7 @@ export interface PetCardViewProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 export default function PetCardView({
-  status, badgeLabel, name, type, color, district, place, phone,
+  status, badgeLabel, name, type, breed, color, district, place, phone,
   imageNode, createdAt, similarity, hasReward, rewardLabel = 'Шагналтай',
   revealed = true, onRevealPhone, interactive = true,
   ...containerProps
@@ -54,7 +55,7 @@ export default function PetCardView({
       </div>
       <div className="info">
         <h4>{name || type}</h4>
-        <p>{type}{color ? `, ${color}` : ''}</p>
+        <p>{type}{breed ? `, ${breed}` : ''}{color ? `, ${color}` : ''}</p>
         <p className="place"><span aria-hidden="true">📍</span> {district} — {place}</p>
         {hasReward ? <p className="reward"><span aria-hidden="true">🎁</span> {rewardLabel}</p> : null}
         {createdAt && <p className="time"><span aria-hidden="true">🕓</span> {relativeTime(createdAt)}</p>}

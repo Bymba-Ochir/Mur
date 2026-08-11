@@ -10,6 +10,7 @@ interface PetRow {
   status: string;
   name: string | null;
   type: string;
+  breed: string | null;
   color: string | null;
   place: string | null;
   district: string | null;
@@ -31,6 +32,7 @@ export function mapPetRow(row: PetRow): Pet {
     status: row.status as Pet['status'],
     name: row.name ?? '',
     type: row.type as Pet['type'],
+    breed: row.breed ?? '',
     color: row.color ?? '',
     place: row.place ?? '',
     district: (row.district ?? '') as Pet['district'],

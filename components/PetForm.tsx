@@ -12,6 +12,7 @@ import { usePhotoUpload, usePetLocation, usePetSubmit, TYPE_VALUES } from '../li
 import type { PetFormData } from '../lib/usePetForm';
 import type { PetStatus, PetType } from '../lib/types';
 import { normalizePhone, formatPhone } from '../lib/utils';
+import BreedSelect from './BreedSelect';
 
 export default function PetForm({ status }: { status: PetStatus }) {
   const { t } = useLanguage();
@@ -19,7 +20,7 @@ export default function PetForm({ status }: { status: PetStatus }) {
   const TYPE_LABELS: Record<PetType, string> = { 'Нохой': t('type_dog'), 'Муур': t('type_cat'), 'Бусад': t('type_other') };
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<PetFormData>({
-    name: '', type: 'Нохой', color: '', place: '', district: DISTRICTS[0], phone: '', hasReward: false, reward: '',
+    name: '', type: 'Нохой', breed: '', color: '', place: '', district: DISTRICTS[0], phone: '', hasReward: false, reward: '',
   });
 
   const photo = usePhotoUpload();
@@ -27,7 +28,7 @@ export default function PetForm({ status }: { status: PetStatus }) {
 
   // Амжилттай хадгалагдсаны дараа бүх форм төлөвийг цэвэрлэнэ
   function resetAll() {
-    setForm({ name: '', type: 'Нохой', color: '', place: '', district: DISTRICTS[0], phone: '', hasReward: false, reward: '' });
+    setForm({ name: '', type: 'Нохой', breed: '', color: '', place: '', district: DISTRICTS[0], phone: '', hasReward: false, reward: '' });
     setStep(0);
     photo.reset();
     location.reset();
@@ -125,9 +126,12 @@ export default function PetForm({ status }: { status: PetStatus }) {
           <input id="pet-name" name="name" value={form.name} onChange={handleChange} placeholder={t('name_placeholder')} />
 
           <label htmlFor="pet-type">{t('type_label')}</label>
-          <select id="pet-type" name="type" value={form.type} onChange={handleChange}>
+          <select id="pet-type" name="type" value={form.type} onChange={(e) => setForm((prev) => ({ ...prev, type: e.target.value as PetType, breed: '' }))}>
             {TYPE_VALUES.map((v) => <option key={v} value={v}>{TYPE_LABELS[v]}</option>)}
           </select>
+
+          <label htmlFor="pet-breed">{t('breed_label')}</label>
+          <BreedSelect id="pet-breed" type={form.type} value={form.breed} onChange={(breed) => setForm((prev) => ({ ...prev, breed }))} />
 
           <label htmlFor="pet-color">{t('color_label')}</label>
           <input id="pet-color" name="color" value={form.color} onChange={handleChange} placeholder={t('color_placeholder')} required />
@@ -233,6 +237,7 @@ export default function PetForm({ status }: { status: PetStatus }) {
         status={status}
         name={form.name}
         type={form.type}
+        breed={form.breed}
         color={form.color}
         district={form.district}
         place={form.place}

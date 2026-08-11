@@ -20,6 +20,7 @@ import { useLanguage } from '../../../lib/i18n';
 import { fireConfetti } from '../../../lib/confetti';
 import type { Pet } from '../../../lib/types';
 import { getErrorMessage } from '../../../lib/utils';
+import { getBreedLabel } from '../../../lib/petBreeds';
 
 // URL-ийн snapshot — share холбоосын зориулалттай (useSyncExternalStore;
 // effect-д setUrl хийхгүй, SSR-д хоосон string)
@@ -38,7 +39,7 @@ export default function PetDetailClient({ id }: { id: string }) {
   const { user } = useAuth();
   const router = useRouter();
   const showToast = useToast();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const [pet, setPet] = useState<Pet | null>(null);
   const [error, setError] = useState<string | null>(null);
   const url = useSyncExternalStore(subscribeLocation, getLocationSnapshot, getLocationServerSnapshot);
@@ -165,6 +166,7 @@ export default function PetDetailClient({ id }: { id: string }) {
           {!editing ? (
             <div className="card" style={{ padding: 'var(--sp-4)' }}>
               <p style={{ marginBottom: 'var(--sp-1)' }}><b>{t('detail_type')}</b> {pet.type}{pet.color ? `, ${pet.color}` : ''}</p>
+              {pet.breed && <p style={{ marginBottom: 'var(--sp-1)' }}><b>{t('detail_breed')}</b> {getBreedLabel(pet.breed, lang)}</p>}
               <p style={{ marginBottom: 'var(--sp-1)' }}><b>{t('detail_district')}</b> {pet.district}</p>
               <p style={{ marginBottom: 'var(--sp-1)' }}><b>{t('detail_place')}</b> {pet.place}</p>
               {pet.hasReward ? (

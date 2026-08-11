@@ -3,17 +3,19 @@ import PetCardView from './PetCardView';
 import { useLanguage } from '../lib/i18n';
 import type { District } from '../lib/districts';
 import type { PetStatus, PetType } from '../lib/types';
+import { getBreedLabel } from '../lib/petBreeds';
 
 /**
  * Мэдэгдэх форм бөглөх явцад баруун талд харагдах "яг ийм харагдана" preview карт.
  * Картын markup/стиль нь PetCardView-ээс (жагсаалтын карттай нэгдсэн).
  */
 export default function PetPreviewCard({
-  status, name, type, color, district, place, phone, photoPreview, hasReward,
+  status, name, type, breed, color, district, place, phone, photoPreview, hasReward,
 }: {
   status: PetStatus;
   name: string;
   type: PetType;
+  breed?: string;
   color: string;
   district: District;
   place: string;
@@ -21,7 +23,7 @@ export default function PetPreviewCard({
   photoPreview: string | null;
   hasReward?: boolean;
 }) {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const typeLabel = type === 'Муур' ? t('type_cat') : type === 'Нохой' ? t('type_dog') : t('type_other');
 
   return (
@@ -32,6 +34,7 @@ export default function PetPreviewCard({
         badgeLabel={status === 'lost' ? t('nav_lost').toUpperCase() : t('nav_found').toUpperCase()}
         name={name}
         type={type}
+        breed={breed ? getBreedLabel(breed, lang) : undefined}
         color={color}
         district={district}
         place={place}

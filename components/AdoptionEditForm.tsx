@@ -6,6 +6,7 @@ import { useLanguage } from '../lib/i18n';
 import Button from './ui/Button';
 import { TYPE_VALUES, GENDER_VALUES } from '../lib/useAdoptionForm';
 import type { AdoptionGender, PetType } from '../lib/types';
+import BreedSelect from './BreedSelect';
 
 export interface AdoptionEditValues {
   name: string;
@@ -37,7 +38,7 @@ export default function AdoptionEditForm({
       <input id="edit-name" className="field" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} style={{ minHeight: 'var(--touch-target)', fontSize: 16 }} />
 
       <label htmlFor="edit-type" style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--primary)' }}>{t('type_label')}</label>
-      <select id="edit-type" className="field" value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value as PetType })} style={{ minHeight: 'var(--touch-target)', fontSize: 16 }}>
+      <select id="edit-type" className="field" value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value as PetType, breed: '' })} style={{ minHeight: 'var(--touch-target)', fontSize: 16 }}>
         {TYPE_VALUES.map((v) => <option key={v} value={v}>{t(`type_${v === 'Нохой' ? 'dog' : v === 'Муур' ? 'cat' : 'other'}`)}</option>)}
       </select>
 
@@ -49,8 +50,8 @@ export default function AdoptionEditForm({
         {GENDER_VALUES.map((v) => <option key={v} value={v}>{v === 'Эрэгтэй' ? t('gender_male') : v === 'Эмэгтэй' ? t('gender_female') : t('gender_unknown')}</option>)}
       </select>
 
-      <label htmlFor="edit-breed" style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--primary)' }}>{t('adoption_breed_label')}</label>
-      <input id="edit-breed" className="field" value={form.breed} onChange={(e) => setForm({ ...form, breed: e.target.value })} style={{ minHeight: 'var(--touch-target)', fontSize: 16 }} />
+      <label htmlFor="edit-breed" style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--primary)' }}>{t('breed_label')}</label>
+      <BreedSelect id="edit-breed" className="field" type={form.type} value={form.breed} onChange={(breed) => setForm({ ...form, breed })} />
 
       <label htmlFor="edit-desc" style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--primary)' }}>{t('adoption_description_label')}</label>
       <textarea id="edit-desc" className="field" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} style={{ fontSize: 16 }} />

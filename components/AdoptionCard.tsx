@@ -6,10 +6,11 @@ import type { KeyboardEvent } from 'react';
 import AdoptionCardView from './AdoptionCardView';
 import { useLanguage } from '../lib/i18n';
 import type { Adoption } from '../lib/types';
+import { getBreedLabel } from '../lib/petBreeds';
 
 export default function AdoptionCard({ adoption }: { adoption: Adoption }) {
   const router = useRouter();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const [revealed, setRevealed] = useState(false);
 
   const typeLabel = adoption.type === 'Муур' ? t('type_cat') : adoption.type === 'Нохой' ? t('type_dog') : t('type_other');
@@ -33,7 +34,7 @@ export default function AdoptionCard({ adoption }: { adoption: Adoption }) {
       type={adoption.type}
       age={adoption.age}
       gender={adoption.gender}
-      breed={adoption.breed}
+      breed={adoption.breed ? getBreedLabel(adoption.breed, lang) : ''}
       district={adoption.district}
       place={adoption.place}
       phone={adoption.phone}

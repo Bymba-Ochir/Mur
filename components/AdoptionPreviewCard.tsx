@@ -3,6 +3,7 @@ import AdoptionCardView from './AdoptionCardView';
 import { useLanguage } from '../lib/i18n';
 import type { District } from '../lib/districts';
 import type { AdoptionGender, PetType } from '../lib/types';
+import { getBreedLabel } from '../lib/petBreeds';
 
 /**
  * Үрчлүүлэх форм бөглөх явцад баруун талд харагдах preview карт.
@@ -20,7 +21,7 @@ export default function AdoptionPreviewCard({
   phone: string;
   photoPreview: string | null;
 }) {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const genderLabel = gender === 'Эрэгтэй' ? t('gender_male') : gender === 'Эмэгтэй' ? t('gender_female') : t('gender_unknown');
 
   return (
@@ -32,7 +33,7 @@ export default function AdoptionPreviewCard({
         type={type}
         age={age}
         gender={genderLabel}
-        breed={breed}
+        breed={breed ? getBreedLabel(breed, lang) : ''}
         district={district}
         place={place}
         phone={phone}

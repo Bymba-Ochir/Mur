@@ -11,6 +11,7 @@ import { useAdoptionPhoto, useAdoptionSubmit, TYPE_VALUES, GENDER_VALUES } from 
 import type { AdoptionFormData } from '../lib/useAdoptionForm';
 import type { AdoptionGender, PetType } from '../lib/types';
 import { normalizePhone, formatPhone } from '../lib/utils';
+import BreedSelect from './BreedSelect';
 
 export default function AdoptionForm() {
   const { t } = useLanguage();
@@ -109,7 +110,7 @@ export default function AdoptionForm() {
           <input id="adopt-name" name="name" value={form.name} onChange={handleChange} placeholder={t('adoption_name_placeholder')} />
 
           <label htmlFor="adopt-type">{t('type_label')}</label>
-          <select id="adopt-type" name="type" value={form.type} onChange={handleChange}>
+          <select id="adopt-type" name="type" value={form.type} onChange={(e) => setForm((prev) => ({ ...prev, type: e.target.value as PetType, breed: '' }))}>
             {TYPE_VALUES.map((v) => <option key={v} value={v}>{TYPE_LABELS[v]}</option>)}
           </select>
 
@@ -121,8 +122,8 @@ export default function AdoptionForm() {
             {GENDER_VALUES.map((v) => <option key={v} value={v}>{v === 'Эрэгтэй' ? t('gender_male') : v === 'Эмэгтэй' ? t('gender_female') : t('gender_unknown')}</option>)}
           </select>
 
-          <label htmlFor="adopt-breed">{t('adoption_breed_label')}</label>
-          <input id="adopt-breed" name="breed" value={form.breed} onChange={handleChange} placeholder={t('adoption_breed_placeholder')} />
+          <label htmlFor="adopt-breed">{t('breed_label')}</label>
+          <BreedSelect id="adopt-breed" type={form.type} value={form.breed} onChange={(breed) => setForm((prev) => ({ ...prev, breed }))} />
 
           <label htmlFor="adopt-desc">{t('adoption_description_label')}</label>
           <textarea id="adopt-desc" name="description" value={form.description} onChange={handleChange} rows={3} placeholder={t('adoption_description_placeholder')} required />
