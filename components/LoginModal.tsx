@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
+import { createPortal } from 'react-dom';
 import { useAuth } from '../lib/useAuth';
 import { useLanguage } from '../lib/i18n';
 import Button from './ui/Button';
@@ -32,7 +33,7 @@ export default function LoginModal({ onClose }: { onClose: () => void }) {
     }
   }
 
-  return (
+  const content = (
     <div className="overlay" onClick={onClose}>
       <div
         className="modal"
@@ -63,7 +64,8 @@ export default function LoginModal({ onClose }: { onClose: () => void }) {
         <style jsx>{`
           .overlay {
             position: fixed; inset: 0; background: var(--overlay);
-            display: flex; align-items: center; justify-content: center; z-index: 100;
+            display: flex; align-items: center; justify-content: center; z-index: 1000;
+            pointer-events: auto;
             animation: fadeIn 0.15s ease;
             padding: var(--sp-4);
           }
@@ -101,4 +103,9 @@ export default function LoginModal({ onClose }: { onClose: () => void }) {
       </div>
     </div>
   );
+
+  // Navbar wrapper нь гаднах хоосон зайд pointer-events:none ашигладаг. Modal-ийг
+  // wrapper дотор үлдээвэл click/focus хаагдана. body руу portal хийснээр modal
+  // viewport-ийн бие даасан интерактив давхарга болно.
+  return typeof document === 'undefined' ? null : createPortal(content, document.body);
 }
