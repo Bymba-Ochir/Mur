@@ -67,7 +67,7 @@ as $$
     round((c.img_score * 55 + c.type_score + c.breed_score + c.color_score + c.district_score + c.nearby_score + c.recency_score)::numeric, 2)::double precision as hybrid_score
   from candidates c
   where c.img_score >= min_image_similarity
-  order by hybrid_score desc, c.p.created_at desc
+  order by hybrid_score desc, (c.p).created_at desc
   limit least(greatest(match_count, 1), 50);
 $$;
 

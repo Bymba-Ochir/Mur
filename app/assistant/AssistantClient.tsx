@@ -29,16 +29,33 @@ export default function AssistantClient() {
   const [input, setInput] = useState('');
   const [thinking, setThinking] = useState(false);
   const [petType, setPetType] = useState<'Нохой' | 'Муур' | ''>('');
+  const [petTypeOpen, setPetTypeOpen] = useState(false);
   const [petAge, setPetAge] = useState('');
   const [feedback, setFeedback] = useState<Record<string, 'up' | 'down'>>({});
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const petTypeRef = useRef<HTMLDivElement>(null);
   const msgIdRef = useRef(0);
 
   // Шинэ мессеж ирэхэд доод хэсэг рүү скролл
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  useEffect(() => {
+    function closePetType(event: PointerEvent) {
+      if (!petTypeRef.current?.contains(event.target as Node)) setPetTypeOpen(false);
+    }
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key === 'Escape') setPetTypeOpen(false);
+    }
+    document.addEventListener('pointerdown', closePetType);
+    document.addEventListener('keydown', closeOnEscape);
+    return () => {
+      document.removeEventListener('pointerdown', closePetType);
+      document.removeEventListener('keydown', closeOnEscape);
+    };
+  }, []);
 
   async function handleSend(text?: string) {
     const msg = text || input.trim();
@@ -172,12 +189,52 @@ export default function AssistantClient() {
       <div className="composer">
         <p className="disclaimer">{t('assistant_disclaimer')}</p>
         <div className="pet-context">
-          <select value={petType} onChange={(e) => setPetType(e.target.value as 'Нохой' | 'Муур' | '')} aria-label={t('assistant_pet_type')}>
-            <option value="">{t('assistant_pet_type')}</option>
-            <option value="Нохой">{t('type_dog')}</option>
-            <option value="Муур">{t('type_cat')}</option>
-          </select>
-          <input value={petAge} onChange={(e) => setPetAge(e.target.value)} placeholder={t('assistant_pet_age')} aria-label={t('assistant_pet_age')} />
+          <div className="pet-type-picker" ref={petTypeRef}>
+            <button
+              type="button"
+              className="pet-type-trigger"
+              aria-label={t('assistant_pet_type')}
+              aria-haspopup="listbox"
+              aria-expanded={petTypeOpen}
+              onClick={() => setPetTypeOpen((open) => !open)}
+            >
+              <span>{petType === 'Нохой' ? t('type_dog') : petType === 'Муур' ? t('type_cat') : t('assistant_pet_type')}</span>
+              <svg className={petTypeOpen ? 'open' : ''} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                <path d="m6 9 6 6 6-6" />
+              </svg>
+            </button>
+            {petTypeOpen && (
+              <div className="pet-type-menu" role="listbox" aria-label={t('assistant_pet_type')}>
+                {(['', 'Нохой', 'Муур'] as const).map((type) => (
+                  <button
+                    type="button"
+                    role="option"
+                    aria-selected={petType === type}
+                    className={petType === type ? 'selected' : ''}
+                    key={type || 'none'}
+                    onClick={() => { setPetType(type); setPetTypeOpen(false); }}
+                  >
+                    <span>{type === 'Нохой' ? t('type_dog') : type === 'Муур' ? t('type_cat') : t('assistant_pet_type')}</span>
+                    {petType === type && <span aria-hidden="true">✓</span>}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+          <div className="age-field">
+            <input
+              type="number"
+              min="0"
+              max="40"
+              step="0.1"
+              inputMode="decimal"
+              value={petAge}
+              onChange={(e) => setPetAge(e.target.value)}
+              placeholder={t('assistant_pet_age')}
+              aria-label={t('assistant_pet_age')}
+            />
+            <span>{t('assistant_age_unit')}</span>
+          </div>
         </div>
         <div className="composer-row">
           <input
@@ -317,8 +374,32 @@ export default function AssistantClient() {
         .composer-row {
           display: flex; gap: var(--sp-2);
         }
-        .pet-context { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 7px; }
-        .pet-context select, .pet-context input { min-width: 0; min-height: 34px; padding: 5px 9px; border: 1px solid var(--line); border-radius: var(--r-sm); background: var(--bg); color: var(--ink); font: inherit; font-size: 12px; }
+        .pet-context { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; position: relative; }
+        .pet-type-picker { position: relative; min-width: 0; }
+        .pet-type-trigger, .age-field {
+          width: 100%; min-width: 0; min-height: 40px; padding: 7px 11px;
+          border: 1px solid var(--line); border-radius: var(--r-sm);
+          background: var(--bg); color: var(--ink); font: inherit; font-size: 12px;
+        }
+        .pet-type-trigger { display: flex; align-items: center; justify-content: space-between; gap: 8px; cursor: pointer; text-align: left; }
+        .pet-type-trigger svg { flex: 0 0 auto; transition: transform .16s ease; }
+        .pet-type-trigger svg.open { transform: rotate(180deg); }
+        .pet-type-trigger:focus-visible, .age-field:focus-within { outline: 2px solid color-mix(in srgb, var(--primary) 45%, transparent); border-color: var(--primary); }
+        .pet-type-menu {
+          position: absolute; z-index: 30; left: 0; right: 0; bottom: calc(100% + 6px);
+          padding: 5px; border: 1px solid var(--line); border-radius: var(--r-md);
+          background: var(--card); box-shadow: var(--shadow-lg); overflow: hidden;
+        }
+        .pet-type-menu button {
+          width: 100%; min-height: 40px; padding: 8px 10px; border: 0; border-radius: var(--r-sm);
+          display: flex; align-items: center; justify-content: space-between;
+          background: transparent; color: var(--ink); font: inherit; font-size: 12px; cursor: pointer; text-align: left;
+        }
+        .pet-type-menu button:hover, .pet-type-menu button.selected { background: var(--eyebrow-bg); color: var(--primary); }
+        .age-field { display: flex; align-items: center; gap: 6px; }
+        .age-field input { width: 100%; min-width: 0; border: 0; outline: 0; background: transparent; color: var(--ink); font: inherit; font-size: 12px; }
+        .age-field input::-webkit-inner-spin-button { opacity: .5; }
+        .age-field span { flex: 0 0 auto; color: var(--muted); font-size: 11px; }
         .composer-row input {
           flex: 1; padding: 10px 14px; border: 1.5px solid var(--line);
           border-radius: var(--r-pill); font-size: 14px; font-family: var(--font-body);
@@ -335,6 +416,10 @@ export default function AssistantClient() {
         .send-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
         .send-btn .spin { animation: spin 0.8s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
+        @media (max-width: 420px) {
+          .pet-context { grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr); }
+          .composer { padding-left: var(--sp-3); padding-right: var(--sp-3); }
+        }
       `}</style>
     </div>
   );
