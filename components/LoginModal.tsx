@@ -13,36 +13,34 @@ export default function LoginModal({ onClose }: { onClose: () => void }) {
   const [email, setEmail] = useState('');
   const [sent, setSent] = useState(false);
   const [err, setErr] = useState<string | null>(null);
-  const [sending, setSending] = useState(false);
 
   useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
     function handleKey(e: KeyboardEvent) {
       if (e.key === 'Escape') onClose();
     }
     window.addEventListener('keydown', handleKey);
-    return () => window.removeEventListener('keydown', handleKey);
+    return () => {
+      window.removeEventListener('keydown', handleKey);
+      document.body.style.overflow = previousOverflow;
+    };
   }, [onClose]);
 
   async function handleSend(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setErr(null);
-    setSending(true);
     try {
-      await Promise.race([
-        loginWithEmail(email.trim()),
-        new Promise<never>((_, reject) => setTimeout(() => reject(new Error('TIMEOUT')), 15000)),
-      ]);
+      await loginWithEmail(email);
       setSent(true);
-    } catch (error) {
-      setErr(error instanceof Error && error.message === 'TIMEOUT'
-        ? 'Хүсэлт удаж байна. Интернэт болон Supabase тохиргоогоо шалгаад дахин оролдоно уу.'
-        : t('login_error'));
-    } finally {
-      setSending(false);
+    } catch {
+      setErr(t('login_error'));
     }
   }
 
-  const content = (
+  if (typeof document === 'undefined') return null;
+
+  return createPortal(
     <div className="overlay" onClick={onClose}>
       <div
         className="modal"
@@ -60,16 +58,12 @@ export default function LoginModal({ onClose }: { onClose: () => void }) {
             <input
               id="login-email"
               type="email" required value={email}
-              autoFocus
-              disabled={sending}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="ta@jishee.mn"
               aria-describedby={err ? 'login-error' : undefined}
             />
             {err && <p id="login-error" className="err" role="alert">{err}</p>}
-            <Button type="submit" variant="primary" disabled={sending || !email.trim()} aria-busy={sending}>
-              {sending ? 'Илгээж байна…' : t('login_button')}
-            </Button>
+            <Button type="submit" variant="primary">{t('login_button')}</Button>
           </form>
         )}
         <button className="close" onClick={onClose} aria-label="Цонхыг хаах">{t('close')}</button>
@@ -78,7 +72,6 @@ export default function LoginModal({ onClose }: { onClose: () => void }) {
           .overlay {
             position: fixed; inset: 0; background: var(--overlay);
             display: flex; align-items: center; justify-content: center; z-index: 1000;
-            pointer-events: auto;
             animation: fadeIn 0.15s ease;
             padding: var(--sp-4);
           }
@@ -114,11 +107,7 @@ export default function LoginModal({ onClose }: { onClose: () => void }) {
           }
         `}</style>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
-
-  // Navbar wrapper нь гаднах хоосон зайд pointer-events:none ашигладаг. Modal-ийг
-  // wrapper дотор үлдээвэл click/focus хаагдана. body руу portal хийснээр modal
-  // viewport-ийн бие даасан интерактив давхарга болно.
-  return typeof document === 'undefined' ? null : createPortal(content, document.body);
 }
