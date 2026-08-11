@@ -286,7 +286,7 @@ assistant_back: 'Буцах',
 assistant_emergency_badge: 'Яаралтай — малын эмчид яаралтай хандана уу',
 assistant_home_cta: 'AI Зөвлөх',
 assistant_sources: 'Лавлах эх сурвалж', assistant_feedback: 'Хариултын үнэлгээ', assistant_helpful: 'Тустай', assistant_not_helpful: 'Тус болсонгүй',
-assistant_confidence_high: 'Итгэл: өндөр', assistant_confidence_medium: 'Итгэл: дунд', assistant_confidence_low: 'Итгэл: бага', assistant_pet_type: 'Амьтны төрөл', assistant_pet_age: 'Нас', assistant_age_unit: 'жил',
+assistant_confidence_high: 'Итгэл: өндөр', assistant_confidence_medium: 'Итгэл: дунд', assistant_confidence_low: 'Итгэл: бага', assistant_pet_type: 'Амьтны төрөл', assistant_pet_age: 'Амьтны нас', assistant_age_unit: 'жилээр',
 
 // ─── Pet Sitting (Асрах үйлчилгээ) ───────────────────────────────────────
 nav_sitting: 'Асрах',
@@ -610,7 +610,7 @@ assistant_back: 'Back',
 assistant_emergency_badge: 'Emergency — consult a vet immediately',
 assistant_home_cta: 'AI Assistant',
 assistant_sources: 'Reference sources', assistant_feedback: 'Rate this answer', assistant_helpful: 'Helpful', assistant_not_helpful: 'Not helpful',
-assistant_confidence_high: 'Confidence: high', assistant_confidence_medium: 'Confidence: medium', assistant_confidence_low: 'Confidence: low', assistant_pet_type: 'Pet type', assistant_pet_age: 'Age', assistant_age_unit: 'years',
+assistant_confidence_high: 'Confidence: high', assistant_confidence_medium: 'Confidence: medium', assistant_confidence_low: 'Confidence: low', assistant_pet_type: 'Pet type', assistant_pet_age: 'Pet age', assistant_age_unit: 'in years',
 
 // ─── Pet Sitting ───────────────────────────────────────────────────────────
 nav_sitting: 'Sitting',
