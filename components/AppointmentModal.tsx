@@ -7,6 +7,7 @@ import { createAppointment, TIME_SLOTS } from '../lib/appointmentService';
 import { fetchMyPets } from '../lib/vaccineService';
 import { getErrorMessage } from '../lib/utils';
 import type { VetClinic, MyPet, VetService } from '../lib/types';
+import Modal from './ui/Modal';
 
 const SERVICE_I18N: Record<string, string> = {
   'Үзлэг': 'service_exam',
@@ -68,14 +69,7 @@ export default function AppointmentModal({
   }
 
   return (
-    <div className="overlay" onClick={onClose}>
-      <div className="modal" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="appt-title">
-        <button className="close" onClick={onClose} aria-label={t('close')}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
-            <path d="M18 6 6 18M6 6l12 12" />
-          </svg>
-        </button>
-        <h2 id="appt-title" style={{ fontSize: 18, marginBottom: 12 }}>{t('appt_title')}</h2>
+    <Modal open onClose={onClose} title={t('appt_title')} closeLabel={t('close')} width="sm" panelClassName="appointment-modal">
         <p style={{ fontSize: 13, color: 'var(--muted)', marginBottom: 12 }}>
           {t('appt_clinic')} <strong>{clinic.name}</strong>
         </p>
@@ -112,28 +106,7 @@ export default function AppointmentModal({
         >
           {busy ? t('appt_submitting') : t('appt_submit')}
         </button>
-      </div>
-
       <style jsx>{`
-        .overlay {
-          position: fixed; inset: 0; background: var(--overlay);
-          display: flex; align-items: center; justify-content: center;
-          z-index: 300; padding: 16px;
-          animation: fadeIn 0.2s ease;
-        }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        .modal {
-          background: var(--card); border-radius: var(--r-lg); padding: 24px;
-          max-width: 360px; width: 100%; color: var(--ink); position: relative;
-          max-height: 90vh; overflow-y: auto;
-          animation: slideDown 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        @keyframes slideDown {
-          from { opacity: 0; transform: translateY(-20px) scale(0.95); }
-          to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        .close { position: absolute; top: 10px; right: 10px; background: none; border: none; cursor: pointer; color: var(--muted); width: var(--touch-target-sm); height: var(--touch-target-sm); display: flex; align-items: center; justify-content: center; border-radius: var(--r-sm); }
-        .close:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
         label { font-size: 12.5px; font-weight: 600; color: var(--primary); display: block; margin-top: 10px; margin-bottom: 4px; }
         select, input, textarea {
           width: 100%; padding: var(--sp-2) var(--sp-3); border: 1.5px solid var(--line);
@@ -152,6 +125,6 @@ export default function AppointmentModal({
         .submit-btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: var(--shadow-md); }
         .submit-btn:disabled { opacity: 0.55; cursor: not-allowed; }
       `}</style>
-    </div>
+    </Modal>
   );
 }

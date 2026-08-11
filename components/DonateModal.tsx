@@ -4,7 +4,7 @@ import { useToast } from './Toast';
 import { useLanguage } from '../lib/i18n';
 import { fireConfetti } from '../lib/confetti';
 import { getErrorMessage } from '../lib/utils';
-import { createPortal } from 'react-dom';
+import Modal from './ui/Modal';
 
 const AMOUNTS = [3000, 5000, 10000, 20000];
 
@@ -94,13 +94,8 @@ export default function DonateModal({ onClose }: { onClose: () => void }) {
     }
   }
 
-  if (typeof document === 'undefined') return null;
-
-  return createPortal(
-    <div className="overlay" onClick={onClose}>
-      <div className="modal" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="donate-title">
-        <button className="close" onClick={onClose} aria-label={t('donate_close')}>✕</button>
-        <h2 id="donate-title">{t('donate_title')}</h2>
+  return (
+    <Modal open onClose={onClose} title={t('donate_title')} closeLabel={t('donate_close')} width="sm" panelClassName="donate-modal">
 
         {stage === 'form' && (
           <form onSubmit={handleCreate}>
@@ -178,30 +173,7 @@ export default function DonateModal({ onClose }: { onClose: () => void }) {
             <button className="submit-btn" onClick={() => setStage('form')}>{t('donate_retry')}</button>
           </div>
         )}
-      </div>
-
       <style jsx>{`
-        .overlay {
-          position: fixed; inset: 0; background: var(--overlay);
-          display: flex; align-items: flex-start; justify-content: center;
-          z-index: 1000; padding: max(24px, 5vh) 16px 24px;
-          overflow-y: auto; overscroll-behavior: contain;
-          animation: fadeIn 0.2s ease;
-        }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        .modal {
-          background: var(--card); border-radius: var(--r-lg); padding: 24px;
-          max-width: 360px; width: 100%; color: var(--ink); position: relative;
-          max-height: none; overflow: visible;
-          box-shadow: var(--shadow-lift);
-          animation: slideDown 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        @keyframes slideDown {
-          from { opacity: 0; transform: translateY(-20px) scale(0.95); }
-          to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        .close { position: absolute; top: 14px; right: 14px; background: none; border: none; font-size: 16px; cursor: pointer; color: var(--muted); }
-        h2 { font-size: 18px; margin-bottom: 12px; }
         .hint { font-size: 12.5px; color: var(--muted); margin-bottom: 12px; }
         .amounts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
         .amount-btn { padding: 10px; border-radius: var(--r-sm); border: 1.5px solid var(--line); background: var(--bg); color: var(--ink); font-weight: 600; cursor: pointer; font-family: var(--font-body); transition: all 0.15s ease; }
@@ -222,12 +194,9 @@ export default function DonateModal({ onClose }: { onClose: () => void }) {
         .deep-link { display: flex; align-items: center; gap: 4px; font-size: 11.5px; background: var(--eyebrow-bg); color: var(--primary); padding: 5px 10px; border-radius: var(--r-sm); text-decoration: none; }
         .deep-link img { width: 16px; height: 16px; border-radius: var(--r-sm); }
         @media (max-width: 480px) {
-          .overlay { padding: 12px; align-items: flex-start; }
-          .modal { max-width: 100%; padding: 20px 16px; border-radius: var(--r-md); }
           input, textarea { font-size: 16px; }
         }
       `}</style>
-    </div>,
-    document.body,
+    </Modal>
   );
 }

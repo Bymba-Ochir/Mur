@@ -1,10 +1,10 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import type { FormEvent } from 'react';
-import { createPortal } from 'react-dom';
 import { useAuth } from '../lib/useAuth';
 import { useLanguage } from '../lib/i18n';
 import Button from './ui/Button';
+import Modal from './ui/Modal';
 
 /** Имэйл (magic link) нэвтрэх модал — Navbar-аас салгагдсан. */
 export default function LoginModal({ onClose }: { onClose: () => void }) {
@@ -13,19 +13,6 @@ export default function LoginModal({ onClose }: { onClose: () => void }) {
   const [email, setEmail] = useState('');
   const [sent, setSent] = useState(false);
   const [err, setErr] = useState<string | null>(null);
-
-  useEffect(() => {
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    function handleKey(e: KeyboardEvent) {
-      if (e.key === 'Escape') onClose();
-    }
-    window.addEventListener('keydown', handleKey);
-    return () => {
-      window.removeEventListener('keydown', handleKey);
-      document.body.style.overflow = previousOverflow;
-    };
-  }, [onClose]);
 
   async function handleSend(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -38,20 +25,10 @@ export default function LoginModal({ onClose }: { onClose: () => void }) {
     }
   }
 
-  if (typeof document === 'undefined') return null;
-
-  return createPortal(
-    <div className="login-overlay" onClick={onClose}>
-      <div
-        className="login-modal-panel"
-        onClick={(e) => e.stopPropagation()}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="login-modal-title"
-      >
-        <h2 id="login-modal-title" className="login-modal-title">{t('login_title')}</h2>
+  return (
+    <Modal open onClose={onClose} title={t('login_title')} closeLabel={t('close')} width="sm" panelClassName="login-modal-panel">
         {sent ? (
-          <p role="status">{t('login_sent')}</p>
+          <p className="login-sent" role="status">{t('login_sent')}</p>
         ) : (
           <form onSubmit={handleSend}>
             <label htmlFor="login-email">{t('login_email_label')}</label>
@@ -66,9 +43,6 @@ export default function LoginModal({ onClose }: { onClose: () => void }) {
             <Button type="submit" variant="primary">{t('login_button')}</Button>
           </form>
         )}
-        <button className="login-modal-close" onClick={onClose} aria-label="Цонхыг хаах">{t('close')}</button>
-      </div>
-    </div>,
-    document.body,
+    </Modal>
   );
 }

@@ -67,3 +67,46 @@ test.describe('Хэл, theme сэлгэх', () => {
     expect(after).not.toBe(before);
   });
 });
+
+test.describe('UI regression', () => {
+  test('login modal viewport дээр харагдаж, хаагдахад scroll сэргэнэ', async ({ page, isMobile }) => {
+    await page.goto('/');
+    if (isMobile) {
+      await page.locator('.mobile-menu-btn').click();
+      await page.getByRole('button', { name: /Нэвтрэх/ }).last().click();
+    } else {
+      await page.getByRole('button', { name: /Нэвтрэх/ }).first().click();
+    }
+    const dialog = page.getByRole('dialog', { name: /Нэвтрэх/ });
+    await expect(dialog).toBeVisible();
+    await expect(page.locator('body')).toHaveCSS('overflow', 'hidden');
+    await page.keyboard.press('Escape');
+    await expect(dialog).toBeHidden();
+    await expect(page.locator('body')).not.toHaveCSS('overflow', 'hidden');
+  });
+
+  test('хандивын modal viewport дээр харагдана', async ({ page, isMobile }) => {
+    await page.goto('/');
+    if (isMobile) await page.locator('.mobile-menu-btn').click();
+    await page.getByRole('button', { name: /Дэмжих/ }).last().click();
+    await expect(page.getByRole('dialog', { name: /Дэмж/ })).toBeVisible();
+  });
+
+  test('home service card-ууд layout style-тай байна', async ({ page }) => {
+    await page.goto('/');
+    const card = page.locator('.service-card').first();
+    await expect(card).toBeVisible();
+    await expect(card).toHaveCSS('display', 'block');
+    await expect(card).not.toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+  });
+
+  test('mobile menu item-ууд тусдаа мөрөөр харагдана', async ({ page, isMobile }) => {
+    test.skip(!isMobile, 'mobile project only');
+    await page.goto('/');
+    await page.locator('.mobile-menu-btn').click();
+    const lost = page.locator('.mobile-nav-link').first();
+    await expect(lost).toBeVisible();
+    await expect(lost).toHaveCSS('display', 'flex');
+    expect((await lost.boundingBox())?.height).toBeGreaterThanOrEqual(40);
+  });
+});

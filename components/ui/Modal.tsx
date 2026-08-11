@@ -1,95 +1,90 @@
 'use client';
-import { useEffect, useRef, type ReactNode } from 'react';
+import { useEffect, useId, useRef, type ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 
 interface ModalProps {
   open: boolean;
   onClose: () => void;
   title?: string;
   labelledById?: string;
+  closeLabel?: string;
   children: ReactNode;
   width?: 'sm' | 'md' | 'lg';
+  panelClassName?: string;
+  showClose?: boolean;
 }
 
-const WIDTHS = {
-  sm: 'max-width: 320px;',
-  md: 'max-width: 420px;',
-  lg: 'max-width: 560px;',
-};
-
-export default function Modal({ open, onClose, title, labelledById, children, width = 'md' }: ModalProps) {
+export default function Modal({
+  open,
+  onClose,
+  title,
+  labelledById,
+  closeLabel = 'Хаах',
+  children,
+  width = 'md',
+  panelClassName = '',
+  showClose = true,
+}: ModalProps) {
+  const generatedId = useId();
+  const titleId = labelledById || `modal-title-${generatedId.replace(/:/g, '')}`;
   const panelRef = useRef<HTMLDivElement>(null);
 
-  // Close on Escape
   useEffect(() => {
     if (!open) return;
+    const previousOverflow = document.body.style.overflow;
+    const previousFocus = document.activeElement as HTMLElement | null;
+    document.body.style.overflow = 'hidden';
+
     function onKey(e: KeyboardEvent) {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape') {
+        onClose();
+        return;
+      }
+      if (e.key !== 'Tab') return;
+      const nodes = panelRef.current?.querySelectorAll<HTMLElement>(
+        'button:not(:disabled), [href], input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex="-1"])',
+      );
+      if (!nodes?.length) return;
+      const first = nodes[0];
+      const last = nodes[nodes.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
     }
+
     document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
+    requestAnimationFrame(() => {
+      const first = panelRef.current?.querySelector<HTMLElement>('input, select, textarea, button, [href]');
+      first?.focus();
+    });
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      document.body.style.overflow = previousOverflow;
+      previousFocus?.focus();
+    };
   }, [open, onClose]);
 
-  // Focus trap: focus first focusable on open
-  useEffect(() => {
-    if (!open) return;
-    const panel = panelRef.current;
-    const focusable = panel?.querySelector<HTMLElement>('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
-    focusable?.focus();
-  }, [open]);
+  if (!open || typeof document === 'undefined') return null;
 
-  if (!open) return null;
-
-  return (
-    <div className="overlay" onClick={onClose}>
+  return createPortal(
+    <div className="ui-modal-overlay" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
       <div
         ref={panelRef}
-        className="modal-panel"
+        className={`ui-modal-panel ui-modal-${width} ${panelClassName}`.trim()}
         role="dialog"
         aria-modal="true"
-        aria-labelledby={labelledById}
-        onClick={(e) => e.stopPropagation()}
+        aria-labelledby={title ? titleId : undefined}
       >
-        {title && <h2 id={labelledById} className="modal-title">{title}</h2>}
-        <button className="close" onClick={onClose} aria-label="Хаах">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
-            <path d="M18 6 6 18M6 6l12 12" />
-          </svg>
-        </button>
+        {title && <h2 id={titleId} className="ui-modal-title">{title}</h2>}
+        {showClose && (
+          <button className="ui-modal-close" onClick={onClose} aria-label={closeLabel}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+              <path d="M18 6 6 18M6 6l12 12" />
+            </svg>
+          </button>
+        )}
         {children}
-        <style jsx>{`
-          .overlay {
-            position: fixed; inset: 0; background: var(--overlay);
-            display: flex; align-items: center; justify-content: center;
-            z-index: 300; padding: 16px;
-            animation: fadeIn ${'var(--dur-fast)'} ${'var(--ease-out)'};
-          }
-          @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-          .modal-panel {
-            position: relative;
-            background: var(--surface-2);
-            border-radius: var(--r-lg);
-            padding: var(--sp-5);
-            color: var(--text-primary);
-            max-height: 90vh; overflow-y: auto;
-            ${WIDTHS[width]}
-            animation: slideDown ${'var(--dur-base)'} ${'var(--ease-out)'};
-          }
-          @keyframes slideDown {
-            from { opacity: 0; transform: translateY(-16px) scale(0.97); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
-          }
-          .modal-title { font-family: var(--font-display); font-size: var(--text-lg); color: var(--primary); margin-bottom: var(--sp-3); padding-right: 32px; }
-          .close {
-            position: absolute; top: 12px; right: 12px;
-            width: var(--touch-target-sm); height: var(--touch-target-sm);
-            display: flex; align-items: center; justify-content: center;
-            background: none; border: none; cursor: pointer;
-            color: var(--text-secondary); border-radius: var(--r-sm);
-          }
-          .close:hover { background: var(--surface-3); }
-          .close:focus-visible { outline: 2px solid var(--border-focus); outline-offset: 2px; }
-        `}</style>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
