@@ -18,6 +18,7 @@ interface PetRow {
   has_reward: boolean | null;
   reward: number | null;
   photo_url: string | null;
+  photo_urls?: unknown;
   color_signature: unknown; // CLIP vector (JSONB)
   lat: number | null;
   lng: number | null;
@@ -41,6 +42,7 @@ export function mapPetRow(row: PetRow): Pet {
     hasReward: row.has_reward ?? false,
     reward: row.reward ?? null,
     photoURL: row.photo_url,
+    photoURLs: Array.isArray(row.photo_urls) ? row.photo_urls.filter((url): url is string => typeof url === 'string') : row.photo_url ? [row.photo_url] : [],
     embedding: (row.color_signature as number[] | null) ?? null,
     lat: row.lat,
     lng: row.lng,

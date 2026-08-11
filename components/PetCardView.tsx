@@ -52,7 +52,11 @@ export default function PetCardView({
         {imageNode ?? (
           <span className="emoji" aria-hidden="true"><PetIcon type={type} size={56} /></span>
         )}
-        {(hybridScore ?? similarity) != null && <span className="similarity">{hybridScore ?? similarity}% тохирол</span>}
+        {(hybridScore ?? similarity) != null && (() => {
+          const score = hybridScore ?? similarity ?? 0;
+          const level = score >= 80 ? 'Маш өндөр' : score >= 60 ? 'Боломжит' : score >= 40 ? 'Төстэй' : 'Бага';
+          return <span className="similarity" title="Зураг болон зарын мэдээллийг нэгтгэсэн оноо">{score}% · {level}</span>;
+        })()}
       </div>
       <div className="info">
         <h4>{name || type}</h4>

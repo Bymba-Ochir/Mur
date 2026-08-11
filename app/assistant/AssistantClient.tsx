@@ -31,6 +31,7 @@ export default function AssistantClient() {
   const [petType, setPetType] = useState<'Нохой' | 'Муур' | ''>('');
   const [petTypeOpen, setPetTypeOpen] = useState(false);
   const [petAge, setPetAge] = useState('');
+  const [petAgeUnit, setPetAgeUnit] = useState<'month' | 'year'>('year');
   const [feedback, setFeedback] = useState<Record<string, 'up' | 'down'>>({});
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -74,7 +75,8 @@ export default function AssistantClient() {
     setThinking(true);
 
     try {
-      const reply = await getAssistantReply(msg, lang, { type: petType, age: petAge.trim() });
+      const ageContext = petAge.trim() ? `${petAge.trim()} ${petAgeUnit === 'month' ? t('assistant_age_months') : t('assistant_age_years')}` : '';
+      const reply = await getAssistantReply(msg, lang, { type: petType, age: ageContext });
       msgIdRef.current += 1;
       const botMsg: Message = {
         id: `bot-${msgIdRef.current}`,
@@ -233,7 +235,10 @@ export default function AssistantClient() {
               placeholder={t('assistant_pet_age')}
               aria-label={t('assistant_pet_age')}
             />
-            <span>{t('assistant_age_unit')}</span>
+            <select value={petAgeUnit} onChange={(e) => setPetAgeUnit(e.target.value as 'month' | 'year')} aria-label={t('assistant_age_unit')}>
+              <option value="month">{t('assistant_age_months')}</option>
+              <option value="year">{t('assistant_age_years')}</option>
+            </select>
           </div>
         </div>
         <div className="composer-row">
@@ -399,7 +404,7 @@ export default function AssistantClient() {
         .age-field { display: flex; align-items: center; gap: 6px; }
         .age-field input { width: 100%; min-width: 0; border: 0; outline: 0; background: transparent; color: var(--ink); font: inherit; font-size: 12px; }
         .age-field input::-webkit-inner-spin-button { opacity: .5; }
-        .age-field span { flex: 0 0 auto; color: var(--muted); font-size: 11px; }
+        .age-field select { max-width: 72px; border: 0; outline: 0; background: transparent; color: var(--muted); font: inherit; font-size: 11px; }
         .composer-row input {
           flex: 1; padding: 10px 14px; border: 1.5px solid var(--line);
           border-radius: var(--r-pill); font-size: 14px; font-family: var(--font-body);

@@ -1,7 +1,7 @@
 // lib/petService.ts
 // Алдсан/олдсон амьтны мэдээллийг Supabase (Postgres + Storage)-д бичих, унших функцууд
 import { supabase } from './supabase';
-import { getImageEmbedding, getImageHash, cosineSimilarityScore, EMBEDDING_VERSION } from './similarity';
+import { averageEmbeddings, getImageEmbedding, getImageHash, cosineSimilarityScore, EMBEDDING_VERSION } from './similarity';
 import { mapPetRow } from './petMapping';
 import type { Pet, PetStatus, PetFilters, PetReportInput, UpdatePetFields } from './types';
 
@@ -12,7 +12,8 @@ const BUCKET = 'pet-photos';
  * Зураг Storage bucket-д хуулаад, public URL буцаана (зөвхөн дотор ашиглана)
  */
 async function uploadPetPhoto(file: File, statusFolder: PetStatus): Promise<string> {
-  const path = `${statusFolder}/${Date.now()}_${file.name}`;
+  const unique = typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  const path = `${statusFolder}/${unique}_${file.name}`;
   const { error } = await supabase.storage.from(BUCKET).upload(path, file);
   if (error) throw error;
   const { data } = supabase.storage.from(BUCKET).getPublicUrl(path);
@@ -26,16 +27,21 @@ async function uploadPetPhoto(file: File, statusFolder: PetStatus): Promise<stri
  */
 export async function createPetReport(data: PetReportInput, onProgress?: (message: string) => void): Promise<string> {
   let photoUrl: string | null = null;
+  let photoUrls: string[] = [];
   let embedding: number[] | null = null;
   let imageHash: string | null = null;
 
-  if (data.photoFile) {
-    photoUrl = await uploadPetPhoto(data.photoFile, data.status);
+  const photoFiles = (data.photoFiles?.length ? data.photoFiles : data.photoFile ? [data.photoFile] : []).slice(0, 4);
+  if (photoFiles.length) {
+    photoUrls = await Promise.all(photoFiles.map((file) => uploadPetPhoto(file, data.status)));
+    photoUrl = photoUrls[0];
     try {
-      [embedding, imageHash] = await Promise.all([
-        getImageEmbedding(data.photoFile, onProgress),
-        getImageHash(data.photoFile),
+      const [embeddings, hash] = await Promise.all([
+        Promise.all(photoFiles.map((file, index) => getImageEmbedding(file, (message) => onProgress?.(`Зураг ${index + 1}/${photoFiles.length}: ${message}`)))),
+        getImageHash(photoFiles[0]),
       ]);
+      embedding = averageEmbeddings(embeddings);
+      imageHash = hash;
     } catch (err) {
       // Embedding амжилтгүй бол ч мэдэгдлийг нийтлэхэд саад болгохгүй —
       // зөвхөн "төстэй байдал" функц тухайн бичлэгт ажиллахгүй болно
@@ -55,6 +61,7 @@ export async function createPetReport(data: PetReportInput, onProgress?: (messag
       has_reward: data.hasReward ?? false,
       reward: data.reward ?? null,
       photo_url: photoUrl,
+      photo_urls: photoUrls,
       color_signature: embedding, // browser fallback-д DINOv2 vector-ийг JSONB хэлбэрээр хадгална
       dino_embedding: embedding,
       embedding_version: embedding ? EMBEDDING_VERSION : null,
@@ -66,8 +73,8 @@ export async function createPetReport(data: PetReportInput, onProgress?: (messag
   let result = await supabase.from(TABLE).insert(payload).select().single();
 
   // Migration хараахан ажиллаагүй deployment дээр зар нийтлэхийг эвдэхгүй.
-  if (result.error && /image_embedding|dino_embedding|embedding_version|image_hash|schema cache/i.test(result.error.message)) {
-    const { dino_embedding: _dino, embedding_version: _version, image_hash: _hash, ...legacyPayload } = payload;
+  if (result.error && /image_embedding|dino_embedding|embedding_version|image_hash|photo_urls|schema cache/i.test(result.error.message)) {
+    const { dino_embedding: _dino, embedding_version: _version, image_hash: _hash, photo_urls: _photos, ...legacyPayload } = payload;
     result = await supabase.from(TABLE).insert(legacyPayload).select().single();
   }
 
@@ -229,4 +236,41 @@ export async function fetchPetMatches({
     similarity: Math.round(Number(row.image_similarity) * 100),
     hybridScore: Math.round(Number(row.hybrid_score)),
   }));
+}
+
+/** Admin: DINOv2 embedding-гүй хуучин зарыг бага багаар нөхнө. */
+export async function backfillMissingPetEmbeddings(
+  onProgress?: (done: number, total: number) => void,
+  batchSize = 20,
+): Promise<{ done: number; failed: number }> {
+  const { data, error } = await supabase.from(TABLE)
+    .select('id, photo_url')
+    .is('dino_embedding', null)
+    .not('photo_url', 'is', null)
+    .limit(batchSize);
+  if (error) throw error;
+  let done = 0;
+  let failed = 0;
+  for (const row of data ?? []) {
+    try {
+      const response = await fetch(row.photo_url);
+      if (!response.ok) throw new Error('Зураг татагдсангүй');
+      const blob = await response.blob();
+      const file = new File([blob], `backfill-${row.id}.jpg`, { type: blob.type || 'image/jpeg' });
+      const [embedding, imageHash] = await Promise.all([getImageEmbedding(file), getImageHash(file)]);
+      const update = await supabase.from(TABLE).update({
+        dino_embedding: embedding,
+        color_signature: embedding,
+        embedding_version: EMBEDDING_VERSION,
+        image_hash: imageHash,
+      }).eq('id', row.id);
+      if (update.error) throw update.error;
+      done += 1;
+    } catch (backfillError) {
+      console.warn('Backfill алдаа:', row.id, backfillError);
+      failed += 1;
+    }
+    onProgress?.(done + failed, data.length);
+  }
+  return { done, failed };
 }

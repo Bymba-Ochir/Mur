@@ -25,6 +25,7 @@ export interface Pet {
   /** Шагналын дүн (₮) — НУУЦ: нийтэд харуулахгүй, зөвхөн хадгалагдана */
   reward: number | null;
   photoURL: string | null;
+  photoURLs?: string[];
   embedding: number[] | null;
   lat: number | null;
   lng: number | null;
@@ -35,6 +36,7 @@ export interface Pet {
   similarity?: number;
   /** Зураг, төрөл, үүлдэр, өнгө, байршлыг нэгтгэсэн тохирлын оноо */
   hybridScore?: number;
+  matchReasons?: string[];
   embeddingVersion?: string | null;
 }
 
@@ -50,6 +52,7 @@ export interface PetReportInput {
   hasReward?: boolean;
   reward?: number | null;
   photoFile?: File | null;
+  photoFiles?: File[];
   lat?: number | null;
   lng?: number | null;
 }

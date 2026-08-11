@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { ChangeEvent } from 'react';
 import { fetchPets, fetchPetMatches, rankBySimilarity } from '../../lib/petService';
-import { getImageEmbedding, getImageHash } from '../../lib/similarity';
+import { getImageEmbedding, getImageHash, preloadImageModel } from '../../lib/similarity';
 import PetCard from '../../components/PetCard';
 import NotifySubscribe from '../../components/NotifySubscribe';
 import VolunteerBadge from '../../components/VolunteerBadge';
@@ -30,6 +30,7 @@ export default function ListingsPage() {
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(false);
   const [matchFile, setMatchFile] = useState<File | null>(null);
+  const [matchIntent, setMatchIntent] = useState<PetStatus>('lost');
   const [matching, setMatching] = useState<boolean | string>(false);
   const [matchError, setMatchError] = useState<string | null>(null);
   const [matchedCount, setMatchedCount] = useState<number | null>(null);
@@ -43,12 +44,17 @@ export default function ListingsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status, type, district, search]);
 
+  useEffect(() => {
+    const timer = window.setTimeout(() => { preloadImageModel().catch(() => undefined); }, 800);
+    return () => window.clearTimeout(timer);
+  }, []);
+
   async function load(pageToLoad = 0) {
     if (pageToLoad === 0) setLoading(true);
     else setLoadingMore(true);
     try {
       const { pets: data, hasMore: more } = await fetchPets({
-        status: status || undefined,
+        status: matchIntent,
         type: type || undefined,
         district: district || undefined,
         search: search || undefined,
@@ -160,6 +166,10 @@ export default function ListingsPage() {
       {district && <NotifySubscribe district={district} />}
 
       <div className="match-upload">
+        <select className="filter match-intent" value={matchIntent} onChange={(e) => setMatchIntent(e.target.value as PetStatus)} aria-label="Оруулж буй зургийн статус">
+          <option value="lost">Алдсан амьтны зураг</option>
+          <option value="found">Олсон амьтны зураг</option>
+        </select>
         <input
           type="file" id="match-file" accept="image/*"
           onChange={handleMatchUpload} disabled={!!matching} className="file-input"

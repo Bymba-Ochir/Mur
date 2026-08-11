@@ -49,6 +49,7 @@ export default function PetDetailClient({ id }: { id: string }) {
   const [editForm, setEditForm] = useState<PetEditValues | null>(null);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
 
   useEffect(() => {
     load();
@@ -135,9 +136,9 @@ export default function PetDetailClient({ id }: { id: string }) {
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             opacity: pet.resolved ? 0.6 : 1, position: 'relative',
           }}>
-            {pet.photoURL ? (
+            {(selectedPhoto || pet.photoURL) ? (
               <Image
-                src={pet.photoURL}
+                src={selectedPhoto || pet.photoURL!}
                 alt={`${pet.type}${pet.name ? ', ' + pet.name : ''}${pet.color ? ', ' + pet.color : ''}`}
                 fill
                 sizes="(max-width: 800px) 100vw, 520px"
@@ -159,6 +160,15 @@ export default function PetDetailClient({ id }: { id: string }) {
               }}><PetIcon type={pet.type} size={72} /></span>
             )}
           </div>
+          {(pet.photoURLs?.length ?? 0) > 1 && (
+            <div style={{ display: 'flex', gap: 8, marginTop: 10, overflowX: 'auto' }}>
+              {pet.photoURLs!.map((photo, index) => (
+                <button key={photo} type="button" onClick={() => setSelectedPhoto(photo)} aria-label={`Зураг ${index + 1} харах`} style={{ position: 'relative', width: 64, height: 52, flex: '0 0 auto', border: (selectedPhoto || pet.photoURL) === photo ? '2px solid var(--primary)' : '1px solid var(--line)', borderRadius: 'var(--r-sm)', overflow: 'hidden', padding: 0 }}>
+                  <Image src={photo} alt="" fill sizes="64px" style={{ objectFit: 'cover' }} />
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Мэдээлэл — баруун талд */}

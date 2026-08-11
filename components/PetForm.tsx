@@ -38,6 +38,7 @@ export default function PetForm({ status }: { status: PetStatus }) {
     status,
     form,
     photoFile: photo.photoFile,
+    photoFiles: photo.photoFiles,
     coords: location.coords,
     onSuccess: resetAll,
   });
@@ -104,6 +105,14 @@ export default function PetForm({ status }: { status: PetStatus }) {
               <span id="photo-hint">{t('photo_hint')}</span>
             )}
           </div>
+          {photo.previews.length > 1 && (
+            <div className="photo-strip" aria-label="Сонгосон зургууд">
+              {photo.previews.map((src, index) => (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img key={src} src={src} alt={`Сонгосон зураг ${index + 1}`} />
+              ))}
+            </div>
+          )}
           <div className="photo-quality" role="note">
             <p className="pq-title">{t('photo_requirements_title')}</p>
             <ul>
@@ -113,7 +122,7 @@ export default function PetForm({ status }: { status: PetStatus }) {
             <p className="pq-match">{t('photo_quality_match')}</p>
           </div>
           <input
-            id="photo-input" type="file" accept="image/*" onChange={photo.handlePhoto}
+            id="photo-input" type="file" accept="image/*" multiple onChange={photo.handlePhoto}
             style={{ display: 'none' }} disabled={photo.compressing}
             aria-label={t('photo_label')}
           />
@@ -248,6 +257,8 @@ export default function PetForm({ status }: { status: PetStatus }) {
     </div>
 
       <style jsx>{`
+        .photo-strip { display: grid; grid-template-columns: repeat(4, 56px); gap: 8px; margin-top: 10px; }
+        .photo-strip img { width: 56px; height: 56px; border-radius: var(--r-sm); object-fit: cover; border: 1px solid var(--line); }
         .form-layout { display: flex; gap: var(--sp-5); align-items: flex-start; }
         @media (max-width: 860px) {
           .form-layout { gap: 0; }

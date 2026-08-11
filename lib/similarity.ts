@@ -31,6 +31,25 @@ export function poolDinoEmbedding(data: ArrayLike<number>): number[] {
   return cls.map((value) => value / norm);
 }
 
+/** Олон өнцгийн embedding-үүдийг нэг normalized centroid болгон нэгтгэнэ. */
+export function averageEmbeddings(embeddings: number[][]): number[] {
+  if (!embeddings.length || embeddings.some((item) => item.length !== EMBEDDING_DIMENSIONS)) {
+    throw new Error('Нэгтгэх embedding-ийн хэмжээ буруу');
+  }
+  const average = new Array<number>(EMBEDDING_DIMENSIONS).fill(0);
+  for (const embedding of embeddings) {
+    for (let index = 0; index < EMBEDDING_DIMENSIONS; index += 1) average[index] += embedding[index];
+  }
+  const norm = Math.sqrt(average.reduce((sum, value) => sum + value * value, 0));
+  if (!norm) throw new Error('Embedding нэгтгэх боломжгүй');
+  return average.map((value) => value / norm);
+}
+
+/** Listings хуудас нээгдэхэд model-ийг background-аар cache-д бэлтгэнэ. */
+export async function preloadImageModel(): Promise<void> {
+  await getEmbedder();
+}
+
 let embedderPromise: Promise<any> | null = null;
 
 async function getEmbedder(onProgress?: (message: string) => void): Promise<any> {
