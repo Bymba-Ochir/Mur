@@ -3,6 +3,16 @@
 
 export type Severity = 'info' | 'caution' | 'emergency';
 
+export interface AssistantSource {
+  label: string;
+  url: string;
+}
+
+export interface PetAssistantContext {
+  type?: 'Нохой' | 'Муур' | '';
+  age?: string;
+}
+
 export interface KnowledgeEntry {
   id: string;
   category: string;
@@ -26,4 +36,6 @@ export interface AssistantReply {
   entryId?: string;
   matched: boolean;
   followUps?: string[];
+  sources?: AssistantSource[];
+  confidence?: 'high' | 'medium' | 'low';
 }

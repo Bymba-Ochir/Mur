@@ -39,6 +39,7 @@ export default function PetCard({ pet }: { pet: Pet }) {
       phone={pet.phone}
       createdAt={pet.createdAt || undefined}
       similarity={pet.similarity}
+      hybridScore={pet.hybridScore}
       hasReward={pet.hasReward}
       rewardLabel={t('reward_prefix')}
       revealed={revealed}

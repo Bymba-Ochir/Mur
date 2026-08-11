@@ -1,7 +1,7 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { ChangeEvent } from 'react';
-import { fetchPets, rankBySimilarity } from '../../lib/petService';
+import { fetchPets, fetchPetMatches, rankBySimilarity } from '../../lib/petService';
 import { getImageEmbedding } from '../../lib/similarity';
 import PetCard from '../../components/PetCard';
 import NotifySubscribe from '../../components/NotifySubscribe';
@@ -33,6 +33,8 @@ export default function ListingsPage() {
   const [matching, setMatching] = useState<boolean | string>(false);
   const [matchError, setMatchError] = useState<string | null>(null);
   const [matchedCount, setMatchedCount] = useState<number | null>(null);
+  const [matchSource, setMatchSource] = useState<'database' | 'browser' | null>(null);
+  const matchAbortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     // Шүүлтүүр өөрчлөгдөхөд эхний хуудаснаас дахин ачаална
@@ -74,18 +76,45 @@ export default function ListingsPage() {
     setMatching(true);
     setMatchError(null);
     setMatchedCount(null);
+    setMatchSource(null);
+    matchAbortRef.current?.abort();
+    const controller = new AbortController();
+    matchAbortRef.current = controller;
     try {
-      const embedding = await getImageEmbedding(file, (msg) => setMatching(msg));
-      setPets((prev) => {
-        const ranked = rankBySimilarity(embedding, prev);
-        setMatchedCount(ranked.length);
-        return ranked;
+      const embedding = await getImageEmbedding(file, (msg) => setMatching(msg), controller.signal);
+      setMatching('Бүх зар дундаас тохирол хайж байна...');
+      const databaseMatches = await fetchPetMatches({
+        embedding,
+        status: status || undefined,
+        type: type || undefined,
+        district: district || undefined,
       });
+      if (controller.signal.aborted) return;
+      if (databaseMatches) {
+        setPets(databaseMatches);
+        setMatchedCount(databaseMatches.length);
+        setMatchSource('database');
+        setHasMore(false);
+      } else {
+        setPets((prev) => {
+          const ranked = rankBySimilarity(embedding, prev);
+          setMatchedCount(ranked.length);
+          return ranked;
+        });
+        setMatchSource('browser');
+      }
     } catch (err) {
+      if (err instanceof DOMException && err.name === 'AbortError') return;
       setMatchError(getErrorMessage(err) || 'Төстэй байдал тооцоход алдаа гарлаа. Дахин оролдоно уу.');
     } finally {
-      setMatching(false);
+      if (!controller.signal.aborted) setMatching(false);
     }
+  }
+
+  function cancelMatching() {
+    matchAbortRef.current?.abort();
+    setMatching(false);
+    setMatchError(null);
   }
 
   return (
@@ -134,6 +163,7 @@ export default function ListingsPage() {
         />
         <Button as="label" htmlFor="match-file" variant="ghost">{t('match_label')}</Button>
         {matching && <span className="match-status"> — {typeof matching === 'string' ? matching : 'AI шинжилж байна (эхний удаа 10-30 сек)...'}</span>}
+        {matching && <Button variant="ghost" onClick={cancelMatching}>{t('match_cancel')}</Button>}
         {matchFile && !matching && !matchError && matchedCount === 0 && (
           <span className="match-status err">
             — Харьцуулах боломжтой бичлэг олдсонгүй (хуучин бичлэгүүд өөр
@@ -141,7 +171,7 @@ export default function ListingsPage() {
           </span>
         )}
         {matchFile && !matching && !matchError && matchedCount != null && matchedCount > 0 && (
-          <span className="match-status"> — {matchedCount} бичлэгтэй харьцуулж эрэмбэлэгдлээ</span>
+          <span className="match-status"> — {matchedCount} {t('match_results')} · {matchSource === 'database' ? t('match_all_database') : t('match_browser_fallback')}</span>
         )}
         {matchError && <span className="match-status err"> — {matchError}</span>}
       </div>

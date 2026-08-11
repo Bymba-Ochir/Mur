@@ -8,12 +8,15 @@ const SYSTEM_PROMPT = `Та МӨР аппын гэрийн амьтны эрүү
 - Та малын эмч биш — онош тавихгүй, зөвхөн ерөнхий зөвлөгөө өгнө
 - Хүнд шинж тэмдэг, яаралтай үед малын эмчид хандахыг зөвлө
 - Хортой хоол, халдвар, шинж тэмдэгийн талаар мэдээлэл өгнө
+- Өгөгдсөн МЭДЛЭГИЙН ХЭСЭГ-т тулгуурла. Хангалтгүй бол тодорхойгүй гэдгээ хэл
+- Эмийн нэр, тун, оношийг зохиож болохгүй
+- Яаралтай шинж тэмдэг байвал хамгийн түрүүнд эмнэлэгт хандахыг зөвлө
 - Хариултын төгсгөлд '⚠️ Энэ зөвлөгөө нь малын эмчийг орлохгүй.' гэж нэмнэ
 - Товч, ойлгомжтой хариулна уу (500 тэмдэгтээс бага)`;
 
 export async function POST(request: Request) {
   try {
-    const { message, lang } = await request.json();
+    const { message, lang, context, petContext } = await request.json();
 
     // Валидаци
     if (!message || typeof message !== 'string' || message.trim().length === 0) {
@@ -40,10 +43,10 @@ export async function POST(request: Request) {
         model: 'llama-3.3-70b-versatile',
         messages: [
           { role: 'system', content: SYSTEM_PROMPT },
-          { role: 'user', content: message },
+          { role: 'user', content: `Амьтны мэдээлэл: ${JSON.stringify(petContext || {})}\nМЭДЛЭГИЙН ХЭСЭГ:\n${Array.isArray(context) ? context.slice(0, 3).join('\n---\n') : 'Олдсонгүй'}\n\nАСУУЛТ: ${message}` },
         ],
         max_tokens: 500,
-        temperature: 0.7,
+        temperature: 0.2,
       }),
     });
 

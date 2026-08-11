@@ -24,13 +24,20 @@ async function getClassifier(onProgress?: (message: string) => void): Promise<an
     classifierPromise = (async () => {
       const { pipeline, env } = await import(/* webpackIgnore: true */ CDN_URL);
       env.allowLocalModels = false;
+      const progress_callback = (p: { status: string; progress?: number }) => {
+        if (p.status === 'progress' && onProgress) onProgress(`Зургийг шалгаж байна... ${Math.round(p.progress || 0)}%`);
+      };
+      if (typeof navigator !== 'undefined' && 'gpu' in navigator) {
+        try {
+          return await pipeline('zero-shot-image-classification', 'Xenova/clip-vit-base-patch16', {
+            dtype: 'q8', device: 'webgpu', progress_callback,
+          });
+        } catch (error) {
+          console.warn('Зураг шалгах WebGPU fallback:', error);
+        }
+      }
       return pipeline('zero-shot-image-classification', 'Xenova/clip-vit-base-patch16', {
-        dtype: 'q8',
-        progress_callback: (p: { status: string; progress?: number }) => {
-          if (p.status === 'progress' && onProgress) {
-            onProgress(`Зургийг шалгаж байна... ${Math.round(p.progress || 0)}%`);
-          }
-        },
+        dtype: 'q8', device: 'wasm', progress_callback,
       });
     })();
   }

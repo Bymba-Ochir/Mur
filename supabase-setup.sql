@@ -26,6 +26,10 @@ create table if not exists pets (
 alter table pets add column if not exists lat double precision;
 alter table pets add column if not exists lng double precision;
 alter table pets add column if not exists breed text default '';
+-- AI matching v2 баганууд; бүрэн RPC/index-ийг supabase-ai-upgrade.sql үүсгэнэ.
+create extension if not exists vector with schema extensions;
+alter table pets add column if not exists image_embedding extensions.vector(512);
+alter table pets add column if not exists embedding_version text;
 
 -- "Шагналтай" тэмдэг (нийтэд харагдана) + шагналын дүн (₮, НУУЦ — нийтэд харуулахгүй)
 alter table pets add column if not exists has_reward boolean not null default false;

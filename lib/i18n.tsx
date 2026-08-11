@@ -56,6 +56,7 @@ search_placeholder: 'Нэр, өнгө, байршлаар хайх...',
 filter_all: 'Бүгд', filter_lost: 'Алдсан', filter_found: 'Олдсон', filter_all_districts: 'Бүх дүүрэг', filter_all_types: 'Бүх төрөл',
 listings_title: 'Алдсан ба олдсон амьтад', listings_eyebrow: 'Жагсаалт',
 match_label: 'Өөрийн зурагтай төстэйгээр эрэмбэлэх (туршилт):',
+match_cancel: 'Цуцлах', match_results: 'тохирол', match_all_database: 'бүх зараас хайв', match_browser_fallback: 'одоогийн жагсаалтаас хайв',
 empty_no_results_title: 'Хайлтад тохирох бичлэг олдсонгүй', empty_no_results_desc: 'Шүүлтүүрээ өөрчилж эсвэл цэвэрлээд дахин үзнэ үү.',
 results_count: 'бичлэг олдлоо',
 empty_no_posts_title: 'Одоогоор бичлэг алга', empty_no_posts_desc: 'Хамгийн эхний мэдэгдлийг та нийтэлж болно.',
@@ -284,6 +285,8 @@ assistant_fallback: 'Уучлаарай, би энэ асуултанд бүрэ
 assistant_back: 'Буцах',
 assistant_emergency_badge: 'Яаралтай — малын эмчид яаралтай хандана уу',
 assistant_home_cta: 'AI Зөвлөх',
+assistant_sources: 'Лавлах эх сурвалж', assistant_feedback: 'Хариултын үнэлгээ', assistant_helpful: 'Тустай', assistant_not_helpful: 'Тус болсонгүй',
+assistant_confidence_high: 'Итгэл: өндөр', assistant_confidence_medium: 'Итгэл: дунд', assistant_confidence_low: 'Итгэл: бага', assistant_pet_type: 'Амьтны төрөл', assistant_pet_age: 'Нас (заавал биш)',
 
 // ─── Pet Sitting (Асрах үйлчилгээ) ───────────────────────────────────────
 nav_sitting: 'Асрах',
@@ -377,6 +380,7 @@ search_placeholder: 'Search by name, color, location...',
 filter_all: 'All', filter_lost: 'Lost', filter_found: 'Found', filter_all_districts: 'All districts', filter_all_types: 'All types',
 listings_title: 'Lost and found pets', listings_eyebrow: 'Listings',
 match_label: 'Rank by similarity to your photo (beta):',
+match_cancel: 'Cancel', match_results: 'matches', match_all_database: 'searched all listings', match_browser_fallback: 'searched current list',
 empty_no_results_title: 'No matching results', empty_no_results_desc: 'Try changing or clearing your filters.',
 results_count: 'results found',
 empty_no_posts_title: 'No posts yet', empty_no_posts_desc: 'You could be the first to post.',
@@ -605,6 +609,8 @@ assistant_fallback: 'Sorry, I can\'t fully answer this question. Try asking abou
 assistant_back: 'Back',
 assistant_emergency_badge: 'Emergency — consult a vet immediately',
 assistant_home_cta: 'AI Assistant',
+assistant_sources: 'Reference sources', assistant_feedback: 'Rate this answer', assistant_helpful: 'Helpful', assistant_not_helpful: 'Not helpful',
+assistant_confidence_high: 'Confidence: high', assistant_confidence_medium: 'Confidence: medium', assistant_confidence_low: 'Confidence: low', assistant_pet_type: 'Pet type', assistant_pet_age: 'Age (optional)',
 
 // ─── Pet Sitting ───────────────────────────────────────────────────────────
 nav_sitting: 'Sitting',

@@ -13,6 +13,8 @@
 'use client';
 
 const CDN_URL: string = 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.0.2';
+export const EMBEDDING_MODEL = 'Xenova/clip-vit-base-patch16';
+export const EMBEDDING_VERSION = 'clip-vit-base-patch16-q8-v1';
 
 let embedderPromise: Promise<any> | null = null;
 
@@ -23,25 +25,40 @@ async function getEmbedder(onProgress?: (message: string) => void): Promise<any>
       // харин browser дээр шууд CDN-ээс ESM болгон татахыг зааж байна
       const { pipeline, env } = await import(/* webpackIgnore: true */ CDN_URL);
       env.allowLocalModels = false;
-      return pipeline('image-feature-extraction', 'Xenova/clip-vit-base-patch16', {
-        dtype: 'q8',
-        progress_callback: (p: { status: string; progress?: number }) => {
-          if (p.status === 'progress' && onProgress) {
-            onProgress(`Загвар татаж байна... ${Math.round(p.progress || 0)}%`);
-          }
-        },
+      const progress_callback = (p: { status: string; progress?: number }) => {
+        if (p.status === 'progress' && onProgress) {
+          onProgress(`Загвар татаж байна... ${Math.round(p.progress || 0)}%`);
+        }
+      };
+      const hasWebGPU = typeof navigator !== 'undefined' && 'gpu' in navigator;
+      if (hasWebGPU) {
+        try {
+          onProgress?.('GPU хурдасгуур бэлтгэж байна...');
+          return await pipeline('image-feature-extraction', EMBEDDING_MODEL, {
+            dtype: 'q8', device: 'webgpu', progress_callback,
+          });
+        } catch (error) {
+          console.warn('WebGPU ажилласангүй, WASM fallback ашиглана:', error);
+        }
+      }
+      onProgress?.('Тохирох AI хөдөлгүүр бэлтгэж байна...');
+      return pipeline('image-feature-extraction', EMBEDDING_MODEL, {
+        dtype: 'q8', device: 'wasm', progress_callback,
       });
     })();
   }
   return embedderPromise;
 }
 
-export async function getImageEmbedding(file: File, onProgress?: (message: string) => void): Promise<number[]> {
+export async function getImageEmbedding(file: File, onProgress?: (message: string) => void, signal?: AbortSignal): Promise<number[]> {
+  if (signal?.aborted) throw new DOMException('AI хайлт цуцлагдлаа', 'AbortError');
   const embedder = await getEmbedder(onProgress);
+  if (signal?.aborted) throw new DOMException('AI хайлт цуцлагдлаа', 'AbortError');
   onProgress?.('Зургийг шинжилж байна...');
   const url = URL.createObjectURL(file);
   try {
     const output = await embedder(url, { pooling: 'mean', normalize: true });
+    if (signal?.aborted) throw new DOMException('AI хайлт цуцлагдлаа', 'AbortError');
     return Array.from(output.data);
   } finally {
     URL.revokeObjectURL(url);
@@ -61,4 +78,23 @@ export function cosineSimilarityScore(a: number[] | null | undefined, b: number[
   }
   const cos = dot / (Math.sqrt(na) * Math.sqrt(nb) || 1);
   return Math.max(0, Math.min(100, Math.round(cos * 100)));
+}
+
+/** SQL hybrid scoring-той ижил жинг client test/preview-д ашиглана. */
+export function calculateHybridScore({
+  imageSimilarity, sameType = false, sameBreed = false, sameColor = false,
+  sameDistrict = false, nearby = false, ageDays = 0,
+}: {
+  imageSimilarity: number;
+  sameType?: boolean;
+  sameBreed?: boolean;
+  sameColor?: boolean;
+  sameDistrict?: boolean;
+  nearby?: boolean;
+  ageDays?: number;
+}): number {
+  const image = Math.max(0, Math.min(1, imageSimilarity)) * 55;
+  const recency = Math.max(0, 5 - Math.max(0, ageDays) / 30);
+  return Math.round((image + (sameType ? 15 : 0) + (sameBreed ? 10 : 0) +
+    (sameColor ? 10 : 0) + (sameDistrict ? 3 : 0) + (nearby ? 2 : 0) + recency) * 100) / 100;
 }

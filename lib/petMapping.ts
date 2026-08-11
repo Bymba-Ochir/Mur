@@ -24,6 +24,7 @@ interface PetRow {
   resolved: boolean | null;
   created_by: string | null;
   created_at: string;
+  embedding_version?: string | null;
 }
 
 export function mapPetRow(row: PetRow): Pet {
@@ -46,6 +47,7 @@ export function mapPetRow(row: PetRow): Pet {
     resolved: row.resolved ?? false,
     createdBy: row.created_by,
     createdAt: row.created_at,
+    embeddingVersion: row.embedding_version ?? null,
   };
 }
 

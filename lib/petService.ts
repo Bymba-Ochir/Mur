@@ -1,7 +1,7 @@
 // lib/petService.ts
 // Алдсан/олдсон амьтны мэдээллийг Supabase (Postgres + Storage)-д бичих, унших функцууд
 import { supabase } from './supabase';
-import { getImageEmbedding, cosineSimilarityScore } from './similarity';
+import { getImageEmbedding, cosineSimilarityScore, EMBEDDING_VERSION } from './similarity';
 import { mapPetRow } from './petMapping';
 import type { Pet, PetStatus, PetFilters, PetReportInput, UpdatePetFields } from './types';
 
@@ -39,9 +39,7 @@ export async function createPetReport(data: PetReportInput, onProgress?: (messag
     }
   }
 
-  const { data: inserted, error } = await supabase
-    .from(TABLE)
-    .insert({
+  const payload = {
       status: data.status, // 'lost' | 'found'
       name: data.name || '',
       type: data.type, // 'Нохой' | 'Муур' | 'Бусад'
@@ -54,11 +52,21 @@ export async function createPetReport(data: PetReportInput, onProgress?: (messag
       reward: data.reward ?? null,
       photo_url: photoUrl,
       color_signature: embedding, // багана нэрээ хуучнаар үлдээсэн, одоо CLIP vector хадгална
+      image_embedding: embedding,
+      embedding_version: embedding ? EMBEDDING_VERSION : null,
       lat: data.lat ?? null,
       lng: data.lng ?? null,
-    })
-    .select()
-    .single();
+  };
+
+  let result = await supabase.from(TABLE).insert(payload).select().single();
+
+  // Migration хараахан ажиллаагүй deployment дээр зар нийтлэхийг эвдэхгүй.
+  if (result.error && /image_embedding|embedding_version|schema cache/i.test(result.error.message)) {
+    const { image_embedding: _vector, embedding_version: _version, ...legacyPayload } = payload;
+    result = await supabase.from(TABLE).insert(legacyPayload).select().single();
+  }
+
+  const { data: inserted, error } = result;
 
   if (error) {
     if (error.message && error.message.includes('RATE_LIMIT:')) {
@@ -172,4 +180,46 @@ export function rankBySimilarity(targetEmbedding: number[] | null, pets: Pet[]):
       similarity: cosineSimilarityScore(targetEmbedding, p.embedding),
     }))
     .sort((a, b) => b.similarity - a.similarity);
+}
+
+/**
+ * pgvector RPC ашиглан бүх идэвхтэй зараас hybrid тохирол хайна.
+ * Migration ажиллаагүй бол null буцааж UI хуучин browser fallback ашиглана.
+ */
+export async function fetchPetMatches({
+  embedding, status, type, breed, color, district, lat, lng, limit = 20,
+}: {
+  embedding: number[];
+  status?: PetStatus;
+  type?: Pet['type'];
+  breed?: string;
+  color?: string;
+  district?: Pet['district'];
+  lat?: number;
+  lng?: number;
+  limit?: number;
+}): Promise<Pet[] | null> {
+  const { data, error } = await supabase.rpc('match_pets_hybrid', {
+    query_embedding: embedding,
+    query_status: status ?? null,
+    query_type: type ?? null,
+    query_breed: breed || null,
+    query_color: color || null,
+    query_district: district ?? null,
+    query_lat: lat ?? null,
+    query_lng: lng ?? null,
+    match_count: limit,
+    min_image_similarity: 0.15,
+  });
+
+  if (error) {
+    if (/function .*match_pets_hybrid|schema cache|image_embedding/i.test(error.message)) return null;
+    throw error;
+  }
+
+  return (data ?? []).map((row: { pet: Record<string, unknown>; image_similarity: number; hybrid_score: number }) => ({
+    ...mapPetRow(row.pet as never),
+    similarity: Math.round(Number(row.image_similarity) * 100),
+    hybridScore: Math.round(Number(row.hybrid_score)),
+  }));
 }

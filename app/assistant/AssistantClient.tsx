@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useLanguage } from '../../lib/i18n';
 import { getAssistantReply, SUGGESTED_QUESTIONS } from '../../lib/assistant/engine';
 import { relativeTime } from '../../lib/relativeTime';
+import type { AssistantSource } from '../../lib/assistant/types';
 
 interface Message {
   id: string;
@@ -11,10 +12,12 @@ interface Message {
   text: string;
   severity?: 'info' | 'caution' | 'emergency';
   timestamp: Date;
+  sources?: AssistantSource[];
+  confidence?: 'high' | 'medium' | 'low';
 }
 
 export default function AssistantClient() {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const greetingText = t('assistant_greeting');
   const [messages, setMessages] = useState<Message[]>(() => [{
     id: 'greeting',
@@ -25,6 +28,9 @@ export default function AssistantClient() {
   }]);
   const [input, setInput] = useState('');
   const [thinking, setThinking] = useState(false);
+  const [petType, setPetType] = useState<'Нохой' | 'Муур' | ''>('');
+  const [petAge, setPetAge] = useState('');
+  const [feedback, setFeedback] = useState<Record<string, 'up' | 'down'>>({});
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const msgIdRef = useRef(0);
@@ -51,7 +57,7 @@ export default function AssistantClient() {
     setThinking(true);
 
     try {
-      const reply = await getAssistantReply(msg);
+      const reply = await getAssistantReply(msg, lang, { type: petType, age: petAge.trim() });
       msgIdRef.current += 1;
       const botMsg: Message = {
         id: `bot-${msgIdRef.current}`,
@@ -59,6 +65,8 @@ export default function AssistantClient() {
         text: reply.text,
         severity: reply.severity,
         timestamp: new Date(),
+        sources: reply.sources,
+        confidence: reply.confidence,
       };
       setMessages((prev) => [...prev, botMsg]);
     } catch {
@@ -115,6 +123,19 @@ export default function AssistantClient() {
             )}
             <div className={`bubble-content ${msg.severity === 'emergency' ? 'emergency' : msg.severity === 'caution' ? 'caution' : ''}`}>
               <p className="bubble-text">{msg.text}</p>
+              {msg.role === 'assistant' && msg.sources && msg.sources.length > 0 && (
+                <div className="sources">
+                  <span>{t('assistant_sources')}</span>
+                  {msg.sources.map((source) => <a key={source.url} href={source.url} target="_blank" rel="noreferrer">{source.label}</a>)}
+                </div>
+              )}
+              {msg.role === 'assistant' && msg.id !== 'greeting' && (
+                <div className="feedback" aria-label={t('assistant_feedback')}>
+                  <button className={feedback[msg.id] === 'up' ? 'active' : ''} onClick={() => setFeedback((prev) => ({ ...prev, [msg.id]: 'up' }))} aria-label={t('assistant_helpful')}>👍</button>
+                  <button className={feedback[msg.id] === 'down' ? 'active' : ''} onClick={() => setFeedback((prev) => ({ ...prev, [msg.id]: 'down' }))} aria-label={t('assistant_not_helpful')}>👎</button>
+                  {msg.confidence && <span>{t(`assistant_confidence_${msg.confidence}`)}</span>}
+                </div>
+              )}
               <span className="bubble-time">{relativeTime(msg.timestamp.toISOString())}</span>
             </div>
           </div>
@@ -150,6 +171,14 @@ export default function AssistantClient() {
       {/* Бичих хэсэг */}
       <div className="composer">
         <p className="disclaimer">{t('assistant_disclaimer')}</p>
+        <div className="pet-context">
+          <select value={petType} onChange={(e) => setPetType(e.target.value as 'Нохой' | 'Муур' | '')} aria-label={t('assistant_pet_type')}>
+            <option value="">{t('assistant_pet_type')}</option>
+            <option value="Нохой">{t('type_dog')}</option>
+            <option value="Муур">{t('type_cat')}</option>
+          </select>
+          <input value={petAge} onChange={(e) => setPetAge(e.target.value)} placeholder={t('assistant_pet_age')} aria-label={t('assistant_pet_age')} />
+        </div>
         <div className="composer-row">
           <input
             ref={inputRef}
@@ -249,6 +278,11 @@ export default function AssistantClient() {
           border-left: 3px solid var(--accent);
         }
         .bubble-text { margin: 0; white-space: pre-wrap; word-break: break-word; }
+        .sources { display: flex; flex-direction: column; gap: 3px; margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--line); font-size: 10.5px; color: var(--muted); }
+        .sources a { color: var(--primary); text-decoration: underline; text-underline-offset: 2px; }
+        .feedback { display: flex; align-items: center; gap: 5px; margin-top: 7px; color: var(--muted); font-size: 10px; }
+        .feedback button { border: 0; background: transparent; padding: 3px; opacity: .55; cursor: pointer; }
+        .feedback button.active { opacity: 1; transform: scale(1.1); }
         .bubble-time {
           display: block; font-size: 10px; margin-top: 4px; opacity: 0.7; text-align: right;
         }
@@ -283,6 +317,8 @@ export default function AssistantClient() {
         .composer-row {
           display: flex; gap: var(--sp-2);
         }
+        .pet-context { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 7px; }
+        .pet-context select, .pet-context input { min-width: 0; min-height: 34px; padding: 5px 9px; border: 1px solid var(--line); border-radius: var(--r-sm); background: var(--bg); color: var(--ink); font: inherit; font-size: 12px; }
         .composer-row input {
           flex: 1; padding: 10px 14px; border: 1.5px solid var(--line);
           border-radius: var(--r-pill); font-size: 14px; font-family: var(--font-body);

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { cosineSimilarityScore } from '../../lib/similarity';
+import { calculateHybridScore, cosineSimilarityScore } from '../../lib/similarity';
 
 describe('cosineSimilarityScore', () => {
   it('яг ижил vector-ийн хувьд ~100% буцаана', () => {
@@ -24,5 +24,19 @@ describe('cosineSimilarityScore', () => {
     const score = cosineSimilarityScore([0.9, 0.1, 0.4], [0.3, 0.8, 0.2]);
     expect(score).toBeGreaterThanOrEqual(0);
     expect(score).toBeLessThanOrEqual(100);
+  });
+});
+
+describe('calculateHybridScore', () => {
+  it('бүх дохио таарвал 100 оноо өгнө', () => {
+    expect(calculateHybridScore({ imageSimilarity: 1, sameType: true, sameBreed: true, sameColor: true, sameDistrict: true, nearby: true, ageDays: 0 })).toBe(100);
+  });
+
+  it('зураг, төрөл, байршлын дохиог жингээр нэгтгэнэ', () => {
+    expect(calculateHybridScore({ imageSimilarity: 0.8, sameType: true, sameDistrict: true, ageDays: 30 })).toBe(66);
+  });
+
+  it('оноог 0-100 хүрээнд хадгална', () => {
+    expect(calculateHybridScore({ imageSimilarity: 2, sameType: true, sameBreed: true, sameColor: true, sameDistrict: true, nearby: true })).toBe(100);
   });
 });

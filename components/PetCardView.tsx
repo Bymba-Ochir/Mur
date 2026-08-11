@@ -25,6 +25,7 @@ export interface PetCardViewProps extends HTMLAttributes<HTMLDivElement> {
   imageNode?: ReactNode;
   createdAt?: string;
   similarity?: number | null;
+  hybridScore?: number | null;
   /** "Шагналтай" гэж харуулах (дүнг нууц — зөвхөн тэмдэг харагдана) */
   hasReward?: boolean;
   rewardLabel?: string;
@@ -37,7 +38,7 @@ export interface PetCardViewProps extends HTMLAttributes<HTMLDivElement> {
 
 export default function PetCardView({
   status, badgeLabel, name, type, breed, color, district, place, phone,
-  imageNode, createdAt, similarity, hasReward, rewardLabel = 'Шагналтай',
+  imageNode, createdAt, similarity, hybridScore, hasReward, rewardLabel = 'Шагналтай',
   revealed = true, onRevealPhone, interactive = true,
   ...containerProps
 }: PetCardViewProps) {
@@ -51,7 +52,7 @@ export default function PetCardView({
         {imageNode ?? (
           <span className="emoji" aria-hidden="true"><PetIcon type={type} size={56} /></span>
         )}
-        {similarity != null && <span className="similarity">{similarity}% төстэй</span>}
+        {(hybridScore ?? similarity) != null && <span className="similarity">{hybridScore ?? similarity}% тохирол</span>}
       </div>
       <div className="info">
         <h4>{name || type}</h4>

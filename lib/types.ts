@@ -33,6 +33,9 @@ export interface Pet {
   createdAt: string;
   /** rankBySimilarity нэмдэг; DB-ийн шинэ мөрөнд байхгүй */
   similarity?: number;
+  /** Зураг, төрөл, үүлдэр, өнгө, байршлыг нэгтгэсэн тохирлын оноо */
+  hybridScore?: number;
+  embeddingVersion?: string | null;
 }
 
 export interface PetReportInput {
