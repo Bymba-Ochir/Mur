@@ -17,6 +17,20 @@ export const EMBEDDING_MODEL = 'Xenova/dinov2-small';
 export const EMBEDDING_VERSION = 'dinov2-small-q8-v1';
 export const EMBEDDING_DIMENSIONS = 384;
 
+/**
+ * DINOv2 output нь [batch, 257 token, 384 feature] хэлбэртэй байдаг.
+ * Эхний token нь зургийн global CLS representation тул түүнийг авч L2 normalize хийнэ.
+ */
+export function poolDinoEmbedding(data: ArrayLike<number>): number[] {
+  if (data.length < EMBEDDING_DIMENSIONS || data.length % EMBEDDING_DIMENSIONS !== 0) {
+    throw new Error(`DINOv2 embedding хэмжээ буруу: ${data.length}`);
+  }
+  const cls = Array.from(data).slice(0, EMBEDDING_DIMENSIONS);
+  const norm = Math.sqrt(cls.reduce((sum, value) => sum + value * value, 0));
+  if (!Number.isFinite(norm) || norm === 0) throw new Error('DINOv2 embedding normalize хийх боломжгүй');
+  return cls.map((value) => value / norm);
+}
+
 let embedderPromise: Promise<any> | null = null;
 
 async function getEmbedder(onProgress?: (message: string) => void): Promise<any> {
@@ -58,13 +72,9 @@ export async function getImageEmbedding(file: File, onProgress?: (message: strin
   onProgress?.('Зургийг шинжилж байна...');
   const url = URL.createObjectURL(file);
   try {
-    const output = await embedder(url, { pooling: 'mean', normalize: true });
+    const output = await embedder(url);
     if (signal?.aborted) throw new DOMException('AI хайлт цуцлагдлаа', 'AbortError');
-    const embedding = Array.from(output.data) as number[];
-    if (embedding.length !== EMBEDDING_DIMENSIONS) {
-      throw new Error(`DINOv2 embedding хэмжээ буруу: ${embedding.length}`);
-    }
-    return embedding;
+    return poolDinoEmbedding(output.data);
   } finally {
     URL.revokeObjectURL(url);
   }
