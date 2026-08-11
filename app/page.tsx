@@ -271,14 +271,10 @@ export default function Home() {
         }
 
         /* Харагдац карт */
-        .hero-visual {
-          position: relative; display: flex; align-items: center; justify-content: center;
-          width: 100%; min-width: 0; min-height: 320px;
-          padding-inline: 12px; box-sizing: border-box;
-        }
+        .hero-visual { position: relative; display: flex; align-items: center; justify-content: center; min-height: 320px; }
         @media (max-width: 900px) { .hero-visual { min-height: 0; padding: var(--sp-4) 0 var(--sp-5); } }
         .hero-card {
-          position: relative; width: min(280px, calc(100% - 24px));
+          position: relative; width: 280px;
           background: var(--surface-2); border: 1px solid var(--border-subtle);
           border-radius: var(--r-lg); box-shadow: var(--shadow-lift); overflow: hidden;
           animation: float 6s ease-in-out infinite;
@@ -306,9 +302,9 @@ export default function Home() {
         .hero-card-loc { display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--text-secondary); }
         .hero-card-loc svg { color: var(--alert-light); }
         .hero-card-mini {
-          position: absolute; bottom: 8px; left: 50%; right: auto; translate: -50% 0;
+          position: absolute; bottom: 8px; right: clamp(12px, 4vw, 48px);
           display: flex; align-items: center; gap: 8px;
-          width: max-content; max-width: min(240px, calc(100% - 24px)); box-sizing: border-box;
+          width: max-content; max-width: calc(100% - 24px); box-sizing: border-box;
           background: var(--surface-3); border: 1px solid var(--border-strong);
           border-radius: var(--r-md); padding: var(--sp-3);
           box-shadow: var(--shadow-md);
@@ -316,7 +312,7 @@ export default function Home() {
         }
         .hero-card-mini .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--confirmed); flex-shrink: 0; box-shadow: 0 0 0 4px color-mix(in srgb, var(--confirmed) 18%, transparent); }
         .hero-card-mini p { min-width: 0; font-size: 11.5px; line-height: 1.35; color: var(--text-secondary); font-weight: 600; white-space: normal; overflow-wrap: anywhere; }
-        @media (max-width: 900px) { .hero-card-mini { bottom: 12px; } }
+        @media (max-width: 900px) { .hero-card-mini { right: max(12px, 8%); } }
 
         /* Entrance animation */
         .hero-content > * { opacity: 0; animation: rise-in 0.6s cubic-bezier(0.16,1,0.3,1) forwards; }
