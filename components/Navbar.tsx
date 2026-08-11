@@ -36,6 +36,7 @@ export default function Navbar() {
   const [admin, setAdmin] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
+  const mobileMenuButtonRef = useRef<HTMLButtonElement>(null);
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -64,7 +65,11 @@ export default function Navbar() {
       if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
         setShowUserMenu(false);
       }
-      if (mobileMenuRef.current && !mobileMenuRef.current.contains(e.target as Node)) {
+      if (
+        mobileMenuRef.current &&
+        !mobileMenuRef.current.contains(e.target as Node) &&
+        !mobileMenuButtonRef.current?.contains(e.target as Node)
+      ) {
         setShowMobileMenu(false);
       }
     }
@@ -99,6 +104,7 @@ export default function Navbar() {
     { href: '/sitting', label: t('nav_sitting'), icon: 'home' },
     { href: '/clinics', label: t('health_tab_clinics'), icon: 'cross' },
     { href: '/assistant', label: t('assistant_nav'), icon: 'bot' },
+    { href: '/messages', label: t('nav_messages'), icon: 'message' },
     { href: '/my-pets', label: t('nav_mypets'), icon: 'vaccine' },
   ];
 
@@ -219,8 +225,9 @@ export default function Navbar() {
         {/* Mobile: hamburger only */}
         <div className="mobile-actions">
           <button
+            ref={mobileMenuButtonRef}
             className={`mobile-menu-btn ${showMobileMenu ? 'active' : ''}`}
-            onClick={() => setShowMobileMenu(!showMobileMenu)}
+            onClick={() => setShowMobileMenu((open) => !open)}
             aria-expanded={showMobileMenu}
             aria-controls="mobile-menu"
             aria-label={showMobileMenu ? t('nav_close_menu') : t('nav_open_menu')}
@@ -282,18 +289,7 @@ export default function Navbar() {
                     <span>{user.email ? truncateEmail(user.email) : t('nav_guest')}</span>
                   </div>
                   <div className="mobile-user-actions">
-                    <Button as="link" href="/my-pets" variant="ghost" onClick={handleMobileLinkClick}>
-                      {t('nav_mypets')}
-                    </Button>
-                    <Button as="link" href="/messages" variant="ghost" onClick={handleMobileLinkClick}>
-                      {t('nav_messages')}
-                    </Button>
-                    {admin && (
-                      <Button as="link" href="/admin" variant="ghost" style={{ color: 'var(--accent)' }} onClick={handleMobileLinkClick}>
-                        {t('nav_admin')}
-                      </Button>
-                    )}
-                    <Button variant="danger" onClick={logout}>
+                    <Button variant="danger" fullWidth onClick={() => { logout(); setShowMobileMenu(false); }}>
                       {t('nav_logout')}
                     </Button>
                   </div>

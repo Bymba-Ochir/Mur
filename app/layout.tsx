@@ -2,7 +2,6 @@ import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import BottomNav from '../components/BottomNav';
 import InstallPrompt from '../components/InstallPrompt';
 import Onboarding from '../components/Onboarding';
 import PageTransition from '../components/PageTransition';
@@ -64,7 +63,6 @@ export default function RootLayout({ children }: { children: ReactNode }) {
               <Footer />
               <InstallPrompt />
               <Onboarding />
-              <BottomNav />
               <AnalyticsProvider />
             </ToastProvider>
           </LanguageProvider>
