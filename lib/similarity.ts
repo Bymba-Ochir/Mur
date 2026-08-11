@@ -1,6 +1,6 @@
 // lib/similarity.ts
 //
-// Үе шат 2: CLIP embedding — шууд БРАУЗЕР дотор ажиллана (@huggingface/transformers).
+// DINOv2-small embedding — шууд БРАУЗЕР дотор ажиллана (@huggingface/transformers).
 //
 // АНХААР: Санг npm-ээр bundle хийвэл Next.js-ийн webpack дотоод ONNX Runtime
 // кодыг зөв boldog чадахгүй ("import.meta" алдаа) тул CDN-ээс шууд, webpack-ийг
@@ -13,8 +13,9 @@
 'use client';
 
 const CDN_URL: string = 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.0.2';
-export const EMBEDDING_MODEL = 'Xenova/clip-vit-base-patch16';
-export const EMBEDDING_VERSION = 'clip-vit-base-patch16-q8-v1';
+export const EMBEDDING_MODEL = 'Xenova/dinov2-small';
+export const EMBEDDING_VERSION = 'dinov2-small-q8-v1';
+export const EMBEDDING_DIMENSIONS = 384;
 
 let embedderPromise: Promise<any> | null = null;
 
@@ -59,7 +60,11 @@ export async function getImageEmbedding(file: File, onProgress?: (message: strin
   try {
     const output = await embedder(url, { pooling: 'mean', normalize: true });
     if (signal?.aborted) throw new DOMException('AI хайлт цуцлагдлаа', 'AbortError');
-    return Array.from(output.data);
+    const embedding = Array.from(output.data) as number[];
+    if (embedding.length !== EMBEDDING_DIMENSIONS) {
+      throw new Error(`DINOv2 embedding хэмжээ буруу: ${embedding.length}`);
+    }
+    return embedding;
   } finally {
     URL.revokeObjectURL(url);
   }
@@ -73,7 +78,7 @@ export async function getImageHash(file: File): Promise<string> {
 }
 
 /**
- * Хоёр embedding vector-ийн cosine similarity-г 0-100 оноогоор буцаана
+ * Хоёр DINOv2 embedding vector-ийн cosine similarity-г 0-100 оноогоор буцаана
  */
 export function cosineSimilarityScore(a: number[] | null | undefined, b: number[] | null | undefined): number {
   if (!a || !b || a.length !== b.length) return 0;
@@ -100,8 +105,8 @@ export function calculateHybridScore({
   nearby?: boolean;
   ageDays?: number;
 }): number {
-  const image = Math.max(0, Math.min(1, imageSimilarity)) * 55;
+  const image = Math.max(0, Math.min(1, imageSimilarity)) * 70;
   const recency = Math.max(0, 5 - Math.max(0, ageDays) / 30);
-  return Math.round((image + (sameType ? 15 : 0) + (sameBreed ? 10 : 0) +
-    (sameColor ? 10 : 0) + (sameDistrict ? 3 : 0) + (nearby ? 2 : 0) + recency) * 100) / 100;
+  return Math.round((image + (sameType ? 8 : 0) + (sameBreed ? 7 : 0) +
+    (sameColor ? 5 : 0) + (sameDistrict ? 3 : 0) + (nearby ? 2 : 0) + recency) * 100) / 100;
 }

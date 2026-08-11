@@ -55,8 +55,8 @@ export async function createPetReport(data: PetReportInput, onProgress?: (messag
       has_reward: data.hasReward ?? false,
       reward: data.reward ?? null,
       photo_url: photoUrl,
-      color_signature: embedding, // багана нэрээ хуучнаар үлдээсэн, одоо CLIP vector хадгална
-      image_embedding: embedding,
+      color_signature: embedding, // browser fallback-д DINOv2 vector-ийг JSONB хэлбэрээр хадгална
+      dino_embedding: embedding,
       embedding_version: embedding ? EMBEDDING_VERSION : null,
       image_hash: imageHash,
       lat: data.lat ?? null,
@@ -66,8 +66,8 @@ export async function createPetReport(data: PetReportInput, onProgress?: (messag
   let result = await supabase.from(TABLE).insert(payload).select().single();
 
   // Migration хараахан ажиллаагүй deployment дээр зар нийтлэхийг эвдэхгүй.
-  if (result.error && /image_embedding|embedding_version|image_hash|schema cache/i.test(result.error.message)) {
-    const { image_embedding: _vector, embedding_version: _version, image_hash: _hash, ...legacyPayload } = payload;
+  if (result.error && /image_embedding|dino_embedding|embedding_version|image_hash|schema cache/i.test(result.error.message)) {
+    const { dino_embedding: _dino, embedding_version: _version, image_hash: _hash, ...legacyPayload } = payload;
     result = await supabase.from(TABLE).insert(legacyPayload).select().single();
   }
 
@@ -171,7 +171,7 @@ export async function reportPet(petId: string, reason: string): Promise<void> {
 }
 
 /**
- * Тухайн зурагтай хамгийн төстэй бичлэгүүдийг CLIP embedding + cosine similarity-ээр эрэмбэлэх.
+ * Тухайн зурагтай хамгийн төстэй бичлэгүүдийг DINOv2 embedding + cosine similarity-ээр эрэмбэлэх.
  * Хэмжээ (dimension) таарахгүй embedding-үүдийг (жишээ нь өмнөх өөр загвараар
  * тооцоолсон хуучин бичлэг) харьцуулалтгүйгээр жагсаалтаас хасна — эс тэгвээс
  * "0% төстэй" гэсэн буруу дүн гарна.

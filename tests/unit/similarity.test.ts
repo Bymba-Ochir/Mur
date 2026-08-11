@@ -33,7 +33,7 @@ describe('calculateHybridScore', () => {
   });
 
   it('зураг, төрөл, байршлын дохиог жингээр нэгтгэнэ', () => {
-    expect(calculateHybridScore({ imageSimilarity: 0.8, sameType: true, sameDistrict: true, ageDays: 30 })).toBe(66);
+    expect(calculateHybridScore({ imageSimilarity: 0.8, sameType: true, sameDistrict: true, ageDays: 30 })).toBe(71);
   });
 
   it('оноог 0-100 хүрээнд хадгална', () => {
