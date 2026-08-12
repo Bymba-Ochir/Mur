@@ -14,18 +14,14 @@ import EmptyState from '../../components/ui/EmptyState';
 import Icon from '../../components/ui/icons';
 import PetHealthPanel from '../../components/PetHealthPanel';
 import FieldHint from '../../components/ui/FieldHint';
-import VetClinicList from '../../components/VetClinicList';
 import type { MyPet } from '../../lib/types';
 import { getErrorMessage } from '../../lib/utils';
-
-type Tab = 'pets' | 'clinics';
 
 export default function MyPetsPage() {
   const { user, loading } = useAuth();
   const showToast = useToast();
   const { t } = useLanguage();
 
-  const [tab, setTab] = useState<Tab>('pets');
   const [pets, setPets] = useState<MyPet[]>([]);
   const [petsLoading, setPetsLoading] = useState(true);
   const [selectedPetId, setSelectedPetId] = useState<string | null>(null);
@@ -120,37 +116,14 @@ export default function MyPetsPage() {
   }
 
   return (
-    <div style={{ maxWidth: 640 }}>
+    <div className="page-shell page-shell--narrow">
       <div className="page-header">
         <div className="eyebrow">{t('mypets_eyebrow')}</div>
         <h1>{t('mypets_title')}</h1>
         <p>{t('mypets_desc')}</p>
       </div>
 
-      {/* Tabs */}
-      <div className="tab-bar" role="tablist">
-        <button
-          role="tab"
-          aria-selected={tab === 'pets'}
-          className={`tab ${tab === 'pets' ? 'active' : ''}`}
-          onClick={() => setTab('pets')}
-        >
-          {t('health_tab_pets')}
-        </button>
-        <button
-          role="tab"
-          aria-selected={tab === 'clinics'}
-          className={`tab ${tab === 'clinics' ? 'active' : ''}`}
-          onClick={() => setTab('clinics')}
-        >
-          {t('health_tab_clinics')}
-        </button>
-      </div>
-
-      {tab === 'clinics' ? (
-        <VetClinicList />
-      ) : (
-        <>
+      <>
           {/* Sanuulga */}
           {!subscribed ? (
             <div style={{ background: 'var(--success-bg)', padding: 'var(--sp-3)', borderRadius: 'var(--r-md)', marginBottom: 'var(--sp-4)' }}>
@@ -225,25 +198,9 @@ export default function MyPetsPage() {
               onClose={() => setSelectedPetId(null)}
             />
           )}
-        </>
-      )}
+      </>
 
       <style jsx>{`
-        .tab-bar {
-          display: flex; gap: 2px; margin-bottom: var(--sp-4);
-          background: var(--eyebrow-bg); border-radius: var(--r-pill); padding: 3px;
-        }
-        .tab {
-          flex: 1; padding: 8px 16px; border: none; border-radius: var(--r-pill);
-          background: transparent; font-family: var(--font-body); font-size: 13px;
-          font-weight: 600; color: var(--muted); cursor: pointer;
-          transition: all 0.15s ease;
-        }
-        .tab.active {
-          background: var(--card); color: var(--primary);
-          box-shadow: var(--shadow-sm);
-        }
-        .tab:hover:not(.active) { color: var(--primary); }
       `}</style>
     </div>
   );
