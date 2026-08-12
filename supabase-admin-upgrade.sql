@@ -13,6 +13,16 @@ create table if not exists public.admin_audit_logs (
   created_at timestamptz not null default now()
 );
 
+-- Хүснэгт өмнө нь өөр schema-тай үүссэн бол CREATE TABLE IF NOT EXISTS
+-- дутуу баганыг нэмдэггүй. Доорх ALTER-ууд хуучин хувилбарыг эвдэхгүй шинэчилнэ.
+alter table public.admin_audit_logs add column if not exists id uuid default gen_random_uuid();
+alter table public.admin_audit_logs add column if not exists admin_id uuid references auth.users(id) on delete restrict;
+alter table public.admin_audit_logs add column if not exists action text not null default 'legacy';
+alter table public.admin_audit_logs add column if not exists target_type text not null default 'unknown';
+alter table public.admin_audit_logs add column if not exists target_id uuid;
+alter table public.admin_audit_logs add column if not exists details jsonb not null default '{}'::jsonb;
+alter table public.admin_audit_logs add column if not exists created_at timestamptz not null default now();
+
 alter table public.admin_audit_logs enable row level security;
 
 drop policy if exists "Admins can read audit logs" on public.admin_audit_logs;
@@ -31,6 +41,9 @@ create policy "Admins can create audit logs"
 -- Audit log-ийг client/admin ч устгаж, засаж болохгүй.
 create index if not exists admin_audit_created_idx
   on public.admin_audit_logs (created_at desc);
+
+-- PostgREST-д шинэ багануудыг шууд таниулна.
+notify pgrst, 'reload schema';
 
 -- Admin аль ч асрах зарыг устгах эрх (өмнө нь дутуу байсан).
 drop policy if exists "Admins can delete any sitting listing" on public.sitting_listings;

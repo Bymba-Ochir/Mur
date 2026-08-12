@@ -149,7 +149,7 @@ export async function fetchAdminAudit(): Promise<AdminAuditItem[]> {
     .order('created_at', { ascending: false })
     .limit(100);
   if (error) {
-    if (error.code === '42P01' || error.code === 'PGRST205') return [];
+    if (error.code === '42P01' || error.code === '42703' || error.code === 'PGRST204' || error.code === 'PGRST205') return [];
     throw error;
   }
   return data.map((row) => ({

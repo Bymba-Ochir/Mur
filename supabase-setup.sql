@@ -765,6 +765,14 @@ create table if not exists admin_audit_logs (
   created_at timestamptz not null default now()
 );
 
+alter table admin_audit_logs add column if not exists id uuid default gen_random_uuid();
+alter table admin_audit_logs add column if not exists admin_id uuid references auth.users(id) on delete restrict;
+alter table admin_audit_logs add column if not exists action text not null default 'legacy';
+alter table admin_audit_logs add column if not exists target_type text not null default 'unknown';
+alter table admin_audit_logs add column if not exists target_id uuid;
+alter table admin_audit_logs add column if not exists details jsonb not null default '{}'::jsonb;
+alter table admin_audit_logs add column if not exists created_at timestamptz not null default now();
+
 alter table admin_audit_logs enable row level security;
 drop policy if exists "Admins can read audit logs" on admin_audit_logs;
 create policy "Admins can read audit logs" on admin_audit_logs for select to authenticated
@@ -773,3 +781,4 @@ drop policy if exists "Admins can create audit logs" on admin_audit_logs;
 create policy "Admins can create audit logs" on admin_audit_logs for insert to authenticated
   with check (auth.uid() = admin_id and auth.uid() in (select user_id from admins));
 create index if not exists admin_audit_created_idx on admin_audit_logs (created_at desc);
+notify pgrst, 'reload schema';
