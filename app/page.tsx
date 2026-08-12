@@ -171,7 +171,13 @@ export default function Home() {
       </section>
 
       <section className="how">
-        <h2 className="how-title">{t('how_it_works')}</h2>
+        <div className="how-heading">
+          <h2 className="how-title">{t('how_it_works')}</h2>
+          <button type="button" className="how-guide" onClick={() => window.dispatchEvent(new Event('mur:open-onboarding'))}>
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 2-2.5 2-2.5 4M12 17h.01"/></svg>
+            {t('how_it_works')}
+          </button>
+        </div>
         <div className="trail-wrap">
           <PawTrail labels={[t('step1_title'), t('step2_title'), t('step3_title')]} current={2} />
         </div>
@@ -391,10 +397,14 @@ export default function Home() {
         @media (max-width: 640px) { .how { margin-top: var(--sp-5); } }
         @media (max-width: 480px) { .how { margin-top: var(--sp-4); } }
         @media (min-width: 1025px) { .how { margin-top: var(--sp-7); } }
-        .how-title { font-size: clamp(1.4rem, 3vw, 1.9rem); margin-bottom: var(--sp-5); }
-        @media (max-width: 640px) { .how-title { margin-bottom: var(--sp-4); } }
-        @media (max-width: 480px) { .how-title { margin-bottom: var(--sp-3); font-size: var(--text-xl); } }
-        @media (min-width: 1025px) { .how-title { font-size: var(--text-3xl); margin-bottom: var(--sp-6); } }
+        .how-heading { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3); margin-bottom: var(--sp-5); }
+        .how-title { font-size: clamp(1.4rem, 3vw, 1.9rem); margin-bottom: 0; }
+        .how-guide { display: inline-flex; align-items: center; gap: 8px; min-height: 42px; padding: 0 16px; border: 1px solid var(--border-subtle); border-radius: 999px; color: var(--primary); background: var(--surface-2); font-weight: 700; cursor: pointer; }
+        .how-guide:hover { border-color: var(--primary); background: color-mix(in srgb, var(--primary) 8%, var(--surface-2)); }
+        .how-guide:focus-visible { outline: 3px solid var(--border-focus); outline-offset: 2px; }
+        @media (max-width: 640px) { .how-heading { align-items: flex-start; flex-direction: column; margin-bottom: var(--sp-4); } }
+        @media (max-width: 480px) { .how-heading { margin-bottom: var(--sp-3); } .how-title { font-size: var(--text-xl); } .how-guide { width: 100%; justify-content: center; } }
+        @media (min-width: 1025px) { .how-title { font-size: var(--text-3xl); } .how-heading { margin-bottom: var(--sp-6); } }
         .trail-wrap { max-width: 520px; margin-bottom: var(--sp-4); }
         @media (max-width: 480px) { .trail-wrap { margin-bottom: var(--sp-3); } }
         @media (min-width: 1025px) { .trail-wrap { max-width: 620px; margin-bottom: var(--sp-5); } }
