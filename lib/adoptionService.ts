@@ -24,14 +24,15 @@ async function uploadAdoptionPhoto(file: File): Promise<string> {
  */
 export async function createAdoption(data: AdoptionInput): Promise<string> {
   let photoUrl: string | null = null;
+  let photoUrls: string[] = [];
 
-  if (data.photoFile) {
-    photoUrl = await uploadAdoptionPhoto(data.photoFile);
+  const files = (data.photoFiles?.length ? data.photoFiles : data.photoFile ? [data.photoFile] : []).slice(0, 4);
+  if (files.length) {
+    photoUrls = await Promise.all(files.map(uploadAdoptionPhoto));
+    photoUrl = photoUrls[0];
   }
 
-  const { data: inserted, error } = await supabase
-    .from(TABLE)
-    .insert({
+  const payload = {
       name: data.name || '',
       type: data.type,
       age: data.age || '',
@@ -42,9 +43,21 @@ export async function createAdoption(data: AdoptionInput): Promise<string> {
       place: data.place || '',
       phone: data.phone || '',
       photo_url: photoUrl,
-    })
+      photo_urls: photoUrls,
+  };
+  let result = await supabase
+    .from(TABLE)
+    .insert(payload)
     .select()
     .single();
+
+  // Migration ажиллаагүй орчинд эхний зургаар зарыг нийтлэх fallback.
+  if (result.error && /photo_urls|schema cache/i.test(result.error.message)) {
+    const { photo_urls: _photoUrls, ...legacyPayload } = payload;
+    result = await supabase.from(TABLE).insert(legacyPayload).select().single();
+  }
+
+  const { data: inserted, error } = result;
 
   if (error) {
     if (error.message && error.message.includes('RATE_LIMIT:')) {

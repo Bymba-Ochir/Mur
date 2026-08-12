@@ -14,6 +14,7 @@ interface AdoptionRow {
   place: string | null;
   phone: string | null;
   photo_url: string | null;
+  photo_urls?: unknown;
   created_by: string | null;
   created_at: string;
 }
@@ -31,6 +32,9 @@ export function mapAdoptionRow(row: AdoptionRow): Adoption {
     place: row.place ?? '',
     phone: row.phone ?? '',
     photoURL: row.photo_url,
+    photoURLs: Array.isArray(row.photo_urls)
+      ? row.photo_urls.filter((url): url is string => typeof url === 'string')
+      : row.photo_url ? [row.photo_url] : [],
     createdBy: row.created_by,
     createdAt: row.created_at,
   };

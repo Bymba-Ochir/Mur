@@ -26,7 +26,6 @@ export interface PetCardViewProps extends HTMLAttributes<HTMLDivElement> {
   createdAt?: string;
   similarity?: number | null;
   hybridScore?: number | null;
-  urgent?: boolean;
   /** "Шагналтай" гэж харуулах (дүнг нууц — зөвхөн тэмдэг харагдана) */
   hasReward?: boolean;
   rewardLabel?: string;
@@ -39,7 +38,7 @@ export interface PetCardViewProps extends HTMLAttributes<HTMLDivElement> {
 
 export default function PetCardView({
   status, badgeLabel, name, type, breed, color, district, place, phone,
-  imageNode, createdAt, similarity, hybridScore, urgent, hasReward, rewardLabel = 'Шагналтай',
+  imageNode, createdAt, similarity, hybridScore, hasReward, rewardLabel = 'Шагналтай',
   revealed = true, onRevealPhone, interactive = true,
   ...containerProps
 }: PetCardViewProps) {
@@ -50,15 +49,10 @@ export default function PetCardView({
     <div className={`pet-card${staticClass}`} {...containerProps}>
       <div className="thumb">
         <span className={`badge ${status}`}>{badgeLabel}</span>
-        {urgent && <span style={{ position: 'absolute', top: 12, right: 12, zIndex: 2, background: 'var(--alert)', color: '#fff', borderRadius: 999, padding: '5px 9px', fontSize: 10, fontWeight: 800 }}>ЯАРАЛТАЙ</span>}
         {imageNode ?? (
           <span className="emoji" aria-hidden="true"><PetIcon type={type} size={56} /></span>
         )}
-        {(hybridScore ?? similarity) != null && (() => {
-          const score = hybridScore ?? similarity ?? 0;
-          const level = score >= 80 ? 'Маш өндөр' : score >= 60 ? 'Боломжит' : score >= 40 ? 'Төстэй' : 'Бага';
-          return <span className="similarity" title="Зураг болон зарын мэдээллийг нэгтгэсэн оноо">{score}% · {level}</span>;
-        })()}
+        {(hybridScore ?? similarity) != null && <span className="similarity">{hybridScore ?? similarity}% тохирол</span>}
       </div>
       <div className="info">
         <h4>{name || type}</h4>

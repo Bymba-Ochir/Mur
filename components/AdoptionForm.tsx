@@ -32,7 +32,7 @@ export default function AdoptionForm() {
 
   const submit = useAdoptionSubmit({
     form,
-    photoFile: photo.photoFile,
+    photoFiles: photo.photoFiles,
     onSuccess: resetAll,
   });
 
@@ -77,7 +77,8 @@ export default function AdoptionForm() {
 
       {step === 0 && (
         <>
-          <label id="photo-label">{t('photo_label')}</label>
+          <label id="photo-label">Зураг оруулах</label>
+          <p id="photo-hint" className="photo-help">Дээд тал нь 4 зураг оруулах боломжтой · JPG, PNG эсвэл WebP</p>
           <div
             className="upload-zone"
             onClick={photo.openFilePicker}
@@ -89,16 +90,25 @@ export default function AdoptionForm() {
           >
             {photo.compressing ? (
               <span role="status">⏳ Зураг оновчлож байна...</span>
-            ) : photo.preview ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={photo.preview} alt={t('photo_preview_alt')} />
             ) : (
-              <span id="photo-hint">{t('photo_hint')}</span>
+              <span>{photo.previews.length ? `+ Зураг нэмэх (${photo.previews.length}/4)` : '+ Зураг сонгох'}</span>
             )}
           </div>
+          {photo.previews.length > 0 && (
+            <div className="photo-grid" aria-label="Сонгосон зургууд">
+              {photo.previews.map((preview, index) => (
+                <div className="photo-item" key={preview}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={preview} alt={`Сонгосон ${index + 1}-р зураг`} />
+                  {index === 0 && <span className="cover-badge">Нүүр зураг</span>}
+                  <button type="button" aria-label={`${index + 1}-р зургийг устгах`} onClick={() => photo.removePhoto(index)}>×</button>
+                </div>
+              ))}
+            </div>
+          )}
           <input
-            id="adoption-photo-input" type="file" accept="image/*" onChange={photo.handlePhoto}
-            style={{ display: 'none' }} disabled={photo.compressing}
+            id="adoption-photo-input" type="file" accept="image/jpeg,image/png,image/webp" multiple onChange={photo.handlePhoto}
+            style={{ display: 'none' }} disabled={photo.compressing || photo.photoFiles.length >= 4}
             aria-label={t('photo_label')}
           />
         </>
@@ -187,7 +197,7 @@ export default function AdoptionForm() {
         district={form.district}
         place={form.place}
         phone={formatPhone(form.phone)}
-        photoPreview={photo.preview}
+        photoPreview={photo.previews[0] ?? null}
       />
     </div>
 
@@ -206,6 +216,7 @@ export default function AdoptionForm() {
         @media (max-width: 640px) { .pet-form { padding: var(--sp-5); border-radius: var(--r-lg); max-width: 100%; } }
         @media (max-width: 480px) { .pet-form { padding: var(--sp-4); border-radius: var(--r-md); } }
         label { font-size: 12.5px; font-weight: 600; color: var(--primary); margin-top: var(--sp-4); display: block; letter-spacing: 0.01em; }
+        .photo-help { margin: 4px 0 8px; color: var(--muted); font-size: 12px; line-height: 1.5; }
         label:first-child { margin-top: 0; }
         @media (max-width: 480px) { label { font-size: 13px; margin-top: var(--sp-3); } }
         @media (min-width: 1025px) { label { font-size: 13.5px; margin-top: var(--sp-5); } }
@@ -228,6 +239,12 @@ export default function AdoptionForm() {
           transition: border-color 0.15s ease, background 0.15s ease; min-height: var(--touch-target);
           display: flex; align-items: center; justify-content: center;
         }
+        .photo-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 10px; }
+        .photo-item { position: relative; aspect-ratio: 1; overflow: hidden; border-radius: var(--r-sm); border: 1px solid var(--line); background: var(--overcast); }
+        .photo-item img { width: 100%; height: 100%; object-fit: cover; }
+        .photo-item button { position: absolute; top: 5px; right: 5px; width: 28px; height: 28px; min-height: 0; padding: 0; border: 0; border-radius: 50%; background: rgba(15,20,35,.75); color: #fff; font-size: 20px; line-height: 1; cursor: pointer; }
+        .cover-badge { position: absolute; left: 5px; bottom: 5px; padding: 3px 6px; border-radius: var(--r-pill); background: var(--primary); color: #fff; font-size: 9px; font-weight: 700; }
+        @media (max-width: 480px) { .photo-grid { grid-template-columns: repeat(2, 1fr); } }
         @media (max-width: 480px) { .upload-zone { padding: 24px 16px; } }
         @media (min-width: 1025px) { .upload-zone { padding: 32px 24px; } }
         .upload-zone:hover { border-color: var(--accent); background: var(--eyebrow-bg); }

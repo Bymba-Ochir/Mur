@@ -11,7 +11,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const { id } = await params;
   const { data } = await supabase
     .from('adoptions')
-    .select('type, name, age, breed, district, place, photo_url')
+    .select('type, name, age, breed, district, place, photo_url, photo_urls')
     .eq('id', id)
     .single();
 
@@ -31,7 +31,9 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     openGraph: {
       title,
       description,
-      images: data.photo_url ? [{ url: data.photo_url, width: 800, height: 600 }] : [],
+      images: (Array.isArray(data.photo_urls) && data.photo_urls.length ? data.photo_urls : data.photo_url ? [data.photo_url] : [])
+        .filter((url): url is string => typeof url === 'string')
+        .map((url) => ({ url, width: 800, height: 600 })),
     },
   };
 }

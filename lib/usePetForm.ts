@@ -31,19 +31,6 @@ export interface PetFormData {
   hasReward: boolean;
   /** Шагналын дүн (raw текст инпут) — НУУЦ, хоосон бол null-ээр хадгална */
   reward: string;
-  urgent: boolean;
-}
-
-async function imageQualityWarning(file: File): Promise<string | null> {
-  try {
-    const bitmap = await createImageBitmap(file);
-    const shortSide = Math.min(bitmap.width, bitmap.height);
-    const longSide = Math.max(bitmap.width, bitmap.height);
-    bitmap.close();
-    if (shortSide < 480) return 'Зургийн нягтаршил бага байна. 480px-ээс том зураг сонговол AI илүү зөв хайна.';
-    if (longSide / Math.max(shortSide, 1) > 3) return 'Зураг хэт нарийн байна. Амьтан бүтнээр харагдах зураг сонгоно уу.';
-  } catch { /* browser dimension шалгалт дэмжихгүй бол үргэлжлүүлнэ */ }
-  return null;
 }
 
 // ---------- Зураг: шахалт + content moderation ----------
@@ -51,42 +38,36 @@ export function usePhotoUpload() {
   const showToast = useToast();
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
-  const [photoFiles, setPhotoFiles] = useState<File[]>([]);
-  const [previews, setPreviews] = useState<string[]>([]);
   const [compressing, setCompressing] = useState(false);
   const [compressStatus, setCompressStatus] = useState('');
 
   async function handlePhoto(e: ChangeEvent<HTMLInputElement>) {
-    const selected = Array.from(e.target.files ?? []).slice(0, 4);
-    if (!selected.length) return;
+    const file = e.target.files?.[0];
+    if (!file) return;
     setCompressing(true);
     try {
-      const processed: File[] = [];
-      for (let index = 0; index < selected.length; index += 1) {
-        setCompressStatus(`Зураг ${index + 1}/${selected.length} оновчлож байна...`);
-        const qualityWarning = await imageQualityWarning(selected[index]);
-        if (qualityWarning) showToast(`Зураг ${index + 1}: ${qualityWarning}`, 'info');
-        const compressed = await compressImage(selected[index]);
-        const check = await checkImageContent(compressed, setCompressStatus);
-        if (!check.ok) {
-          showToast(`Зураг ${index + 1}: ${check.reason}`, 'error');
-          continue;
-        }
-        if (check.warning) showToast(`Зураг ${index + 1}: ${check.warning}`, 'info');
-        processed.push(compressed);
+      const originalKB = Math.round(file.size / 1024);
+      const compressed = await compressImage(file);
+      const newKB = Math.round(compressed.size / 1024);
+
+      const check = await checkImageContent(compressed, setCompressStatus);
+      if (!check.ok) {
+        showToast(check.reason, 'error');
+        e.target.value = '';
+        return;
       }
-      if (!processed.length) return;
-      const urls = processed.map((file) => URL.createObjectURL(file));
-      previews.forEach((url) => URL.revokeObjectURL(url));
-      setPhotoFiles(processed);
-      setPreviews(urls);
-      setPhotoFile(processed[0]);
-      setPreview(urls[0]);
-      showToast(`${processed.length} зураг бэлэн боллоо`, 'success');
+      if (check.warning) {
+        showToast(check.warning, 'info');
+      }
+
+      setPhotoFile(compressed);
+      setPreview(URL.createObjectURL(compressed));
+      if (originalKB > newKB + 20) {
+        showToast(`Зураг оновчлогдлоо: ${originalKB}KB → ${newKB}KB`, 'success');
+      }
     } catch {
-      const file = selected[0];
-      const url = URL.createObjectURL(file);
-      setPhotoFiles([file]); setPreviews([url]); setPhotoFile(file); setPreview(url);
+      setPhotoFile(file);
+      setPreview(URL.createObjectURL(file));
     } finally {
       setCompressing(false);
       setCompressStatus('');
@@ -98,16 +79,13 @@ export function usePhotoUpload() {
   }
 
   function reset() {
-    previews.forEach((url) => URL.revokeObjectURL(url));
     setPhotoFile(null);
     setPreview(null);
-    setPhotoFiles([]);
-    setPreviews([]);
     setCompressing(false);
     setCompressStatus('');
   }
 
-  return { photoFile, photoFiles, preview, previews, compressing, compressStatus, handlePhoto, openFilePicker, reset };
+  return { photoFile, preview, compressing, compressStatus, handlePhoto, openFilePicker, reset };
 }
 
 // ---------- Байршил: geolocation + ойролцоо дүүрэг ----------
@@ -148,12 +126,11 @@ export function usePetLocation(onDistrictGuess: (d: District) => void) {
 
 // ---------- Submit: createPetReport + төлөв ----------
 export function usePetSubmit({
-  status, form, photoFile, photoFiles, coords, onSuccess,
+  status, form, photoFile, coords, onSuccess,
 }: {
   status: PetStatus;
   form: PetFormData;
   photoFile: File | null;
-  photoFiles?: File[];
   coords: { lat: number; lng: number } | null;
   onSuccess: (id: string) => void;
 }) {
@@ -177,9 +154,7 @@ export function usePetSubmit({
           status,
           hasReward: form.hasReward,
           reward: form.reward ? Number(form.reward) : null,
-          urgent: form.urgent,
           photoFile,
-          photoFiles,
           lat: coords?.lat,
           lng: coords?.lng,
         },

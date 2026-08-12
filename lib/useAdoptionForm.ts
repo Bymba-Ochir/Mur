@@ -32,30 +32,43 @@ export interface AdoptionFormData {
 // ---------- Зураг: шахалт (content moderationгүй) ----------
 export function useAdoptionPhoto() {
   const showToast = useToast();
-  const [photoFile, setPhotoFile] = useState<File | null>(null);
-  const [preview, setPreview] = useState<string | null>(null);
+  const [photoFiles, setPhotoFiles] = useState<File[]>([]);
+  const [previews, setPreviews] = useState<string[]>([]);
   const [compressing, setCompressing] = useState(false);
 
   async function handlePhoto(e: ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const selected = Array.from(e.target.files ?? []);
+    if (!selected.length) return;
+    const available = Math.max(0, 4 - photoFiles.length);
+    const files = selected.slice(0, available);
+    if (!files.length) {
+      showToast('Дээд тал нь 4 зураг оруулах боломжтой.', 'info');
+      e.target.value = '';
+      return;
+    }
     setCompressing(true);
     try {
-      const originalKB = Math.round(file.size / 1024);
-      const compressed = await compressImage(file);
-      const newKB = Math.round(compressed.size / 1024);
-
-      setPhotoFile(compressed);
-      setPreview(URL.createObjectURL(compressed));
-      if (originalKB > newKB + 20) {
-        showToast(`Зураг оновчлогдлоо: ${originalKB}KB → ${newKB}KB`, 'success');
-      }
+      const compressed = await Promise.all(files.map(async (file) => {
+        try { return await compressImage(file); } catch { return file; }
+      }));
+      setPhotoFiles((current) => [...current, ...compressed].slice(0, 4));
+      setPreviews((current) => [...current, ...compressed.map((file) => URL.createObjectURL(file))].slice(0, 4));
+      showToast(`${compressed.length} зураг нэмэгдлээ.`, 'success');
     } catch {
-      setPhotoFile(file);
-      setPreview(URL.createObjectURL(file));
+      showToast('Зураг боловсруулахад алдаа гарлаа.', 'error');
     } finally {
       setCompressing(false);
+      e.target.value = '';
     }
+  }
+
+  function removePhoto(index: number) {
+    setPreviews((current) => {
+      const target = current[index];
+      if (target) URL.revokeObjectURL(target);
+      return current.filter((_, itemIndex) => itemIndex !== index);
+    });
+    setPhotoFiles((current) => current.filter((_, itemIndex) => itemIndex !== index));
   }
 
   function openFilePicker() {
@@ -63,20 +76,21 @@ export function useAdoptionPhoto() {
   }
 
   function reset() {
-    setPhotoFile(null);
-    setPreview(null);
+    previews.forEach((url) => URL.revokeObjectURL(url));
+    setPhotoFiles([]);
+    setPreviews([]);
     setCompressing(false);
   }
 
-  return { photoFile, preview, compressing, handlePhoto, openFilePicker, reset };
+  return { photoFiles, previews, compressing, handlePhoto, openFilePicker, removePhoto, reset };
 }
 
 // ---------- Submit: createAdoption + төлөв ----------
 export function useAdoptionSubmit({
-  form, photoFile, onSuccess,
+  form, photoFiles, onSuccess,
 }: {
   form: AdoptionFormData;
-  photoFile: File | null;
+  photoFiles: File[];
   onSuccess: (id: string) => void;
 }) {
   const showToast = useToast();
@@ -96,7 +110,7 @@ export function useAdoptionSubmit({
       const id = await createAdoption({
         ...form,
         gender: form.gender || 'Тодорхойгүй',
-        photoFile,
+        photoFiles,
       });
       setNewAdoptionId(id);
       setDone(true);

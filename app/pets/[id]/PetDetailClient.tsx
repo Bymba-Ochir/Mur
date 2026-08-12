@@ -21,9 +21,6 @@ import { fireConfetti } from '../../../lib/confetti';
 import type { Pet } from '../../../lib/types';
 import { getErrorMessage } from '../../../lib/utils';
 import { getBreedLabel } from '../../../lib/petBreeds';
-import FavoriteButton from '../../../components/FavoriteButton';
-import { incrementPetView, renewPetListing } from '../../../lib/listingService';
-import VerificationBadge from '../../../components/VerificationBadge';
 
 // URL-ийн snapshot — share холбоосын зориулалттай (useSyncExternalStore;
 // effect-д setUrl хийхгүй, SSR-д хоосон string)
@@ -52,11 +49,9 @@ export default function PetDetailClient({ id }: { id: string }) {
   const [editForm, setEditForm] = useState<PetEditValues | null>(null);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
 
   useEffect(() => {
     load();
-    incrementPetView(id).catch(() => undefined);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
@@ -140,9 +135,9 @@ export default function PetDetailClient({ id }: { id: string }) {
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             opacity: pet.resolved ? 0.6 : 1, position: 'relative',
           }}>
-            {(selectedPhoto || pet.photoURL) ? (
+            {pet.photoURL ? (
               <Image
-                src={selectedPhoto || pet.photoURL!}
+                src={pet.photoURL}
                 alt={`${pet.type}${pet.name ? ', ' + pet.name : ''}${pet.color ? ', ' + pet.color : ''}`}
                 fill
                 sizes="(max-width: 800px) 100vw, 520px"
@@ -164,27 +159,12 @@ export default function PetDetailClient({ id }: { id: string }) {
               }}><PetIcon type={pet.type} size={72} /></span>
             )}
           </div>
-          {(pet.photoURLs?.length ?? 0) > 1 && (
-            <div style={{ display: 'flex', gap: 8, marginTop: 10, overflowX: 'auto' }}>
-              {pet.photoURLs!.map((photo, index) => (
-                <button key={photo} type="button" onClick={() => setSelectedPhoto(photo)} aria-label={`Зураг ${index + 1} харах`} style={{ position: 'relative', width: 64, height: 52, flex: '0 0 auto', border: (selectedPhoto || pet.photoURL) === photo ? '2px solid var(--primary)' : '1px solid var(--line)', borderRadius: 'var(--r-sm)', overflow: 'hidden', padding: 0 }}>
-                  <Image src={photo} alt="" fill sizes="64px" style={{ objectFit: 'cover' }} />
-                </button>
-              ))}
-            </div>
-          )}
         </div>
 
         {/* Мэдээлэл — баруун талд */}
         <div className="detail-info">
-          <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginBottom: 10 }}>
-            <FavoriteButton petId={pet.id} />
-            {user?.id === pet.createdBy && <Button variant="secondary" onClick={async () => { await renewPetListing(pet.id); showToast('Зар 30 хоногоор сунгагдлаа', 'success'); await load(); }}>Зар сунгах</Button>}
-          </div>
           {!editing ? (
             <div className="card" style={{ padding: 'var(--sp-4)' }}>
-              <VerificationBadge userId={pet.createdBy} />
-              {pet.urgent && <p style={{ color: 'var(--alert)', fontWeight: 800, marginBottom: 8 }}>⚠️ Яаралтай нөхцөлтэй зар</p>}
               <p style={{ marginBottom: 'var(--sp-1)' }}><b>{t('detail_type')}</b> {pet.type}{pet.color ? `, ${pet.color}` : ''}</p>
               {pet.breed && <p style={{ marginBottom: 'var(--sp-1)' }}><b>{t('detail_breed')}</b> {getBreedLabel(pet.breed, lang)}</p>}
               <p style={{ marginBottom: 'var(--sp-1)' }}><b>{t('detail_district')}</b> {pet.district}</p>
@@ -192,8 +172,6 @@ export default function PetDetailClient({ id }: { id: string }) {
               {pet.hasReward ? (
                 <p style={{ marginBottom: 'var(--sp-1)' }}><b>🎁 {t('reward_prefix')}</b></p>
               ) : null}
-              {user?.id === pet.createdBy && <p style={{ marginTop: 8, color: 'var(--muted)', fontSize: 13 }}>👁 {pet.viewCount ?? 0} үзэлт · ♥ {pet.favoriteCount ?? 0} хадгалалт</p>}
-              <p style={{ marginTop: 8, color: 'var(--muted)', fontSize: 12 }}>Нийтэлсэн: {relativeTime(pet.createdAt)}{pet.updatedAt ? ` · Шинэчилсэн: ${relativeTime(pet.updatedAt)}` : ''}{pet.expiresAt ? ` · Дуусах: ${new Date(pet.expiresAt).toLocaleDateString('mn-MN')}` : ''}</p>
               {revealed ? (
                 <a href={`tel:${pet.phone}`} style={{ display: 'inline-block', marginTop: 'var(--sp-2)', fontWeight: 700, color: 'var(--primary)' }}>
                   ☎ {formatPhone(pet.phone)}

@@ -5,7 +5,6 @@ alter table public.pets add column if not exists image_embedding extensions.vect
 alter table public.pets add column if not exists dino_embedding extensions.vector(384);
 alter table public.pets add column if not exists embedding_version text;
 alter table public.pets add column if not exists image_hash text;
-alter table public.pets add column if not exists photo_urls jsonb not null default '[]'::jsonb;
 
 create index if not exists pets_image_hash_idx on public.pets (image_hash)
   where image_hash is not null;

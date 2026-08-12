@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { averageEmbeddings, calculateHybridScore, cosineSimilarityScore, poolDinoEmbedding } from '../../lib/similarity';
+import { calculateHybridScore, cosineSimilarityScore, poolDinoEmbedding } from '../../lib/similarity';
 
 describe('poolDinoEmbedding', () => {
   it('257x384 output-оос эхний CLS token-ийг авч normalize хийнэ', () => {
@@ -15,22 +15,6 @@ describe('poolDinoEmbedding', () => {
 
   it('384-т хуваагдахгүй output-ийг зөвшөөрөхгүй', () => {
     expect(() => poolDinoEmbedding(new Float32Array(385))).toThrow('хэмжээ буруу');
-  });
-});
-
-describe('averageEmbeddings', () => {
-  it('олон өнцгийн 384 embedding-ийг normalized centroid болгоно', () => {
-    const first = new Array(384).fill(0); first[0] = 1;
-    const second = new Array(384).fill(0); second[1] = 1;
-    const result = averageEmbeddings([first, second]);
-    expect(result).toHaveLength(384);
-    expect(result[0]).toBeCloseTo(Math.SQRT1_2);
-    expect(result[1]).toBeCloseTo(Math.SQRT1_2);
-    expect(cosineSimilarityScore(result, result)).toBe(100);
-  });
-
-  it('өөр хэмжээтэй embedding-ийг нэгтгэхгүй', () => {
-    expect(() => averageEmbeddings([[1, 2]])).toThrow('хэмжээ буруу');
   });
 });
 

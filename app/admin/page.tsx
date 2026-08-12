@@ -12,7 +12,6 @@ import { relativeTime } from '../../lib/relativeTime';
 import { useLanguage } from '../../lib/i18n';
 import type { Report } from '../../lib/types';
 import { getErrorMessage } from '../../lib/utils';
-import { backfillMissingPetEmbeddings } from '../../lib/petService';
 
 export default function AdminPage() {
   const { user, loading } = useAuth();
@@ -23,8 +22,6 @@ export default function AdminPage() {
   const [reports, setReports] = useState<Report[]>([]);
   const [reportsLoading, setReportsLoading] = useState(true);
   const [busyId, setBusyId] = useState<string | null>(null);
-  const [backfilling, setBackfilling] = useState(false);
-  const [backfillProgress, setBackfillProgress] = useState('');
 
   const load = useCallback(async () => {
     setReportsLoading(true);
@@ -78,19 +75,6 @@ export default function AdminPage() {
     }
   }
 
-  async function handleBackfill() {
-    setBackfilling(true);
-    setBackfillProgress('Бэлтгэж байна...');
-    try {
-      const result = await backfillMissingPetEmbeddings((done, total) => setBackfillProgress(`${done}/${total}`));
-      showToast(`${result.done} зарын AI embedding нөхөгдлөө${result.failed ? `, ${result.failed} алдаа` : ''}`, result.failed ? 'info' : 'success');
-    } catch (err) {
-      showToast('Backfill алдаа: ' + getErrorMessage(err), 'error');
-    } finally {
-      setBackfilling(false);
-    }
-  }
-
   if (loading || !checked) return <p style={{ color: 'var(--muted)' }}>{t('detail_loading')}</p>;
 
   if (!user) {
@@ -113,14 +97,6 @@ export default function AdminPage() {
       <div className="page-header">
         <div className="eyebrow">{t('admin_eyebrow')}</div>
         <h1>{t('admin_title')}</h1>
-      </div>
-
-      <div className="card" style={{ padding: 'var(--sp-4)', marginBottom: 'var(--sp-4)' }}>
-        <p style={{ fontWeight: 700, marginBottom: 6 }}>DINOv2 хуучин зар нөхөх</p>
-        <p style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 10 }}>Нэг удаад embedding-гүй 20 зарыг browser дээр боловсруулна.</p>
-        <Button onClick={handleBackfill} disabled={backfilling} variant="secondary">
-          {backfilling ? `Боловсруулж байна ${backfillProgress}` : 'AI embedding нөхөх'}
-        </Button>
       </div>
 
       {reportsLoading ? (

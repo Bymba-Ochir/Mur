@@ -2,9 +2,9 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import Image from 'next/image';
 import { useSyncExternalStore } from 'react';
 import PetIcon from '../../../components/PetIcon';
+import PetImageGallery from '../../../components/PetImageGallery';
 import Button from '../../../components/ui/Button';
 import AdoptionEditForm from '../../../components/AdoptionEditForm';
 import type { AdoptionEditValues } from '../../../components/AdoptionEditForm';
@@ -112,14 +112,10 @@ export default function AdoptionDetailClient({ id }: { id: string }) {
       ) : (
         <div className="detail-grid">
           <div className="media-box">
-            {adoption.photoURL ? (
-              <Image
-                src={adoption.photoURL}
+            {(adoption.photoURLs?.length || adoption.photoURL) ? (
+              <PetImageGallery
+                images={adoption.photoURLs?.length ? adoption.photoURLs : [adoption.photoURL!]}
                 alt={`${adoption.type}${adoption.name ? ' — ' + adoption.name : ''}`}
-                fill
-                sizes="(max-width: 800px) 100vw, 520px"
-                style={{ objectFit: 'cover' }}
-                priority
               />
             ) : (
               <span style={{

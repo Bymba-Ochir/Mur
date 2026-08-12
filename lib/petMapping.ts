@@ -18,7 +18,6 @@ interface PetRow {
   has_reward: boolean | null;
   reward: number | null;
   photo_url: string | null;
-  photo_urls?: unknown;
   color_signature: unknown; // CLIP vector (JSONB)
   lat: number | null;
   lng: number | null;
@@ -26,11 +25,6 @@ interface PetRow {
   created_by: string | null;
   created_at: string;
   embedding_version?: string | null;
-  view_count?: number | null;
-  favorite_count?: number | null;
-  urgent?: boolean | null;
-  expires_at?: string | null;
-  updated_at?: string | null;
 }
 
 export function mapPetRow(row: PetRow): Pet {
@@ -47,7 +41,6 @@ export function mapPetRow(row: PetRow): Pet {
     hasReward: row.has_reward ?? false,
     reward: row.reward ?? null,
     photoURL: row.photo_url,
-    photoURLs: Array.isArray(row.photo_urls) ? row.photo_urls.filter((url): url is string => typeof url === 'string') : row.photo_url ? [row.photo_url] : [],
     embedding: (row.color_signature as number[] | null) ?? null,
     lat: row.lat,
     lng: row.lng,
@@ -55,11 +48,6 @@ export function mapPetRow(row: PetRow): Pet {
     createdBy: row.created_by,
     createdAt: row.created_at,
     embeddingVersion: row.embedding_version ?? null,
-    viewCount: row.view_count ?? 0,
-    favoriteCount: row.favorite_count ?? 0,
-    urgent: row.urgent ?? false,
-    expiresAt: row.expires_at ?? null,
-    updatedAt: row.updated_at ?? null,
   };
 }
 

@@ -20,7 +20,7 @@ export default function PetForm({ status }: { status: PetStatus }) {
   const TYPE_LABELS: Record<PetType, string> = { 'Нохой': t('type_dog'), 'Муур': t('type_cat'), 'Бусад': t('type_other') };
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<PetFormData>({
-    name: '', type: 'Нохой', breed: '', color: '', place: '', district: DISTRICTS[0], phone: '', hasReward: false, reward: '', urgent: false,
+    name: '', type: 'Нохой', breed: '', color: '', place: '', district: DISTRICTS[0], phone: '', hasReward: false, reward: '',
   });
 
   const photo = usePhotoUpload();
@@ -28,7 +28,7 @@ export default function PetForm({ status }: { status: PetStatus }) {
 
   // Амжилттай хадгалагдсаны дараа бүх форм төлөвийг цэвэрлэнэ
   function resetAll() {
-    setForm({ name: '', type: 'Нохой', breed: '', color: '', place: '', district: DISTRICTS[0], phone: '', hasReward: false, reward: '', urgent: false });
+    setForm({ name: '', type: 'Нохой', breed: '', color: '', place: '', district: DISTRICTS[0], phone: '', hasReward: false, reward: '' });
     setStep(0);
     photo.reset();
     location.reset();
@@ -38,7 +38,6 @@ export default function PetForm({ status }: { status: PetStatus }) {
     status,
     form,
     photoFile: photo.photoFile,
-    photoFiles: photo.photoFiles,
     coords: location.coords,
     onSuccess: resetAll,
   });
@@ -105,14 +104,6 @@ export default function PetForm({ status }: { status: PetStatus }) {
               <span id="photo-hint">{t('photo_hint')}</span>
             )}
           </div>
-          {photo.previews.length > 1 && (
-            <div className="photo-strip" aria-label="Сонгосон зургууд">
-              {photo.previews.map((src, index) => (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img key={src} src={src} alt={`Сонгосон зураг ${index + 1}`} />
-              ))}
-            </div>
-          )}
           <div className="photo-quality" role="note">
             <p className="pq-title">{t('photo_requirements_title')}</p>
             <ul>
@@ -122,7 +113,7 @@ export default function PetForm({ status }: { status: PetStatus }) {
             <p className="pq-match">{t('photo_quality_match')}</p>
           </div>
           <input
-            id="photo-input" type="file" accept="image/*" multiple onChange={photo.handlePhoto}
+            id="photo-input" type="file" accept="image/*" onChange={photo.handlePhoto}
             style={{ display: 'none' }} disabled={photo.compressing}
             aria-label={t('photo_label')}
           />
@@ -177,10 +168,6 @@ export default function PetForm({ status }: { status: PetStatus }) {
 
       {step === 3 && (
         <>
-          <label className="reward-check" htmlFor="pet-urgent">
-            <input id="pet-urgent" type="checkbox" checked={form.urgent} onChange={(e) => setForm((f) => ({ ...f, urgent: e.target.checked }))} />
-            <span>⚠️ Яаралтай нөхцөлтэй (гэмтсэн, зам дээр эсвэл аюултай газар)</span>
-          </label>
           {status === 'lost' && (
             <>
               <label className="reward-check" htmlFor="pet-has-reward">
@@ -261,8 +248,6 @@ export default function PetForm({ status }: { status: PetStatus }) {
     </div>
 
       <style jsx>{`
-        .photo-strip { display: grid; grid-template-columns: repeat(4, 56px); gap: 8px; margin-top: 10px; }
-        .photo-strip img { width: 56px; height: 56px; border-radius: var(--r-sm); object-fit: cover; border: 1px solid var(--line); }
         .form-layout { display: flex; gap: var(--sp-5); align-items: flex-start; }
         @media (max-width: 860px) {
           .form-layout { gap: 0; }
