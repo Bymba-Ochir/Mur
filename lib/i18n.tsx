@@ -160,6 +160,7 @@ detail_description: 'Тайлбар:',
 
 // ─── Чат (Real-time messaging) ──────────────────────────────────────────
 nav_messages: 'Зурвас',
+messages_hub_nav: 'Зурвас ба зөвлөх', messages_tab_chat: 'Зурвас', messages_tab_assistant: 'AI зөвлөх',
 chat_send_btn: 'Зурвас бичих',
 chat_login_required: 'Нэвтэрч ороод зурвас бичнэ үү',
 chat_starting: 'Харилцаа үүсгэж байна...',
@@ -484,6 +485,7 @@ detail_description: 'Description:',
 
 // ─── Chat ────────────────────────────────────────────────────────────────
 nav_messages: 'Messages',
+messages_hub_nav: 'Messages & Assistant', messages_tab_chat: 'Messages', messages_tab_assistant: 'AI Assistant',
 chat_send_btn: 'Send message',
 chat_login_required: 'Log in to send a message',
 chat_starting: 'Starting conversation...',

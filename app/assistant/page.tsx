@@ -1,5 +1,5 @@
-import AssistantClient from './AssistantClient';
+import { redirect } from 'next/navigation';
 
 export default function AssistantPage() {
-  return <AssistantClient />;
+  redirect('/messages?tab=assistant');
 }

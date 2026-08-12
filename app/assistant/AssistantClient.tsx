@@ -16,7 +16,7 @@ interface Message {
   confidence?: 'high' | 'medium' | 'low';
 }
 
-export default function AssistantClient() {
+export default function AssistantClient({ embedded = false }: { embedded?: boolean }) {
   const { t, lang } = useLanguage();
   const greetingText = t('assistant_greeting');
   const [messages, setMessages] = useState<Message[]>(() => [{
@@ -113,9 +113,9 @@ export default function AssistantClient() {
   }
 
   return (
-    <div className="assistant-page page-shell page-shell--narrow">
+    <div className={`assistant-page${embedded ? ' embedded' : ' page-shell page-shell--narrow'}`}>
       {/* Толгой */}
-      <div className="assistant-header">
+      {!embedded && <div className="assistant-header">
         <Link href="/" className="back-link" aria-label={t('assistant_back')}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
             <path d="M19 12H5M12 19l-7-7 7-7" />
@@ -125,7 +125,7 @@ export default function AssistantClient() {
           <h1 className="header-title">{t('assistant_title')}</h1>
           <p className="header-desc">{t('assistant_desc')}</p>
         </div>
-      </div>
+      </div>}
 
       {/* Мессежүүд */}
       <div className="messages">
@@ -273,6 +273,8 @@ export default function AssistantClient() {
           height: calc(100dvh - var(--nav-h) - var(--sp-6) - var(--sp-8) - var(--safe-bottom));
           max-width: 640px; margin: 0 auto; width: 100%;
         }
+        .assistant-page.embedded { max-width: none; height: min(72vh, 720px); margin: 0; border-radius: var(--r-lg); }
+        @media (max-width: 640px) { .assistant-page.embedded { height: calc(100dvh - 220px); min-height: 520px; border-radius: var(--r-md); } }
         @media (max-width: 1024px) {
           .assistant-page { height: calc(100dvh - var(--nav-h) - var(--sp-5) - var(--sp-7) - var(--safe-bottom)); }
         }

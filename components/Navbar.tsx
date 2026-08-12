@@ -103,8 +103,7 @@ export default function Navbar() {
     { href: '/adoptions', label: t('nav_adoptions'), icon: 'heart' },
     { href: '/sitting', label: t('nav_sitting'), icon: 'home' },
     { href: '/clinics', label: t('health_tab_clinics'), icon: 'cross' },
-    { href: '/assistant', label: t('assistant_nav'), icon: 'bot' },
-    { href: '/messages', label: t('nav_messages'), icon: 'message' },
+    { href: '/messages', label: t('messages_hub_nav'), icon: 'message' },
     { href: '/my-pets', label: t('nav_mypets'), icon: 'vaccine' },
   ];
 
@@ -114,7 +113,7 @@ export default function Navbar() {
 
   const userMenuItems: UserMenuItem[] = [
     { href: '/my-pets', label: t('nav_mypets'), isLink: true, icon: 'vaccine' },
-    { href: '/messages', label: t('nav_messages'), isLink: true, icon: 'message' },
+    { href: '/messages', label: t('messages_hub_nav'), isLink: true, icon: 'message' },
     ...(admin ? [{ href: '/admin', label: t('nav_admin'), isLink: true, accent: true, icon: 'shield' as IconName }] : []),
     { label: t('nav_logout'), isLink: false, danger: true, onClick: logout },
   ];
