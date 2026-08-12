@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
-import { Inter, JetBrains_Mono, Unbounded } from 'next/font/google';
+import { Inter, JetBrains_Mono, Montserrat } from 'next/font/google';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import InstallPrompt from '../components/InstallPrompt';
@@ -15,7 +15,9 @@ import './globals.css';
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://mur-chi.vercel.app';
 
 const inter = Inter({ subsets: ['latin', 'cyrillic'], variable: '--font-body', display: 'swap' });
-const unbounded = Unbounded({ subsets: ['latin', 'cyrillic'], variable: '--font-display', display: 'swap' });
+// Unbounded-ийн Ө/Ү кирилл glyph хэт өвөрмөц харагддаг тул гарчигт
+// кирилл бүрэн дэмждэг, уншигдахуйц Montserrat ашиглана.
+const montserrat = Montserrat({ subsets: ['latin', 'cyrillic'], variable: '--font-display', display: 'swap' });
 const jetBrainsMono = JetBrains_Mono({ subsets: ['latin', 'cyrillic'], variable: '--font-mono', display: 'swap' });
 
 export const metadata: Metadata = {
@@ -52,7 +54,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           }}
         />
       </head>
-      <body className={`${inter.variable} ${unbounded.variable} ${jetBrainsMono.variable}`}>
+      <body className={`${inter.variable} ${montserrat.variable} ${jetBrainsMono.variable}`}>
         <a href="#main-content" className="skip-link">Үндсэн агуулга руу шилжих</a>
         <AuthProvider>
           <LanguageProvider>
