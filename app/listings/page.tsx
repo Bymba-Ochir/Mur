@@ -122,13 +122,13 @@ export default function ListingsPage() {
   }
 
   return (
-    <div>
+    <div className="page-shell">
       <div className="page-header">
         <div className="eyebrow">{t('listings_eyebrow')}</div>
         <h1>{t('listings_title')}</h1>
       </div>
 
-      <div className="filter-bar">
+      <div className="filter-bar content-panel">
         <input
           type="text"
           placeholder={t('search_placeholder')}

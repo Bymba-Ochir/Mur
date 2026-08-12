@@ -96,7 +96,7 @@ export default function SittingDetailClient({ id }: { id: string }) {
   const label = petTypeLabel(listing.petType);
 
   return (
-    <div>
+    <div className="page-shell page-shell--detail">
       <div className="page-header">
         <div className="eyebrow">{t('sitting_eyebrow')}</div>
         <h1>{label}</h1>

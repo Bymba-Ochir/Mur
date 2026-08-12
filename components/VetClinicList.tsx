@@ -65,7 +65,7 @@ export default function VetClinicList({ embedded = false }: { embedded?: boolean
   }
 
   return (
-    <div>
+    <div className={embedded ? 'clinic-embedded' : 'page-shell'}>
       {!embedded && (
         <div className="page-header">
           <div className="eyebrow">{t('clinics_eyebrow')}</div>
@@ -83,7 +83,7 @@ export default function VetClinicList({ embedded = false }: { embedded?: boolean
       />
 
       {/* Шүүлтүүр + Байршил */}
-      <div className="filter-bar" style={{ marginTop: 'var(--sp-3)', marginBottom: 'var(--sp-3)' }}>
+      <div className="filter-bar content-panel" style={{ marginTop: 'var(--sp-4)', marginBottom: 'var(--sp-4)' }}>
         <select className="filter" aria-label={t('filter_all_districts')} value={district} onChange={(e) => setDistrict(e.target.value)}>
           <option value="">{t('filter_all_districts')}</option>
           {DISTRICTS.map((d) => <option key={d}>{d}</option>)}

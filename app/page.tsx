@@ -13,7 +13,7 @@ export default function Home() {
   const { t } = useLanguage();
 
   return (
-    <div className="home">
+    <div className="home page-shell">
       <section className="hero">
         {/* Indigo / Coral ambient glows */}
         <div className="hero-glow g1" aria-hidden="true" />

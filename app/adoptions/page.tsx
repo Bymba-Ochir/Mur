@@ -55,18 +55,16 @@ export default function AdoptionsPage() {
   }
 
   return (
-    <div>
+    <div className="page-shell">
       <div className="page-header">
         <div className="eyebrow">{t('adoptions_eyebrow')}</div>
         <h1>{t('adoptions_title')}</h1>
         <p>{t('adoptions_desc')}</p>
       </div>
 
-      <Button as="link" href="/adoptions/new" variant="accent" style={{ marginBottom: 'var(--sp-4)' }}>
-        {t('adoptions_new_btn')}
-      </Button>
+      <div className="page-toolbar"><Button as="link" href="/adoptions/new" variant="accent">{t('adoptions_new_btn')}</Button></div>
 
-      <div className="filter-bar">
+      <div className="filter-bar content-panel">
         <input
           type="search"
           className="filter"

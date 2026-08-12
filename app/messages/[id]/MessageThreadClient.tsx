@@ -142,7 +142,7 @@ export default function MessageThreadClient({ id }: { id: string }) {
   const other = otherParticipant(conv, user.id).split('@')[0];
 
   return (
-    <div className="chat-page">
+    <div className="chat-page page-shell page-shell--narrow">
       {/* Толгой хэсэг */}
       <div className="chat-header">
         <Link href="/messages" className="chat-back" aria-label={t('chat_list_title')}>

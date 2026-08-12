@@ -113,7 +113,7 @@ export default function AssistantClient() {
   }
 
   return (
-    <div className="assistant-page">
+    <div className="assistant-page page-shell page-shell--narrow">
       {/* Толгой */}
       <div className="assistant-header">
         <Link href="/" className="back-link" aria-label={t('assistant_back')}>

@@ -5,7 +5,7 @@ import { useLanguage } from '../../lib/i18n';
 export default function ReportLostPage() {
   const { t } = useLanguage();
   return (
-    <div>
+    <div className="page-shell">
       <div className="page-header">
         <div className="eyebrow">{t('report_lost_eyebrow')}</div>
         <h1>{t('report_lost_title')}</h1>

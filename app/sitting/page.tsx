@@ -43,16 +43,14 @@ export default function SittingPage() {
   }
 
   return (
-    <div>
+    <div className="page-shell">
       <div className="page-header">
         <div className="eyebrow">{t('sitting_eyebrow')}</div>
         <h1>{t('sitting_title')}</h1>
         <p>{t('sitting_desc')}</p>
       </div>
-      <Button as="link" href="/sitting/new" variant="accent" style={{ marginBottom: 'var(--sp-4)' }}>
-        {t('sitting_new_btn')}
-      </Button>
-      <div className="filter-bar">
+      <div className="page-toolbar"><Button as="link" href="/sitting/new" variant="accent">{t('sitting_new_btn')}</Button></div>
+      <div className="filter-bar content-panel">
         <input type="search" className="filter" placeholder={t('sitting_search_placeholder')} aria-label={t('sitting_search_placeholder')} value={search} onChange={(e) => setSearch(e.target.value)} />
         <select className="filter" aria-label={t('filter_all_types')} value={petType} onChange={(e) => setPetType(e.target.value as SittingPetType | '')}>
           <option value="">{t('filter_all_types')}</option>

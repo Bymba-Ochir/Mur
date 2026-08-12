@@ -113,7 +113,7 @@ export default function PetDetailClient({ id }: { id: string }) {
   const isOwner = user && pet.createdBy && user.id === pet.createdBy;
 
   return (
-    <div style={{ maxWidth: 960 }}>
+    <div className="page-shell page-shell--detail">
       <div className="eyebrow">{pet.status === 'lost' ? t('report_lost_eyebrow') : t('report_found_eyebrow')}</div>
       <h1 style={{ fontSize: 24, marginBottom: 'var(--sp-1)' }}>{title}</h1>
       {pet.createdAt && (

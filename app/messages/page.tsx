@@ -52,7 +52,7 @@ export default function MessagesPage() {
   }
 
   return (
-    <div>
+    <div className="page-shell page-shell--narrow">
       <div className="page-header">
         <div className="eyebrow">{t('chat_list_eyebrow')}</div>
         <h1>{t('chat_list_title')}</h1>

@@ -93,7 +93,7 @@ export default function AdminPage() {
   }
 
   return (
-    <div style={{ maxWidth: 640 }}>
+    <div className="page-shell page-shell--narrow">
       <div className="page-header">
         <div className="eyebrow">{t('admin_eyebrow')}</div>
         <h1>{t('admin_title')}</h1>

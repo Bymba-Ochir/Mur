@@ -22,7 +22,7 @@ export default function LegalContent({ mn, en }: { mn: LegalDoc; en: LegalDoc })
   const doc = lang === 'mn' ? mn : en;
 
   return (
-    <article className="legal">
+    <article className="legal page-shell page-shell--narrow">
       <div className="eyebrow">⚖️</div>
       <h1>{doc.title}</h1>
       <p className="legal-updated">{doc.updated}</p>

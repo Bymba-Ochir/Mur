@@ -5,7 +5,7 @@ import { useLanguage } from '../../../lib/i18n';
 export default function NewAdoptionPage() {
   const { t } = useLanguage();
   return (
-    <div>
+    <div className="page-shell">
       <div className="page-header">
         <div className="eyebrow">{t('adoptions_new_eyebrow')}</div>
         <h1>{t('adoptions_new_title')}</h1>

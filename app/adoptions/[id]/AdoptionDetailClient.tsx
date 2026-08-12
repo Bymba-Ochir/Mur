@@ -81,7 +81,7 @@ export default function AdoptionDetailClient({ id }: { id: string }) {
   if (!adoption) return <p>{t('detail_loading')}</p>;
 
   return (
-    <div>
+    <div className="page-shell page-shell--detail">
       <div className="page-header">
         <div className="eyebrow">{t('adoptions_eyebrow')}</div>
         <h1>{adoption.type}{adoption.name ? ` — ${adoption.name}` : ''}</h1>
