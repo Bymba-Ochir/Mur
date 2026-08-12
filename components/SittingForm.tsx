@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import Image from 'next/image';
 import type { ChangeEvent, FormEvent, KeyboardEvent } from 'react';
 import { DISTRICTS } from '../lib/districts';
 import { useLanguage } from '../lib/i18n';
@@ -123,7 +124,7 @@ export default function SittingForm() {
             <FieldHint mn="Өөрийн зураг эсвэл асарч байсан амьтантай зургаа оруулж болно. Заавал биш." en="You may add a photo of yourself or a pet you have cared for. Optional." />
             <div className="upload-zone" onClick={() => document.getElementById('sitting-photo-input')?.click()} onKeyDown={handleUploadKeyDown} role="button" tabIndex={0} aria-labelledby="photo-label">
               {compressing ? <span>⏳ Зураг оновчлож байна...</span> : photoPreview ? (
-                <img src={photoPreview} alt={t('photo_preview_alt')} />
+                <Image src={photoPreview} alt={t('photo_preview_alt')} width={640} height={420} unoptimized />
               ) : <span>{t('photo_hint')}</span>}
             </div>
             <input id="sitting-photo-input" type="file" accept="image/*" onChange={handlePhoto} style={{ display: 'none' }} />
@@ -209,7 +210,7 @@ export default function SittingForm() {
           price={price ? Number(price) : null}
           phone={formatPhone(phone)}
           interactive={false}
-          imageNode={photoPreview ? <img src={photoPreview} alt="" /> : undefined}
+          imageNode={photoPreview ? <Image src={photoPreview} alt="" width={640} height={420} unoptimized /> : undefined}
         />
       </div>
 

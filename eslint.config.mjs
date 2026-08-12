@@ -3,9 +3,11 @@
 // (хуучин .eslintrc.json / FlatCompat хэрэггүй болсон).
 import nextVitals from 'eslint-config-next/core-web-vitals';
 
-export default [
+const config = [
   {
     ignores: ['.next/**', 'out/**', 'public/**', 'next-env.d.ts', 'coverage/**', 'playwright-report/**', 'test-results/**'],
   },
   ...nextVitals,
 ];
+
+export default config;

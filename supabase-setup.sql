@@ -683,6 +683,12 @@ drop policy if exists "Authenticated users can insert sitting" on sitting_listin
 create policy "Authenticated users can insert sitting"
   on sitting_listings for insert to authenticated with check (auth.uid() = user_id);
 
+-- Admin-ууд аль ч асрах зарыг устгаж болно
+drop policy if exists "Admins can delete any sitting listing" on sitting_listings;
+create policy "Admins can delete any sitting listing"
+  on sitting_listings for delete to authenticated
+  using (auth.uid() in (select user_id from admins));
+
 -- Зохиогч өөрийн зарыг засах боломжтой
 drop policy if exists "Owner can update sitting" on sitting_listings;
 create policy "Owner can update sitting"
@@ -733,9 +739,6 @@ begin
       raise exception 'Утасны дугаар 8 оронтой тоо байх ёстой';
     end if;
   end if;
-  if new.title is not null and char_length(new.title) > 200 then
-    raise exception 'Гарчиг хэт урт байна (хамгийн ихдээ 200 тэмдэгт)';
-  end if;
   if new.description is not null and char_length(new.description) > 2000 then
     raise exception 'Тайлбар хэт урт байна (хамгийн ихдээ 2000 тэмдэгт)';
   end if;
@@ -750,3 +753,23 @@ create trigger trg_validate_sitting_input
 
 create index if not exists sitting_created_at_idx on sitting_listings (created_at desc);
 create index if not exists sitting_district_idx on sitting_listings (district);
+
+-- 27. Admin үйлдлийн түүх
+create table if not exists admin_audit_logs (
+  id uuid primary key default gen_random_uuid(),
+  admin_id uuid not null references auth.users(id) on delete restrict,
+  action text not null check (char_length(action) between 1 and 80),
+  target_type text not null check (char_length(target_type) between 1 and 40),
+  target_id uuid,
+  details jsonb not null default '{}'::jsonb,
+  created_at timestamptz not null default now()
+);
+
+alter table admin_audit_logs enable row level security;
+drop policy if exists "Admins can read audit logs" on admin_audit_logs;
+create policy "Admins can read audit logs" on admin_audit_logs for select to authenticated
+  using (auth.uid() in (select user_id from admins));
+drop policy if exists "Admins can create audit logs" on admin_audit_logs;
+create policy "Admins can create audit logs" on admin_audit_logs for insert to authenticated
+  with check (auth.uid() = admin_id and auth.uid() in (select user_id from admins));
+create index if not exists admin_audit_created_idx on admin_audit_logs (created_at desc);

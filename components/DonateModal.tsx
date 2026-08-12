@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
 import { useToast } from './Toast';
 import { useLanguage } from '../lib/i18n';
 import { fireConfetti } from '../lib/confetti';
@@ -142,13 +143,13 @@ export default function DonateModal({ onClose }: { onClose: () => void }) {
         {stage === 'qr' && invoice && (
           <div className="qr-box">
             <p>{finalAmount.toLocaleString()}₮ {t('donate_invoice_created')}</p>
-            <img src={invoice.qrImage} alt={t('donate_qr_alt')} className="qr-img" />
+            <Image src={invoice.qrImage} alt={t('donate_qr_alt')} className="qr-img" width={240} height={240} unoptimized />
             <p className="hint">{t('donate_scan_hint')}</p>
             {invoice.deepLinks && invoice.deepLinks.length > 0 && (
               <div className="deep-links">
                 {invoice.deepLinks.slice(0, 4).map((l) => (
                   <a key={l.name} href={l.link} className="deep-link">
-                    {l.logo && <img src={l.logo} alt="" aria-hidden="true" />}
+                    {l.logo && <Image src={l.logo} alt="" aria-hidden="true" width={28} height={28} unoptimized />}
                     {l.description}
                   </a>
                 ))}

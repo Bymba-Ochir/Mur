@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useSyncExternalStore } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useAuth } from '../../lib/useAuth';
@@ -11,22 +11,26 @@ import AssistantClient from '../assistant/AssistantClient';
 
 type HubTab = 'messages' | 'assistant';
 
+function subscribeToHistory(callback: () => void) {
+  window.addEventListener('popstate', callback);
+  return () => window.removeEventListener('popstate', callback);
+}
+
+function getTabFromUrl(): HubTab {
+  return new URLSearchParams(window.location.search).get('tab') === 'assistant' ? 'assistant' : 'messages';
+}
+
 export default function MessagesPage() {
   const { user, loading: authLoading } = useAuth();
   const { t } = useLanguage();
   const [conversations, setConversations] = useState<ConversationPreview[]>([]);
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState<HubTab>('messages');
-
-  useEffect(() => {
-    const selected = new URLSearchParams(window.location.search).get('tab');
-    if (selected === 'assistant') setTab('assistant');
-  }, []);
+  const tab = useSyncExternalStore(subscribeToHistory, getTabFromUrl, () => 'messages');
 
   function selectTab(next: HubTab) {
-    setTab(next);
     const url = next === 'assistant' ? '/messages?tab=assistant' : '/messages';
     window.history.replaceState(null, '', url);
+    window.dispatchEvent(new PopStateEvent('popstate'));
   }
 
   useEffect(() => {
