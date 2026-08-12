@@ -5,6 +5,7 @@ import { useAuth } from '../lib/useAuth';
 import { useLanguage } from '../lib/i18n';
 import Button from './ui/Button';
 import Modal from './ui/Modal';
+import FieldHint from './ui/FieldHint';
 
 /** Имэйл (magic link) нэвтрэх модал — Navbar-аас салгагдсан. */
 export default function LoginModal({ onClose }: { onClose: () => void }) {
@@ -32,6 +33,7 @@ export default function LoginModal({ onClose }: { onClose: () => void }) {
         ) : (
           <form onSubmit={handleSend}>
             <label htmlFor="login-email">{t('login_email_label')}</label>
+            <FieldHint mn="Нууц үг шаардахгүй. Энэ имэйл рүү нэг удаагийн нэвтрэх холбоос очно. Ирэхгүй бол Spam/Junk хавтсаа шалгана уу." en="No password is needed. A one-time sign-in link will be sent to this email. Check Spam/Junk if it does not arrive." />
             <input
               id="login-email"
               type="email" required value={email}

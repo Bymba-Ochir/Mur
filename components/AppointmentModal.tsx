@@ -8,6 +8,7 @@ import { fetchMyPets } from '../lib/vaccineService';
 import { getErrorMessage } from '../lib/utils';
 import type { VetClinic, MyPet, VetService } from '../lib/types';
 import Modal from './ui/Modal';
+import FieldHint from './ui/FieldHint';
 
 const SERVICE_I18N: Record<string, string> = {
   'Үзлэг': 'service_exam',
@@ -75,12 +76,14 @@ export default function AppointmentModal({
         </p>
 
         <label htmlFor="appt-pet">{t('appt_pet_label')}</label>
+        <FieldHint mn="Миний амьтад хэсэгт бүртгэсэн амьтнаа сонгоно. Бүртгээгүй бол хоосон үлдээж болно." en="Choose a pet registered under My Pets, or leave blank if none is registered." />
         <select id="appt-pet" value={petId} onChange={(e) => setPetId(e.target.value)}>
           <option value="">{t('appt_pet_none')}</option>
           {pets.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
         </select>
 
         <label htmlFor="appt-service">{t('appt_service_label')}</label>
+        <FieldHint mn="Энэ эмнэлгээс авах шаардлагатай үйлчилгээг сонгоно." en="Choose the service you need from this clinic." />
         <select id="appt-service" value={service} onChange={(e) => setService(e.target.value as VetService)}>
           {clinic.services.map((s) => (
             <option key={s} value={s}>{t(SERVICE_I18N[s] as 'service_exam')}</option>
@@ -88,15 +91,18 @@ export default function AppointmentModal({
         </select>
 
         <label htmlFor="appt-date">{t('appt_date_label')}</label>
+        <FieldHint mn="Өнөөдрөөс хойших боломжтой өдрийг сонгоно." en="Choose an available date from today onward." />
         <input id="appt-date" type="date" min={today} value={date} onChange={(e) => setDate(e.target.value)} required />
 
         <label htmlFor="appt-time">{t('appt_time_label')}</label>
+        <FieldHint mn="Эмнэлэгт очих боломжтой цагаа сонгоно." en="Choose a time when you can arrive at the clinic." />
         <select id="appt-time" value={time} onChange={(e) => setTime(e.target.value)} required>
           <option value="">--</option>
           {TIME_SLOTS.map((s) => <option key={s} value={s}>{s}</option>)}
         </select>
 
         <label htmlFor="appt-notes">{t('appt_notes_label')}</label>
+        <FieldHint mn="Шинж тэмдэг эсвэл эмчид урьдчилан хэлэх зүйлээ товч бичнэ. Заавал биш." en="Briefly describe symptoms or anything the vet should know. Optional." />
         <textarea id="appt-notes" value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} />
 
         <button

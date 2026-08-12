@@ -5,6 +5,7 @@ import { DISTRICTS } from '../lib/districts';
 import { useLanguage } from '../lib/i18n';
 import Button from './ui/Button';
 import ShareButtons from './ShareButtons';
+import FieldHint from './ui/FieldHint';
 import SittingCardView from './SittingCardView';
 import PawTrail from './PawTrail';
 import LocationMap from './LocationMap';
@@ -119,6 +120,7 @@ export default function SittingForm() {
         {step === 0 && (
           <>
             <label id="photo-label">{t('photo_label')}</label>
+            <FieldHint mn="Өөрийн зураг эсвэл асарч байсан амьтантай зургаа оруулж болно. Заавал биш." en="You may add a photo of yourself or a pet you have cared for. Optional." />
             <div className="upload-zone" onClick={() => document.getElementById('sitting-photo-input')?.click()} onKeyDown={handleUploadKeyDown} role="button" tabIndex={0} aria-labelledby="photo-label">
               {compressing ? <span>⏳ Зураг оновчлож байна...</span> : photoPreview ? (
                 <img src={photoPreview} alt={t('photo_preview_alt')} />
@@ -138,12 +140,16 @@ export default function SittingForm() {
               <option value="Бүгд">{t('sitting_pet_type_all')}</option>
             </select>
             <label htmlFor="s-desc">{t('sitting_description_label')}</label>
+            <FieldHint mn="Ямар үйлчилгээ үзүүлэх, хаана асрах болон таны давуу талыг тодорхой бичнэ." en="Explain the service, where care is provided and what you offer." />
             <textarea id="s-desc" value={description} onChange={(e) => setDescription(e.target.value)} rows={3} placeholder={t('sitting_description_placeholder')} required />
             <label htmlFor="s-exp">{t('sitting_experience_label')}</label>
+            <FieldHint mn="Хэдэн жил, ямар төрлийн амьтан асарч байсан туршлагаа бичнэ. Заавал биш." en="Describe years and types of pet-care experience. Optional." />
             <input id="s-exp" value={experience} onChange={(e) => setExperience(e.target.value)} placeholder={t('sitting_experience_placeholder')} />
             <label htmlFor="s-avail">{t('sitting_availability_label')}</label>
+            <FieldHint mn="Боломжтой өдөр, цагийг бичнэ. Жишээ: ажлын өдөр 18:00-аас хойш." en="Enter available days and times, e.g. weekdays after 18:00." />
             <input id="s-avail" value={availability} onChange={(e) => setAvailability(e.target.value)} placeholder={t('sitting_availability_placeholder')} />
             <label htmlFor="s-price">{t('sitting_price_label')}</label>
+            <FieldHint mn="Нэг өдөр эсвэл нэг удаагийн үйлчилгээний үнийг төгрөгөөр оруулна." en="Enter the price in MNT per day or per service." />
             <input id="s-price" type="number" min="0" value={price} onChange={(e) => setPrice(e.target.value)} placeholder={t('sitting_price_placeholder')} />
           </>
         )}
@@ -155,6 +161,7 @@ export default function SittingForm() {
               {DISTRICTS.map((d) => <option key={d}>{d}</option>)}
             </select>
             <label htmlFor="s-place">{t('adoption_place_label')}</label>
+            <FieldHint mn="Үйлчилгээ үзүүлэх боломжтой хороо эсвэл ойролцоо газрыг бичнэ." en="Enter the khoroo or nearby area where you can provide the service." />
             <input id="s-place" value={place} onChange={(e) => setPlace(e.target.value)} placeholder={t('adoption_place_placeholder')} required />
 
             <button type="button" onClick={location.handleUseLocation} disabled={location.locating} className="locate-btn">
@@ -173,6 +180,7 @@ export default function SittingForm() {
             )}
 
             <label htmlFor="s-phone">{t('phone_label')}</label>
+            <FieldHint mn="Хэрэглэгч холбогдох боломжтой 8 оронтой утасны дугаар оруулна." en="Enter a reachable 8-digit Mongolian phone number." />
             <input id="s-phone" value={formatPhone(phone)} onChange={(e) => setPhone(normalizePhone(e.target.value))} placeholder={t('phone_placeholder')} required inputMode="tel" />
             {error && <p className="error" role="alert">{error}</p>}
             <Button type="submit" disabled={submitting} variant="primary" fullWidth className="form-submit">

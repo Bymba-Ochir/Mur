@@ -12,6 +12,7 @@ import type { AdoptionFormData } from '../lib/useAdoptionForm';
 import type { AdoptionGender, PetType } from '../lib/types';
 import { normalizePhone, formatPhone } from '../lib/utils';
 import BreedSelect from './BreedSelect';
+import FieldHint from './ui/FieldHint';
 
 export default function AdoptionForm() {
   const { t } = useLanguage();
@@ -117,14 +118,17 @@ export default function AdoptionForm() {
       {step === 1 && (
         <>
           <label htmlFor="adopt-name">{t('adoption_name_label')}</label>
+          <FieldHint mn="Нэрийг мэдэхгүй бол хоосон үлдээж болно." en="Leave this blank if the pet's name is unknown." />
           <input id="adopt-name" name="name" value={form.name} onChange={handleChange} placeholder={t('adoption_name_placeholder')} />
 
           <label htmlFor="adopt-type">{t('type_label')}</label>
+          <FieldHint mn="Зөв төрлийг сонговол хайлт, шүүлтүүр илүү зөв ажиллана." en="Choose the correct type so search and filters work accurately." />
           <select id="adopt-type" name="type" value={form.type} onChange={(e) => setForm((prev) => ({ ...prev, type: e.target.value as PetType, breed: '' }))}>
             {TYPE_VALUES.map((v) => <option key={v} value={v}>{TYPE_LABELS[v]}</option>)}
           </select>
 
           <label htmlFor="adopt-age">{t('adoption_age_label')}</label>
+          <FieldHint mn="Тодорхой нас мэдэхгүй бол “ойролцоогоор 6 сартай” гэж бичиж болно." en="If unknown, enter an estimate such as “about 6 months old”." />
           <input id="adopt-age" name="age" value={form.age} onChange={handleChange} placeholder={t('adoption_age_placeholder')} />
 
           <label htmlFor="adopt-gender">{t('adoption_gender_label')}</label>
@@ -133,9 +137,11 @@ export default function AdoptionForm() {
           </select>
 
           <label htmlFor="adopt-breed">{t('breed_label')}</label>
+          <FieldHint mn="Үүлдэр тодорхойгүй бол “Тодорхойгүй” эсвэл “Холимог үүлдэр” сонгоно." en="Choose Unknown or Mixed breed when the breed is uncertain." />
           <BreedSelect id="adopt-breed" type={form.type} value={form.breed} onChange={(breed) => setForm((prev) => ({ ...prev, breed }))} />
 
           <label htmlFor="adopt-desc">{t('adoption_description_label')}</label>
+          <FieldHint mn="Зан ааш, вакцин, ариутгал, эрүүл мэнд болон шинэ эзэнд тавих нөхцөлийг бичнэ. Заавал бөглөнө." en="Describe temperament, vaccination, neutering, health and adopter requirements. Required." />
           <textarea id="adopt-desc" name="description" value={form.description} onChange={handleChange} rows={3} placeholder={t('adoption_description_placeholder')} required />
         </>
       )}
@@ -148,9 +154,11 @@ export default function AdoptionForm() {
           </select>
 
           <label htmlFor="adopt-place">{t('adoption_place_label')}</label>
+          <FieldHint mn="Гэрийн нарийн хаяг биш, уулзаж болох хороо эсвэл танигдах газрын нэр бичнэ." en="Enter a khoroo or public landmark, not a precise home address." />
           <input id="adopt-place" name="place" value={form.place} onChange={handleChange} placeholder={t('adoption_place_placeholder')} required />
 
           <label htmlFor="adopt-phone">{t('phone_label')}</label>
+          <FieldHint mn="Холбогдох боломжтой 8 оронтой Монгол утасны дугаар оруулна." en="Enter a reachable 8-digit Mongolian phone number." />
           <input
             id="adopt-phone"
             name="phone"

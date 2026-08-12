@@ -13,6 +13,7 @@ import Button from '../../components/ui/Button';
 import EmptyState from '../../components/ui/EmptyState';
 import Icon from '../../components/ui/icons';
 import PetHealthPanel from '../../components/PetHealthPanel';
+import FieldHint from '../../components/ui/FieldHint';
 import VetClinicList from '../../components/VetClinicList';
 import type { MyPet } from '../../lib/types';
 import { getErrorMessage } from '../../lib/utils';
@@ -164,6 +165,7 @@ export default function MyPetsPage() {
 
           {/* Нэмэх форм */}
           <form onSubmit={handleAdd} style={{ marginBottom: 'var(--sp-4)' }} aria-label="Шинэ амьтан нэмэх">
+            <FieldHint mn="Нэр, төрөл заавал. Нас, үүлдэр, жин болон вакцины мэдээлэл мэдэхгүй бол дараа нь нэмж болно." en="Name and type are required. Age, breed, weight and vaccine details can be added later." />
             <div style={{ display: 'flex', gap: 'var(--sp-2)', marginBottom: 'var(--sp-2)' }}>
               <input
                 className="field" value={name} onChange={(e) => setName(e.target.value)}
@@ -181,6 +183,7 @@ export default function MyPetsPage() {
               <input className="field" type="number" step="0.1" min="0" value={weight} onChange={(e) => setWeight(e.target.value)} placeholder={t('health_weight_ph')} style={{ flex: 1 }} />
             </div>
             <div style={{ display: 'flex', gap: 'var(--sp-2)' }}>
+              <span className="sr-only">Дараагийн вакцины нэр болон огноо</span>
               <input className="field" value={vaxName} onChange={(e) => setVaxName(e.target.value)} placeholder={t('health_next_vaccine_name_ph')} style={{ flex: 1 }} />
               <input className="field" type="date" value={date} onChange={(e) => setDate(e.target.value)} style={{ width: 'auto' }} />
               <Button type="submit" disabled={busy} variant="accent">{t('mypets_add')}</Button>

@@ -51,6 +51,7 @@ export default function VaccinationsSection({
 
       {showForm && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-2)', marginBottom: 'var(--sp-3)', padding: 'var(--sp-3)', background: 'var(--eyebrow-bg)', borderRadius: 'var(--r-md)' }}>
+          <p style={{ fontSize: 11.5, color: 'var(--muted)', lineHeight: 1.5 }}>Хийлгэсэн вакцины нэр, хийлгэсэн огноо, эмчийн нэрийг оруулна. Эмчийн нэр заавал биш.</p>
           <input className="field" placeholder={t('health_vax_name')} value={name} onChange={(e) => setName(e.target.value)} style={{ fontSize: 13, minHeight: 36 }} />
           <input className="field" type="date" value={date} onChange={(e) => setDate(e.target.value)} style={{ fontSize: 13, minHeight: 36 }} />
           <input className="field" placeholder={t('health_vet_name')} value={vetName} onChange={(e) => setVetName(e.target.value)} style={{ fontSize: 13, minHeight: 36 }} />

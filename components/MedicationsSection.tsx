@@ -62,6 +62,7 @@ export default function MedicationsSection({
 
       {showForm && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-2)', marginBottom: 'var(--sp-3)', padding: 'var(--sp-3)', background: 'var(--eyebrow-bg)', borderRadius: 'var(--r-md)' }}>
+          <p style={{ fontSize: 11.5, color: 'var(--muted)', lineHeight: 1.5 }}>Эмийн нэр, эмчийн заасан тун, өгөх давтамж болон хэрэглэх хугацааг оруулна. Эмчийн зааврыг өөрчилж болохгүй.</p>
           <input className="field" placeholder={t('health_med_name')} value={name} onChange={(e) => setName(e.target.value)} style={{ fontSize: 13, minHeight: 36 }} />
           <div style={{ display: 'flex', gap: 'var(--sp-2)' }}>
             <input className="field" placeholder={t('health_dosage')} value={dosage} onChange={(e) => setDosage(e.target.value)} style={{ fontSize: 13, minHeight: 36, flex: 1 }} />

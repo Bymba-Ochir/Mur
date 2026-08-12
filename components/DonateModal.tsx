@@ -5,6 +5,7 @@ import { useLanguage } from '../lib/i18n';
 import { fireConfetti } from '../lib/confetti';
 import { getErrorMessage } from '../lib/utils';
 import Modal from './ui/Modal';
+import FieldHint from './ui/FieldHint';
 
 const AMOUNTS = [3000, 5000, 10000, 20000];
 
@@ -113,15 +114,18 @@ export default function DonateModal({ onClose }: { onClose: () => void }) {
               ))}
             </div>
             <label htmlFor="custom-amount">{t('donate_custom_label')}</label>
+            <FieldHint mn="Бэлэн дүн сонгох эсвэл 1,000₮-өөс дээш өөр дүн оруулна." en="Choose a preset amount or enter a custom amount of at least 1,000 MNT." />
             <input
               id="custom-amount" type="number" min="1000" placeholder={t('donate_custom_ph')}
               value={customAmount} onChange={(e) => setCustomAmount(e.target.value)}
             />
 
             <label htmlFor="donor-name">{t('donate_name_label')}</label>
+            <FieldHint mn="Хандивлагчийн нэрийг харуулахыг хүсвэл бичнэ. Заавал биш." en="Enter a display name if you want it shown. Optional." />
             <input id="donor-name" value={name} onChange={(e) => setName(e.target.value)} placeholder={t('donate_name_ph')} />
 
             <label htmlFor="donor-message">{t('donate_message_label')}</label>
+            <FieldHint mn="Олон нийтэд харуулах богино мессеж. Хувийн мэдээлэл битгий оруулаарай." en="A short public message. Do not include private information." />
             <textarea id="donor-message" value={message} onChange={(e) => setMessage(e.target.value)} rows={2} placeholder={t('donate_message_ph')} />
 
             <label className="checkbox-row">

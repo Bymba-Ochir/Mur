@@ -13,6 +13,7 @@ import type { PetFormData } from '../lib/usePetForm';
 import type { PetStatus, PetType } from '../lib/types';
 import { normalizePhone, formatPhone } from '../lib/utils';
 import BreedSelect from './BreedSelect';
+import FieldHint from './ui/FieldHint';
 
 export default function PetForm({ status }: { status: PetStatus }) {
   const { t } = useLanguage();
@@ -123,6 +124,7 @@ export default function PetForm({ status }: { status: PetStatus }) {
       {step === 1 && (
         <>
           <label htmlFor="pet-name">{t('name_label')}</label>
+          <FieldHint mn="Хүзүүвч дээр нэр байсан эсвэл нэрийг нь мэддэг бол бичнэ. Заавал биш." en="Enter the name only when known or shown on a tag. Optional." />
           <input id="pet-name" name="name" value={form.name} onChange={handleChange} placeholder={t('name_placeholder')} />
 
           <label htmlFor="pet-type">{t('type_label')}</label>
@@ -131,9 +133,11 @@ export default function PetForm({ status }: { status: PetStatus }) {
           </select>
 
           <label htmlFor="pet-breed">{t('breed_label')}</label>
+          <FieldHint mn="Эргэлзэж байвал “Тодорхойгүй” эсвэл “Холимог үүлдэр” сонгоно." en="Choose Unknown or Mixed breed when unsure." />
           <BreedSelect id="pet-breed" type={form.type} value={form.breed} onChange={(breed) => setForm((prev) => ({ ...prev, breed }))} />
 
           <label htmlFor="pet-color">{t('color_label')}</label>
+          <FieldHint mn="Үндсэн өнгө болон ялгарах шинжийг бичнэ. Жишээ: хар, цээж цагаан." en="Describe the main color and distinctive markings, e.g. black with a white chest." />
           <input id="pet-color" name="color" value={form.color} onChange={handleChange} placeholder={t('color_placeholder')} required />
         </>
       )}
@@ -150,6 +154,7 @@ export default function PetForm({ status }: { status: PetStatus }) {
           </select>
 
           <label htmlFor="pet-place">{status === 'lost' ? t('place_label_lost') : t('place_label_found')}</label>
+          <FieldHint mn="Хороо, гудамж, дэлгүүр зэрэг хүн танихуйц ойролцоо газрыг бичнэ." en="Enter a recognizable nearby khoroo, street or landmark." />
           <input id="pet-place" name="place" value={form.place} onChange={handleChange} placeholder={t('place_placeholder')} required />
 
           <label id="map-label">
@@ -190,6 +195,7 @@ export default function PetForm({ status }: { status: PetStatus }) {
             </>
           )}
           <label htmlFor="pet-phone">{t('phone_label')}</label>
+          <FieldHint mn="Зарын эзэнтэй шууд холбогдох 8 оронтой дугаар. Нийтэд бүтнээр нь шууд харуулахгүй." en="An 8-digit contact number. It is masked until a viewer chooses to reveal it." />
           <input
             id="pet-phone"
             name="phone"

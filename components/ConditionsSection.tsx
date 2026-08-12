@@ -50,6 +50,7 @@ export default function ConditionsSection({
 
       {showForm && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-2)', marginBottom: 'var(--sp-3)', padding: 'var(--sp-3)', background: 'var(--eyebrow-bg)', borderRadius: 'var(--r-md)' }}>
+          <p style={{ fontSize: 11.5, color: 'var(--muted)', lineHeight: 1.5 }}>Малын эмчийн оношилсон өвчин, оношлогдсон огноо болон шаардлагатай тэмдэглэлийг хадгална.</p>
           <input className="field" placeholder={t('health_condition_name')} value={name} onChange={(e) => setName(e.target.value)} style={{ fontSize: 13, minHeight: 36 }} />
           <input className="field" type="date" value={diagnosisDate} onChange={(e) => setDiagnosisDate(e.target.value)} style={{ fontSize: 13, minHeight: 36 }} />
           <textarea className="field" placeholder={t('health_condition_notes')} value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} style={{ fontSize: 13, resize: 'vertical' }} />

@@ -236,6 +236,7 @@ export default function AssistantClient() {
             <span>{t('assistant_age_unit')}</span>
           </div>
         </div>
+        <p className="context-hint">Амьтны төрөл, насыг зөв оруулбал зөвлөгөө илүү тохиромжтой болно. Насны нэгжийг талбарын баруун талаас шалгана уу.</p>
         <div className="composer-row">
           <input
             ref={inputRef}
@@ -375,6 +376,7 @@ export default function AssistantClient() {
           display: flex; gap: var(--sp-2);
         }
         .pet-context { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; position: relative; }
+        .context-hint { margin: 0 2px 8px; color: var(--muted); font-size: 11px; line-height: 1.45; }
         .pet-type-picker { position: relative; min-width: 0; }
         .pet-type-trigger, .age-field {
           width: 100%; min-width: 0; min-height: 40px; padding: 7px 11px;
