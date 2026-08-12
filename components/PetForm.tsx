@@ -38,7 +38,7 @@ export default function PetForm({ status }: { status: PetStatus }) {
   const submit = usePetSubmit({
     status,
     form,
-    photoFile: photo.photoFile,
+    photoFiles: photo.photoFiles,
     coords: location.coords,
     onSuccess: resetAll,
   });
@@ -98,10 +98,17 @@ export default function PetForm({ status }: { status: PetStatus }) {
           >
             {photo.compressing ? (
               <span role="status">⏳ {photo.compressStatus || 'Зураг оновчлож байна...'}</span>
-            ) : photo.preview ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={photo.preview} alt={t('photo_preview_alt')} />
-            ) : (
+            ) : photo.previews.length ? (
+              <div className="selected-photos">
+                {photo.previews.map((preview, index) => <div key={preview} className="selected-photo">
+                  {/* Blob preview-г next/image оновчлох шаардлагагүй. */}
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={preview} alt={`${t('photo_preview_alt')} ${index + 1}`} />
+                  <span>{index + 1}</span>
+                  <button type="button" onClick={(event) => { event.stopPropagation(); photo.removePhoto(index); }} aria-label={`${index + 1}-р зургийг хасах`}>×</button>
+                </div>)}
+              </div>
+              ) : (
               <span id="photo-hint">{t('photo_hint')}</span>
             )}
           </div>
@@ -114,10 +121,11 @@ export default function PetForm({ status }: { status: PetStatus }) {
             <p className="pq-match">{t('photo_quality_match')}</p>
           </div>
           <input
-            id="photo-input" type="file" accept="image/*" onChange={photo.handlePhoto}
+            id="photo-input" type="file" accept="image/*" multiple onChange={photo.handlePhoto}
             style={{ display: 'none' }} disabled={photo.compressing}
             aria-label={t('photo_label')}
           />
+          <FieldHint mn="1–4 зураг сонгоно. Нүүр, бүтэн бие, онцлог шинж болон сүүлд харагдсан орчны зургийг оруулбал танихад хялбар." en="Choose 1–4 photos: face, full body, distinctive markings, and the last-seen area." />
         </>
       )}
 
@@ -262,6 +270,11 @@ export default function PetForm({ status }: { status: PetStatus }) {
           .form-layout { gap: var(--sp-8); }
         }
         .preview-col { display: none; position: sticky; top: 100px; }
+        .selected-photos { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; width: 100%; height: 100%; padding: 8px; }
+        .selected-photo { position: relative; min-height: 110px; overflow: hidden; border-radius: var(--r-sm); background: var(--surface-3); }
+        .selected-photo img { width: 100%; height: 100%; object-fit: cover; }
+        .selected-photo span { position: absolute; left: 7px; bottom: 7px; min-width: 24px; padding: 3px 6px; border-radius: 999px; color: white; background: rgba(10,14,28,.66); font-size: 11px; font-weight: 800; }
+        .selected-photo button { position: absolute; top: 6px; right: 6px; width: 28px; height: 28px; border: 0; border-radius: 50%; color: white; background: rgba(10,14,28,.72); font-size: 20px; line-height: 1; cursor: pointer; }
         @media (min-width: 860px) {
           .preview-col { display: block; }
         }

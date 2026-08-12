@@ -21,6 +21,7 @@ import { fireConfetti } from '../../../lib/confetti';
 import type { Pet } from '../../../lib/types';
 import { getErrorMessage } from '../../../lib/utils';
 import { getBreedLabel } from '../../../lib/petBreeds';
+import PetImageGallery from '../../../components/PetImageGallery';
 
 // URL-ийн snapshot — share холбоосын зориулалттай (useSyncExternalStore;
 // effect-д setUrl хийхгүй, SSR-д хоосон string)
@@ -135,15 +136,8 @@ export default function PetDetailClient({ id }: { id: string }) {
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             opacity: pet.resolved ? 0.6 : 1, position: 'relative',
           }}>
-            {pet.photoURL ? (
-              <Image
-                src={pet.photoURL}
-                alt={`${pet.type}${pet.name ? ', ' + pet.name : ''}${pet.color ? ', ' + pet.color : ''}`}
-                fill
-                sizes="(max-width: 800px) 100vw, 520px"
-                style={{ objectFit: 'cover' }}
-                priority
-              />
+            {pet.photoURLs.length ? (
+              <PetImageGallery images={pet.photoURLs} alt={`${pet.type}${pet.name ? ', ' + pet.name : ''}${pet.color ? ', ' + pet.color : ''}`} />
             ) : (
               <span style={{
                 color: 'var(--primary)',

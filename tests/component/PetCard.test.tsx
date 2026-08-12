@@ -25,6 +25,7 @@ const pet: Pet = {
   hasReward: false,
   reward: null,
   photoURL: null,
+  photoURLs: [],
   embedding: null,
   lat: null,
   lng: null,

@@ -26,15 +26,19 @@ async function uploadPetPhoto(file: File, statusFolder: PetStatus): Promise<stri
  */
 export async function createPetReport(data: PetReportInput, onProgress?: (message: string) => void): Promise<string> {
   let photoUrl: string | null = null;
+  let photoUrls: string[] = [];
   let embedding: number[] | null = null;
   let imageHash: string | null = null;
 
-  if (data.photoFile) {
-    photoUrl = await uploadPetPhoto(data.photoFile, data.status);
+  const files = (data.photoFiles?.length ? data.photoFiles : data.photoFile ? [data.photoFile] : []).slice(0, 4);
+  if (files.length) {
+    onProgress?.(`1/${files.length} зураг хадгалж байна...`);
+    photoUrls = await Promise.all(files.map((file) => uploadPetPhoto(file, data.status)));
+    photoUrl = photoUrls[0] ?? null;
     try {
       [embedding, imageHash] = await Promise.all([
-        getImageEmbedding(data.photoFile, onProgress),
-        getImageHash(data.photoFile),
+        getImageEmbedding(files[0], onProgress),
+        getImageHash(files[0]),
       ]);
     } catch (err) {
       // Embedding амжилтгүй бол ч мэдэгдлийг нийтлэхэд саад болгохгүй —
@@ -55,6 +59,7 @@ export async function createPetReport(data: PetReportInput, onProgress?: (messag
       has_reward: data.hasReward ?? false,
       reward: data.reward ?? null,
       photo_url: photoUrl,
+      photo_urls: photoUrls,
       color_signature: embedding, // browser fallback-д DINOv2 vector-ийг JSONB хэлбэрээр хадгална
       dino_embedding: embedding,
       embedding_version: embedding ? EMBEDDING_VERSION : null,
@@ -66,8 +71,8 @@ export async function createPetReport(data: PetReportInput, onProgress?: (messag
   let result = await supabase.from(TABLE).insert(payload).select().single();
 
   // Migration хараахан ажиллаагүй deployment дээр зар нийтлэхийг эвдэхгүй.
-  if (result.error && /image_embedding|dino_embedding|embedding_version|image_hash|schema cache/i.test(result.error.message)) {
-    const { dino_embedding: _dino, embedding_version: _version, image_hash: _hash, ...legacyPayload } = payload;
+  if (result.error && /image_embedding|dino_embedding|embedding_version|image_hash|photo_urls|schema cache/i.test(result.error.message)) {
+    const { dino_embedding: _dino, embedding_version: _version, image_hash: _hash, photo_urls: _photos, ...legacyPayload } = payload;
     result = await supabase.from(TABLE).insert(legacyPayload).select().single();
   }
 

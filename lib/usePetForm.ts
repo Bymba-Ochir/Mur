@@ -36,38 +36,36 @@ export interface PetFormData {
 // ---------- Зураг: шахалт + content moderation ----------
 export function usePhotoUpload() {
   const showToast = useToast();
-  const [photoFile, setPhotoFile] = useState<File | null>(null);
-  const [preview, setPreview] = useState<string | null>(null);
+  const [photoFiles, setPhotoFiles] = useState<File[]>([]);
+  const [previews, setPreviews] = useState<string[]>([]);
   const [compressing, setCompressing] = useState(false);
   const [compressStatus, setCompressStatus] = useState('');
 
   async function handlePhoto(e: ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const selected = Array.from(e.target.files ?? []).slice(0, 4);
+    if (!selected.length) return;
     setCompressing(true);
     try {
-      const originalKB = Math.round(file.size / 1024);
-      const compressed = await compressImage(file);
-      const newKB = Math.round(compressed.size / 1024);
-
-      const check = await checkImageContent(compressed, setCompressStatus);
-      if (!check.ok) {
-        showToast(check.reason, 'error');
-        e.target.value = '';
-        return;
+      const accepted: File[] = [];
+      for (let index = 0; index < selected.length; index += 1) {
+        setCompressStatus(`${index + 1}/${selected.length} зураг оновчлож байна...`);
+        const compressed = await compressImage(selected[index]);
+        const check = await checkImageContent(compressed, setCompressStatus);
+        if (!check.ok) {
+          showToast(`${index + 1}-р зураг: ${check.reason}`, 'error');
+          continue;
+        }
+        if (check.warning) showToast(`${index + 1}-р зураг: ${check.warning}`, 'info');
+        accepted.push(compressed);
       }
-      if (check.warning) {
-        showToast(check.warning, 'info');
-      }
-
-      setPhotoFile(compressed);
-      setPreview(URL.createObjectURL(compressed));
-      if (originalKB > newKB + 20) {
-        showToast(`Зураг оновчлогдлоо: ${originalKB}KB → ${newKB}KB`, 'success');
+      if (accepted.length) {
+        setPhotoFiles(accepted);
+        setPreviews(accepted.map((file) => URL.createObjectURL(file)));
+        showToast(`${accepted.length} зураг бэлэн боллоо`, 'success');
       }
     } catch {
-      setPhotoFile(file);
-      setPreview(URL.createObjectURL(file));
+      setPhotoFiles(selected);
+      setPreviews(selected.map((file) => URL.createObjectURL(file)));
     } finally {
       setCompressing(false);
       setCompressStatus('');
@@ -79,13 +77,20 @@ export function usePhotoUpload() {
   }
 
   function reset() {
-    setPhotoFile(null);
-    setPreview(null);
+    previews.forEach((url) => URL.revokeObjectURL(url));
+    setPhotoFiles([]);
+    setPreviews([]);
     setCompressing(false);
     setCompressStatus('');
   }
 
-  return { photoFile, preview, compressing, compressStatus, handlePhoto, openFilePicker, reset };
+  function removePhoto(index: number) {
+    URL.revokeObjectURL(previews[index]);
+    setPhotoFiles((current) => current.filter((_, itemIndex) => itemIndex !== index));
+    setPreviews((current) => current.filter((_, itemIndex) => itemIndex !== index));
+  }
+
+  return { photoFiles, previews, photoFile: photoFiles[0] ?? null, preview: previews[0] ?? null, compressing, compressStatus, handlePhoto, openFilePicker, removePhoto, reset };
 }
 
 // ---------- Байршил: geolocation + ойролцоо дүүрэг ----------
@@ -126,11 +131,11 @@ export function usePetLocation(onDistrictGuess: (d: District) => void) {
 
 // ---------- Submit: createPetReport + төлөв ----------
 export function usePetSubmit({
-  status, form, photoFile, coords, onSuccess,
+  status, form, photoFiles, coords, onSuccess,
 }: {
   status: PetStatus;
   form: PetFormData;
-  photoFile: File | null;
+  photoFiles: File[];
   coords: { lat: number; lng: number } | null;
   onSuccess: (id: string) => void;
 }) {
@@ -154,7 +159,8 @@ export function usePetSubmit({
           status,
           hasReward: form.hasReward,
           reward: form.reward ? Number(form.reward) : null,
-          photoFile,
+          photoFile: photoFiles[0] ?? null,
+          photoFiles,
           lat: coords?.lat,
           lng: coords?.lng,
         },

@@ -1,12 +1,12 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image';
 import type { KeyboardEvent } from 'react';
 import PetCardView from './PetCardView';
 import { useLanguage } from '../lib/i18n';
 import type { Pet } from '../lib/types';
 import { getBreedLabel } from '../lib/petBreeds';
+import PetImageGallery from './PetImageGallery';
 
 export default function PetCard({ pet }: { pet: Pet }) {
   const router = useRouter();
@@ -45,14 +45,8 @@ export default function PetCard({ pet }: { pet: Pet }) {
       revealed={revealed}
       onRevealPhone={() => setRevealed(true)}
       imageNode={
-        pet.photoURL ? (
-          <Image
-            src={pet.photoURL}
-            alt={`${pet.type}${pet.name ? ' — ' + pet.name : ''}, ${pet.color || ''}`}
-            fill
-            sizes="(max-width: 640px) 45vw, 220px"
-            style={{ objectFit: 'cover' }}
-          />
+        pet.photoURLs.length ? (
+          <PetImageGallery images={pet.photoURLs} alt={`${pet.type}${pet.name ? ' — ' + pet.name : ''}, ${pet.color || ''}`} />
         ) : undefined
       }
       onClick={goToDetail}
