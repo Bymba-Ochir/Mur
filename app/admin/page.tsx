@@ -107,23 +107,23 @@ export default function AdminPage() {
     finally { setBusyId(null); }
   }
 
-  if (loading || !checked) return <div className="admin-state">{t('detail_loading')}</div>;
-  if (!user) return <div className="admin-state">{t('admin_login_required')}</div>;
+  if (loading || !checked) return <div className="grid min-h-[50vh] place-items-center text-muted">{t('detail_loading')}</div>;
+  if (!user) return <div className="grid min-h-[50vh] place-items-center text-muted">{t('admin_login_required')}</div>;
   if (!admin) return <div className="page-shell"><div className="page-header"><div className="eyebrow">{t('admin_restricted_eyebrow')}</div><h1>{t('admin_no_access')}</h1></div></div>;
 
   return (
-    <div className="admin-page page-shell">
-      <header className="admin-header">
-        <div><div className="eyebrow">Удирдлагын хэсэг</div><h1>Admin хяналтын самбар</h1><p>Зар, мэдээлэл болон модераторын үйлдлийг нэг газраас хянана.</p></div>
+    <div className="page-shell pb-24">
+      <header className="mb-6 flex items-end justify-between gap-4 max-[760px]:flex-col max-[760px]:items-stretch">
+        <div><div className="eyebrow">Удирдлагын хэсэг</div><h1 className="my-2 font-display text-[clamp(1.8rem,5vw,3rem)]">Admin хяналтын самбар</h1><p className="text-muted">Зар, мэдээлэл болон модераторын үйлдлийг нэг газраас хянана.</p></div>
         <Button variant="ghost" onClick={load} disabled={dataLoading}>↻ Шинэчлэх</Button>
       </header>
 
-      <nav className="admin-tabs" aria-label="Admin хэсгүүд">
+      <nav className="mb-8 flex gap-1.5 overflow-x-auto rounded-card border border-line bg-panel p-1.5 max-[480px]:-mx-[var(--page-pad)] max-[480px]:rounded-none max-[480px]:border-x-0" aria-label="Admin хэсгүүд">
         {([
           ['dashboard', 'Хянах самбар'], ['reports', `Мэдээлэгдсэн (${stats.reports})`],
           ['content', 'Бүх зар'], ['audit', 'Үйлдлийн түүх'],
         ] as Array<[Tab, string]>).map(([id, label]) => (
-          <button key={id} type="button" className={tab === id ? 'active' : ''} onClick={() => setTab(id)}>{label}</button>
+          <button key={id} type="button" className={`min-h-11 flex-1 shrink-0 basis-max cursor-pointer rounded-control border-0 px-4.5 font-bold ${tab === id ? 'bg-[var(--card)] text-brand shadow-card' : 'bg-transparent text-muted'}`} onClick={() => setTab(id)}>{label}</button>
         ))}
       </nav>
 
@@ -165,14 +165,6 @@ export default function AdminPage() {
       </>}
 
       <style jsx>{`
-        .admin-page { padding-bottom: var(--sp-9); }
-        .admin-state { min-height: 50vh; display: grid; place-items: center; color: var(--text-secondary); }
-        .admin-header { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--sp-4); margin-bottom: var(--sp-5); }
-        .admin-header h1 { margin: 8px 0; font-size: clamp(1.8rem, 5vw, 3rem); }
-        .admin-header p { color: var(--text-secondary); }
-        .admin-tabs { display: flex; gap: 6px; padding: 6px; margin-bottom: var(--sp-6); overflow-x: auto; border: 1px solid var(--border-subtle); border-radius: var(--r-lg); background: var(--surface-2); }
-        .admin-tabs button { flex: 1 0 max-content; min-height: 44px; padding: 0 18px; border: 0; border-radius: var(--r-md); color: var(--text-secondary); background: transparent; font-weight: 700; cursor: pointer; }
-        .admin-tabs button.active { color: var(--primary); background: var(--card); box-shadow: var(--shadow-sm); }
         .admin-list { display: grid; gap: 10px; }
         .admin-row { display: flex; align-items: center; gap: 14px; padding: 14px; border: 1px solid var(--border-subtle); border-radius: var(--r-lg); background: var(--card); }
         .admin-row :global(img), .image-placeholder { width: 72px; height: 72px; flex: 0 0 72px; border-radius: var(--r-md); object-fit: cover; }
@@ -196,8 +188,8 @@ export default function AdminPage() {
         .audit-list small { color: var(--text-secondary); }
         .setup-note { padding: 24px; border: 1px dashed var(--border-subtle); border-radius: var(--r-lg); color: var(--text-secondary); background: var(--surface-2); }
         .setup-note strong { color: var(--text-primary); }
-        @media (max-width: 760px) { .admin-header { align-items: stretch; flex-direction: column; } .content-tools { flex-direction: column; } .admin-row { align-items: flex-start; flex-wrap: wrap; } .row-copy { min-width: calc(100% - 90px); } .row-actions { width: 100%; justify-content: flex-end; border-top: 1px solid var(--border-subtle); padding-top: 10px; } .audit-list > div { grid-template-columns: 1fr; gap: 4px; } }
-        @media (max-width: 480px) { .admin-tabs { margin-inline: calc(var(--page-pad) * -1); border-radius: 0; border-inline: 0; } .admin-row :global(img), .image-placeholder { width: 56px; height: 56px; flex-basis: 56px; } .row-copy { min-width: calc(100% - 72px); } }
+        @media (max-width: 760px) { .content-tools { flex-direction: column; } .admin-row { align-items: flex-start; flex-wrap: wrap; } .row-copy { min-width: calc(100% - 90px); } .row-actions { width: 100%; justify-content: flex-end; border-top: 1px solid var(--border-subtle); padding-top: 10px; } .audit-list > div { grid-template-columns: 1fr; gap: 4px; } }
+        @media (max-width: 480px) { .admin-row :global(img), .image-placeholder { width: 56px; height: 56px; flex-basis: 56px; } .row-copy { min-width: calc(100% - 72px); } }
       `}</style>
     </div>
   );

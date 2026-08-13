@@ -1,4 +1,32 @@
+/* Tailwind v4: preflight-гүй hybrid mode.
+   Одоогийн МӨР-ийн base CSS-ийг өөрчлөхгүй, зөвхөн theme + utilities ачаална. */
+@layer theme, base, components, utilities;
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/utilities.css' layer(utilities);
 @import 'leaflet/dist/leaflet.css';
+
+@theme inline {
+  --color-brand: var(--primary);
+  --color-action: var(--accent);
+  --color-sky: var(--found);
+  --color-success: var(--success);
+  --color-danger: var(--alert);
+  --color-warning: var(--warning);
+  --color-surface: var(--surface-1);
+  --color-panel: var(--surface-2);
+  --color-panel-muted: var(--surface-3);
+  --color-ink: var(--text-primary);
+  --color-muted: var(--text-secondary);
+  --color-subtle: var(--text-tertiary);
+  --color-line: var(--border-subtle);
+  --font-sans: var(--font-body);
+  --font-display: var(--font-display);
+  --font-mono: var(--font-mono);
+  --radius-card: var(--r-lg);
+  --radius-control: var(--r-md);
+  --shadow-card: var(--shadow-sm);
+  --shadow-lift: var(--shadow-lift);
+}
 
 /* ═══════════════════════════════════════════════════════
    МӨР — Design tokens: Indigo / Coral / Sky
