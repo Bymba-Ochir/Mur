@@ -36,6 +36,6 @@ export default function SavedPage() {
       {searches.length ? searches.map((search) => <div className="card flex items-center gap-2.5 p-3" key={search.id}><span>{search.name}{search.notify ? ' · 🔔' : ''}</span><Button variant="ghost" onClick={async () => { await deleteSavedSearch(search.id); setSearches((all) => all.filter((item) => item.id !== search.id)); }}>Устгах</Button></div>) : <p className="text-[var(--muted)]">Хадгалсан хайлт алга.</p>}
     </div>
     <h2 className="mb-3">Хадгалсан зар</h2>
-    {pets.length ? <div className="grid">{pets.map((pet) => <PetCard key={pet.id} pet={pet} />)}</div> : <p className="text-[var(--muted)]">Хадгалсан зар алга.</p>}
+    {pets.length ? <div className="listing-grid">{pets.map((pet) => <PetCard key={pet.id} pet={pet} />)}</div> : <p className="text-[var(--muted)]">Хадгалсан зар алга.</p>}
   </div>;
 }

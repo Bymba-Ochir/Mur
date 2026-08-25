@@ -180,7 +180,7 @@ export default function ListingsPage() {
       </div>
 
       {loading ? (
-        <div className="grid">
+        <div className="listing-grid">
           {Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)}
         </div>
       ) : pets.length === 0 ? (
@@ -204,7 +204,7 @@ export default function ListingsPage() {
       ) : (
         <>
           <p className="result-count">{pets.length} {t('results_count')}</p>
-          <div className="grid">
+          <div className="listing-grid">
             {pets.map((p) => <PetCard key={p.id} pet={p} />)}
           </div>
           {hasMore && !matchFile && (

@@ -65,7 +65,7 @@ export default function SittingPage() {
         </select>
       </div>
       {loading ? (
-        <div className="grid"><SkeletonCard /><SkeletonCard /><SkeletonCard /><SkeletonCard /></div>
+        <div className="listing-grid"><SkeletonCard /><SkeletonCard /><SkeletonCard /><SkeletonCard /></div>
       ) : listings.length === 0 ? (
         <div className="py-[var(--sp-6)] text-center">
           {petType || district || search.trim() ? (
@@ -84,7 +84,7 @@ export default function SittingPage() {
       ) : (
         <>
           <p className="result-count">{listings.length} {t('results_count')}</p>
-          <div className="grid">
+          <div className="listing-grid">
             {listings.map((l) => <SittingCard key={l.id} listing={l} />)}
           </div>
           {hasMore && (

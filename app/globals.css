@@ -355,20 +355,20 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 /* ═══════════════════════════════════════
    Grid
    ═══════════════════════════════════════ */
-.grid {
+.listing-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr));
   gap: var(--sp-5);
   margin-top: var(--sp-5);
 }
 @media (min-width: 641px) and (max-width: 1024px) {
-  .grid { grid-template-columns: repeat(2, 1fr); gap: var(--sp-4); }
+  .listing-grid { grid-template-columns: repeat(2, 1fr); gap: var(--sp-4); }
 }
 @media (min-width: 481px) and (max-width: 640px) {
-  .grid { grid-template-columns: repeat(2, 1fr); gap: var(--sp-4); }
+  .listing-grid { grid-template-columns: repeat(2, 1fr); gap: var(--sp-4); }
 }
 @media (max-width: 480px) {
-  .grid { grid-template-columns: 1fr; gap: var(--sp-3); }
+  .listing-grid { grid-template-columns: 1fr; gap: var(--sp-3); }
 }
 
 @media (max-width: 480px) {

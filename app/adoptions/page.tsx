@@ -90,7 +90,7 @@ export default function AdoptionsPage() {
       </div>
 
       {loading ? (
-        <div className="grid"><SkeletonCard /><SkeletonCard /><SkeletonCard /><SkeletonCard /><SkeletonCard /><SkeletonCard /></div>
+        <div className="listing-grid"><SkeletonCard /><SkeletonCard /><SkeletonCard /><SkeletonCard /><SkeletonCard /><SkeletonCard /></div>
       ) : adoptions.length === 0 ? (
         <div className="py-[var(--sp-6)] text-center">
           <p className="mb-2 text-lg font-semibold text-[var(--primary)]">
@@ -104,7 +104,7 @@ export default function AdoptionsPage() {
       ) : (
         <>
           <p className="result-count">{adoptions.length} {t('results_count')}</p>
-          <div className="grid">
+          <div className="listing-grid">
             {adoptions.map((a) => <AdoptionCard key={a.id} adoption={a} />)}
           </div>
           {hasMore && (
