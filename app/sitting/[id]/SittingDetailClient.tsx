@@ -90,7 +90,7 @@ export default function SittingDetailClient({ id }: { id: string }) {
     }
   }
 
-  if (error) return <p style={{ color: 'var(--alert)' }}>{error}</p>;
+  if (error) return <p className="text-[var(--alert)]">{error}</p>;
   if (!listing) return <p>{t('detail_loading')}</p>;
 
   const label = petTypeLabel(listing.petType);
@@ -120,32 +120,28 @@ export default function SittingDetailClient({ id }: { id: string }) {
           saving={saving}
         />
       ) : (
-        <div className="detail-grid">
-          <div className="media-box">
+        <div className="grid grid-cols-1 gap-[var(--sp-5)] min-[800px]:grid-cols-2 min-[800px]:gap-[var(--sp-6)]">
+          <div className="relative flex aspect-4/3 items-center justify-center overflow-hidden rounded-[var(--r-lg)] bg-[var(--thumb-bg)] max-sm:rounded-[var(--r-md)] min-[1025px]:rounded-[var(--r-xl)]">
             {listing.photoURL ? (
               <Image
                 src={listing.photoURL}
                 alt={listing.description || label}
                 fill
                 sizes="(max-width: 800px) 100vw, 520px"
-                style={{ objectFit: 'cover' }}
+                className="object-cover"
                 priority
               />
             ) : (
-              <span style={{
-                color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                width: 120, height: 120, background: 'var(--glass-bg)', border: '1px solid var(--glass-border)',
-                borderRadius: '50%', boxShadow: 'var(--shadow-sm)',
-              }}><PetIcon type={listing.petType === 'Бүгд' ? 'Бусад' : listing.petType} size={72} /></span>
+              <span className="flex size-[120px] items-center justify-center rounded-full border border-[var(--glass-border)] bg-[var(--glass-bg)] text-[var(--primary)] shadow-[var(--shadow-sm)]"><PetIcon type={listing.petType === 'Бүгд' ? 'Бусад' : listing.petType} size={72} /></span>
             )}
           </div>
 
-          <div className="info-card">
+          <div className="flex flex-col gap-[var(--sp-2)] rounded-[var(--r-lg)] border border-[var(--line)] bg-[var(--card)] p-[var(--sp-5)] max-sm:rounded-[var(--r-md)] max-sm:p-[var(--sp-4)] min-[1025px]:rounded-[var(--r-xl)] min-[1025px]:p-[var(--sp-6)] [&_p]:my-1 [&_p]:text-sm [&_p]:leading-[1.5] [&_strong]:text-[var(--primary)]">
             <p><strong>{t('sitting_pet_type_label')}</strong> {label}</p>
             {listing.description && (
-              <div style={{ marginTop: 'var(--sp-3)' }}>
+              <div className="mt-[var(--sp-3)]">
                 <p><strong>{t('detail_description')}</strong></p>
-                <p style={{ whiteSpace: 'pre-wrap' }}>{listing.description}</p>
+                <p className="whitespace-pre-wrap">{listing.description}</p>
               </div>
             )}
             {listing.experience && <p><strong>{t('sitting_detail_experience')}</strong> {listing.experience}</p>}
@@ -154,16 +150,16 @@ export default function SittingDetailClient({ id }: { id: string }) {
             <p><strong>{t('detail_place')}</strong> {listing.place}</p>
             <p><strong>{t('sitting_detail_price')}</strong> {listing.price != null ? `₮ ${listing.price.toLocaleString()} ${t('sitting_price_per_day')}` : t('sitting_price_free')}</p>
 
-            <div className="phone-section">
+            <div className="mt-[var(--sp-4)]">
               {revealed ? (
-                <a className="phone-link" href={`tel:${listing.phone}`}>☎ {formatPhone(listing.phone)}</a>
+                <a className="inline-flex items-center gap-1.5 text-[15px] font-semibold text-[var(--primary)] no-underline" href={`tel:${listing.phone}`}>☎ {formatPhone(listing.phone)}</a>
               ) : listing.phone ? (
                 <Button variant="ghost" onClick={() => setRevealed(true)}>☎ {maskPhone(listing.phone)} · {t('detail_show_phone')}</Button>
               ) : null}
             </div>
 
             {isOwner && (
-              <div className="owner-actions">
+              <div className="mt-[var(--sp-4)] flex gap-[var(--sp-2)] [&_.btn-base]:min-h-[var(--touch-target)] [&_.btn-base]:flex-1">
                 <Button variant="ghost" onClick={() => setEditing(true)}>{t('detail_edit_btn')}</Button>
                 <Button variant="danger" onClick={handleDelete} disabled={deleting}>
                   {deleting ? t('detail_deleting') : t('detail_delete_btn')}
@@ -175,51 +171,21 @@ export default function SittingDetailClient({ id }: { id: string }) {
       )}
 
       {listing.lat != null && listing.lng != null && (
-        <div className="map-section">
-          <p className="map-title">{t('sitting_map_title')}</p>
+        <div className="mt-[var(--sp-5)]">
+          <p className="mb-[var(--sp-2)] text-[13px] font-semibold text-[var(--primary)]">{t('sitting_map_title')}</p>
           <LocationMap lat={listing.lat} lng={listing.lng} />
         </div>
       )}
 
-      <div className="back-row">
+      <div className="mt-[var(--sp-5)]">
         <Button as="link" href="/sitting" variant="ghost">{t('sitting_back_to_list')}</Button>
       </div>
 
-      <div className="share-section">
+      <div className="mt-[var(--sp-6)] text-center">
         <ShareButtons url={url} title={`Асрах үйлчилгээ — ${label}`} />
-        <p className="share-hint">{t('detail_share_hint')}</p>
+        <p className="mt-[var(--sp-2)] text-xs text-[var(--muted)]">{t('detail_share_hint')}</p>
       </div>
 
-      <style jsx>{`
-        .detail-grid { display: grid; grid-template-columns: 1fr; gap: var(--sp-5); }
-        @media (min-width: 800px) { .detail-grid { grid-template-columns: 1fr 1fr; gap: var(--sp-6); } }
-        .media-box {
-          aspect-ratio: 4/3; background: var(--thumb-bg); border-radius: var(--r-lg); overflow: hidden;
-          position: relative; display: flex; align-items: center; justify-content: center;
-        }
-        @media (max-width: 640px) { .media-box { border-radius: var(--r-md); } }
-        @media (min-width: 1025px) { .media-box { border-radius: var(--r-xl); } }
-        .info-card {
-          background: var(--card); border: 1px solid var(--line); border-radius: var(--r-lg);
-          padding: var(--sp-5); display: flex; flex-direction: column; gap: var(--sp-2);
-        }
-        @media (max-width: 640px) { .info-card { border-radius: var(--r-md); padding: var(--sp-4); } }
-        @media (min-width: 1025px) { .info-card { border-radius: var(--r-xl); padding: var(--sp-6); } }
-        p { font-size: 14px; margin: 4px 0; line-height: 1.5; }
-        strong { color: var(--primary); }
-        .phone-section { margin-top: var(--sp-4); }
-        .phone-link {
-          display: inline-flex; align-items: center; gap: 6px;
-          font-size: 15px; font-weight: 600; color: var(--primary); text-decoration: none;
-        }
-        .owner-actions { display: flex; gap: var(--sp-2); margin-top: var(--sp-4); }
-        .owner-actions :global(.btn-base) { flex: 1; min-height: var(--touch-target); }
-        .map-section { margin-top: var(--sp-5); }
-        .map-title { font-size: 13px; font-weight: 600; color: var(--primary); margin-bottom: var(--sp-2); }
-        .back-row { margin-top: var(--sp-5); }
-        .share-section { margin-top: var(--sp-6); text-align: center; }
-        .share-hint { font-size: 12px; color: var(--muted); margin-top: var(--sp-2); }
-      `}</style>
     </div>
   );
 }

@@ -42,45 +42,40 @@ export default function VaccinationsSection({
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--sp-3)' }}>
-        <h3 style={{ fontSize: 14, fontWeight: 600, color: 'var(--primary)' }}>{t('health_section_vaccinations')}</h3>
-        <Button variant="ghost" style={{ fontSize: 12, padding: '6px 12px', minHeight: 'auto' }} onClick={() => setShowForm(!showForm)}>
+      <div className="mb-[var(--sp-3)] flex items-center justify-between">
+        <h3 className="text-sm font-semibold text-[var(--primary)]">{t('health_section_vaccinations')}</h3>
+        <Button variant="ghost" className="min-h-0 px-3 py-1.5 text-xs" onClick={() => setShowForm(!showForm)}>
           {showForm ? '✕' : t('health_vax_add')}
         </Button>
       </div>
 
       {showForm && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-2)', marginBottom: 'var(--sp-3)', padding: 'var(--sp-3)', background: 'var(--eyebrow-bg)', borderRadius: 'var(--r-md)' }}>
-          <p style={{ fontSize: 11.5, color: 'var(--muted)', lineHeight: 1.5 }}>Хийлгэсэн вакцины нэр, хийлгэсэн огноо, эмчийн нэрийг оруулна. Эмчийн нэр заавал биш.</p>
-          <input className="field" placeholder={t('health_vax_name')} value={name} onChange={(e) => setName(e.target.value)} style={{ fontSize: 13, minHeight: 36 }} />
-          <input className="field" type="date" value={date} onChange={(e) => setDate(e.target.value)} style={{ fontSize: 13, minHeight: 36 }} />
-          <input className="field" placeholder={t('health_vet_name')} value={vetName} onChange={(e) => setVetName(e.target.value)} style={{ fontSize: 13, minHeight: 36 }} />
-          <Button variant="accent" onClick={handleAdd} disabled={busy || !name.trim()} style={{ fontSize: 13, minHeight: 36 }}>
+        <div className="mb-[var(--sp-3)] flex flex-col gap-[var(--sp-2)] rounded-[var(--r-md)] bg-[var(--eyebrow-bg)] p-[var(--sp-3)] [&_.field]:min-h-9 [&_.field]:text-[13px]">
+          <p className="text-[11.5px] leading-[1.5] text-[var(--muted)]">Хийлгэсэн вакцины нэр, хийлгэсэн огноо, эмчийн нэрийг оруулна. Эмчийн нэр заавал биш.</p>
+          <input className="field" placeholder={t('health_vax_name')} value={name} onChange={(e) => setName(e.target.value)} />
+          <input className="field" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+          <input className="field" placeholder={t('health_vet_name')} value={vetName} onChange={(e) => setVetName(e.target.value)} />
+          <Button variant="accent" className="min-h-9 text-[13px]" onClick={handleAdd} disabled={busy || !name.trim()}>
             {busy ? t('chat_sending') : t('health_vax_add')}
           </Button>
         </div>
       )}
 
       {vaccinations.length === 0 ? (
-        <p style={{ fontSize: 13, color: 'var(--muted)' }}>{t('health_vax_none')}</p>
+        <p className="text-[13px] text-[var(--muted)]">{t('health_vax_none')}</p>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-2)' }}>
+        <div className="flex flex-col gap-[var(--sp-2)]">
           {vaccinations.map((v) => (
-            <div key={v.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 'var(--sp-2) var(--sp-3)', background: 'var(--card)', border: '1px solid var(--line)', borderRadius: 'var(--r-md)' }}>
+            <div key={v.id} className="flex items-center justify-between rounded-[var(--r-md)] border border-[var(--line)] bg-[var(--card)] px-[var(--sp-3)] py-[var(--sp-2)]">
               <div>
-                <p style={{ fontSize: 13, fontWeight: 600 }}>{v.vaccineName}</p>
-                <p style={{ fontSize: 11, color: 'var(--muted)' }}>{v.vaccinationDate}{v.vetName ? ` · ${v.vetName}` : ''}</p>
+                <p className="text-[13px] font-semibold">{v.vaccineName}</p>
+                <p className="text-[11px] text-[var(--muted)]">{v.vaccinationDate}{v.vetName ? ` · ${v.vetName}` : ''}</p>
               </div>
-              <button className="danger-link" onClick={() => handleDelete(v.id)} style={{ fontSize: 11 }}>✕</button>
+              <button className="cursor-pointer border-0 bg-transparent p-1 text-[11px] text-[var(--alert)] hover:opacity-80" onClick={() => handleDelete(v.id)}>✕</button>
             </div>
           ))}
         </div>
       )}
-
-      <style jsx>{`
-        .danger-link { background: none; border: none; color: var(--alert); cursor: pointer; padding: 4px; }
-        .danger-link:hover { opacity: 0.8; }
-      `}</style>
     </div>
   );
 }

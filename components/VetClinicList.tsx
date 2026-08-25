@@ -83,7 +83,7 @@ export default function VetClinicList({ embedded = false }: { embedded?: boolean
       />
 
       {/* Шүүлтүүр + Байршил */}
-      <div className="filter-bar content-panel" style={{ marginTop: 'var(--sp-4)', marginBottom: 'var(--sp-4)' }}>
+      <div className="filter-bar content-panel my-[var(--sp-4)]">
         <select className="filter" aria-label={t('filter_all_districts')} value={district} onChange={(e) => setDistrict(e.target.value)}>
           <option value="">{t('filter_all_districts')}</option>
           {DISTRICTS.map((d) => <option key={d}>{d}</option>)}
@@ -106,7 +106,7 @@ export default function VetClinicList({ embedded = false }: { embedded?: boolean
           variant="ghost"
           onClick={handleLocation}
           disabled={locating}
-          style={{ whiteSpace: 'nowrap', minHeight: 'var(--touch-target-sm)' }}
+          className="min-h-[var(--touch-target-sm)] whitespace-nowrap"
         >
           {locating ? t('clinics_locating') : t('clinics_use_location')}
         </Button>
@@ -114,11 +114,11 @@ export default function VetClinicList({ embedded = false }: { embedded?: boolean
 
       {/* Эмнэлгүүдийн жагсаалт */}
       {filtered.length === 0 ? (
-        <p style={{ textAlign: 'center', color: 'var(--muted)', padding: 'var(--sp-6) 0' }}>
+        <p className="py-[var(--sp-6)] text-center text-[var(--muted)]">
           {t('empty_no_results_title')}
         </p>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-3)' }}>
+        <div className="flex flex-col gap-[var(--sp-3)]">
           {filtered.map((c) => (
             <ClinicCard
               key={c.id}

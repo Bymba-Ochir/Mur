@@ -28,8 +28,8 @@ export default function MyPetProfileClient({ id }: { id: string }) {
 
   useEffect(() => { load(); }, [load]);
 
-  if (error) return <p style={{ color: 'var(--alert)', padding: 'var(--sp-6)' }}>{error}</p>;
-  if (!pet) return <p style={{ color: 'var(--muted)', padding: 'var(--sp-6)' }}>{t('detail_loading')}</p>;
+  if (error) return <p className="p-[var(--sp-6)] text-[var(--alert)]">{error}</p>;
+  if (!pet) return <p className="p-[var(--sp-6)] text-[var(--muted)]">{t('detail_loading')}</p>;
 
   const data: PetProfileData = {
     kind: 'mypet',
@@ -52,7 +52,7 @@ export default function MyPetProfileClient({ id }: { id: string }) {
   };
 
   const healthSection = health ? (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-5)' }}>
+    <div className="flex flex-col gap-[var(--sp-5)]">
       <VaccinationsSection petId={pet.id} vaccinations={health.vaccinations} onUpdate={load} />
       <ConditionsSection petId={pet.id} conditions={health.conditions} onUpdate={load} />
       <MedicationsSection petId={pet.id} medications={health.medications} onUpdate={load} />

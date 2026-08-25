@@ -19,39 +19,11 @@ export default function EmptyState({
   children?: ReactNode;
 }) {
   return (
-    <div className="empty-state">
-      <div className="empty-icon" aria-hidden="true">{icon}</div>
-      {title && <p className="empty-title">{title}</p>}
-      {description && <p className="empty-desc">{description}</p>}
-      {children}
-      <style jsx>{`
-        .empty-state {
-          text-align: center;
-          padding: var(--sp-6) var(--sp-4);
-          background: var(--card);
-          border: 1px dashed var(--line);
-          border-radius: var(--r-lg);
-        }
-        @media (max-width: 480px) {
-          .empty-state { padding: var(--sp-5) var(--sp-3); border-radius: var(--r-md); }
-        }
-        .empty-icon {
-          width: 72px; height: 72px; margin: 0 auto var(--sp-3);
-          display: flex; align-items: center; justify-content: center;
-          background: var(--eyebrow-bg); color: var(--primary);
-          border: 1px solid var(--glass-border); border-radius: 50%;
-        }
-        @media (max-width: 480px) {
-          .empty-icon { width: 64px; height: 64px; margin-bottom: var(--sp-3); }
-        }
-        .empty-title {
-          font-weight: 700; color: var(--primary); font-size: 16px; margin-bottom: var(--sp-2);
-        }
-        .empty-desc {
-          color: var(--muted); font-size: 13.5px; line-height: 1.6;
-        }
-        .empty-desc + :global(*) { margin-top: var(--sp-4); }
-      `}</style>
+    <div className="rounded-[var(--r-lg)] border border-dashed border-[var(--line)] bg-[var(--card)] px-[var(--sp-4)] py-[var(--sp-6)] text-center max-[480px]:rounded-[var(--r-md)] max-[480px]:px-[var(--sp-3)] max-[480px]:py-[var(--sp-5)]">
+      <div className="mx-auto mb-[var(--sp-3)] flex size-[72px] items-center justify-center rounded-full border border-[var(--glass-border)] bg-[var(--eyebrow-bg)] text-[var(--primary)] max-[480px]:size-16" aria-hidden="true">{icon}</div>
+      {title && <p className="mb-[var(--sp-2)] text-base font-bold text-[var(--primary)]">{title}</p>}
+      {description && <p className="text-[13.5px] leading-[1.6] text-[var(--muted)]">{description}</p>}
+      {children && <div className={description ? 'mt-[var(--sp-4)]' : ''}>{children}</div>}
     </div>
   );
 }

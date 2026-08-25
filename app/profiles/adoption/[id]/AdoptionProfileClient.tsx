@@ -19,8 +19,8 @@ export default function AdoptionProfileClient({ id }: { id: string }) {
       .catch((err) => setError(getErrorMessage(err) || t('profiles_not_found')));
   }, [id, t]);
 
-  if (error) return <p style={{ color: 'var(--alert)', padding: 'var(--sp-6)' }}>{error}</p>;
-  if (!adoption) return <p style={{ color: 'var(--muted)', padding: 'var(--sp-6)' }}>{t('detail_loading')}</p>;
+  if (error) return <p className="p-[var(--sp-6)] text-[var(--alert)]">{error}</p>;
+  if (!adoption) return <p className="p-[var(--sp-6)] text-[var(--muted)]">{t('detail_loading')}</p>;
 
   const data: PetProfileData = {
     kind: 'adoption',

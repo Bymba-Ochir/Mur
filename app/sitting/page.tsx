@@ -67,16 +67,16 @@ export default function SittingPage() {
       {loading ? (
         <div className="grid"><SkeletonCard /><SkeletonCard /><SkeletonCard /><SkeletonCard /></div>
       ) : listings.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: 'var(--sp-6) 0' }}>
+        <div className="py-[var(--sp-6)] text-center">
           {petType || district || search.trim() ? (
             <>
-              <p style={{ fontSize: 18, fontWeight: 600, color: 'var(--primary)', marginBottom: 8 }}>{t('empty_no_results_title')}</p>
-              <p style={{ color: 'var(--muted)', marginBottom: 16 }}>{t('empty_no_results_desc')}</p>
+              <p className="mb-2 text-lg font-semibold text-[var(--primary)]">{t('empty_no_results_title')}</p>
+              <p className="mb-4 text-[var(--muted)]">{t('empty_no_results_desc')}</p>
             </>
           ) : (
             <>
-              <p style={{ fontSize: 18, fontWeight: 600, color: 'var(--primary)', marginBottom: 8 }}>{t('sitting_empty_title')}</p>
-              <p style={{ color: 'var(--muted)', marginBottom: 16 }}>{t('sitting_empty_desc')}</p>
+              <p className="mb-2 text-lg font-semibold text-[var(--primary)]">{t('sitting_empty_title')}</p>
+              <p className="mb-4 text-[var(--muted)]">{t('sitting_empty_desc')}</p>
             </>
           )}
           <Button as="link" href="/sitting/new" variant="accent">{t('sitting_new_btn')}</Button>
@@ -88,7 +88,7 @@ export default function SittingPage() {
             {listings.map((l) => <SittingCard key={l.id} listing={l} />)}
           </div>
           {hasMore && (
-            <Button onClick={() => load(page + 1)} disabled={loadingMore} variant="ghost" style={{ display: 'block', margin: 'var(--sp-5) auto 0' }}>
+            <Button onClick={() => load(page + 1)} disabled={loadingMore} variant="ghost" className="mx-auto mt-[var(--sp-5)] flex">
               {loadingMore ? t('loading_more') : t('load_more')}
             </Button>
           )}

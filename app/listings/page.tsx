@@ -134,9 +134,8 @@ export default function ListingsPage() {
           placeholder={t('search_placeholder')}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="filter"
           aria-label={t('search_placeholder')}
-          style={{ flex: '1 1 220px', minWidth: 180 }}
+          className="filter min-w-[180px] flex-[1_1_220px]"
         />
         <select className="filter" value={status} onChange={(e) => setStatus(e.target.value as PetStatus | '')} aria-label="Статусаар шүүх">
           <option value="">{t('filter_all')}</option>
@@ -159,25 +158,25 @@ export default function ListingsPage() {
       {district && <VolunteerBadge district={district} />}
       {district && <NotifySubscribe district={district} />}
 
-      <div className="match-upload">
+      <div className="mb-[var(--sp-5)] flex flex-wrap items-center gap-[var(--sp-2)] max-sm:mb-[var(--sp-4)]">
         <input
           type="file" id="match-file" accept="image/*"
-          onChange={handleMatchUpload} disabled={!!matching} className="file-input"
+          onChange={handleMatchUpload} disabled={!!matching} className="absolute size-px overflow-hidden opacity-0 focus-visible:[&+label]:outline-[2.5px] focus-visible:[&+label]:outline-offset-2 focus-visible:[&+label]:outline-[var(--accent)] disabled:[&+label]:cursor-not-allowed disabled:[&+label]:opacity-60"
           aria-label="Төстэй байдлаар эрэмбэлэх зураг сонгох"
         />
         <Button as="label" htmlFor="match-file" variant="ghost">{t('match_label')}</Button>
-        {matching && <span className="match-status"> — {typeof matching === 'string' ? matching : 'AI шинжилж байна (эхний удаа 10-30 сек)...'}</span>}
+        {matching && <span className="text-xs leading-[1.5] text-[var(--muted)] max-[480px]:mt-[var(--sp-1)] max-[480px]:w-full max-[480px]:text-[13px] max-[480px]:leading-[1.6]"> — {typeof matching === 'string' ? matching : 'AI шинжилж байна (эхний удаа 10-30 сек)...'}</span>}
         {matching && <Button variant="ghost" onClick={cancelMatching}>{t('match_cancel')}</Button>}
         {matchFile && !matching && !matchError && matchedCount === 0 && (
-          <span className="match-status err">
+          <span className="text-xs leading-[1.5] text-[var(--alert)] max-[480px]:mt-[var(--sp-1)] max-[480px]:w-full max-[480px]:text-[13px] max-[480px]:leading-[1.6]">
             — Харьцуулах боломжтой бичлэг олдсонгүй (хуучин бичлэгүүд өөр
             embedding-тэй байж болзошгүй — шинээр бүртгэсэн 2 бичлэгээр туршина уу).
           </span>
         )}
         {matchFile && !matching && !matchError && matchedCount != null && matchedCount > 0 && (
-          <span className="match-status"> — {matchedCount} {t('match_results')} · {matchSource === 'database' ? t('match_all_database') : t('match_browser_fallback')}</span>
+          <span className="text-xs leading-[1.5] text-[var(--muted)] max-[480px]:mt-[var(--sp-1)] max-[480px]:w-full max-[480px]:text-[13px] max-[480px]:leading-[1.6]"> — {matchedCount} {t('match_results')} · {matchSource === 'database' ? t('match_all_database') : t('match_browser_fallback')}</span>
         )}
-        {matchError && <span className="match-status err"> — {matchError}</span>}
+        {matchError && <span className="text-xs leading-[1.5] text-[var(--alert)] max-[480px]:mt-[var(--sp-1)] max-[480px]:w-full max-[480px]:text-[13px] max-[480px]:leading-[1.6]"> — {matchError}</span>}
       </div>
 
       {loading ? (
@@ -185,19 +184,19 @@ export default function ListingsPage() {
           {Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)}
         </div>
       ) : pets.length === 0 ? (
-        <div className="empty-state">
-          <div className="empty-icon" aria-hidden="true">
+        <div className="relative mt-[var(--sp-2)] overflow-hidden rounded-[var(--r-xl)] border border-[var(--line)] bg-[var(--card)] px-6 py-[52px] text-center shadow-[var(--shadow-sm)] before:pointer-events-none before:absolute before:inset-x-[-20%] before:top-[-40%] before:h-[80%] before:bg-[radial-gradient(60%_60%_at_50%_0%,color-mix(in_srgb,var(--accent)_8%,transparent),transparent_70%)] max-sm:mt-[var(--sp-3)] max-sm:rounded-[var(--r-lg)] max-sm:px-5 max-sm:py-10 max-[480px]:px-4 max-[480px]:py-8">
+          <div className="relative mx-auto mb-[var(--sp-3)] flex size-[72px] items-center justify-center rounded-full border border-[var(--glass-border)] bg-[var(--eyebrow-bg)] text-[var(--primary)] max-[480px]:mb-[var(--sp-4)] max-[480px]:size-[76px]" aria-hidden="true">
             <svg width="34" height="34" viewBox="0 0 48 48" fill="currentColor" focusable="false">
               <ellipse cx="24" cy="30" rx="11" ry="9" /><circle cx="10" cy="18" r="5.5" /><circle cx="38" cy="18" r="5.5" /><circle cx="17" cy="8" r="5" /><circle cx="31" cy="8" r="5" />
             </svg>
           </div>
-          <p className="empty-title">
+          <p className="relative mb-[var(--sp-2)] text-base font-bold text-[var(--primary)] max-[480px]:text-[17px]">
             {search || district || status || type ? t('empty_no_results_title') : t('empty_no_posts_title')}
           </p>
-          <p className="empty-desc">
+          <p className="relative mb-[var(--sp-4)] text-[13.5px] text-[var(--muted)] max-[480px]:mb-[var(--sp-5)] max-[480px]:text-sm max-[480px]:leading-[1.6]">
             {search || district || status || type ? t('empty_no_results_desc') : t('empty_no_posts_desc')}
           </p>
-          <div className="empty-actions">
+          <div className="flex flex-wrap justify-center gap-[var(--sp-3)] max-[480px]:flex-col max-[480px]:gap-[var(--sp-2)] max-[480px]:[&_.btn-base]:w-full max-[480px]:[&_.btn-base]:justify-center">
             <Button as="link" href="/report-lost" variant="accent">{t('hero_btn_lost')}</Button>
             <Button as="link" href="/report-found" variant="ghost">{t('hero_btn_found')}</Button>
           </div>
@@ -209,7 +208,7 @@ export default function ListingsPage() {
             {pets.map((p) => <PetCard key={p.id} pet={p} />)}
           </div>
           {hasMore && !matchFile && (
-            <div className="load-more-wrap">
+            <div className="mt-[var(--sp-6)] text-center max-sm:mt-[var(--sp-5)]">
               <Button onClick={handleLoadMore} disabled={loadingMore} variant="ghost">
                 {loadingMore ? t('loading_more') : t('load_more')}
               </Button>
@@ -218,63 +217,6 @@ export default function ListingsPage() {
         </>
       )}
 
-      <style jsx>{`
-        .match-upload { display: flex; align-items: center; gap: var(--sp-2); flex-wrap: wrap; margin-bottom: var(--sp-5); }
-        @media (max-width: 640px) {
-          .match-upload { margin-bottom: var(--sp-4); }
-        }
-        .file-input { position: absolute; width: 1px; height: 1px; opacity: 0; overflow: hidden; }
-        .file-input:focus-visible + label { outline: 2.5px solid var(--accent); outline-offset: 2px; }
-        .file-input:disabled + label { opacity: 0.6; cursor: not-allowed; }
-        .match-status { font-size: 12px; color: var(--muted); line-height: 1.5; }
-        @media (max-width: 480px) {
-          .match-status { font-size: 13px; line-height: 1.6; width: 100%; margin-top: var(--sp-1); }
-        }
-        .match-status.err { color: var(--alert); }
-        .empty-state {
-          text-align: center; padding: 52px 24px; margin-top: var(--sp-2);
-          background: var(--card); border: 1px solid var(--line); border-radius: var(--r-xl);
-          box-shadow: var(--shadow-sm); position: relative; overflow: hidden;
-        }
-        .empty-state::before {
-          content: ''; position: absolute; inset: -40% -20% auto; height: 80%;
-          background: radial-gradient(60% 60% at 50% 0%, color-mix(in srgb, var(--accent) 8%, transparent), transparent 70%);
-          pointer-events: none;
-        }
-        @media (max-width: 640px) {
-          .empty-state { padding: 40px 20px; margin-top: var(--sp-3); border-radius: var(--r-lg); }
-        }
-        @media (max-width: 480px) {
-          .empty-state { padding: 32px 16px; }
-        }
-        .empty-icon {
-          position: relative;
-          width: 72px; height: 72px; margin: 0 auto var(--sp-3);
-          display: flex; align-items: center; justify-content: center;
-          background: var(--eyebrow-bg); color: var(--primary);
-          border: 1px solid var(--glass-border); border-radius: 50%;
-        }
-        @media (max-width: 480px) {
-          .empty-icon { width: 76px; height: 76px; margin-bottom: var(--sp-4); }
-        }
-        .empty-title { font-weight: 700; color: var(--primary); font-size: 16px; margin-bottom: var(--sp-2); position: relative; }
-        @media (max-width: 480px) {
-          .empty-title { font-size: 17px; }
-        }
-        .empty-desc { color: var(--muted); font-size: 13.5px; margin-bottom: var(--sp-4); position: relative; }
-        @media (max-width: 480px) {
-          .empty-desc { font-size: 14px; margin-bottom: var(--sp-5); line-height: 1.6; }
-        }
-        .empty-actions { display: flex; gap: var(--sp-3); justify-content: center; flex-wrap: wrap; }
-        @media (max-width: 480px) {
-          .empty-actions { gap: var(--sp-2); flex-direction: column; }
-          .empty-actions :global(.btn-base) { width: 100%; justify-content: center; }
-        }
-        .load-more-wrap { text-align: center; margin-top: var(--sp-6); }
-        @media (max-width: 640px) {
-          .load-more-wrap { margin-top: var(--sp-5); }
-        }
-      `}</style>
     </div>
   );
 }

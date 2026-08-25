@@ -11,27 +11,11 @@ export default function ErrorPage({ error, reset }: { error: Error & { digest?: 
   }, [error]);
 
   return (
-    <div className="ep">
-      <p className="ep-icon" aria-hidden="true">🐾</p>
-      <h1 className="ep-title">{t('err_title')}</h1>
-      <p className="ep-desc">{t('err_desc')}</p>
-      <button onClick={reset} className="ep-retry">{t('err_retry')}</button>
-
-      <style jsx>{`
-        .ep {
-          display: flex; flex-direction: column; align-items: center; justify-content: center;
-          text-align: center; padding: 80px 20px; min-height: 55vh;
-        }
-        .ep-icon { font-size: 48px; margin: 0 0 12px; }
-        .ep-title { font-family: var(--font-display); font-size: 22px; color: var(--primary); margin: 0 0 10px; }
-        .ep-desc { color: var(--muted); font-size: 14.5px; margin: 0 0 24px; max-width: 420px; }
-        .ep-retry {
-          padding: 11px 20px; background: var(--brand); color: #fff;
-          border: none; border-radius: var(--r-pill); font-weight: 600; font-size: 14px; cursor: pointer;
-        }
-        .ep-retry:hover { background: var(--primary-light); }
-        .ep-retry:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-      `}</style>
+    <div className="flex min-h-[55vh] flex-col items-center justify-center px-5 py-20 text-center">
+      <p className="mb-3 text-5xl" aria-hidden="true">🐾</p>
+      <h1 className="mb-2.5 font-[family-name:var(--font-display)] text-[22px] text-[var(--primary)]">{t('err_title')}</h1>
+      <p className="mb-6 max-w-[420px] text-[14.5px] text-[var(--muted)]">{t('err_desc')}</p>
+      <button onClick={reset} className="cursor-pointer rounded-[var(--r-pill)] border-0 bg-[var(--brand)] px-5 py-[11px] text-sm font-semibold text-white hover:bg-[var(--primary-light)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]">{t('err_retry')}</button>
     </div>
   );
 }

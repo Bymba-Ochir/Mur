@@ -70,25 +70,25 @@ export default function PetForm({ status }: { status: PetStatus }) {
   if (submit.done) {
     const petUrl = typeof window !== 'undefined' ? `${window.location.origin}/pets/${submit.newPetId}` : '';
     return (
-      <div className="success-box" role="status">
+      <div className="rounded-[var(--r-lg)] border border-[color-mix(in_srgb,var(--success)_30%,transparent)] bg-[var(--success-bg)] p-[var(--sp-6)] text-center max-[480px]:p-[var(--sp-5)] min-[1025px]:p-[var(--sp-7)]" role="status">
         <p>{t('success_msg')}</p>
         <ShareButtons url={petUrl} title={status === 'lost' ? 'Алдсан амьтан' : 'Олдсон амьтан'} />
-        <Button variant="secondary" onClick={addAnother} style={{ marginTop: 16 }}>{t('add_another')}</Button>
+        <Button variant="secondary" onClick={addAnother} className="mt-4">{t('add_another')}</Button>
       </div>
     );
   }
 
   return (
-    <div className="form-layout">
-    <form onSubmit={submit.handleSubmit} className="pet-form" aria-label={status === 'lost' ? 'Алдсан амьтан мэдэгдэх форм' : 'Олдсон амьтан мэдэгдэх форм'}>
+    <div className="flex items-start gap-[var(--sp-5)] max-[860px]:gap-0 min-[1200px]:gap-[var(--sp-8)]">
+    <form onSubmit={submit.handleSubmit} className="flex min-w-0 max-w-[440px] flex-1 flex-col gap-[var(--sp-1)] rounded-[var(--r-xl)] border border-[var(--line)] bg-[var(--card)] p-[var(--sp-6)] shadow-[var(--shadow-md)] [&_label]:mt-[var(--sp-4)] [&_label]:block [&_label]:text-[12.5px] [&_label]:font-semibold [&_label]:tracking-[0.01em] [&_label]:text-[var(--primary)] [&_input:not([type='checkbox']):not([type='file'])]:min-h-[var(--touch-target)] [&_input:not([type='checkbox']):not([type='file'])]:w-full [&_input:not([type='checkbox']):not([type='file'])]:rounded-[var(--r-sm)] [&_input:not([type='checkbox']):not([type='file'])]:border-[1.5px] [&_input:not([type='checkbox']):not([type='file'])]:border-[var(--line)] [&_input:not([type='checkbox']):not([type='file'])]:bg-[var(--card)] [&_input:not([type='checkbox']):not([type='file'])]:px-[var(--sp-3)] [&_input:not([type='checkbox']):not([type='file'])]:py-[var(--sp-2)] [&_input:not([type='checkbox']):not([type='file'])]:font-[family-name:var(--font-body)] [&_input:not([type='checkbox']):not([type='file'])]:text-[length:var(--text-base)] [&_input:not([type='checkbox']):not([type='file'])]:text-[var(--ink)] [&_select]:min-h-[var(--touch-target)] [&_select]:w-full [&_select]:rounded-[var(--r-sm)] [&_select]:border-[1.5px] [&_select]:border-[var(--line)] [&_select]:bg-[var(--card)] [&_select]:px-[var(--sp-3)] [&_select]:py-[var(--sp-2)] [&_select]:font-[family-name:var(--font-body)] [&_select]:text-[length:var(--text-base)] [&_select]:text-[var(--ink)] max-sm:max-w-full max-sm:rounded-[var(--r-lg)] max-sm:p-[var(--sp-5)] max-[480px]:rounded-[var(--r-md)] max-[480px]:p-[var(--sp-4)] max-[480px]:[&_label]:mt-[var(--sp-3)] max-[480px]:[&_label]:text-[13px] min-[1025px]:max-w-[520px] min-[1025px]:p-[var(--sp-7)] min-[1025px]:[&_label]:mt-[var(--sp-5)] min-[1025px]:[&_label]:text-[13.5px]" aria-label={status === 'lost' ? 'Алдсан амьтан мэдэгдэх форм' : 'Олдсон амьтан мэдэгдэх форм'}>
       <PawTrail labels={STEPS} current={step} />
-      <p className="progress-text" aria-live="polite">{step + 1}/{STEPS.length}: {STEPS[step]}</p>
+      <p className="mt-[var(--sp-2)] mb-[var(--sp-5)] text-center font-[family-name:var(--font-mono)] text-[11.5px] tracking-[0.02em] text-[var(--muted)] max-[480px]:mb-[var(--sp-4)] max-[480px]:text-xs min-[1025px]:mt-[var(--sp-3)] min-[1025px]:mb-[var(--sp-6)] min-[1025px]:text-[12.5px]" aria-live="polite">{step + 1}/{STEPS.length}: {STEPS[step]}</p>
 
       {step === 0 && (
         <>
           <label id="photo-label">{t('photo_label')}</label>
           <div
-            className="upload-zone"
+            className="flex min-h-[var(--touch-target)] cursor-pointer items-center justify-center rounded-[var(--r-md)] border-[1.5px] border-dashed border-[var(--line)] bg-[var(--overcast)] px-5 py-7 text-center text-[var(--muted)] transition-[border-color,background-color] hover:border-[var(--accent)] hover:bg-[var(--eyebrow-bg)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] max-[480px]:px-4 max-[480px]:py-6 min-[1025px]:px-6 min-[1025px]:py-8"
             onClick={photo.openFilePicker}
             onKeyDown={handleUploadKeyDown}
             role="button"
@@ -99,30 +99,30 @@ export default function PetForm({ status }: { status: PetStatus }) {
             {photo.compressing ? (
               <span role="status">⏳ {photo.compressStatus || 'Зураг оновчлож байна...'}</span>
             ) : photo.previews.length ? (
-              <div className="selected-photos">
-                {photo.previews.map((preview, index) => <div key={preview} className="selected-photo">
+              <div className="grid size-full grid-cols-2 gap-2 p-2">
+                {photo.previews.map((preview, index) => <div key={preview} className="relative min-h-[110px] overflow-hidden rounded-[var(--r-sm)] bg-[var(--surface-3)]">
                   {/* Blob preview-г next/image оновчлох шаардлагагүй. */}
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={preview} alt={`${t('photo_preview_alt')} ${index + 1}`} />
-                  <span>{index + 1}</span>
-                  <button type="button" onClick={(event) => { event.stopPropagation(); photo.removePhoto(index); }} aria-label={`${index + 1}-р зургийг хасах`}>×</button>
+                  <img className="size-full object-cover" src={preview} alt={`${t('photo_preview_alt')} ${index + 1}`} />
+                  <span className="absolute bottom-[7px] left-[7px] min-w-6 rounded-full bg-[rgba(10,14,28,.66)] px-1.5 py-[3px] text-[11px] font-extrabold text-white">{index + 1}</span>
+                  <button className="absolute top-1.5 right-1.5 size-7 cursor-pointer rounded-full border-0 bg-[rgba(10,14,28,.72)] text-xl leading-none text-white" type="button" onClick={(event) => { event.stopPropagation(); photo.removePhoto(index); }} aria-label={`${index + 1}-р зургийг хасах`}>×</button>
                 </div>)}
               </div>
               ) : (
               <span id="photo-hint">{t('photo_hint')}</span>
             )}
           </div>
-          <div className="photo-quality" role="note">
-            <p className="pq-title">{t('photo_requirements_title')}</p>
-            <ul>
+          <div className="mt-[var(--sp-3)] rounded-[var(--r-md)] border border-[var(--line)] bg-[var(--eyebrow-bg)] px-3.5 py-2.5 text-[12.5px] text-[var(--muted)] max-[480px]:px-4 max-[480px]:py-3 max-[480px]:text-[13px] min-[1025px]:px-[18px] min-[1025px]:py-3.5 min-[1025px]:text-[13px]" role="note">
+            <p className="mt-0 mb-1.5 text-[12.5px] font-bold text-[var(--primary)] max-[480px]:text-[13px] min-[1025px]:text-[13.5px]">{t('photo_requirements_title')}</p>
+            <ul className="m-0 flex flex-col gap-[3px] pl-[18px] [&_li]:m-0 [&_li]:leading-[1.4]">
               <li>{t('photo_quality_bright')}</li>
               <li>{t('photo_quality_close')}</li>
             </ul>
-            <p className="pq-match">{t('photo_quality_match')}</p>
+            <p className="mt-2 mb-0 text-xs">{t('photo_quality_match')}</p>
           </div>
           <input
             id="photo-input" type="file" accept="image/*" multiple onChange={photo.handlePhoto}
-            style={{ display: 'none' }} disabled={photo.compressing}
+            className="hidden" disabled={photo.compressing}
             aria-label={t('photo_label')}
           />
           <FieldHint mn="1–4 зураг сонгоно. Нүүр, бүтэн бие, онцлог шинж болон сүүлд харагдсан орчны зургийг оруулбал танихад хялбар." en="Choose 1–4 photos: face, full body, distinctive markings, and the last-seen area." />
@@ -152,7 +152,7 @@ export default function PetForm({ status }: { status: PetStatus }) {
 
       {step === 2 && (
         <>
-          <button type="button" onClick={location.handleUseLocation} disabled={location.locating} className="locate-btn">
+          <button type="button" onClick={location.handleUseLocation} disabled={location.locating} className="mb-[var(--sp-3)] min-h-[var(--touch-target)] cursor-pointer rounded-[var(--r-pill)] border-[1.5px] border-[var(--primary)] bg-transparent px-[15px] py-2.5 text-[13px] font-semibold text-[var(--primary)] transition-colors hover:bg-[var(--eyebrow-bg)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] disabled:opacity-60 max-[480px]:w-full max-[480px]:px-5 max-[480px]:py-3 max-[480px]:text-sm min-[1025px]:mb-[var(--sp-4)] min-[1025px]:px-6 min-[1025px]:py-3 min-[1025px]:text-sm">
             {location.locating ? t('locate_loading') : t('locate_btn')}
           </button>
 
@@ -166,13 +166,13 @@ export default function PetForm({ status }: { status: PetStatus }) {
           <input id="pet-place" name="place" value={form.place} onChange={handleChange} placeholder={t('place_placeholder')} required />
 
           <label id="map-label">
-            {t('map_label')} <span style={{ fontWeight: 400, color: 'var(--muted)' }}>{t('map_optional')}</span>
+            {t('map_label')} <span className="font-normal text-[var(--muted)]">{t('map_optional')}</span>
           </label>
           <div aria-labelledby="map-label" role="application" aria-label={t('map_label')}>
             <LocationMap lat={location.coords?.lat} lng={location.coords?.lng} editable onPick={location.setCoords} />
           </div>
           {location.coords && (
-            <p style={{ fontSize: 12, color: 'var(--muted)', marginTop: 4 }} aria-live="polite">
+            <p className="mt-1 text-xs text-[var(--muted)]" aria-live="polite">
               📍 {location.coords.lat.toFixed(4)}, {location.coords.lng.toFixed(4)}
             </p>
           )}
@@ -183,10 +183,11 @@ export default function PetForm({ status }: { status: PetStatus }) {
         <>
           {status === 'lost' && (
             <>
-              <label className="reward-check" htmlFor="pet-has-reward">
+              <label className="flex min-h-[var(--touch-target)] cursor-pointer items-center gap-2 text-[13px] font-semibold tracking-normal text-[var(--primary)] max-[480px]:gap-2.5 max-[480px]:text-sm min-[1025px]:gap-3 min-[1025px]:text-sm" htmlFor="pet-has-reward">
                 <input
                   id="pet-has-reward" type="checkbox"
                   checked={form.hasReward}
+                  className="m-0 w-auto accent-[var(--accent)]"
                   onChange={(e) => setForm((f) => ({ ...f, hasReward: e.target.checked }))}
                 />
                 <span>🎁 {t('reward_label')}</span>
@@ -214,23 +215,23 @@ export default function PetForm({ status }: { status: PetStatus }) {
             inputMode="tel"
           />
 
-          {submit.error && <p className="error" role="alert">{submit.error}</p>}
+          {submit.error && <p className="mt-[var(--sp-2)] text-[13px] text-[var(--alert)] max-[480px]:text-sm" role="alert">{submit.error}</p>}
 
-          <Button type="submit" disabled={submit.submitting} variant="primary" fullWidth className="form-submit" aria-busy={submit.submitting}>
+          <Button type="submit" disabled={submit.submitting} variant="primary" fullWidth className="mt-[var(--sp-5)] max-[480px]:mt-[var(--sp-4)] min-[1025px]:mt-[var(--sp-6)]" aria-busy={submit.submitting}>
             {submit.submitting ? submit.statusMsg || t('submitting') : status === 'lost' ? t('submit_lost') : t('submit_found')}
           </Button>
 
           {submit.submitting && submit.statusMsg.includes('AI') && (
-            <p style={{ fontSize: 12, color: 'var(--muted)', marginTop: 6 }} aria-live="polite">
+            <p className="mt-1.5 text-xs text-[var(--muted)]" aria-live="polite">
               Анхны хүсэлт 10-30 секунд удааширч болно, түр хүлээгээрэй...
             </p>
           )}
         </>
       )}
 
-      <div className="nav-row">
+      <div className="mt-[var(--sp-5)] flex gap-2.5 [&_.btn-base]:flex-1 [&_.btn-base]:justify-center max-[480px]:mt-[var(--sp-4)] max-[480px]:gap-3 min-[1025px]:mt-[var(--sp-6)] min-[1025px]:gap-3.5">
         {step > 0 && (
-          <Button type="button" onClick={() => setStep(step - 1)} variant="secondary" style={{ flex: 1 }}>{t('form_back')}</Button>
+          <Button type="button" onClick={() => setStep(step - 1)} variant="secondary" className="flex-1">{t('form_back')}</Button>
         )}
         {step < STEPS.length - 1 && (
           <Button
@@ -238,7 +239,7 @@ export default function PetForm({ status }: { status: PetStatus }) {
             onClick={() => canNext && setStep(step + 1)}
             disabled={!canNext}
             variant="accent"
-            style={{ flex: 1 }}
+            className="flex-1"
           >
             {t('form_next')}
           </Button>
@@ -246,7 +247,7 @@ export default function PetForm({ status }: { status: PetStatus }) {
       </div>
     </form>
 
-    <div className="preview-col">
+    <div className="sticky top-[100px] hidden min-[860px]:block">
       <PetPreviewCard
         status={status}
         name={form.name}
@@ -260,170 +261,6 @@ export default function PetForm({ status }: { status: PetStatus }) {
         hasReward={form.hasReward}
       />
     </div>
-
-      <style jsx>{`
-        .form-layout { display: flex; gap: var(--sp-5); align-items: flex-start; }
-        @media (max-width: 860px) {
-          .form-layout { gap: 0; }
-        }
-        @media (min-width: 1200px) {
-          .form-layout { gap: var(--sp-8); }
-        }
-        .preview-col { display: none; position: sticky; top: 100px; }
-        .selected-photos { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; width: 100%; height: 100%; padding: 8px; }
-        .selected-photo { position: relative; min-height: 110px; overflow: hidden; border-radius: var(--r-sm); background: var(--surface-3); }
-        .selected-photo img { width: 100%; height: 100%; object-fit: cover; }
-        .selected-photo span { position: absolute; left: 7px; bottom: 7px; min-width: 24px; padding: 3px 6px; border-radius: 999px; color: white; background: rgba(10,14,28,.66); font-size: 11px; font-weight: 800; }
-        .selected-photo button { position: absolute; top: 6px; right: 6px; width: 28px; height: 28px; border: 0; border-radius: 50%; color: white; background: rgba(10,14,28,.72); font-size: 20px; line-height: 1; cursor: pointer; }
-        @media (min-width: 860px) {
-          .preview-col { display: block; }
-        }
-        .pet-form {
-          display: flex; flex-direction: column; gap: var(--sp-1); max-width: 440px; flex: 1; min-width: 0;
-          background: var(--card); border: 1px solid var(--line); border-radius: var(--r-xl);
-          padding: var(--sp-6); box-shadow: var(--shadow-md);
-        }
-        @media (min-width: 1025px) {
-          .pet-form { max-width: 520px; padding: var(--sp-7); }
-        }
-        @media (max-width: 640px) {
-          .pet-form { padding: var(--sp-5); border-radius: var(--r-lg); max-width: 100%; }
-        }
-        @media (max-width: 480px) {
-          .pet-form { padding: var(--sp-4); border-radius: var(--r-md); }
-        }
-        label { font-size: 12.5px; font-weight: 600; color: var(--primary); margin-top: var(--sp-4); display: block; letter-spacing: 0.01em; }
-        label:first-child { margin-top: 0; }
-        @media (max-width: 480px) {
-          label { font-size: 13px; margin-top: var(--sp-3); }
-        }
-        @media (min-width: 1025px) {
-          label { font-size: 13.5px; margin-top: var(--sp-5); }
-        }
-
-        input, select {
-          padding: var(--sp-2) var(--sp-3); border: 1.5px solid var(--line); border-radius: var(--r-sm);
-          font-size: var(--text-base); width: 100%; font-family: var(--font-body); background: var(--card); color: var(--ink);
-          transition: border-color 0.15s ease;
-          min-height: var(--touch-target);
-        }
-        @media (max-width: 480px) {
-          input, select { font-size: 16px; padding: 12px 14px; }
-        }
-        @media (min-width: 1025px) {
-          input, select { font-size: 15px; padding: 12px 16px; }
-        }
-        input:hover, select:hover { border-color: var(--muted); }
-        input:focus-visible, select:focus-visible {
-          outline: none; border-color: var(--accent);
-          box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 15%, transparent);
-        }
-        .upload-zone {
-          border: 1.5px dashed var(--line); border-radius: var(--r-md); padding: 28px 20px;
-          text-align: center; cursor: pointer; color: var(--muted); background: var(--overcast);
-          transition: border-color 0.15s ease, background 0.15s ease;
-          min-height: var(--touch-target);
-          display: flex; align-items: center; justify-content: center;
-        }
-        @media (max-width: 480px) {
-          .upload-zone { padding: 24px 16px; }
-        }
-        @media (min-width: 1025px) {
-          .upload-zone { padding: 32px 24px; }
-        }
-        .upload-zone:hover { border-color: var(--accent); background: var(--eyebrow-bg); }
-        .upload-zone:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-        .upload-zone img { max-width: 150px; border-radius: var(--r-sm); }
-        @media (min-width: 1025px) {
-          .upload-zone img { max-width: 180px; }
-        }
-        .photo-quality {
-          background: var(--eyebrow-bg); border: 1px solid var(--line); border-radius: var(--r-md);
-          padding: 10px 14px; margin-top: var(--sp-3); color: var(--muted); font-size: 12.5px;
-        }
-        @media (max-width: 480px) {
-          .photo-quality { padding: 12px 16px; font-size: 13px; }
-        }
-        @media (min-width: 1025px) {
-          .photo-quality { padding: 14px 18px; font-size: 13px; }
-        }
-        .pq-title { font-weight: 700; color: var(--primary); font-size: 12.5px; margin: 0 0 6px; }
-        @media (max-width: 480px) {
-          .pq-title { font-size: 13px; }
-        }
-        @media (min-width: 1025px) {
-          .pq-title { font-size: 13.5px; }
-        }
-        .photo-quality ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 3px; }
-        .photo-quality li { margin: 0; line-height: 1.4; }
-        .pq-match { margin: 8px 0 0; font-size: 12px; }
-        .form-submit { margin-top: var(--sp-5); }
-        @media (max-width: 480px) {
-          .form-submit { margin-top: var(--sp-4); }
-        }
-        @media (min-width: 1025px) {
-          .form-submit { margin-top: var(--sp-6); }
-        }
-        .error { color: var(--alert); font-size: 13px; margin-top: var(--sp-2); }
-        @media (max-width: 480px) {
-          .error { font-size: 14px; }
-        }
-        .success-box {
-          padding: var(--sp-6); background: var(--success-bg); border-radius: var(--r-lg); text-align: center;
-          border: 1px solid color-mix(in srgb, var(--success) 30%, transparent);
-        }
-        @media (max-width: 480px) {
-          .success-box { padding: var(--sp-5); }
-        }
-        @media (min-width: 1025px) {
-          .success-box { padding: var(--sp-7); }
-        }
-
-        .progress-text { font-family: var(--font-mono); font-size: 11.5px; color: var(--muted); margin: var(--sp-2) 0 var(--sp-5); text-align: center; letter-spacing: 0.02em; }
-        @media (max-width: 480px) {
-          .progress-text { font-size: 12px; margin: var(--sp-2) 0 var(--sp-4); }
-        }
-        @media (min-width: 1025px) {
-          .progress-text { font-size: 12.5px; margin: var(--sp-3) 0 var(--sp-6); }
-        }
-
-        .reward-check {
-          display: flex; align-items: center; gap: 8px; cursor: pointer;
-          margin-top: var(--sp-4); font-size: 13px; font-weight: 600; color: var(--primary); letter-spacing: 0;
-          min-height: var(--touch-target);
-        }
-        @media (max-width: 480px) {
-          .reward-check { font-size: 14px; gap: 10px; }
-        }
-        @media (min-width: 1025px) {
-          .reward-check { font-size: 14px; gap: 12px; margin-top: var(--sp-5); }
-        }
-        .reward-check input { width: auto; margin: 0; accent-color: var(--accent); }
-        .locate-btn {
-          padding: 10px 15px; border-radius: var(--r-pill); border: 1.5px solid var(--primary);
-          background: transparent; color: var(--primary); font-weight: 600; cursor: pointer; font-size: 13px; margin-bottom: var(--sp-3);
-          transition: background 0.15s ease;
-          min-height: var(--touch-target);
-        }
-        @media (max-width: 480px) {
-          .locate-btn { font-size: 14px; padding: 12px 20px; width: 100%; }
-        }
-        @media (min-width: 1025px) {
-          .locate-btn { font-size: 14px; padding: 12px 24px; margin-bottom: var(--sp-4); }
-        }
-        .locate-btn:hover { background: var(--eyebrow-bg); }
-        .locate-btn:disabled { opacity: 0.6; }
-        .locate-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-
-        .nav-row { display: flex; gap: 10px; margin-top: var(--sp-5); }
-        @media (max-width: 480px) {
-          .nav-row { gap: 12px; margin-top: var(--sp-4); }
-        }
-        @media (min-width: 1025px) {
-          .nav-row { gap: 14px; margin-top: var(--sp-6); }
-        }
-        .nav-row :global(.btn-base) { flex: 1; justify-content: center; }
-      `}</style>
     </div>
   );
 }

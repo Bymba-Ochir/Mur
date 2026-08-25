@@ -28,81 +28,48 @@ export default function MyPetCard({
 
   return (
     <div
-      className={`card pet-card ${selected ? 'selected' : ''}`}
+      className={`card flex cursor-pointer items-start gap-[var(--sp-3)] transition-[transform,box-shadow,border-color] duration-[var(--dur-base)] ease-[var(--ease-out)] hover:-translate-y-[3px] hover:border-[var(--primary-light)] hover:shadow-[var(--shadow-md)] ${selected ? 'border-[var(--border-focus)] shadow-[0_0_0_2px_color-mix(in_srgb,var(--primary)_20%,transparent)]' : ''}`}
       onClick={onSelect}
       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(); } }}
       role="button"
       tabIndex={0}
-      style={{ cursor: 'pointer' }}
     >
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <p style={{ fontFamily: 'var(--font-display)', fontWeight: 600, color: 'var(--primary)', fontSize: 14.5, marginBottom: 2 }}>
+      <div className="min-w-0 flex-1">
+        <p className="mb-0.5 font-[family-name:var(--font-display)] text-[14.5px] font-semibold text-[var(--primary)]">
           {pet.name}
         </p>
-        <p style={{ fontSize: 12.5, color: 'var(--muted)', margin: '2px 0' }}>{typeLabel}</p>
-        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 4 }}>
-          {pet.age && <span className="chip">{pet.age}</span>}
-          {pet.breed && <span className="chip">{pet.breed}</span>}
-          {pet.weight != null && <span className="chip">{pet.weight} кг</span>}
+        <p className="my-0.5 text-[12.5px] text-[var(--muted)]">{typeLabel}</p>
+        <div className="mt-1 flex flex-wrap gap-1.5">
+          {pet.age && <span className="inline-block rounded-[var(--r-pill)] bg-[var(--surface-3)] px-2.5 py-[3px] text-[11px] font-semibold text-[var(--primary)]">{pet.age}</span>}
+          {pet.breed && <span className="inline-block rounded-[var(--r-pill)] bg-[var(--surface-3)] px-2.5 py-[3px] text-[11px] font-semibold text-[var(--primary)]">{pet.breed}</span>}
+          {pet.weight != null && <span className="inline-block rounded-[var(--r-pill)] bg-[var(--surface-3)] px-2.5 py-[3px] text-[11px] font-semibold text-[var(--primary)]">{pet.weight} кг</span>}
         </div>
-        <p style={{ fontSize: 11, fontFamily: 'var(--font-mono)', fontWeight: 600, color: label.color, marginTop: 4 }}>
+        <p className={`mt-1 font-[family-name:var(--font-mono)] text-[11px] font-semibold ${status === 'overdue' ? 'text-[var(--alert)]' : status === 'soon' ? 'text-[var(--accent)]' : status === 'ok' ? 'text-[var(--success)]' : 'text-[var(--muted)]'}`}>
           {label.text}
         </p>
       </div>
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
+      <div className="flex flex-col items-end gap-1.5">
         <input
           type="date"
-          className="field"
           defaultValue={pet.nextVaccineDate || ''}
           onChange={(e) => { e.stopPropagation(); onDateChange(e.target.value); }}
           onClick={(e) => e.stopPropagation()}
-          style={{ fontSize: 12, padding: '6px 8px', width: 130, minHeight: 'auto' }}
+          className="field min-h-0 w-[130px] px-2 py-1.5 text-xs"
           aria-label={t('health_vax_next_date')}
         />
         <button
-          className="danger-link"
+          className="cursor-pointer border-0 bg-transparent px-2 py-1 font-[family-name:var(--font-body)] text-xs text-[var(--alert)] opacity-70 transition-opacity duration-[var(--dur-fast)] hover:opacity-100"
           onClick={(e) => { e.stopPropagation(); if (confirm('Устгах уу?')) onDelete(); }}
         >
           {t('mypets_delete')}
         </button>
         <button
-          className="profile-link"
+          className="cursor-pointer rounded-[var(--r-sm)] border border-[var(--accent)] bg-transparent px-2.5 py-1 font-[family-name:var(--font-body)] text-[11px] font-semibold text-[var(--accent)] transition-all duration-[var(--dur-fast)] ease-[var(--ease-out)] hover:bg-[var(--accent)] hover:text-[var(--text-on-accent)]"
           onClick={(e) => { e.stopPropagation(); router.push(`/profiles/mypet/${pet.id}`); }}
         >
           {t('profiles_view_profile')}
         </button>
       </div>
-
-      <style jsx>{`
-        .pet-card {
-          display: flex; gap: var(--sp-3); align-items: flex-start;
-          transition: transform var(--dur-base) var(--ease-out), box-shadow var(--dur-base) var(--ease-out), border-color var(--dur-base) var(--ease-out);
-        }
-        .pet-card:hover {
-          transform: translateY(-3px);
-          box-shadow: var(--shadow-md);
-          border-color: var(--primary-light);
-        }
-        .pet-card.selected { border-color: var(--border-focus); box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 20%, transparent); }
-        .chip {
-          display: inline-block; font-size: 11px; padding: 3px 10px;
-          background: var(--surface-3); border-radius: var(--r-pill);
-          color: var(--primary); font-weight: 600;
-        }
-        .danger-link {
-          background: none; border: none; color: var(--alert); font-size: 12px;
-          cursor: pointer; padding: 4px 8px; font-family: var(--font-body);
-          opacity: 0.7; transition: opacity var(--dur-fast) ease;
-        }
-        .danger-link:hover { opacity: 1; }
-        .profile-link {
-          background: none; border: 1px solid var(--accent); color: var(--accent);
-          font-size: 11px; cursor: pointer; padding: 4px 10px; font-family: var(--font-body);
-          font-weight: 600; border-radius: var(--r-sm);
-          transition: all var(--dur-fast) var(--ease-out);
-        }
-        .profile-link:hover { background: var(--accent); color: var(--text-on-accent); }
-      `}</style>
     </div>
   );
 }

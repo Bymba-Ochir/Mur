@@ -7,14 +7,14 @@
  */
 export default function PawTrail({ labels, current }: { labels: string[]; current: number }) {
   return (
-    <div className="paw-trail" role="list" aria-label="Алхмууд">
+    <div className="flex w-full items-start" role="list" aria-label="Алхмууд">
       {labels.map((label, i) => {
         const state = i < current ? 'done' : i === current ? 'active' : 'upcoming';
         return (
-          <div key={label} className="trail-step" role="listitem" aria-current={state === 'active' ? 'step' : undefined}>
-            <div className="trail-node-row">
-              {i > 0 && <span className={`trail-line ${i <= current ? 'filled' : ''}`} aria-hidden="true" />}
-              <span className={`paw ${state}`} aria-hidden="true">
+          <div key={label} className="flex min-w-0 flex-1 flex-col items-center gap-1.5" role="listitem" aria-current={state === 'active' ? 'step' : undefined}>
+            <div className={`flex w-full items-center ${i === 0 ? 'justify-center' : ''}`}>
+              {i > 0 && <span className={`mr-px h-0.5 flex-1 transition-colors duration-250 ${i <= current ? 'bg-[var(--accent)]' : 'bg-[var(--line)]'}`} aria-hidden="true" />}
+              <span className={`flex size-7 shrink-0 items-center justify-center rounded-full border-2 transition-all duration-250 ${state === 'active' ? 'border-[var(--accent)] bg-[var(--accent)] text-[var(--accent-ink)] shadow-[0_0_0_4px_color-mix(in_srgb,var(--accent)_20%,transparent)]' : state === 'done' ? 'border-[var(--primary)] bg-[var(--primary)] text-[var(--text-on-accent)]' : 'border-[var(--line)] bg-[var(--card)] text-[var(--line)]'}`} aria-hidden="true">
                 <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor">
                   <ellipse cx="12" cy="15.2" rx="5.4" ry="4.6" />
                   <ellipse cx="5.6" cy="8.6" rx="2.1" ry="2.6" transform="rotate(-18 5.6 8.6)" />
@@ -24,35 +24,10 @@ export default function PawTrail({ labels, current }: { labels: string[]; curren
                 </svg>
               </span>
             </div>
-            <span className="trail-label">{label}</span>
+            <span className={`text-center font-[family-name:var(--font-body)] text-[10.5px] font-semibold ${state === 'active' ? 'text-[var(--primary)]' : 'text-[var(--muted)]'}`}>{label}</span>
           </div>
         );
       })}
-
-      <style jsx>{`
-        .paw-trail { display: flex; align-items: flex-start; width: 100%; }
-        .trail-step { display: flex; flex-direction: column; align-items: center; flex: 1; gap: 6px; min-width: 0; }
-        .trail-node-row { display: flex; align-items: center; width: 100%; }
-        .trail-line {
-          flex: 1; height: 2px; background: var(--line); margin-right: -1px;
-          transition: background 0.25s ease;
-        }
-        .trail-step:first-child .trail-node-row { justify-content: center; }
-        .trail-line.filled { background: var(--accent); }
-        .paw {
-          flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%;
-          display: flex; align-items: center; justify-content: center;
-          background: var(--card); border: 2px solid var(--line); color: var(--line);
-          transition: all 0.25s ease;
-        }
-        .paw.active { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 20%, transparent); }
-        .paw.done { background: var(--primary); border-color: var(--primary); color: var(--text-on-accent); }
-        .trail-label {
-          font-size: 10.5px; font-weight: 600; color: var(--muted); text-align: center;
-          font-family: var(--font-body);
-        }
-        .trail-step:has(.paw.active) .trail-label { color: var(--primary); }
-      `}</style>
     </div>
   );
 }

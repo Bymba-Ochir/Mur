@@ -15,5 +15,5 @@ export default function FavoriteButton({ petId }: { petId: string }) {
     setBusy(true);
     try { const added = await toggleFavorite(petId); setActive(added); showToast(added ? 'Зар хадгалагдлаа' : 'Хадгалснаас хаслаа', 'success'); }
     catch { showToast('Хадгалж чадсангүй', 'error'); } finally { setBusy(false); }
-  }} style={{ minWidth: 44, minHeight: 44, borderRadius: 999, border: '1px solid var(--line)', background: active ? 'var(--eyebrow-bg)' : 'var(--card)', color: active ? 'var(--accent)' : 'var(--ink)', fontSize: 22, cursor: 'pointer' }}>{active ? '♥' : '♡'}</button>;
+  }} className={`min-h-11 min-w-11 cursor-pointer rounded-full border border-[var(--line)] text-[22px] ${active ? 'bg-[var(--eyebrow-bg)] text-[var(--accent)]' : 'bg-[var(--card)] text-[var(--ink)]'}`}>{active ? '♥' : '♡'}</button>;
 }

@@ -25,8 +25,8 @@ export default function AdoptionPreviewCard({
   const genderLabel = gender === 'Эрэгтэй' ? t('gender_male') : gender === 'Эмэгтэй' ? t('gender_female') : t('gender_unknown');
 
   return (
-    <div className="preview-wrap">
-      <p className="preview-label">{t('preview_label')}</p>
+    <div className="max-w-[260px]">
+      <p className="mb-2 text-xs uppercase tracking-[0.03em] text-[var(--muted)]">{t('preview_label')}</p>
       <AdoptionCardView
         badgeLabel={t('nav_adoptions').toUpperCase()}
         name={name}
@@ -45,11 +45,6 @@ export default function AdoptionPreviewCard({
           ) : undefined
         }
       />
-
-      <style jsx>{`
-        .preview-wrap { max-width: 260px; }
-        .preview-label { font-size: 12px; color: var(--muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.03em; }
-      `}</style>
     </div>
   );
 }

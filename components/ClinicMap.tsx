@@ -102,13 +102,8 @@ export default function ClinicMap({
   return (
     <div
       ref={containerRef}
-      style={{
-        width: '100%',
-        height,
-        borderRadius: 'var(--r-md)',
-        overflow: 'hidden',
-        border: '1px solid var(--line)',
-      }}
+      className="w-full overflow-hidden rounded-[var(--r-md)] border border-[var(--line)]"
+      style={{ height }}
       role="application"
       aria-label="Мал эмнэлгийн газрын зураг"
     />

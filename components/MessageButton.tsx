@@ -50,37 +50,13 @@ export default function MessageButton({ pet }: { pet: Pet }) {
   return (
     <>
       <button
-        className="chat-btn"
+        className="min-h-[var(--touch-target)] w-full cursor-pointer rounded-[var(--r-md)] border-[1.5px] border-[var(--primary)] bg-transparent p-3 font-[family-name:var(--font-body)] text-sm font-semibold text-[var(--primary)] transition-colors duration-150 hover:not-disabled:bg-[var(--primary)] hover:not-disabled:text-white focus-visible:outline-[2.5px] focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-60"
         onClick={handleClick}
         disabled={busy}
       >
         {busy ? t('chat_starting') : t('chat_send_btn')}
       </button>
       {showLogin && <LoginModal onClose={() => setShowLogin(false)} />}
-      <style jsx>{`
-        .chat-btn {
-          width: 100%;
-          padding: 12px;
-          border: 1.5px solid var(--primary);
-          border-radius: var(--r-md);
-          background: transparent;
-          color: var(--primary);
-          font-family: var(--font-body);
-          font-size: 14px;
-          font-weight: 600;
-          cursor: pointer;
-          transition: background 0.15s ease, color 0.15s ease;
-          min-height: var(--touch-target);
-        }
-        .chat-btn:hover:not(:disabled) {
-          background: var(--primary);
-          color: #fff;
-        }
-        .chat-btn:disabled { opacity: 0.6; cursor: not-allowed; }
-        .chat-btn:focus-visible {
-          outline: 2.5px solid var(--accent); outline-offset: 2px;
-        }
-      `}</style>
     </>
   );
 }

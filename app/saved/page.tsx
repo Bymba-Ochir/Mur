@@ -22,21 +22,20 @@ export default function SavedPage() {
   if (!user) return <p>Хадгалсан зүйлсээ харахын тулд нэвтэрнэ үү.</p>;
   return <div>
     <div className="page-header"><div className="eyebrow">Миний сан</div><h1>Хадгалсан зүйлс</h1></div>
-    <h2 style={{ marginBottom: 12 }}>Шинэ тохирол</h2>
-    <div style={{ display: 'grid', gap: 8, marginBottom: 28 }}>
+    <h2 className="mb-3">Шинэ тохирол</h2>
+    <div className="mb-7 grid gap-2">
       {notifications.length ? notifications.map((item) => <Link
-        className="card"
         href={`/pets/${item.petId}`}
         key={item.id}
         onClick={() => { void markListingNotificationRead(item.id); setNotifications((all) => all.map((n) => n.id === item.id ? { ...n, read: true } : n)); }}
-        style={{ padding: 14, color: 'inherit', opacity: item.read ? .68 : 1 }}
-      >{item.read ? '✓' : '●'} {item.title}</Link>) : <p style={{ color: 'var(--muted)' }}>Одоогоор шинэ тохирол алга.</p>}
+                  className={`card p-3.5 text-inherit ${item.read ? 'opacity-[0.68]' : 'opacity-100'}`}
+      >{item.read ? '✓' : '●'} {item.title}</Link>) : <p className="text-[var(--muted)]">Одоогоор шинэ тохирол алга.</p>}
     </div>
-    <h2 style={{ marginBottom: 12 }}>Хадгалсан хайлт</h2>
-    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 28 }}>
-      {searches.length ? searches.map((search) => <div className="card" key={search.id} style={{ padding: 12, display: 'flex', alignItems: 'center', gap: 10 }}><span>{search.name}{search.notify ? ' · 🔔' : ''}</span><Button variant="ghost" onClick={async () => { await deleteSavedSearch(search.id); setSearches((all) => all.filter((item) => item.id !== search.id)); }}>Устгах</Button></div>) : <p style={{ color: 'var(--muted)' }}>Хадгалсан хайлт алга.</p>}
+    <h2 className="mb-3">Хадгалсан хайлт</h2>
+    <div className="mb-7 flex flex-wrap gap-2">
+      {searches.length ? searches.map((search) => <div className="card flex items-center gap-2.5 p-3" key={search.id}><span>{search.name}{search.notify ? ' · 🔔' : ''}</span><Button variant="ghost" onClick={async () => { await deleteSavedSearch(search.id); setSearches((all) => all.filter((item) => item.id !== search.id)); }}>Устгах</Button></div>) : <p className="text-[var(--muted)]">Хадгалсан хайлт алга.</p>}
     </div>
-    <h2 style={{ marginBottom: 12 }}>Хадгалсан зар</h2>
-    {pets.length ? <div className="grid">{pets.map((pet) => <PetCard key={pet.id} pet={pet} />)}</div> : <p style={{ color: 'var(--muted)' }}>Хадгалсан зар алга.</p>}
+    <h2 className="mb-3">Хадгалсан зар</h2>
+    {pets.length ? <div className="grid">{pets.map((pet) => <PetCard key={pet.id} pet={pet} />)}</div> : <p className="text-[var(--muted)]">Хадгалсан зар алга.</p>}
   </div>;
 }

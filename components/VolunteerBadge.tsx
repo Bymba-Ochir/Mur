@@ -46,18 +46,15 @@ export default function VolunteerBadge({ district }: { district: District }) {
   }
 
   return (
-    <div style={{
-      display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 'var(--sp-2)',
-      background: 'var(--eyebrow-bg)', borderRadius: 'var(--r-sm)', padding: '10px 14px', marginBottom: 'var(--sp-2)',
-    }}>
-      <span style={{ fontSize: 13, color: 'var(--primary)' }}>
+    <div className="mb-[var(--sp-2)] flex items-center justify-between gap-[var(--sp-2)] rounded-[var(--r-sm)] bg-[var(--eyebrow-bg)] px-3.5 py-2.5">
+      <span className="text-[13px] text-[var(--primary)]">
         🙋 <b>{count}</b> сайн дурын идэвхтэн &quot;{district}&quot; дүүрэгт
       </span>
       <Button
         onClick={handleToggle}
         disabled={busy}
         variant={joined ? 'ghost' : 'primary'}
-        style={{ fontSize: 12, padding: '8px 12px' }}
+        className="px-3 py-2 text-xs"
       >
         {joined ? 'Гарах' : '+ Нэгдэх'}
       </Button>

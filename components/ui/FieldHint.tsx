@@ -4,8 +4,5 @@ import { useLanguage } from '../../lib/i18n';
 
 export default function FieldHint({ mn, en, id }: { mn: string; en: string; id?: string }) {
   const { lang } = useLanguage();
-  return <p id={id} className="field-hint">{lang === 'mn' ? mn : en}<style jsx>{`
-    .field-hint { margin: 4px 2px 8px; color: var(--muted); font-size: 11.5px; line-height: 1.5; }
-    @media (max-width: 480px) { .field-hint { font-size: 12px; line-height: 1.55; } }
-  `}</style></p>;
+  return <p id={id} className="mx-0.5 mb-2 mt-1 text-[11.5px] leading-[1.5] text-[var(--muted)] max-[480px]:text-xs max-[480px]:leading-[1.55]">{lang === 'mn' ? mn : en}</p>;
 }

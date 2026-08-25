@@ -1,48 +1,22 @@
 'use client';
-import type { ReactNode } from 'react';
+import type { HTMLAttributes, ReactNode } from 'react';
 
 export type BadgeTone = 'default' | 'primary' | 'accent' | 'success' | 'alert' | 'neutral';
-
-interface BadgeProps {
-  tone?: BadgeTone;
-  children: ReactNode;
-  className?: string;
-  [key: string]: unknown;
-}
+interface BadgeProps extends HTMLAttributes<HTMLSpanElement> { tone?: BadgeTone; children: ReactNode; }
 
 const TONES: Record<BadgeTone, string> = {
-  default: `background: var(--surface-3); color: var(--primary);`,
-  primary: `background: var(--primary); color: var(--text-on-accent);`,
-  accent: `background: var(--accent); color: var(--accent-ink);`,
-  success: `background: var(--success); color: var(--text-on-accent);`,
-  alert: `background: var(--alert); color: var(--text-on-accent);`,
-  neutral: `background: var(--border-subtle); color: var(--text-secondary);`,
+  default: 'bg-[var(--surface-3)] text-[var(--primary)]',
+  primary: 'bg-[var(--primary)] text-[var(--text-on-accent)]',
+  accent: 'bg-[var(--accent)] text-[var(--accent-ink)]',
+  success: 'bg-[var(--success)] text-[var(--text-on-accent)]',
+  alert: 'bg-[var(--alert)] text-[var(--text-on-accent)]',
+  neutral: 'bg-[var(--border-subtle)] text-[var(--text-secondary)]',
 };
 
 export default function Badge({ tone = 'default', children, className = '', ...rest }: BadgeProps) {
   return (
-    <span className={`badge ${className}`} data-tone={tone} {...rest}>
+    <span className={`inline-flex items-center gap-[var(--sp-1)] whitespace-nowrap rounded-[var(--r-pill)] px-2.5 py-1 font-[family-name:var(--font-mono)] text-[length:var(--text-2xs)] font-semibold tracking-[0.02em] ${TONES[tone]} ${className}`} data-tone={tone} {...rest}>
       {children}
-      <style jsx>{`
-        .badge {
-          display: inline-flex;
-          align-items: center;
-          gap: var(--sp-1);
-          font-family: var(--font-mono);
-          font-size: var(--text-2xs);
-          font-weight: 600;
-          letter-spacing: 0.02em;
-          padding: 4px 10px;
-          border-radius: var(--r-pill);
-          white-space: nowrap;
-        }
-        :global([data-tone='default']) { ${TONES.default} }
-        :global([data-tone='primary']) { ${TONES.primary} }
-        :global([data-tone='accent']) { ${TONES.accent} }
-        :global([data-tone='success']) { ${TONES.success} }
-        :global([data-tone='alert']) { ${TONES.alert} }
-        :global([data-tone='neutral']) { ${TONES.neutral} }
-      `}</style>
     </span>
   );
 }

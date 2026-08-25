@@ -92,11 +92,11 @@ export default function AdoptionsPage() {
       {loading ? (
         <div className="grid"><SkeletonCard /><SkeletonCard /><SkeletonCard /><SkeletonCard /><SkeletonCard /><SkeletonCard /></div>
       ) : adoptions.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: 'var(--sp-6) 0' }}>
-          <p style={{ fontSize: 18, fontWeight: 600, color: 'var(--primary)', marginBottom: 8 }}>
+        <div className="py-[var(--sp-6)] text-center">
+          <p className="mb-2 text-lg font-semibold text-[var(--primary)]">
             {search || type || gender || district ? t('empty_no_results_title') : t('adoptions_empty_title')}
           </p>
-          <p style={{ color: 'var(--muted)', marginBottom: 16 }}>
+          <p className="mb-4 text-[var(--muted)]">
             {search || type || gender || district ? t('empty_no_results_desc') : t('adoptions_empty_desc')}
           </p>
           <Button as="link" href="/adoptions/new" variant="accent">{t('adoptions_new_btn')}</Button>
@@ -108,7 +108,7 @@ export default function AdoptionsPage() {
             {adoptions.map((a) => <AdoptionCard key={a.id} adoption={a} />)}
           </div>
           {hasMore && (
-            <Button onClick={() => load(page + 1)} disabled={loadingMore} variant="ghost" style={{ display: 'block', margin: 'var(--sp-5) auto 0' }}>
+            <Button onClick={() => load(page + 1)} disabled={loadingMore} variant="ghost" className="mx-auto mt-[var(--sp-5)] flex">
               {loadingMore ? t('loading_more') : t('load_more')}
             </Button>
           )}

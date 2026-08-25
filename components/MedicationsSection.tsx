@@ -53,72 +53,66 @@ export default function MedicationsSection({
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--sp-3)' }}>
-        <h3 style={{ fontSize: 14, fontWeight: 600, color: 'var(--primary)' }}>{t('health_section_medications')}</h3>
-        <Button variant="ghost" style={{ fontSize: 12, padding: '6px 12px', minHeight: 'auto' }} onClick={() => setShowForm(!showForm)}>
+      <div className="mb-[var(--sp-3)] flex items-center justify-between">
+        <h3 className="text-sm font-semibold text-[var(--primary)]">{t('health_section_medications')}</h3>
+        <Button variant="ghost" className="min-h-0 px-3 py-1.5 text-xs" onClick={() => setShowForm(!showForm)}>
           {showForm ? '✕' : t('health_med_add')}
         </Button>
       </div>
 
       {showForm && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-2)', marginBottom: 'var(--sp-3)', padding: 'var(--sp-3)', background: 'var(--eyebrow-bg)', borderRadius: 'var(--r-md)' }}>
-          <p style={{ fontSize: 11.5, color: 'var(--muted)', lineHeight: 1.5 }}>Эмийн нэр, эмчийн заасан тун, өгөх давтамж болон хэрэглэх хугацааг оруулна. Эмчийн зааврыг өөрчилж болохгүй.</p>
-          <input className="field" placeholder={t('health_med_name')} value={name} onChange={(e) => setName(e.target.value)} style={{ fontSize: 13, minHeight: 36 }} />
-          <div style={{ display: 'flex', gap: 'var(--sp-2)' }}>
-            <input className="field" placeholder={t('health_dosage')} value={dosage} onChange={(e) => setDosage(e.target.value)} style={{ fontSize: 13, minHeight: 36, flex: 1 }} />
-            <input className="field" placeholder={t('health_frequency')} value={frequency} onChange={(e) => setFrequency(e.target.value)} style={{ fontSize: 13, minHeight: 36, flex: 1 }} />
+        <div className="mb-[var(--sp-3)] flex flex-col gap-[var(--sp-2)] rounded-[var(--r-md)] bg-[var(--eyebrow-bg)] p-[var(--sp-3)] [&_.field]:min-h-9 [&_.field]:text-[13px]">
+          <p className="text-[11.5px] leading-[1.5] text-[var(--muted)]">Эмийн нэр, эмчийн заасан тун, өгөх давтамж болон хэрэглэх хугацааг оруулна. Эмчийн зааврыг өөрчилж болохгүй.</p>
+          <input className="field" placeholder={t('health_med_name')} value={name} onChange={(e) => setName(e.target.value)} />
+          <div className="flex gap-[var(--sp-2)] [&_.field]:flex-1">
+            <input className="field" placeholder={t('health_dosage')} value={dosage} onChange={(e) => setDosage(e.target.value)} />
+            <input className="field" placeholder={t('health_frequency')} value={frequency} onChange={(e) => setFrequency(e.target.value)} />
           </div>
-          <div style={{ display: 'flex', gap: 'var(--sp-2)' }}>
-            <div style={{ flex: 1 }}>
-              <label style={{ fontSize: 11, color: 'var(--muted)' }}>{t('health_start_date')}</label>
-              <input className="field" type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} style={{ fontSize: 13, minHeight: 36, width: '100%' }} />
+          <div className="flex gap-[var(--sp-2)] [&>div]:flex-1 [&_label]:text-[11px] [&_label]:text-[var(--muted)] [&_.field]:w-full">
+            <div>
+              <label>{t('health_start_date')}</label>
+              <input className="field" type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
             </div>
-            <div style={{ flex: 1 }}>
-              <label style={{ fontSize: 11, color: 'var(--muted)' }}>{t('health_end_date')}</label>
-              <input className="field" type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} style={{ fontSize: 13, minHeight: 36, width: '100%' }} />
+            <div>
+              <label>{t('health_end_date')}</label>
+              <input className="field" type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
             </div>
           </div>
-          <Button variant="accent" onClick={handleAdd} disabled={busy || !name.trim()} style={{ fontSize: 13, minHeight: 36 }}>
+          <Button variant="accent" className="min-h-9 text-[13px]" onClick={handleAdd} disabled={busy || !name.trim()}>
             {busy ? t('chat_sending') : t('health_med_add')}
           </Button>
         </div>
       )}
 
       {medications.length === 0 ? (
-        <p style={{ fontSize: 13, color: 'var(--muted)' }}>{t('health_med_none')}</p>
+        <p className="text-[13px] text-[var(--muted)]">{t('health_med_none')}</p>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-2)' }}>
+        <div className="flex flex-col gap-[var(--sp-2)]">
           {medications.map((m) => (
-            <div key={m.id} style={{ padding: 'var(--sp-2) var(--sp-3)', background: 'var(--card)', border: '1px solid var(--line)', borderRadius: 'var(--r-md)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <div key={m.id} className="rounded-[var(--r-md)] border border-[var(--line)] bg-[var(--card)] px-[var(--sp-3)] py-[var(--sp-2)]">
+              <div className="flex items-start justify-between">
                 <div>
-                  <p style={{ fontSize: 13, fontWeight: 600 }}>{m.name}</p>
-                  <p style={{ fontSize: 11, color: 'var(--muted)' }}>
+                  <p className="text-[13px] font-semibold">{m.name}</p>
+                  <p className="text-[11px] text-[var(--muted)]">
                     {m.dosage && `${m.dosage}`}{m.frequency && ` · ${m.frequency}`}
                     {m.startDate && ` · ${m.startDate}`}
                   </p>
                 </div>
-                <button className="danger-link" onClick={() => handleDelete(m.id)} style={{ fontSize: 11 }}>✕</button>
+                <button className="cursor-pointer border-0 bg-transparent p-1 text-[11px] text-[var(--alert)] hover:opacity-80" onClick={() => handleDelete(m.id)}>✕</button>
               </div>
-              <div style={{ marginTop: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
-                <label style={{ fontSize: 11, color: 'var(--muted)' }}>{t('health_reminder_date')}</label>
+              <div className="mt-1.5 flex items-center gap-1.5">
+                <label className="text-[11px] text-[var(--muted)]">{t('health_reminder_date')}</label>
                 <input
                   type="date"
-                  className="field"
                   defaultValue={m.nextReminderDate || ''}
                   onChange={(e) => handleReminderChange(m.id, e.target.value)}
-                  style={{ fontSize: 11, padding: '4px 6px', width: 120, minHeight: 'auto' }}
+                  className="field min-h-0 w-[120px] px-1.5 py-1 text-[11px]"
                 />
               </div>
             </div>
           ))}
         </div>
       )}
-
-      <style jsx>{`
-        .danger-link { background: none; border: none; color: var(--alert); cursor: pointer; padding: 4px; }
-        .danger-link:hover { opacity: 0.8; }
-      `}</style>
     </div>
   );
 }

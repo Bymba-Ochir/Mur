@@ -24,76 +24,48 @@ export default function ClinicCard({
 
   return (
     <div
-      className={`card clinic-card ${selected ? 'selected' : ''}`}
+      className={`card flex items-start gap-[var(--sp-3)] p-[var(--sp-5)] transition-[transform,box-shadow,border-color] duration-[var(--dur-base)] ease-[var(--ease-out)] hover:-translate-y-[3px] hover:border-[var(--primary-light)] hover:shadow-[var(--shadow-md)] max-sm:p-[var(--sp-4)] ${selected ? 'border-[var(--border-focus)] shadow-[0_0_0_2px_color-mix(in_srgb,var(--primary)_20%,transparent)]' : ''}`}
       onClick={onSelect}
       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect?.(); } }}
       role={onSelect ? 'button' : undefined}
       tabIndex={onSelect ? 0 : undefined}
     >
-      <div className="clinic-content">
-        <div className="clinic-heading">
-          <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 15, fontWeight: 600, color: 'var(--primary)' }}>
+      <div className="min-w-0 flex-1">
+        <div className="flex items-start justify-between gap-[var(--sp-2)]">
+          <h3 className="font-[family-name:var(--font-display)] text-[15px] font-semibold text-[var(--primary)]">
             {clinic.name}
           </h3>
           {distanceKm != null && (
-            <span className="chip">{distanceLabel(distanceKm)}</span>
+            <span className="inline-block whitespace-nowrap rounded-[var(--r-pill)] bg-[var(--surface-3)] px-2.5 py-[3px] text-[11px] font-semibold text-[var(--primary)]">{distanceLabel(distanceKm)}</span>
           )}
         </div>
-        <p style={{ fontSize: 12.5, color: 'var(--muted)', margin: '2px 0' }}>
+        <p className="my-0.5 text-[12.5px] text-[var(--muted)]">
           <strong>{t('clinics_address')}</strong> {clinic.address}
         </p>
-        <p style={{ fontSize: 12.5, color: 'var(--muted)', margin: '2px 0' }}>
+        <p className="my-0.5 text-[12.5px] text-[var(--muted)]">
           <strong>{t('clinics_hours')}</strong> {clinic.hours}
         </p>
         {clinic.note && (
-          <p style={{ fontSize: 12, color: 'var(--accent)', margin: '4px 0', fontStyle: 'italic' }}>
+          <p className="my-1 text-xs italic text-[var(--accent)]">
             {t('clinics_note')} {clinic.note}
           </p>
         )}
-        <div className="clinic-services">
+        <div className="mt-[var(--sp-2)] flex flex-wrap gap-[5px]">
           {clinic.services.map((s) => (
-            <span key={s} className="chip">{t(SERVICE_I18N[s] as 'service_exam')}</span>
+            <span key={s} className="inline-block whitespace-nowrap rounded-[var(--r-pill)] bg-[var(--surface-3)] px-2.5 py-[3px] text-[11px] font-semibold text-[var(--primary)]">{t(SERVICE_I18N[s] as 'service_exam')}</span>
           ))}
         </div>
-        <div className="clinic-actions">
-          <Button as="anchor" href={`tel:${clinic.phone}`} variant="ghost" style={{ fontSize: 12, minHeight: 36, minWidth: 'auto' }}>
+        <div className="mt-[var(--sp-4)] flex justify-end gap-[var(--sp-2)] max-sm:justify-stretch max-sm:[&_.btn-base]:min-w-0 max-sm:[&_.btn-base]:flex-1">
+          <Button as="anchor" href={`tel:${clinic.phone}`} variant="ghost" className="min-h-9 min-w-0 text-xs">
             ☎ {t('clinics_call')}
           </Button>
           {onBook && (
-            <Button variant="primary" style={{ fontSize: 12, minHeight: 36, minWidth: 148, background: 'var(--clinic)', justifyContent: 'center' }} onClick={(e) => { e.stopPropagation(); onBook(); }}>
+            <Button variant="primary" className="min-h-9 min-w-[148px] justify-center bg-[var(--clinic)] text-xs" onClick={(e) => { e.stopPropagation(); onBook(); }}>
               {t('clinics_book')}
             </Button>
           )}
         </div>
       </div>
-
-      <style jsx>{`
-        .clinic-card {
-          display: flex; gap: var(--sp-3); align-items: flex-start;
-          padding: var(--sp-5);
-          transition: transform var(--dur-base) var(--ease-out), box-shadow var(--dur-base) var(--ease-out), border-color var(--dur-base) var(--ease-out);
-        }
-        .clinic-content { flex: 1; min-width: 0; }
-        .clinic-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--sp-2); }
-        .clinic-services { display: flex; flex-wrap: wrap; gap: 5px; margin-top: var(--sp-2); }
-        .clinic-actions { display: flex; justify-content: flex-end; gap: var(--sp-2); margin-top: var(--sp-4); }
-        .clinic-card:hover {
-          transform: translateY(-3px);
-          box-shadow: var(--shadow-md);
-          border-color: var(--primary-light);
-        }
-        .clinic-card.selected { border-color: var(--border-focus); box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 20%, transparent); }
-        .chip {
-          display: inline-block; font-size: 11px; padding: 3px 10px;
-          background: var(--surface-3); border-radius: var(--r-pill);
-          color: var(--primary); font-weight: 600; white-space: nowrap;
-        }
-        @media (max-width: 640px) {
-          .clinic-card { padding: var(--sp-4); }
-          .clinic-actions { justify-content: stretch; }
-          .clinic-actions :global(.btn-base) { flex: 1; min-width: 0 !important; }
-        }
-      `}</style>
     </div>
   );
 }

@@ -38,28 +38,17 @@ export default function NotifySubscribe({ district }: { district: District }) {
   if (!supported) return null; // Safari desktop зэрэг дэмждэггүй үед нуух
 
   return (
-    <div className="notify-box">
+    <div className="my-3">
       {subscribed ? (
-        <p>🔔 Танай дүүрэгт шинэ мэдэгдэл бүртгэгдэхэд push мэдэгдэл авна.</p>
+        <p className="text-[13px] text-[var(--muted)]">🔔 Танай дүүрэгт шинэ мэдэгдэл бүртгэгдэхэд push мэдэгдэл авна.</p>
       ) : (
         <>
-          <button onClick={handleSubscribe} disabled={loading} className="notify-btn">
+          <button onClick={handleSubscribe} disabled={loading} className="cursor-pointer rounded-[var(--r-sm)] border-[1.5px] border-[var(--primary)] bg-[var(--card)] px-3.5 py-[9px] text-[13px] font-semibold text-[var(--primary)] disabled:cursor-not-allowed disabled:opacity-60">
             {loading ? 'Бүртгүүлж байна...' : `🔔 "${district}" дүүргийн шинэ мэдэгдэл авах`}
           </button>
-          {error && <p className="notify-error">{error}</p>}
+          {error && <p className="mt-1.5 text-xs text-[var(--alert)]">{error}</p>}
         </>
       )}
-
-      <style jsx>{`
-        .notify-box { margin: 12px 0; }
-        .notify-btn {
-          padding: 9px 14px; border-radius: var(--r-sm); border: 1.5px solid var(--primary);
-          background: var(--card); color: var(--primary); font-weight: 600; font-size: 13px; cursor: pointer;
-        }
-        .notify-btn:disabled { opacity: 0.6; cursor: not-allowed; }
-        .notify-error { color: var(--alert); font-size: 12px; margin-top: 6px; }
-        p { font-size: 13px; color: var(--muted); }
-      `}</style>
     </div>
   );
 }

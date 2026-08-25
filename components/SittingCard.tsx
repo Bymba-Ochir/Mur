@@ -27,7 +27,7 @@ export default function SittingCard({ listing }: { listing: SittingListing }) {
       onRevealPhone={() => setRevealed(true)}
       imageNode={
         listing.photoURL ? (
-          <Image src={listing.photoURL} alt={listing.description} fill sizes="(max-width: 640px) 45vw, 220px" style={{ objectFit: 'cover' }} />
+          <Image src={listing.photoURL} alt={listing.description} fill sizes="(max-width: 640px) 45vw, 220px" className="object-cover" />
         ) : undefined
       }
       onClick={() => router.push(`/sitting/${listing.id}`)}

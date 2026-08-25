@@ -10,14 +10,14 @@ export default function GlobalError({ error, reset }: { error: Error & { digest?
   return (
     <html lang="mn">
       <body>
-        <div style={{ padding: 40, textAlign: 'center', fontFamily: 'sans-serif' }}>
-          <h2 style={{ marginBottom: 12 }}>Алдаа гарлаа</h2>
-          <p style={{ color: '#6B7680', marginBottom: 20 }}>
+        <div className="p-10 text-center font-sans">
+          <h2 className="mb-3">Алдаа гарлаа</h2>
+          <p className="mb-5 text-[#6B7680]">
             Уучлаарай, ямар нэгэн зүйл буруу болсон байна. Дахин оролдоно уу.
           </p>
           <button
             onClick={reset}
-            style={{ padding: '11px 22px', borderRadius: 10, border: 'none', background: '#17414D', color: '#fff', cursor: 'pointer', fontWeight: 600 }}
+            className="cursor-pointer rounded-[10px] border-0 bg-[#17414D] px-[22px] py-[11px] font-semibold text-white"
           >
             Дахин оролдох
           </button>

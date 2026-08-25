@@ -101,7 +101,7 @@ export default function MyPetsPage() {
 
   const selectedPet = pets.find((p) => p.id === selectedPetId) || null;
 
-  if (loading) return <p style={{ color: 'var(--muted)' }}>{t('detail_loading')}</p>;
+  if (loading) return <p className="text-[var(--muted)]">{t('detail_loading')}</p>;
 
   if (!user) {
     return (
@@ -126,57 +126,54 @@ export default function MyPetsPage() {
       <>
           {/* Sanuulga */}
           {!subscribed ? (
-            <div style={{ background: 'var(--success-bg)', padding: 'var(--sp-3)', borderRadius: 'var(--r-md)', marginBottom: 'var(--sp-4)' }}>
+            <div className="mb-[var(--sp-4)] rounded-[var(--r-md)] bg-[var(--success-bg)] p-[var(--sp-3)]">
               <Button onClick={handleSubscribe} variant="primary">
                 {t('mypets_subscribe')}
               </Button>
-              {notifyError && <p style={{ color: 'var(--alert)', fontSize: 12, marginTop: 'var(--sp-1)' }}>{notifyError}</p>}
+              {notifyError && <p className="mt-[var(--sp-1)] text-xs text-[var(--alert)]">{notifyError}</p>}
             </div>
           ) : (
-            <p style={{ fontSize: 13, color: 'var(--success)', marginBottom: 'var(--sp-4)' }}>{t('mypets_subscribed')}</p>
+            <p className="mb-[var(--sp-4)] text-[13px] text-[var(--success)]">{t('mypets_subscribed')}</p>
           )}
 
           {/* Нэмэх форм */}
-          <form onSubmit={handleAdd} style={{ marginBottom: 'var(--sp-4)' }} aria-label="Шинэ амьтан нэмэх">
+          <form onSubmit={handleAdd} className="mb-[var(--sp-4)] [&_.field]:min-h-[var(--touch-target)] [&_.field]:rounded-[var(--r-sm)] [&_.field]:border [&_.field]:border-[var(--line)] [&_.field]:bg-[var(--card)] [&_.field]:px-[var(--sp-3)] [&_.field]:py-[var(--sp-2)] [&_.field]:text-[var(--ink)]" aria-label="Шинэ амьтан нэмэх">
             <FieldHint mn="Нэр, төрөл заавал. Нас, үүлдэр, жин болон вакцины мэдээлэл мэдэхгүй бол дараа нь нэмж болно." en="Name and type are required. Age, breed, weight and vaccine details can be added later." />
-            <div style={{ display: 'flex', gap: 'var(--sp-2)', marginBottom: 'var(--sp-2)' }}>
+            <div className="mb-[var(--sp-2)] flex gap-[var(--sp-2)]">
               <input
-                className="field" value={name} onChange={(e) => setName(e.target.value)}
+                value={name} onChange={(e) => setName(e.target.value)}
                 placeholder={t('mypets_name_ph')} required
-                style={{ flex: '1 1 140px' }}
+                className="field flex-[1_1_140px]"
               />
-              <select className="field" value={type} onChange={(e) => setType(e.target.value)} style={{ width: 'auto' }}>
+              <select className="field w-auto" value={type} onChange={(e) => setType(e.target.value)}>
                 <option value="Нохой">{TYPE_LABELS['Нохой']}</option>
                 <option value="Муур">{TYPE_LABELS['Муур']}</option>
               </select>
             </div>
-            <div style={{ display: 'flex', gap: 'var(--sp-2)', marginBottom: 'var(--sp-2)' }}>
-              <input className="field" value={age} onChange={(e) => setAge(e.target.value)} placeholder={t('health_age_ph')} style={{ flex: 1 }} />
-              <input className="field" value={breed} onChange={(e) => setBreed(e.target.value)} placeholder={t('health_breed_ph')} style={{ flex: 1 }} />
-              <input className="field" type="number" step="0.1" min="0" value={weight} onChange={(e) => setWeight(e.target.value)} placeholder={t('health_weight_ph')} style={{ flex: 1 }} />
+            <div className="mb-[var(--sp-2)] flex gap-[var(--sp-2)] max-sm:flex-wrap [&_.field]:flex-1">
+              <input className="field flex-1" value={age} onChange={(e) => setAge(e.target.value)} placeholder={t('health_age_ph')} />
+              <input className="field flex-1" value={breed} onChange={(e) => setBreed(e.target.value)} placeholder={t('health_breed_ph')} />
+              <input className="field flex-1" type="number" step="0.1" min="0" value={weight} onChange={(e) => setWeight(e.target.value)} placeholder={t('health_weight_ph')} />
             </div>
-            <div style={{ display: 'flex', gap: 'var(--sp-2)' }}>
+            <div className="flex gap-[var(--sp-2)] max-sm:flex-wrap [&_.field]:flex-1">
               <span className="sr-only">Дараагийн вакцины нэр болон огноо</span>
-              <input className="field" value={vaxName} onChange={(e) => setVaxName(e.target.value)} placeholder={t('health_next_vaccine_name_ph')} style={{ flex: 1 }} />
-              <input className="field" type="date" value={date} onChange={(e) => setDate(e.target.value)} style={{ width: 'auto' }} />
+              <input className="field flex-1" value={vaxName} onChange={(e) => setVaxName(e.target.value)} placeholder={t('health_next_vaccine_name_ph')} />
+              <input className="field w-auto" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
               <Button type="submit" disabled={busy} variant="accent">{t('mypets_add')}</Button>
             </div>
           </form>
 
           {/* Амьтдын жагсаалт */}
           {petsLoading ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-2)' }}>
+            <div className="flex flex-col gap-[var(--sp-2)]">
               {[0, 1].map((i) => (
-                <div key={i} className="skel-row" style={{
-                  background: 'var(--card)', border: '1px solid var(--line)', borderRadius: 'var(--r-md)',
-                  padding: 'var(--sp-3)', height: 52,
-                }} />
+                <div key={i} className="skel-row h-[52px] rounded-[var(--r-md)] border border-[var(--line)] bg-[var(--card)] p-[var(--sp-3)]" />
               ))}
             </div>
           ) : pets.length === 0 ? (
             <EmptyState icon={<Icon name="vaccine" size={30} />} description={t('mypets_none')} />
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-2)' }}>
+            <div className="flex flex-col gap-[var(--sp-2)]">
               {pets.map((p) => (
                 <MyPetCard
                   key={p.id}
@@ -200,8 +197,6 @@ export default function MyPetsPage() {
           )}
       </>
 
-      <style jsx>{`
-      `}</style>
     </div>
   );
 }

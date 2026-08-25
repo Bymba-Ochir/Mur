@@ -100,14 +100,14 @@ export default function DonateModal({ onClose }: { onClose: () => void }) {
     <Modal open onClose={onClose} title={t('donate_title')} closeLabel={t('donate_close')} width="sm" panelClassName="donate-modal">
 
         {stage === 'form' && (
-          <form onSubmit={handleCreate}>
-            <p className="hint">{t('donate_intro')}</p>
+          <form onSubmit={handleCreate} className="[&_label]:mt-2.5 [&_label]:mb-1 [&_label]:block [&_label]:text-[12.5px] [&_label]:font-semibold [&_label]:text-[var(--primary)] [&_input:not([type='checkbox'])]:w-full [&_input:not([type='checkbox'])]:rounded-[var(--r-sm)] [&_input:not([type='checkbox'])]:border-[1.5px] [&_input:not([type='checkbox'])]:border-[var(--line)] [&_input:not([type='checkbox'])]:bg-[var(--card)] [&_input:not([type='checkbox'])]:px-[var(--sp-3)] [&_input:not([type='checkbox'])]:py-[var(--sp-2)] [&_input:not([type='checkbox'])]:font-[family-name:inherit] [&_input:not([type='checkbox'])]:text-[length:var(--text-base)] [&_input:not([type='checkbox'])]:text-[var(--ink)] [&_textarea]:w-full [&_textarea]:rounded-[var(--r-sm)] [&_textarea]:border-[1.5px] [&_textarea]:border-[var(--line)] [&_textarea]:bg-[var(--card)] [&_textarea]:px-[var(--sp-3)] [&_textarea]:py-[var(--sp-2)] [&_textarea]:font-[family-name:inherit] [&_textarea]:text-[length:var(--text-base)] [&_textarea]:text-[var(--ink)]">
+            <p className="mb-3 text-[12.5px] text-[var(--muted)]">{t('donate_intro')}</p>
 
-            <div className="amounts" role="group" aria-label={t('donate_custom_label')}>
+            <div className="mb-2.5 grid grid-cols-2 gap-2" role="group" aria-label={t('donate_custom_label')}>
               {AMOUNTS.map((a) => (
                 <button
                   type="button" key={a}
-                  className={`amount-btn ${amount === a && !customAmount ? 'active' : ''}`}
+                  className={`cursor-pointer rounded-[var(--r-sm)] border-[1.5px] p-2.5 font-[family-name:var(--font-body)] font-semibold transition-all hover:border-[var(--accent)] ${amount === a && !customAmount ? 'border-[var(--accent)] bg-[var(--accent)] text-[var(--accent-ink)]' : 'border-[var(--line)] bg-[var(--bg)] text-[var(--ink)]'}`}
                   onClick={() => { setAmount(a); setCustomAmount(''); }}
                 >
                   {a.toLocaleString()}₮
@@ -129,79 +129,55 @@ export default function DonateModal({ onClose }: { onClose: () => void }) {
             <FieldHint mn="Олон нийтэд харуулах богино мессеж. Хувийн мэдээлэл битгий оруулаарай." en="A short public message. Do not include private information." />
             <textarea id="donor-message" value={message} onChange={(e) => setMessage(e.target.value)} rows={2} placeholder={t('donate_message_ph')} />
 
-            <label className="checkbox-row">
-              <input type="checkbox" checked={anonymous} onChange={(e) => setAnonymous(e.target.checked)} />
+            <label className="flex items-center gap-2 font-normal text-[var(--ink)]">
+              <input className="w-auto" type="checkbox" checked={anonymous} onChange={(e) => setAnonymous(e.target.checked)} />
               {t('donate_anonymous')}
             </label>
 
-            <button type="submit" className="submit-btn">{t('donate_pay_btn')}</button>
+            <button type="submit" className="mt-4 w-full cursor-pointer rounded-[var(--r-md)] border-0 bg-[var(--grad-brand)] p-[13px] font-[family-name:var(--font-body)] text-sm font-bold text-[var(--text-on-accent)] shadow-[var(--shadow-sm)] transition-[transform,box-shadow,filter] hover:-translate-y-px hover:saturate-[1.08] hover:shadow-[var(--shadow-md)] focus-visible:outline-[2.5px] focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]">{t('donate_pay_btn')}</button>
           </form>
         )}
 
         {stage === 'loading' && <p role="status">{t('donate_generating')}</p>}
 
         {stage === 'qr' && invoice && (
-          <div className="qr-box">
+          <div className="text-center">
             <p>{finalAmount.toLocaleString()}₮ {t('donate_invoice_created')}</p>
-            <Image src={invoice.qrImage} alt={t('donate_qr_alt')} className="qr-img" width={240} height={240} unoptimized />
-            <p className="hint">{t('donate_scan_hint')}</p>
+            <Image src={invoice.qrImage} alt={t('donate_qr_alt')} className="mx-auto my-2.5 size-[200px] rounded-[var(--r-sm)] border border-[var(--line)]" width={240} height={240} unoptimized />
+            <p className="mb-3 text-[12.5px] text-[var(--muted)]">{t('donate_scan_hint')}</p>
             {invoice.deepLinks && invoice.deepLinks.length > 0 && (
-              <div className="deep-links">
+              <div className="my-2.5 flex flex-wrap justify-center gap-2">
                 {invoice.deepLinks.slice(0, 4).map((l) => (
-                  <a key={l.name} href={l.link} className="deep-link">
+                  <a key={l.name} href={l.link} className="flex items-center gap-1 rounded-[var(--r-sm)] bg-[var(--eyebrow-bg)] px-2.5 py-[5px] text-[11.5px] text-[var(--primary)] no-underline [&_img]:size-4 [&_img]:rounded-[var(--r-sm)]">
                     {l.logo && <Image src={l.logo} alt="" aria-hidden="true" width={28} height={28} unoptimized />}
                     {l.description}
                   </a>
                 ))}
               </div>
             )}
-            <p className="hint" role="status" aria-live="polite">{t('donate_checking')}</p>
+            <p className="mb-3 text-[12.5px] text-[var(--muted)]" role="status" aria-live="polite">{t('donate_checking')}</p>
           </div>
         )}
 
         {stage === 'paid' && (
-          <div className="paid-box pop-in" role="status">
-            <div className="paid-icon" aria-hidden="true">
+          <div className="pop-in text-center" role="status">
+            <div className="mb-2 flex justify-center text-[var(--success)]" aria-hidden="true">
               <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" focusable="false">
                 <circle cx="12" cy="12" r="9" /><path d="M8.5 12.5l2.5 2.5 4.5-5" />
               </svg>
             </div>
-            <p style={{ fontWeight: 700, color: 'var(--success)' }}>{t('donate_thanks')}</p>
-            <p className="hint">{finalAmount.toLocaleString()}₮ {t('donate_paid_hint')}</p>
-            <button className="submit-btn" onClick={onClose}>{t('donate_close')}</button>
+            <p className="font-bold text-[var(--success)]">{t('donate_thanks')}</p>
+            <p className="mb-3 text-[12.5px] text-[var(--muted)]">{finalAmount.toLocaleString()}₮ {t('donate_paid_hint')}</p>
+            <button className="mt-4 w-full cursor-pointer rounded-[var(--r-md)] border-0 bg-[var(--grad-brand)] p-[13px] font-[family-name:var(--font-body)] text-sm font-bold text-[var(--text-on-accent)] shadow-[var(--shadow-sm)]" onClick={onClose}>{t('donate_close')}</button>
           </div>
         )}
 
         {stage === 'error' && (
           <div>
-            <p role="alert" style={{ color: 'var(--alert)' }}>{errorMsg}</p>
-            <button className="submit-btn" onClick={() => setStage('form')}>{t('donate_retry')}</button>
+            <p role="alert" className="text-[var(--alert)]">{errorMsg}</p>
+            <button className="mt-4 w-full cursor-pointer rounded-[var(--r-md)] border-0 bg-[var(--grad-brand)] p-[13px] font-[family-name:var(--font-body)] text-sm font-bold text-[var(--text-on-accent)] shadow-[var(--shadow-sm)]" onClick={() => setStage('form')}>{t('donate_retry')}</button>
           </div>
         )}
-      <style jsx>{`
-        .hint { font-size: 12.5px; color: var(--muted); margin-bottom: 12px; }
-        .amounts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
-        .amount-btn { padding: 10px; border-radius: var(--r-sm); border: 1.5px solid var(--line); background: var(--bg); color: var(--ink); font-weight: 600; cursor: pointer; font-family: var(--font-body); transition: all 0.15s ease; }
-        .amount-btn:hover { border-color: var(--accent); }
-        .amount-btn.active { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
-        label { font-size: 12.5px; font-weight: 600; color: var(--primary); display: block; margin-top: 10px; margin-bottom: 4px; }
-        input, textarea { width: 100%; padding: var(--sp-2) var(--sp-3); border: 1.5px solid var(--line); border-radius: var(--r-sm); font-size: var(--text-base); background: var(--card); color: var(--ink); font-family: inherit; }
-        .checkbox-row { display: flex; align-items: center; gap: 8px; font-weight: 400; color: var(--ink); }
-        .checkbox-row input { width: auto; }
-        .submit-btn { width: 100%; margin-top: 16px; padding: 13px; border-radius: var(--r-md); border: none; background: var(--grad-brand); color: var(--text-on-accent); font-weight: 700; cursor: pointer; font-size: 14px; font-family: var(--font-body); transition: transform 0.15s ease, box-shadow 0.2s ease, filter 0.2s ease; box-shadow: var(--shadow-sm); }
-        .submit-btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: var(--shadow-md); filter: saturate(1.08); }
-        .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
-        .submit-btn:focus-visible { outline: 2.5px solid var(--accent); outline-offset: 2px; }
-        .qr-box, .paid-box { text-align: center; }
-        .paid-icon { display: flex; justify-content: center; margin-bottom: 8px; color: var(--success); }
-        .qr-img { width: 200px; height: 200px; margin: 10px auto; border-radius: var(--r-sm); border: 1px solid var(--line); }
-        .deep-links { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 10px 0; }
-        .deep-link { display: flex; align-items: center; gap: 4px; font-size: 11.5px; background: var(--eyebrow-bg); color: var(--primary); padding: 5px 10px; border-radius: var(--r-sm); text-decoration: none; }
-        .deep-link img { width: 16px; height: 16px; border-radius: var(--r-sm); }
-        @media (max-width: 480px) {
-          input, textarea { font-size: 16px; }
-        }
-      `}</style>
     </Modal>
   );
 }
