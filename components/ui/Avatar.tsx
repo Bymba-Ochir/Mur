@@ -1,5 +1,6 @@
 'use client';
 import Image from 'next/image';
+import { PawPrint } from 'lucide-react';
 
 interface AvatarProps {
   src?: string | null;
@@ -15,7 +16,7 @@ export default function Avatar({ src, alt = '', size = 40, fallback, className =
       {src ? (
         <Image src={src} alt={alt} width={size} height={size} className="h-full w-full object-cover" />
       ) : (
-        <span className="leading-none" style={{ fontSize: size * 0.5 }} aria-hidden="true">{fallback ?? '🐾'}</span>
+        <span className="flex items-center justify-center leading-none" aria-hidden="true">{fallback ?? <PawPrint size={size * 0.5} />}</span>
       )}
     </span>
   );

@@ -7,6 +7,7 @@ import type { ListingNotification, SavedSearch } from '../../lib/listingService'
 import type { Pet } from '../../lib/types';
 import PetCard from '../../components/PetCard';
 import Button from '../../components/ui/Button';
+import { Bell, Check, Circle } from 'lucide-react';
 
 export default function SavedPage() {
   const { user, loading } = useAuth();
@@ -29,11 +30,11 @@ export default function SavedPage() {
         key={item.id}
         onClick={() => { void markListingNotificationRead(item.id); setNotifications((all) => all.map((n) => n.id === item.id ? { ...n, read: true } : n)); }}
                   className={`card p-3.5 text-inherit ${item.read ? 'opacity-[0.68]' : 'opacity-100'}`}
-      >{item.read ? '✓' : '●'} {item.title}</Link>) : <p className="text-[var(--muted)]">Одоогоор шинэ тохирол алга.</p>}
+      >{item.read ? <Check size={14} aria-hidden="true" /> : <Circle size={9} fill="currentColor" aria-hidden="true" />} {item.title}</Link>) : <p className="text-[var(--muted)]">Одоогоор шинэ тохирол алга.</p>}
     </div>
     <h2 className="mb-3">Хадгалсан хайлт</h2>
     <div className="mb-7 flex flex-wrap gap-2">
-      {searches.length ? searches.map((search) => <div className="card flex items-center gap-2.5 p-3" key={search.id}><span>{search.name}{search.notify ? ' · 🔔' : ''}</span><Button variant="ghost" onClick={async () => { await deleteSavedSearch(search.id); setSearches((all) => all.filter((item) => item.id !== search.id)); }}>Устгах</Button></div>) : <p className="text-[var(--muted)]">Хадгалсан хайлт алга.</p>}
+      {searches.length ? searches.map((search) => <div className="card flex items-center gap-2.5 p-3" key={search.id}><span className="flex items-center gap-1">{search.name}{search.notify && <Bell size={14} aria-label="Мэдэгдэл идэвхтэй" />}</span><Button variant="ghost" onClick={async () => { await deleteSavedSearch(search.id); setSearches((all) => all.filter((item) => item.id !== search.id)); }}>Устгах</Button></div>) : <p className="text-[var(--muted)]">Хадгалсан хайлт алга.</p>}
     </div>
     <h2 className="mb-3">Хадгалсан зар</h2>
     {pets.length ? <div className="listing-grid">{pets.map((pet) => <PetCard key={pet.id} pet={pet} />)}</div> : <p className="text-[var(--muted)]">Хадгалсан зар алга.</p>}

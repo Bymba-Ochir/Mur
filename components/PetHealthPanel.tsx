@@ -10,6 +10,7 @@ import VaccinationsSection from './VaccinationsSection';
 import ConditionsSection from './ConditionsSection';
 import MedicationsSection from './MedicationsSection';
 import type { MyPet, PetHealthData } from '../lib/types';
+import { X } from 'lucide-react';
 
 export default function PetHealthPanel({
   pet, onProfileUpdated, onClose,
@@ -63,7 +64,7 @@ export default function PetHealthPanel({
         <h2 className="font-[family-name:var(--font-display)] text-base font-semibold text-[var(--primary)]">
           {pet.name} — {t('health_section_profile')}
         </h2>
-        <Button variant="ghost" className="min-h-0 px-3 py-1.5 text-xs" onClick={onClose}>✕</Button>
+        <Button variant="ghost" className="min-h-0 px-3 py-1.5 text-xs" onClick={onClose} aria-label="Хаах"><X size={16} aria-hidden="true" /></Button>
       </div>
 
       {/* Профайл засах */}

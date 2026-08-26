@@ -10,6 +10,7 @@ import PetIcon from './PetIcon';
 import Button from './ui/Button';
 import ShareButtons from './ShareButtons';
 import type { PetProfileData } from '../lib/types';
+import { Phone } from 'lucide-react';
 
 function subscribeLocation(cb: () => void) {
   window.addEventListener('popstate', cb);
@@ -18,9 +19,9 @@ function subscribeLocation(cb: () => void) {
 }
 
 const VAX_STATUS: Record<string, { text: string; color: string }> = {
-  overdue: { text: '⚠️ Хугацаа хэтэрсэн', color: 'var(--alert)' },
-  soon: { text: '🔔 Удахгүй болно', color: 'var(--accent)' },
-  ok: { text: '✅ Хэвийн', color: 'var(--success)' },
+  overdue: { text: 'Хугацаа хэтэрсэн', color: 'var(--alert)' },
+  soon: { text: 'Удахгүй болно', color: 'var(--accent)' },
+  ok: { text: 'Хэвийн', color: 'var(--success)' },
   none: { text: 'Огноо тохируулаагүй', color: 'var(--muted)' },
 };
 
@@ -75,7 +76,7 @@ export default function PetProfileLayout({
           {data.breed && <span className="inline-block rounded-[var(--r-pill)] bg-[var(--surface-3)] px-3 py-1 text-xs font-semibold text-[var(--primary)]">{data.breed}</span>}
           {data.age && <span className="inline-block rounded-[var(--r-pill)] bg-[var(--surface-3)] px-3 py-1 text-xs font-semibold text-[var(--primary)]">{data.age}</span>}
           {data.gender && data.gender !== 'Тодорхойгүй' && (
-            <span className="inline-block rounded-[var(--r-pill)] bg-[var(--surface-3)] px-3 py-1 text-xs font-semibold text-[var(--primary)]">{data.gender === 'Эрэгтэй' ? '♂' : '♀'} {data.gender}</span>
+            <span className="inline-block rounded-[var(--r-pill)] bg-[var(--surface-3)] px-3 py-1 text-xs font-semibold text-[var(--primary)]">{data.gender}</span>
           )}
           {data.weight != null && <span className="inline-block rounded-[var(--r-pill)] bg-[var(--surface-3)] px-3 py-1 text-xs font-semibold text-[var(--primary)]">{data.weight} {t('profiles_weight_chip')}</span>}
         </div>
@@ -152,10 +153,10 @@ export default function PetProfileLayout({
           {data.phone && (
             <div className="mt-[var(--sp-2)]">
               {phoneRevealed ? (
-                <a href={`tel:${data.phone}`} className="text-sm font-semibold text-[var(--primary)] no-underline">☎ {formatPhone(data.phone)}</a>
+                <a href={`tel:${data.phone}`} className="inline-flex items-center gap-1 text-sm font-semibold text-[var(--primary)] no-underline"><Phone size={14} aria-hidden="true" /> {formatPhone(data.phone)}</a>
               ) : (
                 <Button variant="ghost" onClick={() => setPhoneRevealed(true)} className="min-h-9 text-[13px]">
-                  ☎ {maskPhone(data.phone)} · {t('detail_show_phone')}
+                  <Phone size={14} aria-hidden="true" /> {maskPhone(data.phone)} · {t('detail_show_phone')}
                 </Button>
               )}
             </div>

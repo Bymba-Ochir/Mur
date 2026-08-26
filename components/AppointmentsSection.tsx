@@ -21,16 +21,19 @@ export default function AppointmentsSection({
   const showToast = useToast();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
 
   useEffect(() => {
     if (!user) return;
     let cancelled = false;
     async function load() {
+      setLoadError(false);
       try {
         const data = await fetchMyAppointments();
         if (!cancelled) setAppointments(data);
       } catch (err) {
         console.error(err);
+        if (!cancelled) setLoadError(true);
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -61,7 +64,9 @@ export default function AppointmentsSection({
         {t('appts_title')}
       </h3>
 
-      {appointments.length === 0 ? (
+      {loadError ? (
+        <p className="text-[13px] text-[var(--alert)]" role="alert">Цаг захиалгын мэдээллийг ачаалж чадсангүй.</p>
+      ) : appointments.length === 0 ? (
         <p className="text-[13px] text-[var(--muted)]">{t('appts_none')}</p>
       ) : (
         <div className="flex flex-col gap-[var(--sp-2)]">

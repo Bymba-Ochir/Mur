@@ -1,6 +1,7 @@
 // lib/sittingService.ts
 // Асрах үйлчилгээний CRUD
 import { supabase } from './supabase';
+import { deleteContent } from './deleteContent';
 import type { SittingListing, SittingListingInput, SittingListingFilters, UpdateSittingListingFields } from './types';
 
 const TABLE = 'sitting_listings';
@@ -145,7 +146,5 @@ export async function updateSittingListing(id: string, fields: UpdateSittingList
 }
 
 export async function deleteSittingListing(id: string): Promise<void> {
-  const userId = await requireUserId();
-  const { error } = await supabase.from(TABLE).delete().eq('id', id).eq('user_id', userId);
-  if (error) throw error;
+  await deleteContent('sitting', id);
 }

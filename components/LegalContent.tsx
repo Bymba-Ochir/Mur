@@ -1,5 +1,6 @@
 'use client';
 import { useLanguage } from '../lib/i18n';
+import { Scale } from 'lucide-react';
 
 export interface LegalSection {
   heading: string;
@@ -23,7 +24,7 @@ export default function LegalContent({ mn, en }: { mn: LegalDoc; en: LegalDoc })
 
   return (
     <article className="page-shell page-shell--narrow max-w-[680px]">
-      <div className="eyebrow">⚖️</div>
+      <div className="eyebrow"><Scale size={15} aria-hidden="true" /></div>
       <h1 className="mb-[var(--sp-1)] text-[clamp(24px,4vw,32px)]">{doc.title}</h1>
       <p className="mb-[var(--sp-5)] font-[family-name:var(--font-mono)] text-[12.5px] text-[var(--muted)]">{doc.updated}</p>
 

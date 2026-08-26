@@ -1,5 +1,6 @@
 'use client';
 import PetForm from '../../components/PetForm';
+import AuthRequired from '../../components/AuthRequired';
 import { useLanguage } from '../../lib/i18n';
 
 export default function ReportFoundPage() {
@@ -11,7 +12,7 @@ export default function ReportFoundPage() {
         <h1>{t('report_found_title')}</h1>
         <p>{t('report_found_desc')}</p>
       </div>
-      <PetForm status="found" />
+      <AuthRequired><PetForm status="found" /></AuthRequired>
     </div>
   );
 }

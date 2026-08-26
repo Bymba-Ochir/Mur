@@ -1,5 +1,6 @@
 'use client';
 import AdoptionForm from '../../../components/AdoptionForm';
+import AuthRequired from '../../../components/AuthRequired';
 import { useLanguage } from '../../../lib/i18n';
 
 export default function NewAdoptionPage() {
@@ -11,7 +12,7 @@ export default function NewAdoptionPage() {
         <h1>{t('adoptions_new_title')}</h1>
         <p>{t('adoptions_new_desc')}</p>
       </div>
-      <AdoptionForm />
+      <AuthRequired><AdoptionForm /></AuthRequired>
     </div>
   );
 }

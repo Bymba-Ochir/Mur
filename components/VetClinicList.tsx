@@ -12,6 +12,8 @@ import AppointmentModal from './AppointmentModal';
 import AppointmentsSection from './AppointmentsSection';
 import LoginModal from './LoginModal';
 import type { VetClinic, VetService } from '../lib/types';
+import { ShieldAlert } from 'lucide-react';
+import { VET_CLINICS } from '../lib/vetClinics';
 
 const SERVICE_OPTIONS: (VetService | '')[] = ['', 'Үзлэг', 'Вакцин', 'Мэс засал', 'Шүд арчилгаа'];
 
@@ -62,6 +64,27 @@ export default function VetClinicList({ embedded = false }: { embedded?: boolean
       return;
     }
     setBookingClinic(clinic);
+  }
+
+  if (VET_CLINICS.length === 0) {
+    return (
+      <div className={embedded ? 'clinic-embedded' : 'page-shell'}>
+        {!embedded && (
+          <div className="page-header">
+            <div className="eyebrow">{t('clinics_eyebrow')}</div>
+            <h1>{t('clinics_title')}</h1>
+            <p>{t('clinics_desc')}</p>
+          </div>
+        )}
+        <div className="content-panel flex flex-col items-center px-6 py-12 text-center" role="status">
+          <ShieldAlert size={34} className="mb-3 text-[var(--primary)]" aria-hidden="true" />
+          <h2 className="mb-2 text-lg font-bold text-[var(--text)]">Баталгаажсан эмнэлгийн мэдээлэл бэлтгэгдэж байна</h2>
+          <p className="max-w-xl text-sm leading-6 text-[var(--muted)]">
+            Утас, хаяг, ажиллах цагийг албан эх сурвалжаар баталгаажуулсны дараа нийтэлнэ. Яаралтай үед өөрийн мэддэг малын эмч эсвэл албан байгууллагатай шууд холбогдоно уу.
+          </p>
+        </div>
+      </div>
+    );
   }
 
   return (

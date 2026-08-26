@@ -14,6 +14,7 @@ import type { PetStatus, PetType } from '../lib/types';
 import { normalizePhone, formatPhone } from '../lib/utils';
 import BreedSelect from './BreedSelect';
 import FieldHint from './ui/FieldHint';
+import { Gift } from 'lucide-react';
 
 export default function PetForm({ status }: { status: PetStatus }) {
   const { t } = useLanguage();
@@ -173,7 +174,7 @@ export default function PetForm({ status }: { status: PetStatus }) {
           </div>
           {location.coords && (
             <p className="mt-1 text-xs text-[var(--muted)]" aria-live="polite">
-              📍 {location.coords.lat.toFixed(4)}, {location.coords.lng.toFixed(4)}
+              {location.coords.lat.toFixed(4)}, {location.coords.lng.toFixed(4)}
             </p>
           )}
         </>
@@ -190,7 +191,7 @@ export default function PetForm({ status }: { status: PetStatus }) {
                   className="m-0 w-auto accent-[var(--accent)]"
                   onChange={(e) => setForm((f) => ({ ...f, hasReward: e.target.checked }))}
                 />
-                <span>🎁 {t('reward_label')}</span>
+                <span className="inline-flex items-center gap-1"><Gift size={15} aria-hidden="true" /> {t('reward_label')}</span>
               </label>
               {form.hasReward && (
                 <>

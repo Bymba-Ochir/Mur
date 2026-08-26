@@ -7,16 +7,16 @@ export const INTENTS: IntentRule[] = [
     id: 'greeting',
     keywords: ['сайн байна уу', 'сайн байна', 'сайн уу', 'hi', 'hello', 'sain baina uу', 'сайн'],
     reply: {
-      mn: 'Сайн уу! 👋 Би таны гэрийн амьтны эрүүл мэндийн зөвлөх байна. Амьтныхаа талаар ямар нэгэн асуулт байвал бичнэ үү.',
-      en: 'Hello! 👋 I\'m your pet health assistant. Ask me anything about your pet.',
+      mn: 'Сайн уу! Би таны гэрийн амьтны эрүүл мэндийн зөвлөх байна. Амьтныхаа талаар ямар нэгэн асуулт байвал бичнэ үү.',
+      en: 'Hello! I\'m your pet health assistant. Ask me anything about your pet.',
     },
   },
   {
     id: 'thanks',
     keywords: ['баярлалаа', 'баяртай', 'thank', 'thanks', 'bayarlalaa'],
     reply: {
-      mn: 'Танд баярлалаа! 😊 Хэрэв бусад асуулт байвал дараа нь асууж болно шүү.',
-      en: 'You\'re welcome! 😊 Feel free to ask if you have more questions.',
+      mn: 'Танд баярлалаа! Хэрэв бусад асуулт байвал дараа нь асууж болно шүү.',
+      en: 'You\'re welcome! Feel free to ask if you have more questions.',
     },
   },
 ];
@@ -30,7 +30,7 @@ export const KNOWLEDGE: KnowledgeEntry[] = [
     weight: 4,
     severity: 'caution',
     response: {
-      mn: `Гэрийн амьтны хоолны дуршил алдагдах нь олон шалтгаантай байж болно. 😔
+      mn: `Гэрийн амьтны хоолны дуршил алдагдах нь олон шалтгаантай байж болно.
 
 Боломжтой шалтгаанууд:
 • Стресс, орчны өөрчлөлт
@@ -56,7 +56,7 @@ export const KNOWLEDGE: KnowledgeEntry[] = [
     weight: 4,
     severity: 'caution',
     response: {
-      mn: `Амьтан бөөлжих нь хоолны хордлого, халдвар, эсвэл бусад шалтгаанаас байж болно. 🤢
+      mn: `Амьтан бөөлжих нь хоолны хордлого, халдвар, эсвэл бусад шалтгаанаас байж болно.
 
 Боломжтой шалтгаанууд:
 • Хэт их хоол идсэн
@@ -81,7 +81,7 @@ export const KNOWLEDGE: KnowledgeEntry[] = [
     weight: 4,
     severity: 'caution',
     response: {
-      mn: `Амьтны суулгалт нь хоолны өөрчлөлт, халдвар, бусад шалтгаанаас байж болно. 💧
+      mn: `Амьтны суулгалт нь хоолны өөрчлөлт, халдвар, бусад шалтгаанаас байж болно.
 
 Юу хийх вэ?
 1. 12-24 цаг хоол өгөхгүй (ус өгнө)
@@ -101,7 +101,7 @@ export const KNOWLEDGE: KnowledgeEntry[] = [
     weight: 3,
     severity: 'caution',
     response: {
-      mn: `Амьтан сул дорой, идэвхгүй байх нь олон шалтгаантай. 😟
+      mn: `Амьтан сул дорой, идэвхгүй байх нь олон шалтгаантай.
 
 Боломжтой шалтгаанууд:
 • Халуурах
@@ -127,7 +127,7 @@ export const KNOWLEDGE: KnowledgeEntry[] = [
     weight: 4,
     severity: 'caution',
     response: {
-      mn: `Амьтны халуурын нормаль: 38-39°C. 39.5°C-аас дээш халуурч байвал халуурсан гэсэн үг. 🌡️
+      mn: `Амьтны халуурын нормаль: 38-39°C. 39.5°C-аас дээш халуурч байвал халуурсан гэсэн үг.
 
 Юу хийх вэ?
 1. Халуурыг нь үзээрэй
@@ -146,7 +146,7 @@ export const KNOWLEDGE: KnowledgeEntry[] = [
     weight: 3,
     severity: 'info',
     response: {
-      mn: `Амьтны арьс загатнах нь бөөс, хачиг, харшлын улмаас байж болно. 🐾
+      mn: `Амьтны арьс загатнах нь бөөс, хачиг, харшлын улмаас байж болно.
 
 Боломжтой шалтгаанууд:
 • Бөөс, бүүрэг (хамгийн түгээмэл)
@@ -172,7 +172,7 @@ export const KNOWLEDGE: KnowledgeEntry[] = [
     weight: 3,
     severity: 'caution',
     response: {
-      mn: `Амьтан доголох нь шарх, үе мөчний өвчин, мөгцөх зэргээс байж болно. 🦴
+      mn: `Амьтан доголох нь шарх, үе мөчний өвчин, мөгцөх зэргээс байж болно.
 
 Юу хийх вэ?
 1. Хөлийг нь няхиж үзээрэй (шарх, хаван)
@@ -191,7 +191,7 @@ export const KNOWLEDGE: KnowledgeEntry[] = [
     weight: 3,
     severity: 'caution',
     response: {
-      mn: `Амьтны нүд гоожих, улаан болох нь халдвар, харшил эсвэл гэмтлээс байж болно. 👁️
+      mn: `Амьтны нүд гоожих, улаан болох нь халдвар, харшил эсвэл гэмтлээс байж болно.
 
 Юу хийх вэ?
 1. Нүдийг нь зөөлөн усаар арчаарай
@@ -211,7 +211,7 @@ export const KNOWLEDGE: KnowledgeEntry[] = [
     weight: 3,
     severity: 'info',
     response: {
-      mn: `Гэрийн амьтанд тохирох хоолны зөвлөгөө: 🍖
+      mn: `Гэрийн амьтанд тохирох хоолны зөвлөгөө:
 
 Нохой:
 • Зохион байгуулсан нохойн хоол (чанартай)
@@ -241,7 +241,7 @@ export const KNOWLEDGE: KnowledgeEntry[] = [
     weight: 5,
     severity: 'emergency',
     response: {
-      mn: `🚨 Дараах хүнс нь амьтанд ХОРТОЙ:
+      mn: `АНХААР: Дараах хүнс нь амьтанд ХОРТОЙ:
 
 • Шоколад, какао — Маш хортой! Цусны урсгалыг өөрчилнө
 • Усан үзэм, нарс — Бөөрний дутагдлыг үүсгэнэ
@@ -256,7 +256,7 @@ export const KNOWLEDGE: KnowledgeEntry[] = [
 1. Яаралтай малын эмчид залгана уу
 2. Өөрөө эмчлэхгүй
 3. Идсэн зүйл, хэмжээ, цагийг хэлнэ үү`,
-      en: '🚨 TOXIC foods for pets: chocolate, grapes, onions, garlic, bones, avocado, caffeine, xylitol. Call your vet immediately if ingested.',
+      en: 'WARNING: TOXIC foods for pets: chocolate, grapes, onions, garlic, bones, avocado, caffeine, xylitol. Call your vet immediately if ingested.',
     },
     followUps: ['Шоколад идсэн бол яах вэ?', 'Хордлогоны шинж тэмдэг'],
     related: ['chocolate_poisoning'],
@@ -269,7 +269,7 @@ export const KNOWLEDGE: KnowledgeEntry[] = [
     weight: 3,
     severity: 'info',
     response: {
-      mn: `Амьтны вакцинжуулалтын мэдээлэл: 💉
+      mn: `Амьтны вакцинжуулалтын мэдээлэл:
 
 Нохойн вакцин:
 • DHPP (нохойн халдвар, гепатит, парвовирус, парво)
@@ -299,7 +299,7 @@ export const KNOWLEDGE: KnowledgeEntry[] = [
     weight: 3,
     severity: 'info',
     response: {
-      mn: `Бөөс нь хамгийн түгээмэл шавж юм. 🐛
+      mn: `Бөөс нь хамгийн түгээмэл шавж юм.
 
 Шинж тэмдэг:
 • Хэт их маажих
@@ -324,7 +324,7 @@ export const KNOWLEDGE: KnowledgeEntry[] = [
     weight: 3,
     severity: 'caution',
     response: {
-      mn: `Хачиг нь амьтанд халдвартай өвчин дамжуулж болно. 🕷️
+      mn: `Хачиг нь амьтанд халдвартай өвчин дамжуулж болно.
 
 Шинж тэмдэг:
 • Арьсанд наалдсан хачиг
@@ -348,7 +348,7 @@ export const KNOWLEDGE: KnowledgeEntry[] = [
     weight: 3,
     severity: 'caution',
     response: {
-      mn: `Дотоод хорхой (өт) нь амьтны ходоод, гэдэст амьдардаг. 🪱
+      mn: `Дотоод хорхой (өт) нь амьтны ходоод, гэдэст амьдардаг.
 
 Шинж тэмдэг:
 • Гэдэсний хоолой (цагаан, урт)
@@ -373,7 +373,7 @@ export const KNOWLEDGE: KnowledgeEntry[] = [
     weight: 5,
     severity: 'emergency',
     response: {
-      mn: `🚨 ШОКОЛАДНЫ ХОРДЛОГО — ЯАРАЛТАЙ!
+      mn: `АНХААР: ШОКОЛАДНЫ ХОРДЛОГО — ЯАРАЛТАЙ!
 
 Шоколад нь теобромин агуулдаг бөгөөд амьтанд МАШ ХОРТОЙ.
 
@@ -388,7 +388,7 @@ export const KNOWLEDGE: KnowledgeEntry[] = [
 2. Идсэн шоколадны төрөл, хэмжээ, цагийг хэлнэ
 3. Өөрөө эмчлэхгүй (сүү өгөхгүй!)
 4. Цаг алдалгүй эмчид хандах нь чухал`,
-      en: '🚨 CHOCOLATE POISONING — EMERGENCY! Contact your vet immediately. Do NOT give milk.',
+      en: 'WARNING: CHOCOLATE POISONING — EMERGENCY! Contact your vet immediately. Do NOT give milk.',
     },
     followUps: ['Бусад хортой хоол', 'Хордлогоны шинж тэмдэг'],
     related: ['unsafe_foods'],
@@ -400,7 +400,7 @@ export const KNOWLEDGE: KnowledgeEntry[] = [
     weight: 5,
     severity: 'emergency',
     response: {
-      mn: `🚨 ХАЛУУНД ЦОХИУЛАХ — ЯАРАЛТАЙ!
+      mn: `АНХААР: ХАЛУУНД ЦОХИУЛАХ — ЯАРАЛТАЙ!
 
 Шинж тэмдэг:
 • Хэт их халуун (40°C-аас дээш)
@@ -415,7 +415,7 @@ export const KNOWLEDGE: KnowledgeEntry[] = [
 3. Салхины урсгалтай газар авчирна
 4. ЯАРАЛТАЙ эмчид залгана уу
 5. Хүйтэн ус шууд цутгахгүй (шокдож болно)`,
-      en: '🚨 HEATSTROKE — EMERGENCY! Cool the pet gradually with lukewarm water and see a vet immediately.',
+      en: 'WARNING: HEATSTROKE — EMERGENCY! Cool the pet gradually with lukewarm water and see a vet immediately.',
     },
     followUps: ['Халуурах шинж тэмдэг', 'Зуны арчилгаа'],
     related: ['fever'],
@@ -427,7 +427,7 @@ export const KNOWLEDGE: KnowledgeEntry[] = [
     weight: 5,
     severity: 'emergency',
     response: {
-      mn: `🚨 ЯАРАЛТАЙ БАЙДАЛ — ШУУД МАЛЫН ЭМЧИД ХАНДАНА УУ!
+      mn: `АНХААР: ЯАРАЛТАЙ БАЙДАЛ — ШУУД МАЛЫН ЭМЧИД ХАНДАНА УУ!
 
 Дараах шинж тэмдэг илэрвэл ШУУД эмчид:
 • Таталт, татвалзах
@@ -440,7 +440,7 @@ export const KNOWLEDGE: KnowledgeEntry[] = [
 • Гэдэс хавагнах (хөхөрч, хүнд)
 
 Бүү хүлээ — Цаг алдалгүй эмчид хандах нь амьтны амийг аварна!`,
-      en: '🚨 EMERGENCY — Contact a vet IMMEDIATELY for: seizures, difficulty breathing, severe bleeding, collapse, extreme heat, poisoning.',
+      en: 'WARNING: EMERGENCY — Contact a vet IMMEDIATELY for: seizures, difficulty breathing, severe bleeding, collapse, extreme heat, poisoning.',
     },
     followUps: ['Таталттай амьтан', 'Хордлогоны шинж тэмдэг'],
     related: ['seizures'],
@@ -452,7 +452,7 @@ export const KNOWLEDGE: KnowledgeEntry[] = [
     weight: 3,
     severity: 'caution',
     response: {
-      mn: `Амьтны шархыг хэрхэн арчлах вэ: 🩹
+      mn: `Амьтны шархыг хэрхэн арчлах вэ:
 
 Эхний тусламж:
 1. Гараа угааж, бээлий өмснө
@@ -479,7 +479,7 @@ export const KNOWLEDGE: KnowledgeEntry[] = [
     weight: 2,
     severity: 'info',
     response: {
-      mn: `Амьтны арчилгааны зөвлөгөө: 🛁
+      mn: `Амьтны арчилгааны зөвлөгөө:
 
 Үс арчилгаа:
 • Нохой: 2-4 долоо хоногт нэг удаа (үсний төрлөөс хамаарна)

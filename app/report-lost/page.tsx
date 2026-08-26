@@ -1,5 +1,6 @@
 'use client';
 import PetForm from '../../components/PetForm';
+import AuthRequired from '../../components/AuthRequired';
 import { useLanguage } from '../../lib/i18n';
 
 export default function ReportLostPage() {
@@ -11,7 +12,7 @@ export default function ReportLostPage() {
         <h1>{t('report_lost_title')}</h1>
         <p>{t('report_lost_desc')}</p>
       </div>
-      <PetForm status="lost" />
+      <AuthRequired><PetForm status="lost" /></AuthRequired>
     </div>
   );
 }

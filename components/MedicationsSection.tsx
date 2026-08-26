@@ -6,6 +6,7 @@ import { useToast } from './Toast';
 import { addMedication, deleteMedication, updateMedicationReminder } from '../lib/petHealthService';
 import { getErrorMessage } from '../lib/utils';
 import type { Medication } from '../lib/types';
+import { X } from 'lucide-react';
 
 export default function MedicationsSection({
   petId, medications, onUpdate,
@@ -56,7 +57,7 @@ export default function MedicationsSection({
       <div className="mb-[var(--sp-3)] flex items-center justify-between">
         <h3 className="text-sm font-semibold text-[var(--primary)]">{t('health_section_medications')}</h3>
         <Button variant="ghost" className="min-h-0 px-3 py-1.5 text-xs" onClick={() => setShowForm(!showForm)}>
-          {showForm ? '✕' : t('health_med_add')}
+          {showForm ? <><X size={15} aria-hidden="true" /> <span>Хаах</span></> : t('health_med_add')}
         </Button>
       </div>
 
@@ -98,7 +99,7 @@ export default function MedicationsSection({
                     {m.startDate && ` · ${m.startDate}`}
                   </p>
                 </div>
-                <button className="cursor-pointer border-0 bg-transparent p-1 text-[11px] text-[var(--alert)] hover:opacity-80" onClick={() => handleDelete(m.id)}>✕</button>
+                <button className="cursor-pointer border-0 bg-transparent p-1 text-[var(--alert)] hover:opacity-80" onClick={() => handleDelete(m.id)} aria-label="Устгах"><X size={14} aria-hidden="true" /></button>
               </div>
               <div className="mt-1.5 flex items-center gap-1.5">
                 <label className="text-[11px] text-[var(--muted)]">{t('health_reminder_date')}</label>

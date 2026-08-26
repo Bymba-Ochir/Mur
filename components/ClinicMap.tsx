@@ -142,7 +142,7 @@ function add_user_location(
     fillColor: '#625BF6',
     fillOpacity: 0.8,
     weight: 2,
-  }).addTo(map).bindPopup('📍 Таны байршил');
+  }).addTo(map).bindPopup('Таны байршил');
 
   L.circle(coords, {
     radius: 2000,

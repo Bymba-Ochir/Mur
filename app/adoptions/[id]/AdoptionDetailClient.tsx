@@ -17,6 +17,7 @@ import { relativeTime } from '../../../lib/relativeTime';
 import { maskPhone, formatPhone, getErrorMessage } from '../../../lib/utils';
 import type { Adoption } from '../../../lib/types';
 import { getBreedLabel } from '../../../lib/petBreeds';
+import { Phone } from 'lucide-react';
 
 function subscribeLocation(cb: () => void) {
   window.addEventListener('popstate', cb);
@@ -138,9 +139,9 @@ export default function AdoptionDetailClient({ id }: { id: string }) {
 
             <div className="mt-[var(--sp-4)]">
               {revealed ? (
-                <a className="inline-flex items-center gap-1.5 text-[15px] font-semibold text-[var(--primary)] no-underline" href={`tel:${adoption.phone}`}>☎ {formatPhone(adoption.phone)}</a>
+                <a className="inline-flex items-center gap-1.5 text-[15px] font-semibold text-[var(--primary)] no-underline" href={`tel:${adoption.phone}`}><Phone size={15} aria-hidden="true" /> {formatPhone(adoption.phone)}</a>
               ) : adoption.phone ? (
-                <Button variant="ghost" onClick={() => setRevealed(true)}>☎ {maskPhone(adoption.phone)} · {t('detail_show_phone')}</Button>
+                <Button variant="ghost" onClick={() => setRevealed(true)}><Phone size={15} aria-hidden="true" /> {maskPhone(adoption.phone)} · {t('detail_show_phone')}</Button>
               ) : null}
             </div>
 

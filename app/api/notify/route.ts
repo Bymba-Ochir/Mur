@@ -9,9 +9,18 @@ import { createAdminClient } from '../../../lib/supabaseAdmin';
 
 export async function POST(request: Request) {
   // 1. Webhook-ийн нууц түлхүүрээр баталгаажуулна (хэн ч дуудахаас сэргийлнэ)
+  const webhookSecret = process.env.NOTIFY_WEBHOOK_SECRET;
+  if (!webhookSecret) {
+    console.error('notify: NOTIFY_WEBHOOK_SECRET тохируулагдаагүй');
+    return NextResponse.json({ error: 'Webhook тохиргоо дутуу байна' }, { status: 503 });
+  }
   const secret = request.headers.get('x-webhook-secret');
-  if (secret !== process.env.NOTIFY_WEBHOOK_SECRET) {
+  if (secret !== webhookSecret) {
     return NextResponse.json({ error: 'Зөвшөөрөлгүй' }, { status: 401 });
+  }
+
+  if (!process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || !process.env.VAPID_PRIVATE_KEY) {
+    return NextResponse.json({ error: 'Push тохиргоо дутуу байна' }, { status: 503 });
   }
 
   const body = await request.json();

@@ -2,6 +2,7 @@
 // Үрчлүүлэх амьтны мэдээллийг Supabase (Postgres + Storage)-д бичих, унших функцууд
 import { supabase } from './supabase';
 import { mapAdoptionRow } from './adoptionMapping';
+import { deleteContent } from './deleteContent';
 import type { Adoption, AdoptionInput, AdoptionFilters, UpdateAdoptionFields } from './types';
 
 const TABLE = 'adoptions';
@@ -133,6 +134,5 @@ export async function updateAdoption(id: string, fields: UpdateAdoptionFields): 
  * Зохиогч өөрийн зарыг устгах
  */
 export async function deleteAdoption(id: string): Promise<void> {
-  const { error } = await supabase.from(TABLE).delete().eq('id', id);
-  if (error) throw error;
+  await deleteContent('adoption', id);
 }

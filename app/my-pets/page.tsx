@@ -16,6 +16,7 @@ import PetHealthPanel from '../../components/PetHealthPanel';
 import FieldHint from '../../components/ui/FieldHint';
 import type { MyPet } from '../../lib/types';
 import { getErrorMessage } from '../../lib/utils';
+import LoadError from '../../components/LoadError';
 
 export default function MyPetsPage() {
   const { user, loading } = useAuth();
@@ -24,6 +25,7 @@ export default function MyPetsPage() {
 
   const [pets, setPets] = useState<MyPet[]>([]);
   const [petsLoading, setPetsLoading] = useState(true);
+  const [petsError, setPetsError] = useState(false);
   const [selectedPetId, setSelectedPetId] = useState<string | null>(null);
 
   // Нэмэх форм
@@ -42,11 +44,13 @@ export default function MyPetsPage() {
 
   const load = useCallback(async () => {
     setPetsLoading(true);
+    setPetsError(false);
     try {
       const data = await fetchMyPets();
       setPets(data);
     } catch (err) {
       console.error(err);
+      setPetsError(true);
     } finally {
       setPetsLoading(false);
     }
@@ -170,6 +174,8 @@ export default function MyPetsPage() {
                 <div key={i} className="skel-row h-[52px] rounded-[var(--r-md)] border border-[var(--line)] bg-[var(--card)] p-[var(--sp-3)]" />
               ))}
             </div>
+          ) : petsError ? (
+            <LoadError onRetry={load} />
           ) : pets.length === 0 ? (
             <EmptyState icon={<Icon name="vaccine" size={30} />} description={t('mypets_none')} />
           ) : (

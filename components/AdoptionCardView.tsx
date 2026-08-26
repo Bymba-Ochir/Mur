@@ -4,6 +4,7 @@ import PetIcon from './PetIcon';
 import { relativeTime } from '../lib/relativeTime';
 import { maskPhone, formatPhone } from '../lib/utils';
 import type { PetType } from '../lib/types';
+import { Clock3, MapPin, Phone } from 'lucide-react';
 
 /**
  * Үрчлүүлэх карт — AdoptionCard (жагсаалт) болон AdoptionPreviewCard (форм preview)
@@ -46,15 +47,15 @@ export default function AdoptionCardView({
         <h4 className="mb-0.5 font-[family-name:var(--font-display)] text-[length:var(--text-lg)] font-bold leading-[var(--lh-tight)] text-[var(--text-primary)] max-[480px]:text-[15px] min-[1025px]:mb-1 min-[1025px]:text-[length:var(--text-xl)]">{name || type}</h4>
         <p className="my-[3px] text-[12.5px] leading-[1.4] text-[var(--muted)]">{type}{breed ? `, ${breed}` : ''}</p>
         {age && <p className="my-[3px] text-[12.5px] leading-[1.4] text-[var(--muted)]">{age}{gender && gender !== 'Тодорхойгүй' ? ` · ${gender}` : ''}</p>}
-        <p className="my-[3px] text-[12.5px] leading-[1.4] text-[var(--muted)]"><span aria-hidden="true">📍</span> {district} — {place}</p>
-        {createdAt && <p className="my-[3px] text-[12.5px] leading-[1.4] text-[var(--muted)]"><span aria-hidden="true">🕓</span> {relativeTime(createdAt)}</p>}
+        <p className="my-[3px] flex items-center gap-1 text-[12.5px] leading-[1.4] text-[var(--muted)]"><MapPin size={13} aria-hidden="true" /> {district} — {place}</p>
+        {createdAt && <p className="my-[3px] flex items-center gap-1 text-[12.5px] leading-[1.4] text-[var(--muted)]"><Clock3 size={13} aria-hidden="true" /> {relativeTime(createdAt)}</p>}
         {showMasked ? (
           <button
             className="mt-2 inline-flex min-h-[var(--touch-target)] w-full cursor-pointer items-center gap-[5px] rounded-[var(--r-pill)] border-0 bg-[var(--eyebrow-bg)] px-3 py-1.5 text-left font-[family-name:inherit] text-[13px] font-semibold text-[var(--primary)] transition-colors hover:bg-[var(--primary)] hover:text-[var(--text-on-accent)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--border-focus)]"
             onClick={(e) => { e.stopPropagation(); onRevealPhone!(); }}
             aria-label="Утасны дугаарыг харуулах"
           >
-            <span aria-hidden="true">☎</span> {maskPhone(phone)} · Дугаар харах
+            <Phone size={14} aria-hidden="true" /> {maskPhone(phone)} · Дугаар харах
           </button>
         ) : phone ? (
           <a
@@ -63,7 +64,7 @@ export default function AdoptionCardView({
             onClick={(e) => e.stopPropagation()}
             aria-label={`Утсаар холбогдох: ${formatPhone(phone)}`}
           >
-            <span aria-hidden="true">☎</span> {formatPhone(phone)}
+            <Phone size={14} aria-hidden="true" /> {formatPhone(phone)}
           </a>
         ) : null}
       </div>

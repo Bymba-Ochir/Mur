@@ -6,6 +6,7 @@ import Button from './ui/Button';
 import { useToast } from './Toast';
 import type { District } from '../lib/districts';
 import { getErrorMessage } from '../lib/utils';
+import { UsersRound } from 'lucide-react';
 
 export default function VolunteerBadge({ district }: { district: District }) {
   const { user } = useAuth();
@@ -36,7 +37,7 @@ export default function VolunteerBadge({ district }: { district: District }) {
         await joinAsVolunteer(district);
         setJoined(true);
         setCount((c) => c + 1);
-        showToast('Баярлалаа! Та одоо сайн дурын идэвхтэн боллоо 🙌', 'success');
+        showToast('Баярлалаа! Та одоо сайн дурын идэвхтэн боллоо', 'success');
       }
     } catch (err) {
       showToast('Алдаа гарлаа: ' + getErrorMessage(err), 'error');
@@ -48,7 +49,7 @@ export default function VolunteerBadge({ district }: { district: District }) {
   return (
     <div className="mb-[var(--sp-2)] flex items-center justify-between gap-[var(--sp-2)] rounded-[var(--r-sm)] bg-[var(--eyebrow-bg)] px-3.5 py-2.5">
       <span className="text-[13px] text-[var(--primary)]">
-        🙋 <b>{count}</b> сайн дурын идэвхтэн &quot;{district}&quot; дүүрэгт
+        <UsersRound size={15} aria-hidden="true" /> <b>{count}</b> сайн дурын идэвхтэн &quot;{district}&quot; дүүрэгт
       </span>
       <Button
         onClick={handleToggle}

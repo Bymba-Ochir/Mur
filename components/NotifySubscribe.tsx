@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { subscribeToNearbyAlerts, isSubscribed, isPushSupported } from '../lib/push';
 import type { District } from '../lib/districts';
 import { getErrorMessage } from '../lib/utils';
+import { Bell } from 'lucide-react';
 
 export default function NotifySubscribe({ district }: { district: District }) {
   const [subscribed, setSubscribed] = useState(false);
@@ -12,7 +13,7 @@ export default function NotifySubscribe({ district }: { district: District }) {
 
   useEffect(() => {
     let active = true;
-    Promise.all([Promise.resolve(isPushSupported()), isSubscribed()]).then(([supp, sub]) => {
+    Promise.all([Promise.resolve(isPushSupported()), isSubscribed(district)]).then(([supp, sub]) => {
       if (!active) return;
       setSupported(supp);
       setSubscribed(sub);
@@ -20,7 +21,7 @@ export default function NotifySubscribe({ district }: { district: District }) {
     return () => {
       active = false;
     };
-  }, []);
+  }, [district]);
 
   async function handleSubscribe() {
     setLoading(true);
@@ -40,11 +41,11 @@ export default function NotifySubscribe({ district }: { district: District }) {
   return (
     <div className="my-3">
       {subscribed ? (
-        <p className="text-[13px] text-[var(--muted)]">🔔 Танай дүүрэгт шинэ мэдэгдэл бүртгэгдэхэд push мэдэгдэл авна.</p>
+        <p className="flex items-center gap-2 text-[13px] text-[var(--muted)]"><Bell size={15} aria-hidden="true" />Танай дүүрэгт шинэ мэдэгдэл бүртгэгдэхэд push мэдэгдэл авна.</p>
       ) : (
         <>
-          <button onClick={handleSubscribe} disabled={loading} className="cursor-pointer rounded-[var(--r-sm)] border-[1.5px] border-[var(--primary)] bg-[var(--card)] px-3.5 py-[9px] text-[13px] font-semibold text-[var(--primary)] disabled:cursor-not-allowed disabled:opacity-60">
-            {loading ? 'Бүртгүүлж байна...' : `🔔 "${district}" дүүргийн шинэ мэдэгдэл авах`}
+          <button onClick={handleSubscribe} disabled={loading} className="inline-flex cursor-pointer items-center gap-2 rounded-[var(--r-sm)] border-[1.5px] border-[var(--primary)] bg-[var(--card)] px-3.5 py-[9px] text-[13px] font-semibold text-[var(--primary)] disabled:cursor-not-allowed disabled:opacity-60">
+            <Bell size={15} aria-hidden="true" />{loading ? 'Бүртгүүлж байна...' : `"${district}" дүүргийн шинэ мэдэгдэл авах`}
           </button>
           {error && <p className="mt-1.5 text-xs text-[var(--alert)]">{error}</p>}
         </>

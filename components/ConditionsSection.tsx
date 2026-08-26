@@ -6,6 +6,7 @@ import { useToast } from './Toast';
 import { addCondition, deleteCondition } from '../lib/petHealthService';
 import { getErrorMessage } from '../lib/utils';
 import type { MedicalCondition } from '../lib/types';
+import { X } from 'lucide-react';
 
 export default function ConditionsSection({
   petId, conditions, onUpdate,
@@ -44,7 +45,7 @@ export default function ConditionsSection({
       <div className="mb-[var(--sp-3)] flex items-center justify-between">
         <h3 className="text-sm font-semibold text-[var(--primary)]">{t('health_section_conditions')}</h3>
         <Button variant="ghost" className="min-h-0 px-3 py-1.5 text-xs" onClick={() => setShowForm(!showForm)}>
-          {showForm ? '✕' : t('health_condition_add')}
+          {showForm ? <><X size={15} aria-hidden="true" /> <span>Хаах</span></> : t('health_condition_add')}
         </Button>
       </div>
 
@@ -70,7 +71,7 @@ export default function ConditionsSection({
                 <p className="text-[13px] font-semibold">{c.conditionName}</p>
                 <p className="text-[11px] text-[var(--muted)]">{c.diagnosisDate || ''}{c.notes ? ` · ${c.notes}` : ''}</p>
               </div>
-              <button className="cursor-pointer border-0 bg-transparent p-1 text-[11px] text-[var(--alert)] hover:opacity-80" onClick={() => handleDelete(c.id)}>✕</button>
+              <button className="cursor-pointer border-0 bg-transparent p-1 text-[var(--alert)] hover:opacity-80" onClick={() => handleDelete(c.id)} aria-label="Устгах"><X size={14} aria-hidden="true" /></button>
             </div>
           ))}
         </div>

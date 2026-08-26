@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { fetchAdoptions } from '../../lib/adoptionService';
 import AdoptionCard from '../../components/AdoptionCard';
 import SkeletonCard from '../../components/SkeletonCard';
+import LoadError from '../../components/LoadError';
 import Button from '../../components/ui/Button';
 import Link from 'next/link';
 import { useLanguage } from '../../lib/i18n';
@@ -25,6 +26,7 @@ export default function AdoptionsPage() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(false);
+  const [loadError, setLoadError] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => load(0), 400);
@@ -35,6 +37,7 @@ export default function AdoptionsPage() {
   async function load(pageToLoad = 0) {
     if (pageToLoad === 0) setLoading(true);
     else setLoadingMore(true);
+    setLoadError(false);
     try {
       const { adoptions: data, hasMore: more } = await fetchAdoptions({
         type: type || undefined,
@@ -48,6 +51,7 @@ export default function AdoptionsPage() {
       setPage(pageToLoad);
     } catch (err) {
       console.error(err);
+      setLoadError(true);
     } finally {
       setLoading(false);
       setLoadingMore(false);
@@ -91,6 +95,8 @@ export default function AdoptionsPage() {
 
       {loading ? (
         <div className="listing-grid"><SkeletonCard /><SkeletonCard /><SkeletonCard /><SkeletonCard /><SkeletonCard /><SkeletonCard /></div>
+      ) : loadError ? (
+        <LoadError onRetry={() => load(0)} />
       ) : adoptions.length === 0 ? (
         <div className="py-[var(--sp-6)] text-center">
           <p className="mb-2 text-lg font-semibold text-[var(--primary)]">

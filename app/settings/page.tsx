@@ -5,6 +5,7 @@ import Button from '../../components/ui/Button';
 import { useAuth } from '../../lib/useAuth';
 import { supabase } from '../../lib/supabase';
 import { useToast } from '../../components/Toast';
+import { BadgeCheck } from 'lucide-react';
 
 export default function SettingsPage() {
   const { user, loading, logout } = useAuth();
@@ -42,7 +43,7 @@ export default function SettingsPage() {
     <section className={`${section} border-[var(--border-subtle)]`}>
       <h2 className="mb-2.5 text-[19px]">Бүртгэлийн мэдээлэл</h2>
       <p className="leading-[1.6] text-[var(--text-secondary)]">Имэйл: {user.email}</p>
-      <p className="font-semibold text-[var(--success-text)]">✓ Имэйлээр баталгаажсан нэвтрэлт</p>
+      <p className="flex items-center gap-1 font-semibold text-[var(--success-text)]"><BadgeCheck size={16} aria-hidden="true" /> Имэйлээр баталгаажсан нэвтрэлт</p>
     </section>
     <section className={`${section} border-[color-mix(in_srgb,var(--alert)_35%,var(--border-subtle))]`}>
       <h2 className="mb-2.5 text-[19px]">Бүртгэл устгах</h2>

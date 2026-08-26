@@ -17,6 +17,7 @@ import { fetchSittingListingById, updateSittingListing, deleteSittingListing } f
 import { relativeTime } from '../../../lib/relativeTime';
 import { maskPhone, formatPhone, normalizePhone, getErrorMessage } from '../../../lib/utils';
 import type { SittingListing, SittingPetType } from '../../../lib/types';
+import { Phone } from 'lucide-react';
 
 function subscribeLocation(cb: () => void) {
   window.addEventListener('popstate', cb);
@@ -152,9 +153,9 @@ export default function SittingDetailClient({ id }: { id: string }) {
 
             <div className="mt-[var(--sp-4)]">
               {revealed ? (
-                <a className="inline-flex items-center gap-1.5 text-[15px] font-semibold text-[var(--primary)] no-underline" href={`tel:${listing.phone}`}>☎ {formatPhone(listing.phone)}</a>
+                <a className="inline-flex items-center gap-1.5 text-[15px] font-semibold text-[var(--primary)] no-underline" href={`tel:${listing.phone}`}><Phone size={15} aria-hidden="true" /> {formatPhone(listing.phone)}</a>
               ) : listing.phone ? (
-                <Button variant="ghost" onClick={() => setRevealed(true)}>☎ {maskPhone(listing.phone)} · {t('detail_show_phone')}</Button>
+                <Button variant="ghost" onClick={() => setRevealed(true)}><Phone size={15} aria-hidden="true" /> {maskPhone(listing.phone)} · {t('detail_show_phone')}</Button>
               ) : null}
             </div>
 

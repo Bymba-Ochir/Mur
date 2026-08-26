@@ -5,6 +5,7 @@ import { useLanguage } from '../../lib/i18n';
 import { fetchSittingListings } from '../../lib/sittingService';
 import SittingCard from '../../components/SittingCard';
 import SkeletonCard from '../../components/SkeletonCard';
+import LoadError from '../../components/LoadError';
 import Button from '../../components/ui/Button';
 import { DISTRICTS } from '../../lib/districts';
 import type { SittingListing, SittingPetType } from '../../lib/types';
@@ -22,6 +23,7 @@ export default function SittingPage() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(false);
+  const [loadError, setLoadError] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => load(0), 400);
@@ -31,6 +33,7 @@ export default function SittingPage() {
 
   async function load(p = 0) {
     if (p === 0) setLoading(true); else setLoadingMore(true);
+    setLoadError(false);
     try {
       const { listings: data, hasMore: more } = await fetchSittingListings({
         petType: petType || undefined, district: district || undefined,
@@ -38,7 +41,7 @@ export default function SittingPage() {
       });
       setListings((prev) => (p === 0 ? data : [...prev, ...data]));
       setHasMore(more); setPage(p);
-    } catch (err) { console.error(err); }
+    } catch (err) { console.error(err); setLoadError(true); }
     finally { setLoading(false); setLoadingMore(false); }
   }
 
@@ -66,6 +69,8 @@ export default function SittingPage() {
       </div>
       {loading ? (
         <div className="listing-grid"><SkeletonCard /><SkeletonCard /><SkeletonCard /><SkeletonCard /></div>
+      ) : loadError ? (
+        <LoadError onRetry={() => load(0)} />
       ) : listings.length === 0 ? (
         <div className="py-[var(--sp-6)] text-center">
           {petType || district || search.trim() ? (

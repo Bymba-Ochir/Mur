@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 
 /**
  * Хоосон (empty) төлөвийн нэгдсэн primitive.
- * 💉/👍 гэх мэт hardcode emoji-ийн оронд SVG icon prop-оор дамжуулна.
+ * Hardcode emoji-ийн оронд SVG icon prop-оор дамжуулна.
  */
 export default function EmptyState({
   icon,

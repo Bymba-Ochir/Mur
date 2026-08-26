@@ -176,7 +176,7 @@ export default function SittingForm() {
             </div>
             {location.coords && (
               <p className="mt-1 text-xs text-[var(--muted)]" aria-live="polite">
-                📍 {location.coords.lat.toFixed(4)}, {location.coords.lng.toFixed(4)}
+                {location.coords.lat.toFixed(4)}, {location.coords.lng.toFixed(4)}
               </p>
             )}
 

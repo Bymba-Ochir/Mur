@@ -3,6 +3,7 @@
 import { supabase } from './supabase';
 import { getImageEmbedding, getImageHash, cosineSimilarityScore, EMBEDDING_VERSION } from './similarity';
 import { mapPetRow } from './petMapping';
+import { deleteContent } from './deleteContent';
 import type { Pet, PetStatus, PetFilters, PetReportInput, UpdatePetFields } from './types';
 
 const TABLE = 'pets';
@@ -154,8 +155,7 @@ export async function updatePet(id: string, fields: UpdatePetFields): Promise<vo
  * (MVP-д хялбар байдлаар орхигдсон, дараа нь cleanup job нэмж болно).
  */
 export async function deletePet(id: string): Promise<void> {
-  const { error } = await supabase.from(TABLE).delete().eq('id', id);
-  if (error) throw error;
+  await deleteContent('pet', id);
 }
 
 /**
@@ -171,8 +171,14 @@ export async function markResolved(id: string): Promise<void> {
  * Буруу/spam/hoax бичлэгийг мэдээлэх
  */
 export async function reportPet(petId: string, reason: string): Promise<void> {
-  const { error } = await supabase.from('reports').insert({ pet_id: petId, reason });
-  if (error) throw error;
+  const response = await fetch('/api/reports', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ petId, reason }),
+  });
+  if (!response.ok) {
+    const body = await response.json().catch(() => null) as { error?: string } | null;
+    throw new Error(body?.error || 'Мэдээллийг илгээж чадсангүй');
+  }
 }
 
 /**

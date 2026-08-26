@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { isFavorite, toggleFavorite } from '../lib/listingService';
 import { useAuth } from '../lib/useAuth';
 import { useToast } from './Toast';
+import { Heart } from 'lucide-react';
 
 export default function FavoriteButton({ petId }: { petId: string }) {
   const { user } = useAuth();
@@ -15,5 +16,5 @@ export default function FavoriteButton({ petId }: { petId: string }) {
     setBusy(true);
     try { const added = await toggleFavorite(petId); setActive(added); showToast(added ? 'Зар хадгалагдлаа' : 'Хадгалснаас хаслаа', 'success'); }
     catch { showToast('Хадгалж чадсангүй', 'error'); } finally { setBusy(false); }
-  }} className={`min-h-11 min-w-11 cursor-pointer rounded-full border border-[var(--line)] text-[22px] ${active ? 'bg-[var(--eyebrow-bg)] text-[var(--accent)]' : 'bg-[var(--card)] text-[var(--ink)]'}`}>{active ? '♥' : '♡'}</button>;
+  }} className={`inline-flex min-h-11 min-w-11 cursor-pointer items-center justify-center rounded-full border border-[var(--line)] ${active ? 'bg-[var(--eyebrow-bg)] text-[var(--accent)]' : 'bg-[var(--card)] text-[var(--ink)]'}`}><Heart size={21} fill={active ? 'currentColor' : 'none'} aria-hidden="true" /></button>;
 }

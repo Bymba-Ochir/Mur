@@ -6,12 +6,14 @@ export async function createSighting(
   petId: string,
   { message, place }: { message: string; place: string | null }
 ): Promise<void> {
-  const { error } = await supabase.from('sightings').insert({
-    pet_id: petId,
-    message,
-    place: place || null,
+  const response = await fetch('/api/sightings', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ petId, message, place }),
   });
-  if (error) throw error;
+  if (!response.ok) {
+    const body = await response.json().catch(() => null) as { error?: string } | null;
+    throw new Error(body?.error || 'Харсан тухай мэдээллийг илгээж чадсангүй');
+  }
 }
 
 export async function fetchSightings(petId: string): Promise<Sighting[]> {

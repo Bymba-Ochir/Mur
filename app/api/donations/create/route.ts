@@ -33,11 +33,12 @@ export async function POST(request: Request) {
     if (!appUrl) {
       return NextResponse.json({ error: 'Серверийн тохиргооны алдаа (SITE_URL)' }, { status: 500 });
     }
-
-    let callbackUrl = `${appUrl}/api/qpay/callback`;
-    if (process.env.QPAY_CALLBACK_SECRET) {
-      callbackUrl += `?secret=${process.env.QPAY_CALLBACK_SECRET}`;
+    if (!process.env.QPAY_CALLBACK_SECRET) {
+      console.error('donations/create: QPAY_CALLBACK_SECRET тохируулагдаагүй');
+      return NextResponse.json({ error: 'QPay callback тохиргоо дутуу байна' }, { status: 503 });
     }
+
+    const callbackUrl = `${appUrl}/api/qpay/callback?secret=${encodeURIComponent(process.env.QPAY_CALLBACK_SECRET)}`;
 
     const senderInvoiceNo = `MUR-DON-${Date.now()}`;
     const invoiceDesc = `МӨР дэмжлэг — ${amount}₮`;

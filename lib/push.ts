@@ -6,6 +6,7 @@ import { supabase } from './supabase';
 import type { District } from './districts';
 
 const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+const DISTRICT_STORAGE_KEY = 'mur-push-district';
 
 function urlBase64ToUint8Array(base64String: string): Uint8Array<ArrayBuffer> {
   const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
@@ -54,19 +55,32 @@ async function subscribePush({ district, userId }: { district?: District | null;
   });
 
   const json = subscription.toJSON();
-  const { error } = await supabase.from('push_subscriptions').insert({
-    district: district || null,
-    user_id: userId || null,
-    endpoint: json.endpoint,
-    keys: json.keys,
+  const { data: { session } } = await supabase.auth.getSession();
+  const response = await fetch('/api/push-subscriptions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
+    },
+    body: JSON.stringify({
+      endpoint: json.endpoint,
+      keys: json.keys,
+      district: district || null,
+      userId: userId || null,
+    }),
   });
-  if (error && !error.message.includes('duplicate')) throw error;
+  if (!response.ok) {
+    const body = await response.json().catch(() => null) as { error?: string } | null;
+    throw new Error(body?.error || 'Мэдэгдлийн бүртгэлийг хадгалж чадсангүй');
+  }
+  if (district) localStorage.setItem(DISTRICT_STORAGE_KEY, district);
 }
 
-export async function isSubscribed(): Promise<boolean> {
+export async function isSubscribed(district?: District): Promise<boolean> {
   if (!isPushSupported()) return false;
   const registration = await navigator.serviceWorker.getRegistration('/sw.js');
   if (!registration) return false;
   const sub = await registration.pushManager.getSubscription();
-  return !!sub;
+  if (!sub) return false;
+  return district ? localStorage.getItem(DISTRICT_STORAGE_KEY) === district : true;
 }

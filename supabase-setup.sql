@@ -99,11 +99,8 @@ create table if not exists push_subscriptions (
 
 alter table push_subscriptions enable row level security;
 
--- Хэн ч өөрийн дугаарлалтаа бүртгүүлж болно (нэвтрэх шаардлагагүй, зөвхөн browser push endpoint)
+-- Push subscription зөвхөн server API (service role)-аар бичигдэнэ.
 drop policy if exists "Anyone can subscribe" on push_subscriptions;
-create policy "Anyone can subscribe"
-  on push_subscriptions for insert
-  with check (true);
 
 -- 9. "Миний амьтад" — хэрэглэгчийн өөрийн бүртгэлтэй амьтад, вакцины хугацаа
 create table if not exists my_pets (
@@ -142,9 +139,7 @@ create table if not exists reports (
 alter table reports enable row level security;
 
 drop policy if exists "Anyone can report" on reports;
-create policy "Anyone can report"
-  on reports for insert
-  with check (true);
+-- Report зөвхөн rate limit-тэй /api/reports server route-аар бичигдэнэ.
 
 -- 12. Admin — модератор эрхтэй хэрэглэгчид
 create table if not exists admins (
@@ -268,9 +263,7 @@ create policy "Public read sightings"
   using (true);
 
 drop policy if exists "Anyone can add sighting" on sightings;
-create policy "Anyone can add sighting"
-  on sightings for insert
-  with check (true);
+-- Sighting зөвхөн rate limit-тэй /api/sightings server route-аар бичигдэнэ.
 
 -- 15. Сайн дурын идэвхтэн — тухайн дүүрэгт идэвхтэй хайлтад туслахаар бүртгүүлсэн хэрэглэгч
 create table if not exists volunteers (
@@ -313,11 +306,8 @@ create table if not exists donations (
 
 alter table donations enable row level security;
 
--- Хэн ч хандив үүсгэж болно (нэвтрэлт шаардахгүй)
+-- Хандив зөвхөн QPay invoice үүсгэдэг server API-аар бичигдэнэ.
 drop policy if exists "Anyone can create donation" on donations;
-create policy "Anyone can create donation"
-  on donations for insert
-  with check (true);
 
 -- Зөвхөн серверийн код (service role) л унших/шинэчилнэ — status_token-оор
 -- баталгаажуулалт хийдэг тул client-д нээлттэй select хэрэггүй

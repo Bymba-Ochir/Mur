@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { DISTRICTS } from '../lib/districts';
 import { useLanguage } from '../lib/i18n';
 import { setLocalStorageValue, useLocalStorageValue } from '../lib/useLocalStorageState';
+import { Check } from 'lucide-react';
 
 const SEEN_KEY = 'mur-onboarding-v2-seen';
 const OPEN_EVENT = 'mur:open-onboarding';
@@ -94,7 +95,7 @@ export default function Onboarding() {
               <button key={choice.id} type="button" className={`relative flex min-h-[82px] cursor-pointer items-center gap-3 rounded-[var(--r-md)] border bg-[var(--surface-2)] p-3.5 text-left text-[var(--text-primary)] transition duration-200 hover:-translate-y-px hover:border-[var(--primary)] hover:bg-[color-mix(in_srgb,var(--primary)_9%,var(--surface-2))] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[var(--border-focus)] max-[560px]:min-h-[70px] ${intent === choice.id ? '-translate-y-px border-[var(--primary)] bg-[color-mix(in_srgb,var(--primary)_9%,var(--surface-2))]' : 'border-[var(--border-subtle)]'}`} onClick={() => setIntent(choice.id)}>
                 <span className="grid size-11 shrink-0 place-items-center rounded-[14px] bg-[color-mix(in_srgb,var(--primary)_12%,transparent)] text-[var(--primary)]"><Icon name={choice.id} /></span>
                 <span><strong className="block text-sm">{choice.title}</strong><small className="mt-1 block text-[11px] leading-[1.35] text-[var(--text-secondary)]">{choice.text}</small></span>
-                <span className={`absolute top-2 right-2.5 text-[var(--primary)] transition-opacity ${intent === choice.id ? 'opacity-100' : 'opacity-0'}`}>✓</span>
+                <span className={`absolute top-2 right-2.5 text-[var(--primary)] transition-opacity ${intent === choice.id ? 'opacity-100' : 'opacity-0'}`}><Check size={17} aria-hidden="true" /></span>
               </button>
             ))}
           </div>

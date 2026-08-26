@@ -8,6 +8,8 @@ import { fetchConversationList } from '../../lib/chatService';
 import { relativeTime } from '../../lib/relativeTime';
 import type { ConversationPreview } from '../../lib/types';
 import AssistantClient from '../assistant/AssistantClient';
+import LoadError from '../../components/LoadError';
+import { PawPrint } from 'lucide-react';
 
 type HubTab = 'messages' | 'assistant';
 
@@ -25,6 +27,8 @@ export default function MessagesPage() {
   const { t } = useLanguage();
   const [conversations, setConversations] = useState<ConversationPreview[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
   const tab = useSyncExternalStore(subscribeToHistory, getTabFromUrl, () => 'messages');
 
   function selectTab(next: HubTab) {
@@ -38,11 +42,13 @@ export default function MessagesPage() {
 
     let cancelled = false;
     async function load() {
+      setLoadError(false);
       try {
         const data = await fetchConversationList();
         if (!cancelled) setConversations(data);
       } catch (err) {
         console.error(err);
+        if (!cancelled) setLoadError(true);
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -52,7 +58,7 @@ export default function MessagesPage() {
     const onFocus = () => load();
     window.addEventListener('focus', onFocus);
     return () => { cancelled = true; window.removeEventListener('focus', onFocus); };
-  }, [user, authLoading]);
+  }, [user, authLoading, reloadKey]);
 
   return (
     <div className="page-shell page-shell--narrow">
@@ -73,6 +79,8 @@ export default function MessagesPage() {
         <div className="rounded-[var(--r-lg)] border border-[var(--border-subtle)] bg-[var(--surface-2)] p-[var(--sp-6)] text-center text-[var(--muted)]">{t('chat_login_required')}</div>
       ) : loading ? (
         <div className="rounded-[var(--r-lg)] border border-[var(--border-subtle)] bg-[var(--surface-2)] p-[var(--sp-6)] text-center text-[var(--muted)]">{t('detail_loading')}</div>
+      ) : loadError ? (
+        <LoadError onRetry={() => { setLoading(true); setReloadKey((key) => key + 1); }} />
       ) : conversations.length === 0 ? (
         <div className="py-[var(--sp-6)] text-center">
           <p className="mb-2 text-lg font-semibold text-[var(--primary)]">
@@ -91,7 +99,7 @@ export default function MessagesPage() {
                   {conv.pet?.photoURL ? (
                     <Image src={conv.pet.photoURL} alt="" fill sizes="48px" className="rounded-[var(--r-md)] object-cover" />
                   ) : (
-                    <span className="text-xl">🐾</span>
+                    <PawPrint size={22} aria-hidden="true" />
                   )}
                 </div>
                 <div className="min-w-0 flex-1">

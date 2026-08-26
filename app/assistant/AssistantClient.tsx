@@ -5,6 +5,7 @@ import { useLanguage } from '../../lib/i18n';
 import { getAssistantReply, SUGGESTED_QUESTIONS } from '../../lib/assistant/engine';
 import { relativeTime } from '../../lib/relativeTime';
 import type { AssistantSource } from '../../lib/assistant/types';
+import { Check, ThumbsDown, ThumbsUp } from 'lucide-react';
 
 interface Message {
   id: string;
@@ -148,8 +149,8 @@ export default function AssistantClient({ embedded = false }: { embedded?: boole
               )}
               {msg.role === 'assistant' && msg.id !== 'greeting' && (
                 <div className="mt-[7px] flex items-center gap-[5px] text-[10px] text-[var(--muted)]" aria-label={t('assistant_feedback')}>
-                  <button className={`cursor-pointer border-0 bg-transparent p-[3px] ${feedback[msg.id] === 'up' ? 'scale-110 opacity-100' : 'opacity-55'}`} onClick={() => setFeedback((prev) => ({ ...prev, [msg.id]: 'up' }))} aria-label={t('assistant_helpful')}>👍</button>
-                  <button className={`cursor-pointer border-0 bg-transparent p-[3px] ${feedback[msg.id] === 'down' ? 'scale-110 opacity-100' : 'opacity-55'}`} onClick={() => setFeedback((prev) => ({ ...prev, [msg.id]: 'down' }))} aria-label={t('assistant_not_helpful')}>👎</button>
+                  <button className={`cursor-pointer border-0 bg-transparent p-[3px] ${feedback[msg.id] === 'up' ? 'scale-110 opacity-100' : 'opacity-55'}`} onClick={() => setFeedback((prev) => ({ ...prev, [msg.id]: 'up' }))} aria-label={t('assistant_helpful')}><ThumbsUp size={16} aria-hidden="true" /></button>
+                  <button className={`cursor-pointer border-0 bg-transparent p-[3px] ${feedback[msg.id] === 'down' ? 'scale-110 opacity-100' : 'opacity-55'}`} onClick={() => setFeedback((prev) => ({ ...prev, [msg.id]: 'down' }))} aria-label={t('assistant_not_helpful')}><ThumbsDown size={16} aria-hidden="true" /></button>
                   {msg.confidence && <span>{t(`assistant_confidence_${msg.confidence}`)}</span>}
                 </div>
               )}
@@ -215,7 +216,7 @@ export default function AssistantClient({ embedded = false }: { embedded?: boole
                     onClick={() => { setPetType(type); setPetTypeOpen(false); }}
                   >
                     <span>{type === 'Нохой' ? t('type_dog') : type === 'Муур' ? t('type_cat') : t('assistant_pet_type')}</span>
-                    {petType === type && <span aria-hidden="true">✓</span>}
+                    {petType === type && <Check size={15} aria-hidden="true" />}
                   </button>
                 ))}
               </div>

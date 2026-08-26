@@ -5,9 +5,9 @@ import { vaccineStatus } from '../lib/vaccineService';
 import type { MyPet, VaccineStatus } from '../lib/types';
 
 const STATUS_LABEL: Record<VaccineStatus, { text: string; color: string }> = {
-  overdue: { text: '⚠️ Хугацаа хэтэрсэн', color: 'var(--alert)' },
-  soon: { text: '🔔 Удахгүй болно', color: 'var(--accent)' },
-  ok: { text: '✅ Хэвийн', color: 'var(--success)' },
+  overdue: { text: 'Хугацаа хэтэрсэн', color: 'var(--alert)' },
+  soon: { text: 'Удахгүй болно', color: 'var(--accent)' },
+  ok: { text: 'Хэвийн', color: 'var(--success)' },
   none: { text: 'Огноо тохируулаагүй', color: 'var(--muted)' },
 };
 

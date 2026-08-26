@@ -22,6 +22,7 @@ import type { Pet } from '../../../lib/types';
 import { getErrorMessage } from '../../../lib/utils';
 import { getBreedLabel } from '../../../lib/petBreeds';
 import PetImageGallery from '../../../components/PetImageGallery';
+import { Clock3, Gift, Phone } from 'lucide-react';
 
 // URL-ийн snapshot — share холбоосын зориулалттай (useSyncExternalStore;
 // effect-д setUrl хийхгүй, SSR-д хоосон string)
@@ -73,7 +74,7 @@ export default function PetDetailClient({ id }: { id: string }) {
       await markResolved(id);
       await load();
       fireConfetti();
-      showToast('🎉 ' + t('detail_resolved_badge').replace('✅ ', ''), 'success');
+      showToast(t('detail_resolved_badge'), 'success');
     } catch (err) {
       showToast('Алдаа гарлаа: ' + getErrorMessage(err), 'error');
     } finally {
@@ -118,7 +119,7 @@ export default function PetDetailClient({ id }: { id: string }) {
       <div className="eyebrow">{pet.status === 'lost' ? t('report_lost_eyebrow') : t('report_found_eyebrow')}</div>
       <h1 className="mb-[var(--sp-1)] text-2xl">{title}</h1>
       {pet.createdAt && (
-        <p className="mb-[var(--sp-3)] text-[12.5px] text-[var(--muted)]">🕓 {relativeTime(pet.createdAt)}</p>
+        <p className="mb-[var(--sp-3)] flex items-center gap-1 text-[12.5px] text-[var(--muted)]"><Clock3 size={13} aria-hidden="true" /> {relativeTime(pet.createdAt)}</p>
       )}
 
       {pet.resolved && (
@@ -148,18 +149,18 @@ export default function PetDetailClient({ id }: { id: string }) {
               <p className="mb-[var(--sp-1)]"><b>{t('detail_district')}</b> {pet.district}</p>
               <p className="mb-[var(--sp-1)]"><b>{t('detail_place')}</b> {pet.place}</p>
               {pet.hasReward ? (
-                <p className="mb-[var(--sp-1)]"><b>🎁 {t('reward_prefix')}</b></p>
+                <p className="mb-[var(--sp-1)] flex items-center gap-1"><Gift size={15} aria-hidden="true" /><b>{t('reward_prefix')}</b></p>
               ) : null}
               {revealed ? (
                 <a href={`tel:${pet.phone}`} className="mt-[var(--sp-2)] inline-block font-bold text-[var(--primary)]">
-                  ☎ {formatPhone(pet.phone)}
+                  <Phone size={15} aria-hidden="true" /> {formatPhone(pet.phone)}
                 </a>
               ) : (
                 <button
                   onClick={() => setRevealed(true)}
                   className="mt-[var(--sp-2)] inline-block cursor-pointer border-0 bg-transparent p-0 font-[family-name:inherit] font-bold text-[var(--primary)]"
                 >
-                  ☎ {maskPhone(pet.phone)} · {t('detail_show_phone')}
+                  <Phone size={15} aria-hidden="true" /> {maskPhone(pet.phone)} · {t('detail_show_phone')}
                 </button>
               )}
               {/* Чат товч — зөвхөн бусад хэрэглэгчдэд */}

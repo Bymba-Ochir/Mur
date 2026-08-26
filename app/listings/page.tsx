@@ -7,6 +7,7 @@ import PetCard from '../../components/PetCard';
 import NotifySubscribe from '../../components/NotifySubscribe';
 import VolunteerBadge from '../../components/VolunteerBadge';
 import SkeletonCard from '../../components/SkeletonCard';
+import LoadError from '../../components/LoadError';
 import Button from '../../components/ui/Button';
 import Link from 'next/link';
 import { useLanguage } from '../../lib/i18n';
@@ -29,6 +30,7 @@ export default function ListingsPage() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(false);
+  const [loadError, setLoadError] = useState(false);
   const [matchFile, setMatchFile] = useState<File | null>(null);
   const [matching, setMatching] = useState<boolean | string>(false);
   const [matchError, setMatchError] = useState<string | null>(null);
@@ -46,6 +48,7 @@ export default function ListingsPage() {
   async function load(pageToLoad = 0) {
     if (pageToLoad === 0) setLoading(true);
     else setLoadingMore(true);
+    setLoadError(false);
     try {
       const { pets: data, hasMore: more } = await fetchPets({
         status: status || undefined,
@@ -59,6 +62,7 @@ export default function ListingsPage() {
       setPage(pageToLoad);
     } catch (err) {
       console.error(err);
+      setLoadError(true);
     } finally {
       setLoading(false);
       setLoadingMore(false);
@@ -183,6 +187,8 @@ export default function ListingsPage() {
         <div className="listing-grid">
           {Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)}
         </div>
+      ) : loadError ? (
+        <LoadError onRetry={() => load(0)} />
       ) : pets.length === 0 ? (
         <div className="relative mt-[var(--sp-2)] overflow-hidden rounded-[var(--r-xl)] border border-[var(--line)] bg-[var(--card)] px-6 py-[52px] text-center shadow-[var(--shadow-sm)] before:pointer-events-none before:absolute before:inset-x-[-20%] before:top-[-40%] before:h-[80%] before:bg-[radial-gradient(60%_60%_at_50%_0%,color-mix(in_srgb,var(--accent)_8%,transparent),transparent_70%)] max-sm:mt-[var(--sp-3)] max-sm:rounded-[var(--r-lg)] max-sm:px-5 max-sm:py-10 max-[480px]:px-4 max-[480px]:py-8">
           <div className="relative mx-auto mb-[var(--sp-3)] flex size-[72px] items-center justify-center rounded-full border border-[var(--glass-border)] bg-[var(--eyebrow-bg)] text-[var(--primary)] max-[480px]:mb-[var(--sp-4)] max-[480px]:size-[76px]" aria-hidden="true">

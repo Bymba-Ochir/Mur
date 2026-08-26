@@ -7,6 +7,7 @@ import Button from './ui/Button';
 import { useLanguage } from '../lib/i18n';
 import type { Sighting } from '../lib/types';
 import { getErrorMessage } from '../lib/utils';
+import { MapPin } from 'lucide-react';
 
 export default function SightingsList({ petId }: { petId: string }) {
   const showToast = useToast();
@@ -16,6 +17,7 @@ export default function SightingsList({ petId }: { petId: string }) {
   const [place, setPlace] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [showForm, setShowForm] = useState(false);
+  const [loadError, setLoadError] = useState(false);
 
   useEffect(() => {
     load();
@@ -23,10 +25,12 @@ export default function SightingsList({ petId }: { petId: string }) {
   }, [petId]);
 
   async function load() {
+    setLoadError(false);
     try {
       setSightings(await fetchSightings(petId));
     } catch (err) {
       console.error(err);
+      setLoadError(true);
     }
   }
 
@@ -86,7 +90,9 @@ export default function SightingsList({ petId }: { petId: string }) {
         </form>
       )}
 
-      {sightings.length === 0 ? (
+      {loadError ? (
+        <button type="button" onClick={load} className="cursor-pointer border-0 bg-transparent text-[12.5px] font-semibold text-[var(--alert)] underline">Ачаалж чадсангүй. Дахин оролдох</button>
+      ) : sightings.length === 0 ? (
         <p className="text-[12.5px] text-[var(--muted)]">{t('sightings_none')}</p>
       ) : (
         <div className="flex flex-col gap-[var(--sp-2)]">
@@ -94,7 +100,7 @@ export default function SightingsList({ petId }: { petId: string }) {
             <div key={s.id} className="rounded-[var(--r-sm)] border border-[var(--line)] bg-[var(--card)] px-3 py-2.5">
               <p className="text-[13.5px] text-[var(--ink)]">{s.message}</p>
               <p className="mt-[var(--sp-1)] text-[11.5px] text-[var(--muted)]">
-                {s.place && `📍 ${s.place} · `}{relativeTime(s.createdAt)}
+                {s.place && <><MapPin size={12} className="mr-1 inline" aria-hidden="true" />{s.place} · </>}{relativeTime(s.createdAt)}
               </p>
             </div>
           ))}

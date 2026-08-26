@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
+import { PawPrint, Share2 } from 'lucide-react';
 
 const DISMISS_KEY = 'mur-install-dismissed';
 
@@ -15,6 +16,11 @@ export default function InstallPrompt() {
   const [isIOS, setIsIOS] = useState(false);
 
   useEffect(() => {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(() => {
+        // PWA хаалттай үед үндсэн сайт хэвийн үргэлжилнэ.
+      });
+    }
     if (localStorage.getItem(DISMISS_KEY)) return;
 
     // Аль хэдийн апп болгож суулгасан эсэхийг шалгах (standalone горим)
@@ -62,11 +68,11 @@ export default function InstallPrompt() {
   return (
     <div className="fixed inset-x-0 bottom-0 z-[140] flex flex-wrap items-center justify-between gap-3 bg-[var(--brand)] px-[18px] py-3.5 text-[var(--text-on-accent)] shadow-[0_-4px_16px_rgba(0,0,0,0.15)] max-sm:bottom-[58px]" role="region" aria-label="Аппыг суулгах санал">
       <div className="flex min-w-[200px] flex-1 items-center gap-3">
-        <span className="text-[26px]" aria-hidden="true">🐾</span>
+        <PawPrint size={26} aria-hidden="true" />
         <div>
           <b>МӨР-ийг гэрийн дэлгэц рүү нэмэх</b>
           {isIOS ? (
-            <p className="mt-0.5 text-[12.5px] text-[color-mix(in_srgb,var(--text-on-accent)_82%,transparent)]">Safari-ийн доод &quot;Share&quot; (⬆️) товч → &quot;Add to Home Screen&quot; дарна уу</p>
+            <p className="mt-0.5 flex items-center gap-1 text-[12.5px] text-[color-mix(in_srgb,var(--text-on-accent)_82%,transparent)]">Safari-ийн <Share2 size={13} aria-hidden="true" /> Share товчоос &quot;Add to Home Screen&quot; дарна уу</p>
           ) : (
             <p className="mt-0.5 text-[12.5px] text-[color-mix(in_srgb,var(--text-on-accent)_82%,transparent)]">Апп шиг хурдан нээж ашиглаарай</p>
           )}

@@ -12,6 +12,7 @@ import { useLanguage } from '../lib/i18n';
 import Icon from './ui/icons';
 import type { IconName } from './ui/icons';
 import Button from './ui/Button';
+import { UserRound } from 'lucide-react';
 
 function truncateEmail(email: string): string {
   const [local, domain] = email.split('@');
@@ -181,7 +182,7 @@ export default function Navbar() {
                 aria-haspopup="true"
                 aria-label={t('nav_user_menu_label')}
               >
-                <span className="user-avatar flex size-[26px] items-center justify-center rounded-full bg-[image:var(--grad-brand)] text-[11px] font-bold leading-none text-[var(--text-on-accent)]" aria-hidden="true">👤</span>
+                <span className="user-avatar flex size-[26px] items-center justify-center rounded-full bg-[image:var(--grad-brand)] text-[var(--text-on-accent)]" aria-hidden="true"><UserRound size={14} /></span>
                 <span className="user-email max-w-[100px] overflow-hidden text-ellipsis whitespace-nowrap min-[1200px]:max-w-40">{user.email ? truncateEmail(user.email) : ''}</span>
                 <span className="user-chevron mr-1.5 text-[10px] text-[var(--text-secondary)] opacity-60 transition-transform duration-150" aria-hidden="true">{showUserMenu ? '▲' : '▼'}</span>
               </button>
@@ -283,7 +284,7 @@ export default function Navbar() {
               {user ? (
                 <div className="mobile-user-section flex flex-col gap-[var(--sp-2)] border-t border-[var(--border-subtle)] pt-[var(--sp-2)]">
                   <div className="mobile-user-info flex items-center gap-[var(--sp-3)] rounded-[var(--r-md)] bg-[var(--surface-3)] px-[var(--sp-3)] py-[var(--sp-2)] text-[13px] text-[var(--text-secondary)]">
-                    <span className="user-avatar" aria-hidden="true">👤</span>
+                    <span className="user-avatar" aria-hidden="true"><UserRound size={16} /></span>
                     <span>{user.email ? truncateEmail(user.email) : t('nav_guest')}</span>
                   </div>
                   <div className="mobile-user-actions flex flex-col gap-[var(--sp-2)] [&_.btn-base]:min-h-11 [&_.btn-base]:text-sm">

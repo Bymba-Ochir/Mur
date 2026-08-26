@@ -6,6 +6,7 @@ import { useToast } from './Toast';
 import { addVaccination, deleteVaccination } from '../lib/petHealthService';
 import { getErrorMessage } from '../lib/utils';
 import type { Vaccination } from '../lib/types';
+import { X } from 'lucide-react';
 
 export default function VaccinationsSection({
   petId, vaccinations, onUpdate,
@@ -45,7 +46,7 @@ export default function VaccinationsSection({
       <div className="mb-[var(--sp-3)] flex items-center justify-between">
         <h3 className="text-sm font-semibold text-[var(--primary)]">{t('health_section_vaccinations')}</h3>
         <Button variant="ghost" className="min-h-0 px-3 py-1.5 text-xs" onClick={() => setShowForm(!showForm)}>
-          {showForm ? '✕' : t('health_vax_add')}
+          {showForm ? <><X size={15} aria-hidden="true" /> <span>Хаах</span></> : t('health_vax_add')}
         </Button>
       </div>
 
@@ -71,7 +72,7 @@ export default function VaccinationsSection({
                 <p className="text-[13px] font-semibold">{v.vaccineName}</p>
                 <p className="text-[11px] text-[var(--muted)]">{v.vaccinationDate}{v.vetName ? ` · ${v.vetName}` : ''}</p>
               </div>
-              <button className="cursor-pointer border-0 bg-transparent p-1 text-[11px] text-[var(--alert)] hover:opacity-80" onClick={() => handleDelete(v.id)}>✕</button>
+              <button className="cursor-pointer border-0 bg-transparent p-1 text-[var(--alert)] hover:opacity-80" onClick={() => handleDelete(v.id)} aria-label="Устгах"><X size={14} aria-hidden="true" /></button>
             </div>
           ))}
         </div>

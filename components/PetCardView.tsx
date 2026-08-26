@@ -4,6 +4,7 @@ import PetIcon from './PetIcon';
 import { relativeTime } from '../lib/relativeTime';
 import { maskPhone, formatPhone } from '../lib/utils';
 import type { PetStatus, PetType } from '../lib/types';
+import { Clock3, Gift, MapPin, Phone } from 'lucide-react';
 
 export interface PetCardViewProps extends HTMLAttributes<HTMLDivElement> {
   status: PetStatus; badgeLabel: string; name: string; type: PetType; breed?: string;
@@ -37,10 +38,10 @@ export default function PetCardView({
       <div className="flex flex-1 flex-col gap-0.5 px-[15px] py-3.5 max-[480px]:px-3.5 max-[480px]:py-3 min-[1025px]:gap-[3px] min-[1025px]:px-[18px] min-[1025px]:py-4">
         <h4 className="mb-0.5 font-[family-name:var(--font-display)] text-[length:var(--text-lg)] font-bold leading-[var(--lh-tight)] text-[var(--text-primary)] max-[480px]:text-[15px] min-[1025px]:mb-1 min-[1025px]:text-[length:var(--text-xl)]">{name || type}</h4>
         <p className={TEXT}>{type}{breed ? `, ${breed}` : ''}{color ? `, ${color}` : ''}</p>
-        <p className={TEXT}><span aria-hidden="true">📍</span> {district} — {place}</p>
-        {hasReward && <p className="mt-1.5 text-[12.5px] font-semibold text-[var(--accent)] max-[480px]:mt-2 max-[480px]:text-[13px] min-[1025px]:mt-2 min-[1025px]:text-[13.5px]"><span aria-hidden="true">🎁</span> {rewardLabel}</p>}
-        {createdAt && <p className={TEXT}><span aria-hidden="true">🕓</span> {relativeTime(createdAt)}</p>}
-        {showMasked ? <button className={`${PHONE} w-full border-0 text-left font-[family-name:inherit]`} onClick={(event) => { event.stopPropagation(); onRevealPhone!(); }} aria-label="Утасны дугаарыг харуулах"><span aria-hidden="true">☎</span> {maskPhone(phone)} · Дугаар харах</button> : phone ? <a className={PHONE} href={`tel:${phone}`} onClick={(event) => event.stopPropagation()} aria-label={`Утасаар холбогдох: ${formatPhone(phone)}`}><span aria-hidden="true">☎</span> {formatPhone(phone)}</a> : null}
+        <p className={`${TEXT} flex items-center gap-1`}><MapPin size={13} aria-hidden="true" /> {district} — {place}</p>
+        {hasReward && <p className="mt-1.5 flex items-center gap-1 text-[12.5px] font-semibold text-[var(--accent)] max-[480px]:mt-2 max-[480px]:text-[13px] min-[1025px]:mt-2 min-[1025px]:text-[13.5px]"><Gift size={14} aria-hidden="true" /> {rewardLabel}</p>}
+        {createdAt && <p className={`${TEXT} flex items-center gap-1`}><Clock3 size={13} aria-hidden="true" /> {relativeTime(createdAt)}</p>}
+        {showMasked ? <button className={`${PHONE} w-full border-0 text-left font-[family-name:inherit]`} onClick={(event) => { event.stopPropagation(); onRevealPhone!(); }} aria-label="Утасны дугаарыг харуулах"><Phone size={14} aria-hidden="true" /> {maskPhone(phone)} · Дугаар харах</button> : phone ? <a className={PHONE} href={`tel:${phone}`} onClick={(event) => event.stopPropagation()} aria-label={`Утасаар холбогдох: ${formatPhone(phone)}`}><Phone size={14} aria-hidden="true" /> {formatPhone(phone)}</a> : null}
       </div>
     </div>
   );

@@ -1,6 +1,7 @@
 // app/api/assistant/route.ts
 // AI Зөвлөхийн Groq API proxy (сонголттой — GROQ_API_KEY байхгүй бол ажиллахгүй)
 import { NextResponse } from 'next/server';
+import { checkRateLimit, getClientIp } from '../../../lib/rateLimit';
 
 const SYSTEM_PROMPT = `Та МӨР аппын гэрийн амьтны эрүүл мэндийн зөвлөх байна. Монгол хэлээр хариулна уу.
 
@@ -11,11 +12,19 @@ const SYSTEM_PROMPT = `Та МӨР аппын гэрийн амьтны эрүү
 - Өгөгдсөн МЭДЛЭГИЙН ХЭСЭГ-т тулгуурла. Хангалтгүй бол тодорхойгүй гэдгээ хэл
 - Эмийн нэр, тун, оношийг зохиож болохгүй
 - Яаралтай шинж тэмдэг байвал хамгийн түрүүнд эмнэлэгт хандахыг зөвлө
-- Хариултын төгсгөлд '⚠️ Энэ зөвлөгөө нь малын эмчийг орлохгүй.' гэж нэмнэ
+- Хариултын төгсгөлд 'Анхааруулга: Энэ зөвлөгөө нь малын эмчийг орлохгүй.' гэж нэмнэ
 - Товч, ойлгомжтой хариулна уу (500 тэмдэгтээс бага)`;
 
 export async function POST(request: Request) {
   try {
+    const rate = checkRateLimit(`assistant:${getClientIp(request)}`, 20, 10 * 60 * 1000);
+    if (!rate.allowed) {
+      return NextResponse.json(
+        { error: 'Хэт олон хүсэлт илгээлээ. Түр хүлээгээд дахин оролдоно уу.' },
+        { status: 429, headers: { 'Retry-After': String(rate.retryAfterSec) } },
+      );
+    }
+
     const { message, lang, context, petContext } = await request.json();
 
     // Валидаци
@@ -29,7 +38,7 @@ export async function POST(request: Request) {
     // GROQ_API_KEY шалгах
     const apiKey = process.env.GROQ_API_KEY;
     if (!apiKey) {
-      return NextResponse.json({ text: null });
+      return NextResponse.json({ error: 'AI үйлчилгээ одоогоор тохируулагдаагүй байна' }, { status: 503 });
     }
 
     // Groq API руу хүсэлт
@@ -52,15 +61,18 @@ export async function POST(request: Request) {
 
     if (!response.ok) {
       console.error('Groq API алдаа:', response.status);
-      return NextResponse.json({ text: null });
+      return NextResponse.json({ error: 'AI үйлчилгээ түр хугацаанд хариу өгөхгүй байна' }, { status: 502 });
     }
 
     const data = await response.json();
-    const text = data.choices?.[0]?.message?.content || null;
+    const text = data.choices?.[0]?.message?.content;
+    if (typeof text !== 'string' || !text.trim()) {
+      return NextResponse.json({ error: 'AI хоосон хариу буцаалаа' }, { status: 502 });
+    }
 
     return NextResponse.json({ text });
   } catch (err) {
     console.error('Assistant API алдаа:', err);
-    return NextResponse.json({ text: null });
+    return NextResponse.json({ error: 'AI хүсэлтийг боловсруулахад алдаа гарлаа' }, { status: 500 });
   }
 }

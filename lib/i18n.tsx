@@ -1,6 +1,6 @@
 // lib/i18n.tsx
 'use client';
-import { createContext, useContext } from 'react';
+import { createContext, useContext, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import type { Locale } from './types';
 import { useLocalStorageValue, setLocalStorageValue } from './useLocalStorageState';
@@ -667,6 +667,10 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 // localStorage-тэй синхрончлогдсон хэл — useSyncExternalStore (SSR-аюулгүй)
 const saved = useLocalStorageValue('mur-lang');
 const lang: Locale = saved === 'en' || saved === 'mn' ? saved : 'mn';
+
+useEffect(() => {
+document.documentElement.lang = lang;
+}, [lang]);
 
 function toggle() {
 setLocalStorageValue('mur-lang', lang === 'mn' ? 'en' : 'mn');

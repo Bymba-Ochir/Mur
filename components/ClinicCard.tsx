@@ -3,6 +3,7 @@ import { useLanguage } from '../lib/i18n';
 import Button from './ui/Button';
 import { distanceLabel } from '../lib/clinicService';
 import type { VetClinic } from '../lib/types';
+import { Phone } from 'lucide-react';
 
 const SERVICE_I18N: Record<string, string> = {
   'Үзлэг': 'service_exam',
@@ -57,7 +58,7 @@ export default function ClinicCard({
         </div>
         <div className="mt-[var(--sp-4)] flex justify-end gap-[var(--sp-2)] max-sm:justify-stretch max-sm:[&_.btn-base]:min-w-0 max-sm:[&_.btn-base]:flex-1">
           <Button as="anchor" href={`tel:${clinic.phone}`} variant="ghost" className="min-h-9 min-w-0 text-xs">
-            ☎ {t('clinics_call')}
+            <Phone size={14} aria-hidden="true" /> {t('clinics_call')}
           </Button>
           {onBook && (
             <Button variant="primary" className="min-h-9 min-w-[148px] justify-center bg-[var(--clinic)] text-xs" onClick={(e) => { e.stopPropagation(); onBook(); }}>

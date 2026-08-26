@@ -7,11 +7,19 @@ import webpush from 'web-push';
 import { createAdminClient } from '../../../lib/supabaseAdmin';
 
 export async function GET(request: Request) {
-  // Vercel Cron-оос ирсэн хүсэлт эсэхийг шалгана (CRON_SECRET env тохируулсан бол
-  // Vercel автоматаар Authorization: Bearer <CRON_SECRET> толгойг нэмдэг)
+  // Secret байхгүй үед ч endpoint-ийг нээлттэй орхихгүй (fail closed).
+  const cronSecret = process.env.CRON_SECRET;
+  if (!cronSecret) {
+    console.error('vaccine-reminders: CRON_SECRET тохируулагдаагүй');
+    return NextResponse.json({ error: 'Cron тохиргоо дутуу байна' }, { status: 503 });
+  }
   const authHeader = request.headers.get('authorization');
-  if (process.env.CRON_SECRET && authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (authHeader !== `Bearer ${cronSecret}`) {
     return NextResponse.json({ error: 'Зөвшөөрөлгүй' }, { status: 401 });
+  }
+
+  if (!process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || !process.env.VAPID_PRIVATE_KEY) {
+    return NextResponse.json({ error: 'Push тохиргоо дутуу байна' }, { status: 503 });
   }
 
   webpush.setVapidDetails(
@@ -45,7 +53,7 @@ export async function GET(request: Request) {
       .eq('user_id', pet.user_id);
 
     const payload = JSON.stringify({
-      title: `💉 ${pet.name}-ийн вакцины хугацаа боллоо`,
+      title: `${pet.name}-ийн вакцины хугацаа боллоо`,
       body: 'Амьтныхаа вакциныг цагт нь хийлгэхээ мартуузай.',
       url: '/my-pets',
     });
@@ -84,7 +92,7 @@ export async function GET(request: Request) {
       .eq('user_id', pet.user_id);
 
     const payload = JSON.stringify({
-      title: `💊 ${pet.name}-ийн эмийн сануулга`,
+      title: `${pet.name}-ийн эмийн сануулга`,
       body: med.dosage ? `${med.name} — ${med.dosage}` : med.name,
       url: '/my-pets',
     });
