@@ -2,7 +2,6 @@
 import { supabase } from './supabase';
 import { mapPetSummary } from './petMapping';
 import type { Report } from './types';
-import { deleteContent } from './deleteContent';
 
 export type AdminContentType = 'pet' | 'adoption' | 'sitting';
 
@@ -69,7 +68,8 @@ export async function dismissReport(reportId: string): Promise<void> {
 }
 
 export async function adminDeletePet(petId: string): Promise<void> {
-  await deleteContent('pet', petId);
+  const { error } = await supabase.from('pets').delete().eq('id', petId);
+  if (error) throw error;
   await writeAudit('delete', 'pet', petId);
 }
 
@@ -126,7 +126,9 @@ export async function fetchAdminContent(): Promise<AdminContentItem[]> {
 }
 
 export async function adminDeleteContent(kind: AdminContentType, id: string): Promise<void> {
-  await deleteContent(kind, id);
+  const table = kind === 'pet' ? 'pets' : kind === 'adoption' ? 'adoptions' : 'sitting_listings';
+  const { error } = await supabase.from(table).delete().eq('id', id);
+  if (error) throw error;
   await writeAudit('delete', kind, id);
 }
 

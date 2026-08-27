@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react';
 import { fetchAdoptions } from '../../lib/adoptionService';
 import AdoptionCard from '../../components/AdoptionCard';
 import SkeletonCard from '../../components/SkeletonCard';
-import LoadError from '../../components/LoadError';
 import Button from '../../components/ui/Button';
 import Link from 'next/link';
 import { useLanguage } from '../../lib/i18n';
@@ -26,7 +25,6 @@ export default function AdoptionsPage() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(false);
-  const [loadError, setLoadError] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => load(0), 400);
@@ -37,7 +35,6 @@ export default function AdoptionsPage() {
   async function load(pageToLoad = 0) {
     if (pageToLoad === 0) setLoading(true);
     else setLoadingMore(true);
-    setLoadError(false);
     try {
       const { adoptions: data, hasMore: more } = await fetchAdoptions({
         type: type || undefined,
@@ -51,7 +48,6 @@ export default function AdoptionsPage() {
       setPage(pageToLoad);
     } catch (err) {
       console.error(err);
-      setLoadError(true);
     } finally {
       setLoading(false);
       setLoadingMore(false);
@@ -94,15 +90,13 @@ export default function AdoptionsPage() {
       </div>
 
       {loading ? (
-        <div className="listing-grid"><SkeletonCard /><SkeletonCard /><SkeletonCard /><SkeletonCard /><SkeletonCard /><SkeletonCard /></div>
-      ) : loadError ? (
-        <LoadError onRetry={() => load(0)} />
+        <div className="grid"><SkeletonCard /><SkeletonCard /><SkeletonCard /><SkeletonCard /><SkeletonCard /><SkeletonCard /></div>
       ) : adoptions.length === 0 ? (
-        <div className="py-[var(--sp-6)] text-center">
-          <p className="mb-2 text-lg font-semibold text-[var(--primary)]">
+        <div style={{ textAlign: 'center', padding: 'var(--sp-6) 0' }}>
+          <p style={{ fontSize: 18, fontWeight: 600, color: 'var(--primary)', marginBottom: 8 }}>
             {search || type || gender || district ? t('empty_no_results_title') : t('adoptions_empty_title')}
           </p>
-          <p className="mb-4 text-[var(--muted)]">
+          <p style={{ color: 'var(--muted)', marginBottom: 16 }}>
             {search || type || gender || district ? t('empty_no_results_desc') : t('adoptions_empty_desc')}
           </p>
           <Button as="link" href="/adoptions/new" variant="accent">{t('adoptions_new_btn')}</Button>
@@ -110,11 +104,11 @@ export default function AdoptionsPage() {
       ) : (
         <>
           <p className="result-count">{adoptions.length} {t('results_count')}</p>
-          <div className="listing-grid">
+          <div className="grid">
             {adoptions.map((a) => <AdoptionCard key={a.id} adoption={a} />)}
           </div>
           {hasMore && (
-            <Button onClick={() => load(page + 1)} disabled={loadingMore} variant="ghost" className="mx-auto mt-[var(--sp-5)] flex">
+            <Button onClick={() => load(page + 1)} disabled={loadingMore} variant="ghost" style={{ display: 'block', margin: 'var(--sp-5) auto 0' }}>
               {loadingMore ? t('loading_more') : t('load_more')}
             </Button>
           )}

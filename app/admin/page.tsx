@@ -132,38 +132,65 @@ export default function AdminPage() {
 
         {tab === 'reports' && (reports.length === 0 ?
           <EmptyState icon={<Icon name="thumb" size={30} />} description={t('admin_none')} /> :
-          <section className="grid gap-2.5" aria-label="Мэдээлэгдсэн зарууд">
-            {reports.map((report) => <article key={report.id} className="flex items-center gap-3.5 rounded-[var(--r-lg)] border border-[var(--border-subtle)] bg-[var(--card)] p-3.5 max-[760px]:flex-wrap max-[760px]:items-start [&>img]:size-[72px] [&>img]:shrink-0 [&>img]:rounded-[var(--r-md)] [&>img]:object-cover max-[480px]:[&>img]:size-14">
+          <section className="admin-list" aria-label="Мэдээлэгдсэн зарууд">
+            {reports.map((report) => <article key={report.id} className="admin-row">
               {report.pet?.photoURL && <Image src={report.pet.photoURL} alt="" width={72} height={72} />}
-              <div className="grid min-w-0 flex-1 gap-[5px] max-[760px]:min-w-[calc(100%-90px)] max-[480px]:min-w-[calc(100%-72px)] [&_a]:overflow-hidden [&_a]:text-ellipsis [&_a]:whitespace-nowrap [&_a]:font-bold [&_a]:text-[var(--text-primary)] [&_a]:no-underline [&_small]:text-[var(--text-secondary)]">
-                <span className="text-xs font-bold text-[var(--danger)]">Мэдээлсэн: {report.reason}</span>
+              <div className="row-copy">
+                <span className="danger-label">Мэдээлсэн: {report.reason}</span>
                 {report.pet ? <Link href={`/pets/${report.pet.id}`}>{report.pet.status === 'lost' ? 'Алдсан' : 'Олдсон'} · {report.pet.name || report.pet.type}</Link> : <strong>{t('admin_pet_deleted')}</strong>}
                 <small>{relativeTime(report.createdAt)}</small>
               </div>
-              <div className="flex gap-1.5 max-[760px]:w-full max-[760px]:justify-end max-[760px]:border-t max-[760px]:border-[var(--border-subtle)] max-[760px]:pt-2.5">
+              <div className="row-actions">
                 <Button variant="ghost" disabled={busyId === report.id} onClick={() => handleDismiss(report.id)}>{t('admin_dismiss')}</Button>
-                {report.pet && <Button variant="ghost" disabled={busyId === report.id} onClick={() => handleDeleteReported(report.id, report.pet!.id)} className="text-[var(--danger)]">{t('admin_delete_pet')}</Button>}
+                {report.pet && <Button variant="ghost" disabled={busyId === report.id} onClick={() => handleDeleteReported(report.id, report.pet!.id)} style={{ color: 'var(--danger)' }}>{t('admin_delete_pet')}</Button>}
               </div>
             </article>)}
           </section>
         )}
 
         {tab === 'content' && <section>
-          <div className="mb-3.5 flex gap-3 max-[760px]:flex-col">
-            <input className="min-h-[50px] flex-1 rounded-[var(--r-md)] border border-[var(--border-subtle)] bg-[var(--surface-2)] px-4 font-[family-name:inherit] text-[var(--text-primary)]" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Нэр, төрөл, байршлаар хайх..." aria-label="Зар хайх" />
-            <div className="flex gap-1.5 overflow-x-auto">{([['all', 'Бүгд'], ['pet', 'Алдсан/олдсон'], ['adoption', 'Үрчлүүлэх'], ['sitting', 'Асрах']] as Array<[ContentFilter, string]>).map(([id, label]) => <button key={id} type="button" className={`cursor-pointer whitespace-nowrap rounded-full border px-3.5 font-bold ${filter === id ? 'border-[var(--primary)] bg-[var(--primary)] text-[var(--text-on-accent)]' : 'border-[var(--border-subtle)] bg-transparent text-[var(--text-secondary)]'}`} onClick={() => setFilter(id)}>{label}</button>)}</div>
+          <div className="content-tools">
+            <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Нэр, төрөл, байршлаар хайх..." aria-label="Зар хайх" />
+            <div className="filter-pills">{([['all', 'Бүгд'], ['pet', 'Алдсан/олдсон'], ['adoption', 'Үрчлүүлэх'], ['sitting', 'Асрах']] as Array<[ContentFilter, string]>).map(([id, label]) => <button key={id} type="button" className={filter === id ? 'active' : ''} onClick={() => setFilter(id)}>{label}</button>)}</div>
           </div>
-          <p className="mb-3 text-[13px] font-bold text-[var(--text-secondary)]">{visibleContent.length} зар</p>
-          {visibleContent.length === 0 ? <EmptyState icon={<Icon name="search" size={30} />} description="Тохирох зар олдсонгүй." /> : <div className="grid gap-2.5">{visibleContent.map((item) => <article key={`${item.kind}-${item.id}`} className="flex items-center gap-3.5 rounded-[var(--r-lg)] border border-[var(--border-subtle)] bg-[var(--card)] p-3.5 max-[760px]:flex-wrap max-[760px]:items-start [&>img]:size-[72px] [&>img]:shrink-0 [&>img]:rounded-[var(--r-md)] [&>img]:object-cover max-[480px]:[&>img]:size-14">
-            {item.image ? <Image src={item.image} alt="" width={72} height={72} /> : <span className="grid size-[72px] shrink-0 place-items-center rounded-[var(--r-md)] bg-[var(--surface-3)] text-[var(--primary)] max-[480px]:size-14"><Icon name="paw" size={26} /></span>}
-            <div className="grid min-w-0 flex-1 gap-[5px] max-[760px]:min-w-[calc(100%-90px)] max-[480px]:min-w-[calc(100%-72px)] [&_a]:overflow-hidden [&_a]:text-ellipsis [&_a]:whitespace-nowrap [&_a]:font-bold [&_a]:text-[var(--text-primary)] [&_a]:no-underline [&_small]:text-[var(--text-secondary)]"><span className={`w-max rounded-full px-2 py-[3px] text-[10px] font-extrabold ${item.kind === 'adoption' ? 'bg-[color-mix(in_srgb,var(--success)_10%,transparent)] text-[var(--success)]' : item.kind === 'sitting' ? 'bg-[color-mix(in_srgb,var(--secondary)_12%,transparent)] text-[var(--secondary)]' : 'bg-[color-mix(in_srgb,var(--primary)_10%,transparent)] text-[var(--primary)]'}`}>{item.kind === 'pet' ? 'Алдсан/олдсон' : item.kind === 'adoption' ? 'Үрчлүүлэх' : 'Асрах'}</span><Link href={item.href}>{item.title}</Link><small>{item.subtitle} · {relativeTime(item.createdAt)}</small></div>
-            <div className="flex gap-1.5 max-[760px]:w-full max-[760px]:justify-end max-[760px]:border-t max-[760px]:border-[var(--border-subtle)] max-[760px]:pt-2.5"><Button as="link" href={item.href} variant="ghost">Үзэх</Button><Button variant="ghost" disabled={busyId === item.id} onClick={() => handleDeleteContent(item)} className="text-[var(--danger)]">Устгах</Button></div>
+          <p className="result-count">{visibleContent.length} зар</p>
+          {visibleContent.length === 0 ? <EmptyState icon={<Icon name="search" size={30} />} description="Тохирох зар олдсонгүй." /> : <div className="admin-list">{visibleContent.map((item) => <article key={`${item.kind}-${item.id}`} className="admin-row">
+            {item.image ? <Image src={item.image} alt="" width={72} height={72} /> : <span className="image-placeholder"><Icon name="paw" size={26} /></span>}
+            <div className="row-copy"><span className={`kind kind-${item.kind}`}>{item.kind === 'pet' ? 'Алдсан/олдсон' : item.kind === 'adoption' ? 'Үрчлүүлэх' : 'Асрах'}</span><Link href={item.href}>{item.title}</Link><small>{item.subtitle} · {relativeTime(item.createdAt)}</small></div>
+            <div className="row-actions"><Button as="link" href={item.href} variant="ghost">Үзэх</Button><Button variant="ghost" disabled={busyId === item.id} onClick={() => handleDeleteContent(item)} style={{ color: 'var(--danger)' }}>Устгах</Button></div>
           </article>)}</div>}
         </section>}
 
-        {tab === 'audit' && (audit.length === 0 ? <div className="rounded-[var(--r-lg)] border border-dashed border-[var(--border-subtle)] bg-[var(--surface-2)] p-6 text-[var(--text-secondary)] [&_strong]:text-[var(--text-primary)]"><strong>Үйлдлийн түүх одоогоор хоосон байна.</strong><p><code>supabase-admin-upgrade.sql</code>-ийг ажиллуулсны дараах admin үйлдлүүд энд хадгалагдана.</p></div> : <div className="grid gap-2">{audit.map((item) => <div className="grid grid-cols-[1fr_1fr_auto] gap-3.5 border-b border-[var(--border-subtle)] px-4 py-3.5 max-[760px]:grid-cols-1 max-[760px]:gap-1 [&_small]:text-[var(--text-secondary)]" key={item.id}><span>{auditLabel(item.action)}</span><strong>{targetLabel(item.targetType)}</strong><small>{relativeTime(item.createdAt)}</small></div>)}</div>)}
+        {tab === 'audit' && (audit.length === 0 ? <div className="setup-note"><strong>Үйлдлийн түүх одоогоор хоосон байна.</strong><p><code>supabase-admin-upgrade.sql</code>-ийг ажиллуулсны дараах admin үйлдлүүд энд хадгалагдана.</p></div> : <div className="audit-list">{audit.map((item) => <div key={item.id}><span>{auditLabel(item.action)}</span><strong>{targetLabel(item.targetType)}</strong><small>{relativeTime(item.createdAt)}</small></div>)}</div>)}
       </>}
 
+      <style jsx>{`
+        .admin-list { display: grid; gap: 10px; }
+        .admin-row { display: flex; align-items: center; gap: 14px; padding: 14px; border: 1px solid var(--border-subtle); border-radius: var(--r-lg); background: var(--card); }
+        .admin-row :global(img), .image-placeholder { width: 72px; height: 72px; flex: 0 0 72px; border-radius: var(--r-md); object-fit: cover; }
+        .image-placeholder { display: grid; place-items: center; color: var(--primary); background: var(--surface-3); }
+        .row-copy { display: grid; gap: 5px; flex: 1; min-width: 0; }
+        .row-copy :global(a) { color: var(--text-primary); font-weight: 750; text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .row-copy small { color: var(--text-secondary); }
+        .danger-label { color: var(--danger); font-size: 12px; font-weight: 700; }
+        .row-actions { display: flex; gap: 6px; }
+        .kind { width: max-content; padding: 3px 8px; border-radius: 999px; color: var(--primary); background: color-mix(in srgb, var(--primary) 10%, transparent); font-size: 10px; font-weight: 800; }
+        .kind-adoption { color: var(--success); background: color-mix(in srgb, var(--success) 10%, transparent); }
+        .kind-sitting { color: var(--secondary); background: color-mix(in srgb, var(--secondary) 12%, transparent); }
+        .content-tools { display: flex; gap: 12px; margin-bottom: 14px; }
+        .content-tools input { flex: 1; min-height: 50px; padding: 0 16px; color: var(--text-primary); border: 1px solid var(--border-subtle); border-radius: var(--r-md); background: var(--surface-2); font: inherit; }
+        .filter-pills { display: flex; gap: 6px; overflow-x: auto; }
+        .filter-pills button { padding: 0 14px; border: 1px solid var(--border-subtle); border-radius: 999px; color: var(--text-secondary); background: transparent; font-weight: 700; cursor: pointer; white-space: nowrap; }
+        .filter-pills button.active { color: var(--text-on-accent); border-color: var(--primary); background: var(--primary); }
+        .result-count { margin: 0 0 12px; color: var(--text-secondary); font-size: 13px; font-weight: 700; }
+        .audit-list { display: grid; gap: 8px; }
+        .audit-list > div { display: grid; grid-template-columns: 1fr 1fr auto; gap: 14px; padding: 14px 16px; border-bottom: 1px solid var(--border-subtle); }
+        .audit-list small { color: var(--text-secondary); }
+        .setup-note { padding: 24px; border: 1px dashed var(--border-subtle); border-radius: var(--r-lg); color: var(--text-secondary); background: var(--surface-2); }
+        .setup-note strong { color: var(--text-primary); }
+        @media (max-width: 760px) { .content-tools { flex-direction: column; } .admin-row { align-items: flex-start; flex-wrap: wrap; } .row-copy { min-width: calc(100% - 90px); } .row-actions { width: 100%; justify-content: flex-end; border-top: 1px solid var(--border-subtle); padding-top: 10px; } .audit-list > div { grid-template-columns: 1fr; gap: 4px; } }
+        @media (max-width: 480px) { .admin-row :global(img), .image-placeholder { width: 56px; height: 56px; flex-basis: 56px; } .row-copy { min-width: calc(100% - 72px); } }
+      `}</style>
     </div>
   );
 }
@@ -174,9 +201,9 @@ function Dashboard({ stats, reports, onOpenReports }: { stats: AdminStats; repor
     ['Шийдвэрлэгдсэн', stats.resolvedPets, 'resolved'], ['Үрчлүүлэх зар', stats.adoptions, 'adoption'],
     ['Асрах зар', stats.sitting, 'sitting'], ['Хүлээгдэж буй мэдээлэл', stats.reports, 'report'],
   ];
-  return <section><div className="grid grid-cols-3 gap-3.5 max-[720px]:grid-cols-2 max-[420px]:grid-cols-1">{cards.map(([label, value, tone]) => <article key={String(label)} className="min-h-[132px] rounded-[var(--r-lg)] border border-[var(--border-subtle)] bg-[var(--card)] p-5 shadow-[var(--shadow-sm)] max-[420px]:min-h-[104px]"><span className="block text-[13px] text-[var(--text-secondary)]">{label}</span><strong className={`mt-4 block font-[family-name:var(--font-display)] text-[2.2rem] max-[420px]:mt-2.5 ${tone === 'report' ? 'text-[var(--danger)]' : tone === 'resolved' ? 'text-[var(--success)]' : 'text-[var(--primary)]'}`}>{value}</strong></article>)}</div>{reports.length > 0 && <button className="mt-4 flex w-full cursor-pointer items-center justify-between rounded-[var(--r-lg)] border border-[color-mix(in_srgb,var(--warning)_38%,var(--border-subtle))] bg-[color-mix(in_srgb,var(--warning)_10%,var(--card))] p-[18px] text-left text-[var(--text-primary)] max-[720px]:flex-col max-[720px]:items-start max-[720px]:gap-1.5" type="button" onClick={onOpenReports}><span className="font-extrabold">Анхаарах шаардлагатай</span><strong className="text-[var(--danger)]">{reports.length} мэдээлэгдсэн зар хүлээгдэж байна →</strong></button>}</section>;
+  return <section><div className="stats-grid">{cards.map(([label, value, tone]) => <article key={String(label)} className={`stat-card tone-${tone}`}><span>{label}</span><strong>{value}</strong></article>)}</div>{reports.length > 0 && <button className="attention" type="button" onClick={onOpenReports}><span>Анхаарах шаардлагатай</span><strong>{reports.length} мэдээлэгдсэн зар хүлээгдэж байна →</strong></button>}<style jsx>{`.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.stat-card{min-height:132px;padding:20px;border:1px solid var(--border-subtle);border-radius:var(--r-lg);background:var(--card);box-shadow:var(--shadow-sm)}.stat-card span{display:block;color:var(--text-secondary);font-size:13px}.stat-card strong{display:block;margin-top:16px;color:var(--primary);font-family:var(--font-display);font-size:2.2rem}.tone-report strong{color:var(--danger)}.tone-resolved strong{color:var(--success)}.attention{display:flex;align-items:center;justify-content:space-between;width:100%;margin-top:16px;padding:18px;border:1px solid color-mix(in srgb,var(--warning) 38%,var(--border-subtle));border-radius:var(--r-lg);color:var(--text-primary);background:color-mix(in srgb,var(--warning) 10%,var(--card));cursor:pointer;text-align:left}.attention span{font-weight:800}.attention strong{color:var(--danger)}@media(max-width:720px){.stats-grid{grid-template-columns:1fr 1fr}.attention{align-items:flex-start;flex-direction:column;gap:6px}}@media(max-width:420px){.stats-grid{grid-template-columns:1fr}.stat-card{min-height:104px}.stat-card strong{margin-top:10px}}`}</style></section>;
 }
 
-function AdminSkeleton() { return <div className="grid grid-cols-3 gap-3.5 max-[720px]:grid-cols-2">{[0, 1, 2, 3, 4, 5].map((item) => <div key={item} className="skel-row h-[132px] rounded-[var(--r-lg)] bg-[var(--surface-2)]" />)}</div>; }
+function AdminSkeleton() { return <div className="skeleton-grid">{[0, 1, 2, 3, 4, 5].map((item) => <div key={item} className="skel-row" />)}<style jsx>{`.skeleton-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.skeleton-grid div{height:132px;border-radius:var(--r-lg);background:var(--surface-2)}@media(max-width:720px){.skeleton-grid{grid-template-columns:1fr 1fr}}`}</style></div>; }
 function auditLabel(action: string) { return action === 'delete' ? 'Зар устгасан' : action === 'dismiss_report' ? 'Мэдээллийг үл хэрэгссэн' : action; }
 function targetLabel(type: string) { return type === 'pet' ? 'Алдсан/олдсон зар' : type === 'adoption' ? 'Үрчлүүлэх зар' : type === 'sitting' ? 'Асрах зар' : type === 'report' ? 'Мэдээлэл' : type; }

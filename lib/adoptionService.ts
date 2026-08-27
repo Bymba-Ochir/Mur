@@ -2,8 +2,8 @@
 // Үрчлүүлэх амьтны мэдээллийг Supabase (Postgres + Storage)-д бичих, унших функцууд
 import { supabase } from './supabase';
 import { mapAdoptionRow } from './adoptionMapping';
-import { deleteContent } from './deleteContent';
 import type { Adoption, AdoptionInput, AdoptionFilters, UpdateAdoptionFields } from './types';
+import { cleanText, requireMongolianPhone } from './inputValidation';
 
 const TABLE = 'adoptions';
 const BUCKET = 'pet-photos';
@@ -34,15 +34,15 @@ export async function createAdoption(data: AdoptionInput): Promise<string> {
   }
 
   const payload = {
-      name: data.name || '',
+      name: cleanText(data.name, 100, 'Нэр'),
       type: data.type,
-      age: data.age || '',
+      age: cleanText(data.age, 100, 'Нас'),
       gender: data.gender || 'Тодорхойгүй',
-      breed: data.breed || '',
-      description: data.description || '',
+      breed: cleanText(data.breed, 100, 'Үүлдэр'),
+      description: cleanText(data.description, 2000, 'Тайлбар', true),
       district: data.district || '',
-      place: data.place || '',
-      phone: data.phone || '',
+      place: cleanText(data.place, 300, 'Байршил', true),
+      phone: requireMongolianPhone(data.phone),
       photo_url: photoUrl,
       photo_urls: photoUrls,
   };
@@ -116,15 +116,15 @@ export async function updateAdoption(id: string, fields: UpdateAdoptionFields): 
   const { error } = await supabase
     .from(TABLE)
     .update({
-      name: fields.name ?? undefined,
+      name: fields.name === undefined ? undefined : cleanText(fields.name, 100, 'Нэр'),
       type: fields.type ?? undefined,
-      age: fields.age ?? undefined,
+      age: fields.age === undefined ? undefined : cleanText(fields.age, 100, 'Нас'),
       gender: fields.gender ?? undefined,
-      breed: fields.breed ?? undefined,
-      description: fields.description ?? undefined,
-      place: fields.place ?? undefined,
+      breed: fields.breed === undefined ? undefined : cleanText(fields.breed, 100, 'Үүлдэр'),
+      description: fields.description === undefined ? undefined : cleanText(fields.description, 2000, 'Тайлбар', true),
+      place: fields.place === undefined ? undefined : cleanText(fields.place, 300, 'Байршил', true),
       district: fields.district ?? undefined,
-      phone: fields.phone ?? undefined,
+      phone: fields.phone === undefined ? undefined : requireMongolianPhone(fields.phone),
     })
     .eq('id', id);
   if (error) throw error;
@@ -134,5 +134,6 @@ export async function updateAdoption(id: string, fields: UpdateAdoptionFields): 
  * Зохиогч өөрийн зарыг устгах
  */
 export async function deleteAdoption(id: string): Promise<void> {
-  await deleteContent('adoption', id);
+  const { error } = await supabase.from(TABLE).delete().eq('id', id);
+  if (error) throw error;
 }

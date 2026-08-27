@@ -23,26 +23,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     // getUser() — шинэ supabase-js-д getSession()-ээс илүүдэхүйц (token verify)
-    let active = true;
-    supabase.auth.getUser()
-      .then(({ data }) => {
-        if (active) setUser(data.user ?? null);
-      })
-      .catch(() => {
-        if (active) setUser(null);
-      })
-      .finally(() => {
-        if (active) setLoading(false);
-      });
+    supabase.auth.getUser().then(({ data }) => {
+      setUser(data.user ?? null);
+      setLoading(false);
+    });
 
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
     });
 
-    return () => {
-      active = false;
-      listener.subscription.unsubscribe();
-    };
+    return () => listener.subscription.unsubscribe();
   }, []);
 
   /**
@@ -58,8 +48,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = async (): Promise<void> => {
-    const { error } = await supabase.auth.signOut();
-    if (error) throw error;
+    await supabase.auth.signOut();
   };
 
   return (

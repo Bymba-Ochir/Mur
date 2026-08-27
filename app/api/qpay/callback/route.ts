@@ -5,24 +5,19 @@ import { createAdminClient } from '../../../../lib/supabaseAdmin';
 
 export async function POST(request: Request) {
   try {
-    const callbackSecret = process.env.QPAY_CALLBACK_SECRET;
-    if (!callbackSecret) {
-      console.error('qpay/callback: QPAY_CALLBACK_SECRET тохируулагдаагүй');
-      return NextResponse.json({ error: 'Callback тохиргоо дутуу байна' }, { status: 503 });
-    }
-    const url = new URL(request.url);
-    const secretParam = url.searchParams.get('secret');
-    const authHeader = request.headers.get('authorization');
-    const provided = authHeader?.replace(/^Bearer\s+/i, '') || secretParam;
-    if (provided !== callbackSecret) {
-      return NextResponse.json({ error: 'Зөвшөөрөлгүй' }, { status: 401 });
+    if (process.env.QPAY_CALLBACK_SECRET) {
+      const url = new URL(request.url);
+      const secretParam = url.searchParams.get('secret');
+      const authHeader = request.headers.get('authorization');
+      const provided = authHeader?.replace('Bearer ', '') || secretParam;
+      if (provided !== process.env.QPAY_CALLBACK_SECRET) {
+        return NextResponse.json({ message: 'OK' }, { status: 200 });
+      }
     }
 
     const body = await request.json();
-    const invoiceId = typeof body.invoice_id === 'string' ? body.invoice_id : '';
-    if (!invoiceId || invoiceId.length > 200) {
-      return NextResponse.json({ error: 'invoice_id буруу байна' }, { status: 400 });
-    }
+    const invoiceId = body.invoice_id;
+    if (!invoiceId) return NextResponse.json({ message: 'OK' }, { status: 200 });
 
     const supabaseAdmin = createAdminClient();
 

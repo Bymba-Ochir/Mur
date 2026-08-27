@@ -19,7 +19,7 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { amount, supporterName, message, isAnonymous } = body;
 
-    if (!amount || typeof amount !== 'number' || amount < 1000 || amount > 5_000_000) {
+    if (!Number.isSafeInteger(amount) || amount < 1000 || amount > 5_000_000) {
       return NextResponse.json({ error: 'Дүн 1,000₮ - 5,000,000₮ хооронд байх ёстой' }, { status: 400 });
     }
     if (supporterName && (typeof supporterName !== 'string' || supporterName.length > 100)) {
@@ -33,12 +33,11 @@ export async function POST(request: Request) {
     if (!appUrl) {
       return NextResponse.json({ error: 'Серверийн тохиргооны алдаа (SITE_URL)' }, { status: 500 });
     }
-    if (!process.env.QPAY_CALLBACK_SECRET) {
-      console.error('donations/create: QPAY_CALLBACK_SECRET тохируулагдаагүй');
-      return NextResponse.json({ error: 'QPay callback тохиргоо дутуу байна' }, { status: 503 });
-    }
 
-    const callbackUrl = `${appUrl}/api/qpay/callback?secret=${encodeURIComponent(process.env.QPAY_CALLBACK_SECRET)}`;
+    let callbackUrl = `${appUrl}/api/qpay/callback`;
+    if (process.env.QPAY_CALLBACK_SECRET) {
+      callbackUrl += `?secret=${process.env.QPAY_CALLBACK_SECRET}`;
+    }
 
     const senderInvoiceNo = `MUR-DON-${Date.now()}`;
     const invoiceDesc = `МӨР дэмжлэг — ${amount}₮`;

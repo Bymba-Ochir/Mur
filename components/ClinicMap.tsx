@@ -102,8 +102,13 @@ export default function ClinicMap({
   return (
     <div
       ref={containerRef}
-      className="w-full overflow-hidden rounded-[var(--r-md)] border border-[var(--line)]"
-      style={{ height }}
+      style={{
+        width: '100%',
+        height,
+        borderRadius: 'var(--r-md)',
+        overflow: 'hidden',
+        border: '1px solid var(--line)',
+      }}
       role="application"
       aria-label="Мал эмнэлгийн газрын зураг"
     />
@@ -142,7 +147,7 @@ function add_user_location(
     fillColor: '#625BF6',
     fillOpacity: 0.8,
     weight: 2,
-  }).addTo(map).bindPopup('Таны байршил');
+  }).addTo(map).bindPopup('📍 Таны байршил');
 
   L.circle(coords, {
     radius: 2000,

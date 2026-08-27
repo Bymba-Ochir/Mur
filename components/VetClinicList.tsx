@@ -12,8 +12,6 @@ import AppointmentModal from './AppointmentModal';
 import AppointmentsSection from './AppointmentsSection';
 import LoginModal from './LoginModal';
 import type { VetClinic, VetService } from '../lib/types';
-import { ShieldAlert } from 'lucide-react';
-import { VET_CLINICS } from '../lib/vetClinics';
 
 const SERVICE_OPTIONS: (VetService | '')[] = ['', 'Үзлэг', 'Вакцин', 'Мэс засал', 'Шүд арчилгаа'];
 
@@ -66,27 +64,6 @@ export default function VetClinicList({ embedded = false }: { embedded?: boolean
     setBookingClinic(clinic);
   }
 
-  if (VET_CLINICS.length === 0) {
-    return (
-      <div className={embedded ? 'clinic-embedded' : 'page-shell'}>
-        {!embedded && (
-          <div className="page-header">
-            <div className="eyebrow">{t('clinics_eyebrow')}</div>
-            <h1>{t('clinics_title')}</h1>
-            <p>{t('clinics_desc')}</p>
-          </div>
-        )}
-        <div className="content-panel flex flex-col items-center px-6 py-12 text-center" role="status">
-          <ShieldAlert size={34} className="mb-3 text-[var(--primary)]" aria-hidden="true" />
-          <h2 className="mb-2 text-lg font-bold text-[var(--text)]">Баталгаажсан эмнэлгийн мэдээлэл бэлтгэгдэж байна</h2>
-          <p className="max-w-xl text-sm leading-6 text-[var(--muted)]">
-            Утас, хаяг, ажиллах цагийг албан эх сурвалжаар баталгаажуулсны дараа нийтэлнэ. Яаралтай үед өөрийн мэддэг малын эмч эсвэл албан байгууллагатай шууд холбогдоно уу.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className={embedded ? 'clinic-embedded' : 'page-shell'}>
       {!embedded && (
@@ -106,7 +83,7 @@ export default function VetClinicList({ embedded = false }: { embedded?: boolean
       />
 
       {/* Шүүлтүүр + Байршил */}
-      <div className="filter-bar content-panel my-[var(--sp-4)]">
+      <div className="filter-bar content-panel" style={{ marginTop: 'var(--sp-4)', marginBottom: 'var(--sp-4)' }}>
         <select className="filter" aria-label={t('filter_all_districts')} value={district} onChange={(e) => setDistrict(e.target.value)}>
           <option value="">{t('filter_all_districts')}</option>
           {DISTRICTS.map((d) => <option key={d}>{d}</option>)}
@@ -129,7 +106,7 @@ export default function VetClinicList({ embedded = false }: { embedded?: boolean
           variant="ghost"
           onClick={handleLocation}
           disabled={locating}
-          className="min-h-[var(--touch-target-sm)] whitespace-nowrap"
+          style={{ whiteSpace: 'nowrap', minHeight: 'var(--touch-target-sm)' }}
         >
           {locating ? t('clinics_locating') : t('clinics_use_location')}
         </Button>
@@ -137,11 +114,11 @@ export default function VetClinicList({ embedded = false }: { embedded?: boolean
 
       {/* Эмнэлгүүдийн жагсаалт */}
       {filtered.length === 0 ? (
-        <p className="py-[var(--sp-6)] text-center text-[var(--muted)]">
+        <p style={{ textAlign: 'center', color: 'var(--muted)', padding: 'var(--sp-6) 0' }}>
           {t('empty_no_results_title')}
         </p>
       ) : (
-        <div className="flex flex-col gap-[var(--sp-3)]">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-3)' }}>
           {filtered.map((c) => (
             <ClinicCard
               key={c.id}

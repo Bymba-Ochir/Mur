@@ -15,6 +15,7 @@ import { useLanguage } from './i18n';
 import type { District } from './districts';
 import type { PetStatus, PetType } from './types';
 import { getErrorMessage } from './utils';
+import { cleanText, isInputValidationError, optionalInteger, requireMongolianPhone } from './inputValidation';
 
 // Дотоод утга (DB-д хадгалагдах) үргэлж Монгол хэвээр — зөвхөн харагдац орчуулагдана
 export const TYPE_VALUES: PetType[] = ['Нохой', 'Муур', 'Бусад'];
@@ -156,9 +157,14 @@ export function usePetSubmit({
       const id = await createPetReport(
         {
           ...form,
+          name: cleanText(form.name, 100, 'Нэр'),
+          breed: cleanText(form.breed, 100, 'Үүлдэр'),
+          color: cleanText(form.color, 100, 'Өнгө', true),
+          place: cleanText(form.place, 300, 'Байршил', true),
+          phone: requireMongolianPhone(form.phone),
           status,
           hasReward: form.hasReward,
-          reward: form.reward ? Number(form.reward) : null,
+          reward: form.hasReward ? optionalInteger(form.reward, { min: 0, max: 100_000_000, label: 'Шагналын дүн' }) : null,
           photoFile: photoFiles[0] ?? null,
           photoFiles,
           lat: coords?.lat,
@@ -172,7 +178,7 @@ export function usePetSubmit({
     } catch (err) {
       console.error(err);
       const msg = getErrorMessage(err);
-      setError(msg && msg.includes('олон удаа')
+      setError(isInputValidationError(err) || (msg && msg.includes('олон удаа'))
         ? msg
         : 'Алдаа гарлаа. Дахин оролдоно уу.');
     } finally {

@@ -12,7 +12,6 @@ import { useLanguage } from '../lib/i18n';
 import Icon from './ui/icons';
 import type { IconName } from './ui/icons';
 import Button from './ui/Button';
-import { UserRound } from 'lucide-react';
 
 function truncateEmail(email: string): string {
   const [local, domain] = email.split('@');
@@ -120,36 +119,36 @@ export default function Navbar() {
   ];
 
   return (
-    <header className={`navbar-wrap pointer-events-none fixed inset-x-0 top-4 z-[90] flex justify-center px-[var(--sp-5)] max-md:px-[var(--sp-3)] max-[480px]:px-[var(--sp-2)]${scrolled ? ' scrolled' : ''}`}>
-      <header className={`navbar pointer-events-auto flex h-[60px] w-full max-w-[1160px] items-center gap-[var(--sp-3)] rounded-[var(--r-lg)] border bg-[var(--glass-bg)] px-[var(--sp-4)] text-[var(--ink)] backdrop-blur-[var(--glass-blur)] transition-[box-shadow,border-color,background] duration-300 ease-[var(--ease-out)] min-[1440px]:px-[var(--sp-6)] max-md:h-[52px] max-[480px]:h-12 max-[480px]:px-[var(--sp-2)] ${scrolled ? 'border-[var(--border-strong)] shadow-[var(--shadow-lg)]' : 'border-[var(--glass-border)] shadow-[var(--shadow-sm)]'}`}>
+    <header className={`navbar-wrap${scrolled ? ' scrolled' : ''}`}>
+      <header className="navbar">
         {/* Brand */}
-        <Link href="/" className="brand flex shrink-0 items-center gap-[var(--sp-2)] text-[var(--ink)] no-underline transition-transform duration-200 ease-[var(--ease-out)] hover:scale-[1.02]" aria-label="МӨР — Нүүр хуудас">
-          <span className="brand-mark flex size-8 items-center justify-center rounded-[9px] bg-[image:var(--grad-brand)] shadow-[var(--shadow-xs)] transition-transform duration-200 ease-[var(--ease-out)] group-hover:-rotate-6 group-hover:scale-[1.06] max-[480px]:size-7">{PawSVG}</span>
-          <span className="brand-name font-[family-name:var(--font-display)] text-[length:var(--text-base)] font-bold tracking-[0.01em] min-[1025px]:text-[length:var(--text-lg)] max-[480px]:text-[length:var(--text-sm)]">МӨР</span>
+        <Link href="/" className="brand" aria-label="МӨР — Нүүр хуудас">
+          <span className="brand-mark">{PawSVG}</span>
+          <span className="brand-name">МӨР</span>
         </Link>
 
         {/* Desktop: text nav links */}
-        <nav className="nav-links flex flex-1 items-center gap-0.5 pl-[var(--sp-3)]" aria-label="Үндсэн цэс">
+        <nav className="nav-links" aria-label="Үндсэн цэс">
           {primaryLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className={`nav-link inline-flex items-center justify-center whitespace-nowrap rounded-[var(--r-pill)] px-[13px] py-2 text-[length:var(--text-sm)] no-underline transition-[color,background] duration-[var(--dur-fast)] ease-[var(--ease-out)] hover:bg-[var(--surface-3)] hover:text-[var(--text-primary)] ${pathname === link.href ? 'active bg-[var(--surface-3)] font-semibold text-[var(--text-primary)]' : 'font-medium text-[var(--text-secondary)]'}`}
+              className={`nav-link${pathname === link.href ? ' active' : ''}`}
             >
               {link.label}
             </Link>
           ))}
         </nav>
 
-        <span className="nav-divider mx-[var(--sp-1)] h-5 w-px shrink-0 bg-[var(--border-subtle)] max-[1180px]:hidden" aria-hidden="true" />
+        <span className="nav-divider" aria-hidden="true" />
 
         {/* Desktop: icon rail (compact circles) */}
-        <div className="icon-rail flex shrink-0 items-center gap-[clamp(4px,0.45vw,8px)] rounded-[var(--r-pill)] border border-[var(--border-subtle)] bg-[var(--surface-2)] px-[7px] py-[5px] max-[1040px]:hidden min-[1041px]:max-[1100px]:gap-1 min-[1041px]:max-[1100px]:px-[5px]">
+        <div className="icon-rail">
           {railLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className={`icon-rail-btn relative flex h-9 w-[clamp(34px,2.7vw,38px)] flex-none items-center justify-center rounded-[var(--r-pill)] no-underline transition-[color,background] duration-[var(--dur-fast)] ease-[var(--ease-out)] hover:bg-[var(--surface-3)] hover:text-[var(--text-primary)] focus-visible:outline-[2.5px] focus-visible:outline-offset-2 focus-visible:outline-[var(--border-focus)] min-[1041px]:max-[1100px]:w-[34px] ${pathname === link.href ? 'active bg-[var(--surface-3)] text-[var(--text-primary)]' : 'text-[var(--text-secondary)]'}`}
+              className={`icon-rail-btn${pathname === link.href ? ' active' : ''}`}
               data-tip={link.label}
               aria-label={link.label}
             >
@@ -159,7 +158,7 @@ export default function Navbar() {
           {admin && (
             <Link
               href="/admin"
-              className={`icon-rail-btn is-admin relative flex h-9 w-[clamp(34px,2.7vw,38px)] flex-none items-center justify-center rounded-[var(--r-pill)] text-[var(--primary-light)] no-underline transition-[color,background] duration-[var(--dur-fast)] ease-[var(--ease-out)] hover:bg-[var(--surface-3)] focus-visible:outline-[2.5px] focus-visible:outline-offset-2 focus-visible:outline-[var(--border-focus)] min-[1041px]:max-[1100px]:w-[34px] ${pathname === '/admin' ? 'active bg-[var(--surface-3)] text-[var(--text-primary)]' : ''}`}
+              className={`icon-rail-btn is-admin${pathname === '/admin' ? ' active' : ''}`}
               data-tip={t('nav_admin')}
               aria-label={t('nav_admin')}
             >
@@ -169,31 +168,31 @@ export default function Navbar() {
         </div>
 
         {/* Right side: donate + toggles + user/account */}
-        <div className="nav-right ml-auto flex shrink-0 items-center gap-[var(--sp-2)]">
+        <div className="nav-right">
           <DonateButton />
           <LanguageToggle />
           <ThemeToggle />
           {user ? (
-            <div className="user-menu relative" ref={userMenuRef}>
+            <div className="user-menu" ref={userMenuRef}>
               <button
-                className="user-pill flex cursor-pointer items-center gap-[7px] rounded-[var(--r-pill)] border border-[var(--border-subtle)] bg-[var(--surface-2)] px-[5px] py-1 text-[length:var(--text-xs)] font-medium text-[var(--text-secondary)] transition-[border-color,background] duration-[var(--dur-fast)] ease-[var(--ease-out)] hover:border-[var(--border-strong)] hover:bg-[var(--surface-3)] focus-visible:outline-[2.5px] focus-visible:outline-offset-2 focus-visible:outline-[var(--border-focus)]"
+                className="user-pill"
                 onClick={() => setShowUserMenu(!showUserMenu)}
                 aria-expanded={showUserMenu}
                 aria-haspopup="true"
                 aria-label={t('nav_user_menu_label')}
               >
-                <span className="user-avatar flex size-[26px] items-center justify-center rounded-full bg-[image:var(--grad-brand)] text-[var(--text-on-accent)]" aria-hidden="true"><UserRound size={14} /></span>
-                <span className="user-email max-w-[100px] overflow-hidden text-ellipsis whitespace-nowrap min-[1200px]:max-w-40">{user.email ? truncateEmail(user.email) : ''}</span>
-                <span className="user-chevron mr-1.5 text-[10px] text-[var(--text-secondary)] opacity-60 transition-transform duration-150" aria-hidden="true">{showUserMenu ? '▲' : '▼'}</span>
+                <span className="user-avatar" aria-hidden="true">👤</span>
+                <span className="user-email">{user.email ? truncateEmail(user.email) : ''}</span>
+                <span className="user-chevron" aria-hidden="true">{showUserMenu ? '▲' : '▼'}</span>
               </button>
               {showUserMenu && (
-                <div className="user-dropdown absolute right-0 top-[calc(100%+10px)] z-[100] max-h-[calc(100vh-100px)] min-w-[210px] overflow-y-auto rounded-[var(--r-md)] border border-[var(--border-subtle)] bg-[var(--surface-2)] p-1.5 shadow-[var(--shadow-lg)]" role="menu">
+                <div className="user-dropdown" role="menu">
                   {userMenuItems.map((item, idx) => (
                     item.isLink && item.href ? (
                       <Link
                         key={idx}
                         href={item.href}
-                        className={`dropdown-item flex min-h-[var(--touch-target)] w-full cursor-pointer items-center gap-2.5 rounded-[var(--r-sm)] border-0 bg-transparent px-3 py-[11px] text-left font-[family-name:var(--font-body)] text-[length:var(--text-sm)] font-medium no-underline transition-colors duration-[var(--dur-fast)] ease-[var(--ease-out)] hover:bg-[var(--surface-3)] hover:text-[var(--text-primary)] focus-visible:outline-[2.5px] focus-visible:outline-offset-2 focus-visible:outline-[var(--border-focus)] ${item.accent ? 'dropdown-accent text-[var(--accent)]' : 'text-[var(--text-secondary)]'}`}
+                        className={`dropdown-item${item.accent ? ' dropdown-accent' : ''}`}
                         role="menuitem"
                         style={item.accent ? { color: 'var(--accent)' } : undefined}
                         onClick={() => setShowUserMenu(false)}
@@ -204,7 +203,7 @@ export default function Navbar() {
                     ) : (
                       <button
                         key={idx}
-                        className={`dropdown-item flex min-h-[var(--touch-target)] w-full cursor-pointer items-center gap-2.5 rounded-[var(--r-sm)] border-0 bg-transparent px-3 py-[11px] text-left font-[family-name:var(--font-body)] text-[length:var(--text-sm)] font-medium transition-colors duration-[var(--dur-fast)] ease-[var(--ease-out)] hover:bg-[var(--surface-3)] hover:text-[var(--text-primary)] focus-visible:outline-[2.5px] focus-visible:outline-offset-2 focus-visible:outline-[var(--border-focus)] ${item.danger ? 'dropdown-danger text-[var(--alert)]' : 'text-[var(--text-secondary)]'}`}
+                        className={`dropdown-item${item.danger ? ' dropdown-danger' : ''}`}
                         role="menuitem"
                         onClick={() => { item.onClick?.(); setShowUserMenu(false); }}
                       >
@@ -223,19 +222,19 @@ export default function Navbar() {
         </div>
 
         {/* Mobile: hamburger only */}
-        <div className="mobile-actions hidden shrink-0 items-center max-[1040px]:flex">
+        <div className="mobile-actions">
           <button
             ref={mobileMenuButtonRef}
-            className={`mobile-menu-btn flex size-[var(--touch-target)] cursor-pointer flex-col items-center justify-center rounded-[var(--r-pill)] border border-[var(--border-subtle)] bg-[var(--surface-2)] p-0 transition-all duration-300 ease-[var(--ease-out)] hover:border-[var(--border-strong)] hover:bg-[var(--surface-3)] focus-visible:outline-[2.5px] focus-visible:outline-offset-2 focus-visible:outline-[var(--border-focus)] ${showMobileMenu ? 'active [&_.menu-line:nth-child(1)]:translate-y-1.5 [&_.menu-line:nth-child(1)]:rotate-45 [&_.menu-line:nth-child(2)]:scale-x-0 [&_.menu-line:nth-child(2)]:opacity-0 [&_.menu-line:nth-child(3)]:-translate-y-1.5 [&_.menu-line:nth-child(3)]:-rotate-45' : ''}`}
+            className={`mobile-menu-btn ${showMobileMenu ? 'active' : ''}`}
             onClick={() => setShowMobileMenu((open) => !open)}
             aria-expanded={showMobileMenu}
             aria-controls="mobile-menu"
             aria-label={showMobileMenu ? t('nav_close_menu') : t('nav_open_menu')}
           >
-            <span className="menu-icon flex w-[18px] flex-col gap-1">
-              <span className="menu-line h-0.5 origin-center rounded-sm bg-[var(--text-secondary)] transition-all duration-300 ease-[var(--ease-out)]" />
-              <span className="menu-line h-0.5 origin-center rounded-sm bg-[var(--text-secondary)] transition-all duration-300 ease-[var(--ease-out)]" />
-              <span className="menu-line h-0.5 origin-center rounded-sm bg-[var(--text-secondary)] transition-all duration-300 ease-[var(--ease-out)]" />
+            <span className="menu-icon">
+              <span className="menu-line" />
+              <span className="menu-line" />
+              <span className="menu-line" />
             </span>
           </button>
         </div>
@@ -245,19 +244,19 @@ export default function Navbar() {
       {showMobileMenu && (
         <div
           id="mobile-menu"
-          className="mobile-dropdown pointer-events-auto absolute left-[var(--sp-3)] right-[var(--sp-3)] top-[calc(16px+52px+8px)] z-[89] max-h-[calc(100dvh-90px)] overflow-y-auto overscroll-contain rounded-[var(--r-lg)] border border-[var(--border-subtle)] bg-[var(--surface-2)] shadow-[var(--shadow-lg)]"
+          className="mobile-dropdown"
           ref={mobileMenuRef}
           role="dialog"
           aria-modal="true"
           aria-labelledby="mobile-menu-title"
         >
-          <div className="mobile-dropdown-inner flex flex-col">
-            <nav className="mobile-nav flex flex-col gap-[var(--sp-1)] px-[var(--sp-3)] pt-[var(--sp-3)]" aria-label="Мобайл цэс">
+          <div className="mobile-dropdown-inner">
+            <nav className="mobile-nav" aria-label="Мобайл цэс">
               {allLinks.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`mobile-nav-link flex min-h-11 items-center gap-[var(--sp-2)] rounded-[var(--r-md)] px-[var(--sp-3)] py-[var(--sp-2)] font-[family-name:var(--font-body)] text-[14.5px] no-underline transition-all duration-150 hover:bg-[var(--surface-3)] hover:text-[var(--text-primary)] focus-visible:outline-[2.5px] focus-visible:outline-offset-2 focus-visible:outline-[var(--border-focus)] ${pathname === link.href ? 'active bg-[var(--surface-3)] font-semibold text-[var(--text-primary)]' : 'font-medium text-[var(--text-secondary)]'}`}
+                  className={`mobile-nav-link${pathname === link.href ? ' active' : ''}`}
                   onClick={handleMobileLinkClick}
                 >
                   {link.icon && <Icon name={link.icon} size={18} aria-hidden="true" />}
@@ -267,7 +266,8 @@ export default function Navbar() {
               {admin && (
                 <Link
                   href="/admin"
-                  className={`mobile-nav-link flex min-h-11 items-center gap-[var(--sp-2)] rounded-[var(--r-md)] px-[var(--sp-3)] py-[var(--sp-2)] font-[family-name:var(--font-body)] text-[14.5px] font-medium text-[var(--accent)] no-underline transition-all duration-150 hover:bg-[var(--surface-3)] focus-visible:outline-[2.5px] focus-visible:outline-offset-2 focus-visible:outline-[var(--border-focus)] ${pathname === '/admin' ? 'active bg-[var(--surface-3)] font-semibold' : ''}`}
+                  className={`mobile-nav-link${pathname === '/admin' ? ' active' : ''}`}
+                  style={{ color: 'var(--accent)' }}
                   onClick={handleMobileLinkClick}
                 >
                   <Icon name="shield" size={18} aria-hidden="true" />
@@ -275,19 +275,19 @@ export default function Navbar() {
                 </Link>
               )}
             </nav>
-            <div className="mobile-menu-actions mt-[var(--sp-3)] flex flex-col gap-[var(--sp-3)] border-t border-[var(--border-subtle)] p-[var(--sp-3)] [&_.donate-btn]:min-h-11 [&_.donate-btn]:w-full [&_.donate-btn]:px-4 [&_.donate-btn]:py-2.5 [&_.donate-btn]:text-sm">
+            <div className="mobile-menu-actions">
               <DonateButton />
-              <div className="mobile-menu-row flex gap-[var(--sp-2)] [&>*]:flex [&>*]:min-h-10 [&>*]:flex-1 [&>*]:items-center [&>*]:justify-center">
+              <div className="mobile-menu-row">
                 <LanguageToggle />
                 <ThemeToggle />
               </div>
               {user ? (
-                <div className="mobile-user-section flex flex-col gap-[var(--sp-2)] border-t border-[var(--border-subtle)] pt-[var(--sp-2)]">
-                  <div className="mobile-user-info flex items-center gap-[var(--sp-3)] rounded-[var(--r-md)] bg-[var(--surface-3)] px-[var(--sp-3)] py-[var(--sp-2)] text-[13px] text-[var(--text-secondary)]">
-                    <span className="user-avatar" aria-hidden="true"><UserRound size={16} /></span>
+                <div className="mobile-user-section">
+                  <div className="mobile-user-info">
+                    <span className="user-avatar" aria-hidden="true">👤</span>
                     <span>{user.email ? truncateEmail(user.email) : t('nav_guest')}</span>
                   </div>
-                  <div className="mobile-user-actions flex flex-col gap-[var(--sp-2)] [&_.btn-base]:min-h-11 [&_.btn-base]:text-sm">
+                  <div className="mobile-user-actions">
                     <Button variant="danger" fullWidth onClick={() => { logout(); setShowMobileMenu(false); }}>
                       {t('nav_logout')}
                     </Button>
@@ -304,6 +304,457 @@ export default function Navbar() {
       )}
 
       {showLogin && <LoginModal onClose={() => setShowLogin(false)} />}
+
+      <style jsx>{`
+        /* ─── Outer wrapper — floating dock ─── */
+        .navbar-wrap {
+          position: fixed;
+          top: 16px;
+          left: 0;
+          right: 0;
+          z-index: 90;
+          display: flex;
+          justify-content: center;
+          padding: 0 var(--sp-5);
+          pointer-events: none;
+        }
+
+        /* ─── Navbar bar (floating dock) ─── */
+        .navbar {
+          pointer-events: auto;
+          display: flex;
+          align-items: center;
+          gap: var(--sp-3);
+          width: 100%;
+          max-width: 1160px;
+          height: 60px;
+          padding: 0 var(--sp-4);
+          background: var(--glass-bg);
+          -webkit-backdrop-filter: var(--glass-blur);
+          backdrop-filter: var(--glass-blur);
+          border: 1px solid var(--glass-border);
+          border-radius: var(--r-lg);
+          box-shadow: var(--shadow-sm);
+          color: var(--ink);
+          transition: box-shadow 0.3s var(--ease-out), border-color 0.3s var(--ease-out), background 0.3s var(--ease-out);
+        }
+        .navbar-wrap.scrolled .navbar {
+          box-shadow: var(--shadow-lg);
+          border-color: var(--border-strong);
+          background: var(--glass-bg);
+        }
+
+        @media (min-width: 1440px) {
+          .navbar { padding: 0 var(--sp-6); }
+        }
+        @media (max-width: 768px) {
+          .navbar-wrap { padding: 0 var(--sp-3); }
+          .navbar { height: 52px; }
+        }
+        @media (max-width: 480px) {
+          .navbar-wrap { padding: 0 var(--sp-2); }
+          .navbar { height: 48px; padding: 0 var(--sp-2); }
+        }
+
+        /* ─── Brand ─── */
+        .brand {
+          display: flex;
+          align-items: center;
+          gap: var(--sp-2);
+          color: var(--ink);
+          text-decoration: none;
+          flex-shrink: 0;
+          transition: transform 0.2s var(--ease-out);
+        }
+        .brand:hover { transform: scale(1.02); }
+        .brand-name {
+          font-family: var(--font-display);
+          font-weight: 700;
+          font-size: var(--text-base);
+          letter-spacing: 0.01em;
+        }
+        @media (min-width: 1025px) {
+          .brand-name { font-size: var(--text-lg); }
+        }
+        .brand-mark {
+          width: 32px;
+          height: 32px;
+          border-radius: 9px;
+          background: var(--grad-brand);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow: var(--shadow-xs);
+          transition: transform 0.2s var(--ease-out);
+        }
+        .brand:hover .brand-mark { transform: rotate(-8deg) scale(1.06); }
+        @media (max-width: 480px) {
+          .brand-mark { width: 28px; height: 28px; }
+          .brand-name { font-size: var(--text-sm); }
+        }
+
+        /* ─── Desktop text nav links ─── */
+        .nav-links {
+          display: flex;
+          align-items: center;
+          gap: 2px;
+          flex: 1;
+          padding-left: var(--sp-3);
+        }
+        .nav-link {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          padding: 8px 13px;
+          color: var(--text-secondary);
+          text-decoration: none;
+          font-size: var(--text-sm);
+          font-weight: 500;
+          border-radius: var(--r-pill);
+          transition: color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
+          white-space: nowrap;
+        }
+        .nav-link:hover { color: var(--text-primary); background: var(--surface-3); }
+        .nav-link.active { color: var(--text-primary); background: var(--surface-3); font-weight: 600; }
+
+        /* Medium desktop: preserve the action rail without squeezing the CTA. */
+        @media (max-width: 1180px) {
+          .nav-links { display: none; }
+          .nav-divider { display: none; }
+        }
+
+        /* ─── Divider ─── */
+        .nav-divider {
+          width: 1px;
+          height: 20px;
+          background: var(--border-subtle);
+          flex-shrink: 0;
+          margin: 0 var(--sp-1);
+        }
+        @media (max-width: 1180px) {
+          .nav-divider { display: none; }
+        }
+
+        /* ─── Desktop icon rail ─── */
+        .icon-rail {
+          display: flex;
+          align-items: center;
+          gap: clamp(4px, 0.45vw, 8px);
+          background: var(--surface-2);
+          border: 1px solid var(--border-subtle);
+          border-radius: var(--r-pill);
+          padding: 5px 7px;
+          flex-shrink: 0;
+        }
+        .icon-rail-btn {
+          width: clamp(34px, 2.7vw, 38px);
+          height: 36px;
+          flex: 0 0 auto;
+          border-radius: var(--r-pill);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: var(--text-secondary);
+          position: relative;
+          text-decoration: none;
+          transition: color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
+        }
+        .icon-rail-btn:hover { color: var(--text-primary); background: var(--surface-3); }
+        .icon-rail-btn.active { color: var(--text-primary); background: var(--surface-3); }
+        .icon-rail-btn.is-admin { color: var(--primary-light); }
+
+        .icon-rail-btn[data-tip]:hover::after {
+          content: attr(data-tip);
+          position: absolute;
+          top: calc(100% + 8px);
+          left: 50%;
+          transform: translateX(-50%);
+          background: var(--surface-2);
+          border: 1px solid var(--border-subtle);
+          color: var(--text-primary);
+          font-size: 11.5px;
+          font-weight: 500;
+          padding: 5px 9px;
+          border-radius: 7px;
+          white-space: nowrap;
+          box-shadow: var(--shadow-sm);
+          pointer-events: none;
+          z-index: 5;
+        }
+
+        @media (max-width: 1040px) {
+          .icon-rail { display: none; }
+        }
+
+        @media (min-width: 1041px) and (max-width: 1100px) {
+          .icon-rail { gap: 4px; padding-inline: 5px; }
+          .icon-rail-btn { width: 34px; }
+        }
+
+        /* ─── Right side actions ─── */
+        .nav-right {
+          display: flex;
+          align-items: center;
+          gap: var(--sp-2);
+          flex-shrink: 0;
+          margin-left: auto;
+        }
+
+        /* ─── User menu pill + dropdown ─── */
+        .user-menu { position: relative; }
+        .user-pill {
+          display: flex;
+          align-items: center;
+          gap: 7px;
+          padding: 4px 5px;
+          border-radius: var(--r-pill);
+          background: var(--surface-2);
+          border: 1px solid var(--border-subtle);
+          font-size: var(--text-xs);
+          font-weight: 500;
+          color: var(--text-secondary);
+          cursor: pointer;
+          transition: border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
+        }
+        .user-pill:hover { border-color: var(--border-strong); background: var(--surface-3); }
+        .user-avatar {
+          width: 26px;
+          height: 26px;
+          border-radius: 50%;
+          background: var(--grad-brand);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: var(--text-on-accent);
+          font-size: 11px;
+          font-weight: 700;
+          line-height: 1;
+        }
+        .user-email {
+          max-width: 100px;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+        @media (min-width: 1200px) {
+          .user-email { max-width: 160px; }
+        }
+        .user-chevron {
+          font-size: 10px;
+          color: var(--text-secondary);
+          opacity: 0.6;
+          margin-right: 6px;
+          transition: transform 0.15s ease;
+        }
+
+        .user-dropdown {
+          position: absolute;
+          top: calc(100% + 10px);
+          right: 0;
+          min-width: 210px;
+          background: var(--surface-2);
+          border: 1px solid var(--border-subtle);
+          border-radius: var(--r-md);
+          padding: 6px;
+          box-shadow: var(--shadow-lg);
+          overflow: hidden;
+          z-index: 100;
+          max-height: calc(100vh - 100px);
+          overflow-y: auto;
+          animation: dropdownIn 0.2s var(--ease-out);
+        }
+        @keyframes dropdownIn {
+          from { opacity: 0; transform: translateY(-8px) scale(0.98); }
+          to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .dropdown-item {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          width: 100%;
+          min-height: var(--touch-target);
+          padding: 11px 12px;
+          text-align: left;
+          background: none;
+          border: none;
+          cursor: pointer;
+          font-family: var(--font-body);
+          font-size: var(--text-sm);
+          font-weight: 500;
+          color: var(--text-secondary);
+          text-decoration: none;
+          border-radius: var(--r-sm);
+          transition: background var(--dur-fast) var(--ease-out);
+        }
+        .dropdown-item:hover { background: var(--surface-3); color: var(--text-primary); }
+        .dropdown-accent { color: var(--accent); }
+        .dropdown-danger { color: var(--alert); }
+
+        /* ─── Shared focus-visible ─── */
+        .link-btn:focus-visible,
+        .user-pill:focus-visible,
+        .dropdown-item:focus-visible,
+        .mobile-menu-btn:focus-visible,
+        .mobile-nav-link:focus-visible,
+        .nav-link:focus-visible,
+        .icon-rail-btn:focus-visible {
+          outline: 2.5px solid var(--border-focus);
+          outline-offset: 2px;
+          border-radius: var(--r-sm);
+        }
+
+        /* ─── Mobile: hamburger ─── */
+        .mobile-actions {
+          display: none;
+          align-items: center;
+          flex-shrink: 0;
+        }
+        .mobile-menu-btn {
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+          width: var(--touch-target);
+          height: var(--touch-target);
+          background: var(--surface-2);
+          border: 1px solid var(--border-subtle);
+          border-radius: var(--r-pill);
+          cursor: pointer;
+          padding: 0;
+          transition: all 0.3s var(--ease-out);
+        }
+        .mobile-menu-btn:hover { background: var(--surface-3); border-color: var(--border-strong); }
+
+        .menu-icon {
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+          width: 18px;
+        }
+        .menu-line {
+          height: 2px;
+          background: var(--text-secondary);
+          border-radius: 2px;
+          transition: all 0.3s var(--ease-out);
+          transform-origin: center;
+        }
+        .mobile-menu-btn.active .menu-line:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+        .mobile-menu-btn.active .menu-line:nth-child(2) { opacity: 0; transform: scaleX(0); }
+        .mobile-menu-btn.active .menu-line:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+
+        /* ─── Mobile Dropdown Panel ─── */
+        .mobile-dropdown {
+          position: absolute;
+          top: calc(16px + 52px + 8px);
+          left: var(--sp-3);
+          right: var(--sp-3);
+          background: var(--surface-2);
+          border: 1px solid var(--border-subtle);
+          border-radius: var(--r-lg);
+          box-shadow: var(--shadow-lg);
+          z-index: 89;
+          max-height: calc(100dvh - 90px);
+          overflow-y: auto;
+          overscroll-behavior: contain;
+          pointer-events: auto;
+          animation: dropdownSlide 0.25s var(--ease-out);
+        }
+        @keyframes dropdownSlide {
+          from { opacity: 0; transform: translateY(-8px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .mobile-dropdown-inner {
+          display: flex;
+          flex-direction: column;
+        }
+
+        .mobile-nav {
+          display: flex;
+          flex-direction: column;
+          padding: var(--sp-3) var(--sp-3) 0;
+          gap: var(--sp-1);
+        }
+        .mobile-nav-link {
+          display: flex;
+          align-items: center;
+          gap: var(--sp-2);
+          min-height: 44px;
+          padding: var(--sp-2) var(--sp-3);
+          color: var(--text-secondary);
+          text-decoration: none;
+          font-family: var(--font-body);
+          font-size: 14.5px;
+          font-weight: 500;
+          border-radius: var(--r-md);
+          transition: all 0.15s ease;
+        }
+        .mobile-nav-link:hover { background: var(--surface-3); color: var(--text-primary); }
+        .mobile-nav-link.active { background: var(--surface-3); color: var(--text-primary); font-weight: 600; }
+
+        .mobile-menu-actions {
+          padding: var(--sp-3);
+          display: flex;
+          flex-direction: column;
+          gap: var(--sp-3);
+          border-top: 1px solid var(--border-subtle);
+          margin-top: var(--sp-3);
+        }
+        .mobile-menu-actions :global(.donate-btn) {
+          width: 100%;
+          min-height: 44px;
+          font-size: 14px;
+          padding: 10px 16px;
+        }
+        .mobile-menu-row {
+          display: flex;
+          gap: var(--sp-2);
+        }
+        .mobile-menu-row > * {
+          flex: 1;
+          min-height: 40px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .mobile-user-section {
+          display: flex;
+          flex-direction: column;
+          gap: var(--sp-2);
+          padding-top: var(--sp-2);
+          border-top: 1px solid var(--border-subtle);
+        }
+        .mobile-user-info {
+          display: flex;
+          align-items: center;
+          gap: var(--sp-3);
+          padding: var(--sp-2) var(--sp-3);
+          background: var(--surface-3);
+          border-radius: var(--r-md);
+          font-size: 13px;
+          color: var(--text-secondary);
+        }
+        .mobile-user-actions {
+          display: flex;
+          flex-direction: column;
+          gap: var(--sp-2);
+        }
+        .mobile-user-actions :global(.btn-base) {
+          min-height: 44px;
+          font-size: 14px;
+        }
+
+        /* ─── Responsive: ≤1040px hide desktop rails, show hamburger ─── */
+        @media (max-width: 1040px) {
+          .mobile-actions { display: flex; }
+          .nav-right :global(.donate-btn) { display: none; }
+        }
+
+        /* ─── Responsive: ≤640px hide toggles from nav-right (use hamburger) ─── */
+        @media (max-width: 640px) {
+          .nav-right { display: none; }
+        }
+      `}</style>
     </header>
   );
 }

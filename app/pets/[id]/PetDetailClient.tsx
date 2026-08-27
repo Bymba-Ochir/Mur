@@ -22,7 +22,6 @@ import type { Pet } from '../../../lib/types';
 import { getErrorMessage } from '../../../lib/utils';
 import { getBreedLabel } from '../../../lib/petBreeds';
 import PetImageGallery from '../../../components/PetImageGallery';
-import { Clock3, Gift, Phone } from 'lucide-react';
 
 // URL-ийн snapshot — share холбоосын зориулалттай (useSyncExternalStore;
 // effect-д setUrl хийхгүй, SSR-д хоосон string)
@@ -74,7 +73,7 @@ export default function PetDetailClient({ id }: { id: string }) {
       await markResolved(id);
       await load();
       fireConfetti();
-      showToast(t('detail_resolved_badge'), 'success');
+      showToast('🎉 ' + t('detail_resolved_badge').replace('✅ ', ''), 'success');
     } catch (err) {
       showToast('Алдаа гарлаа: ' + getErrorMessage(err), 'error');
     } finally {
@@ -108,8 +107,8 @@ export default function PetDetailClient({ id }: { id: string }) {
     }
   }
 
-  if (error) return <p className="text-[var(--alert)]">{t('detail_not_found')}</p>;
-  if (!pet) return <p className="text-[var(--muted)]">{t('detail_loading')}</p>;
+  if (error) return <p style={{ color: 'var(--alert)' }}>{t('detail_not_found')}</p>;
+  if (!pet) return <p style={{ color: 'var(--muted)' }}>{t('detail_loading')}</p>;
 
   const title = `${pet.status === 'lost' ? t('nav_lost') : t('nav_found')} ${pet.type}${pet.name ? ' — ' + pet.name : ''}`;
   const isOwner = user && pet.createdBy && user.id === pet.createdBy;
@@ -117,54 +116,70 @@ export default function PetDetailClient({ id }: { id: string }) {
   return (
     <div className="page-shell page-shell--detail">
       <div className="eyebrow">{pet.status === 'lost' ? t('report_lost_eyebrow') : t('report_found_eyebrow')}</div>
-      <h1 className="mb-[var(--sp-1)] text-2xl">{title}</h1>
+      <h1 style={{ fontSize: 24, marginBottom: 'var(--sp-1)' }}>{title}</h1>
       {pet.createdAt && (
-        <p className="mb-[var(--sp-3)] flex items-center gap-1 text-[12.5px] text-[var(--muted)]"><Clock3 size={13} aria-hidden="true" /> {relativeTime(pet.createdAt)}</p>
+        <p style={{ fontSize: 12.5, color: 'var(--muted)', marginBottom: 'var(--sp-3)' }}>🕓 {relativeTime(pet.createdAt)}</p>
       )}
 
       {pet.resolved && (
-        <div className="pop-in mb-[var(--sp-3)] rounded-[var(--r-sm)] border-[1.5px] border-[var(--success)] bg-[var(--success-bg)] px-3.5 py-2 text-[13.5px] font-semibold text-[var(--success-text)]">
+        <div className="pop-in" style={{ background: 'var(--success-bg)', border: '1.5px solid var(--success)', borderRadius: 'var(--r-sm)', padding: '8px 14px', marginBottom: 'var(--sp-3)', color: 'var(--success-text)', fontSize: 13.5, fontWeight: 600 }}>
           {t('detail_resolved_badge')}
         </div>
       )}
 
-      <div className="mb-[var(--sp-4)] grid grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] items-start gap-[var(--sp-5)] max-[1024px]:grid-cols-1 max-[1024px]:gap-[var(--sp-4)] max-sm:mb-[var(--sp-3)] max-sm:gap-[var(--sp-3)] min-[1440px]:mb-[var(--sp-6)] min-[1440px]:gap-[var(--sp-7)]">
+      <div className="detail-grid">
         {/* Зураг — зүүн талд, том */}
-        <div className="min-w-0">
-          <div className={`relative flex aspect-4/3 w-full items-center justify-center overflow-hidden rounded-[var(--r-md)] bg-[var(--thumb-bg)] ${pet.resolved ? 'opacity-60' : 'opacity-100'}`}>
+        <div className="detail-media">
+          <div style={{
+            borderRadius: 'var(--r-md)', overflow: 'hidden', background: 'var(--thumb-bg)',
+            aspectRatio: '4 / 3', width: '100%',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            opacity: pet.resolved ? 0.6 : 1, position: 'relative',
+          }}>
             {pet.photoURLs.length ? (
               <PetImageGallery images={pet.photoURLs} alt={`${pet.type}${pet.name ? ', ' + pet.name : ''}${pet.color ? ', ' + pet.color : ''}`} />
             ) : (
-              <span className="flex size-[120px] items-center justify-center rounded-full border border-[var(--glass-border)] bg-[var(--glass-bg)] text-[var(--primary)] shadow-[var(--shadow-sm)]"><PetIcon type={pet.type} size={72} /></span>
+              <span style={{
+                color: 'var(--primary)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: 120,
+                height: 120,
+                background: 'var(--glass-bg)',
+                border: '1px solid var(--glass-border)',
+                borderRadius: '50%',
+                boxShadow: 'var(--shadow-sm)',
+              }}><PetIcon type={pet.type} size={72} /></span>
             )}
           </div>
         </div>
 
         {/* Мэдээлэл — баруун талд */}
-        <div className="flex min-w-0 flex-col">
+        <div className="detail-info">
           {!editing ? (
-            <div className="card p-[var(--sp-4)]">
-              <p className="mb-[var(--sp-1)]"><b>{t('detail_type')}</b> {pet.type}{pet.color ? `, ${pet.color}` : ''}</p>
-              {pet.breed && <p className="mb-[var(--sp-1)]"><b>{t('detail_breed')}</b> {getBreedLabel(pet.breed, lang)}</p>}
-              <p className="mb-[var(--sp-1)]"><b>{t('detail_district')}</b> {pet.district}</p>
-              <p className="mb-[var(--sp-1)]"><b>{t('detail_place')}</b> {pet.place}</p>
+            <div className="card" style={{ padding: 'var(--sp-4)' }}>
+              <p style={{ marginBottom: 'var(--sp-1)' }}><b>{t('detail_type')}</b> {pet.type}{pet.color ? `, ${pet.color}` : ''}</p>
+              {pet.breed && <p style={{ marginBottom: 'var(--sp-1)' }}><b>{t('detail_breed')}</b> {getBreedLabel(pet.breed, lang)}</p>}
+              <p style={{ marginBottom: 'var(--sp-1)' }}><b>{t('detail_district')}</b> {pet.district}</p>
+              <p style={{ marginBottom: 'var(--sp-1)' }}><b>{t('detail_place')}</b> {pet.place}</p>
               {pet.hasReward ? (
-                <p className="mb-[var(--sp-1)] flex items-center gap-1"><Gift size={15} aria-hidden="true" /><b>{t('reward_prefix')}</b></p>
+                <p style={{ marginBottom: 'var(--sp-1)' }}><b>🎁 {t('reward_prefix')}</b></p>
               ) : null}
               {revealed ? (
-                <a href={`tel:${pet.phone}`} className="mt-[var(--sp-2)] inline-block font-bold text-[var(--primary)]">
-                  <Phone size={15} aria-hidden="true" /> {formatPhone(pet.phone)}
+                <a href={`tel:${pet.phone}`} style={{ display: 'inline-block', marginTop: 'var(--sp-2)', fontWeight: 700, color: 'var(--primary)' }}>
+                  ☎ {formatPhone(pet.phone)}
                 </a>
               ) : (
                 <button
                   onClick={() => setRevealed(true)}
-                  className="mt-[var(--sp-2)] inline-block cursor-pointer border-0 bg-transparent p-0 font-[family-name:inherit] font-bold text-[var(--primary)]"
+                  style={{ display: 'inline-block', marginTop: 'var(--sp-2)', fontWeight: 700, color: 'var(--primary)', background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: 'inherit' }}
                 >
-                  <Phone size={15} aria-hidden="true" /> {maskPhone(pet.phone)} · {t('detail_show_phone')}
+                  ☎ {maskPhone(pet.phone)} · {t('detail_show_phone')}
                 </button>
               )}
               {/* Чат товч — зөвхөн бусад хэрэглэгчдэд */}
-              {!editing && <div className="mt-[var(--sp-3)]"><MessageButton pet={pet} /></div>}
+              {!editing && <div style={{ marginTop: 'var(--sp-3)' }}><MessageButton pet={pet} /></div>}
             </div>
           ) : (
             editForm && (
@@ -178,12 +193,12 @@ export default function PetDetailClient({ id }: { id: string }) {
           )}
 
           {isOwner && !editing && (
-            <div className="mt-[var(--sp-2)] flex gap-[var(--sp-2)] [&_.btn-base]:flex-1">
-              <Button variant="ghost" onClick={() => setEditing(true)} className="flex-1 text-[13px]">
+            <div style={{ display: 'flex', gap: 'var(--sp-2)', marginTop: 'var(--sp-2)' }}>
+              <Button variant="ghost" onClick={() => setEditing(true)} style={{ flex: 1, fontSize: 13 }}>
                 {t('detail_edit_btn')}
               </Button>
               <Button variant="ghost" onClick={handleDelete} disabled={deleting}
-                className="flex-1 justify-center border-[1.5px] border-[var(--alert)] bg-[var(--card)] text-[13px] text-[var(--alert)]">
+                style={{ background: 'var(--card)', color: 'var(--alert)', border: '1.5px solid var(--alert)', flex: 1, justifyContent: 'center', fontSize: 13 }}>
                 {deleting ? t('detail_deleting') : t('detail_delete_btn')}
               </Button>
             </div>
@@ -194,7 +209,7 @@ export default function PetDetailClient({ id }: { id: string }) {
               onClick={handleResolve}
               disabled={resolving}
               variant="primary"
-              className="mt-[var(--sp-2)] w-full justify-center bg-[var(--success)] text-white"
+              style={{ marginTop: 'var(--sp-2)', background: 'var(--success)', color: '#fff', width: '100%', justifyContent: 'center' }}
             >
               {resolving ? t('detail_resolving') : t('detail_resolve_btn')}
             </Button>
@@ -203,8 +218,8 @@ export default function PetDetailClient({ id }: { id: string }) {
       </div>
 
       {pet.lat != null && pet.lng != null && (
-        <div className="mt-[var(--sp-4)]">
-          <p className="mb-[var(--sp-2)] text-[13px] font-semibold text-[var(--primary)]">
+        <div style={{ marginTop: 'var(--sp-4)' }}>
+          <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--primary)', marginBottom: 'var(--sp-2)' }}>
             {t('detail_last_seen_loc')}
           </p>
           <LocationMap lat={pet.lat} lng={pet.lng} />
@@ -213,7 +228,7 @@ export default function PetDetailClient({ id }: { id: string }) {
 
       <ShareButtons url={url} title={title} />
 
-      <p className="mt-[var(--sp-3)] text-xs text-[var(--muted)]">
+      <p style={{ fontSize: 12, color: 'var(--muted)', marginTop: 'var(--sp-3)' }}>
         {t('detail_share_hint')}
       </p>
 
@@ -221,6 +236,23 @@ export default function PetDetailClient({ id }: { id: string }) {
 
       <SightingsList petId={pet.id} />
 
+      <style jsx>{`
+        .detail-grid {
+          display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+          gap: var(--sp-5); align-items: start; margin-bottom: var(--sp-4);
+        }
+        @media (max-width: 1024px) {
+          .detail-grid { grid-template-columns: 1fr; gap: var(--sp-4); }
+        }
+        @media (max-width: 640px) {
+          .detail-grid { gap: var(--sp-3); margin-bottom: var(--sp-3); }
+        }
+        @media (min-width: 1440px) {
+          .detail-grid { gap: var(--sp-7); margin-bottom: var(--sp-6); }
+        }
+        .detail-media { min-width: 0; }
+        .detail-info { min-width: 0; display: flex; flex-direction: column; }
+      `}</style>
     </div>
   );
 }

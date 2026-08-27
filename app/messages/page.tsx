@@ -8,8 +8,6 @@ import { fetchConversationList } from '../../lib/chatService';
 import { relativeTime } from '../../lib/relativeTime';
 import type { ConversationPreview } from '../../lib/types';
 import AssistantClient from '../assistant/AssistantClient';
-import LoadError from '../../components/LoadError';
-import { PawPrint } from 'lucide-react';
 
 type HubTab = 'messages' | 'assistant';
 
@@ -27,8 +25,6 @@ export default function MessagesPage() {
   const { t } = useLanguage();
   const [conversations, setConversations] = useState<ConversationPreview[]>([]);
   const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState(false);
-  const [reloadKey, setReloadKey] = useState(0);
   const tab = useSyncExternalStore(subscribeToHistory, getTabFromUrl, () => 'messages');
 
   function selectTab(next: HubTab) {
@@ -42,13 +38,11 @@ export default function MessagesPage() {
 
     let cancelled = false;
     async function load() {
-      setLoadError(false);
       try {
         const data = await fetchConversationList();
         if (!cancelled) setConversations(data);
       } catch (err) {
         console.error(err);
-        if (!cancelled) setLoadError(true);
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -58,7 +52,7 @@ export default function MessagesPage() {
     const onFocus = () => load();
     window.addEventListener('focus', onFocus);
     return () => { cancelled = true; window.removeEventListener('focus', onFocus); };
-  }, [user, authLoading, reloadKey]);
+  }, [user, authLoading]);
 
   return (
     <div className="page-shell page-shell--narrow">
@@ -68,52 +62,50 @@ export default function MessagesPage() {
         <p>{tab === 'messages' ? t('chat_list_desc') : t('assistant_desc')}</p>
       </div>
 
-      <div className="mb-[var(--sp-4)] grid grid-cols-2 gap-1 rounded-[var(--r-pill)] border border-[var(--border-subtle)] bg-[var(--surface-2)] p-1" role="tablist" aria-label={t('messages_hub_nav')}>
-        <button role="tab" aria-selected={tab === 'messages'} className={`min-h-11 cursor-pointer rounded-[var(--r-pill)] border-0 px-4 py-[9px] font-[family-name:var(--font-body)] text-[13px] font-semibold max-[480px]:px-2 max-[480px]:text-[12.5px] ${tab === 'messages' ? 'bg-[var(--surface-3)] text-[var(--primary)] shadow-[var(--shadow-xs)]' : 'bg-transparent text-[var(--text-secondary)]'}`} onClick={() => selectTab('messages')}>{t('messages_tab_chat')}</button>
-        <button role="tab" aria-selected={tab === 'assistant'} className={`min-h-11 cursor-pointer rounded-[var(--r-pill)] border-0 px-4 py-[9px] font-[family-name:var(--font-body)] text-[13px] font-semibold max-[480px]:px-2 max-[480px]:text-[12.5px] ${tab === 'assistant' ? 'bg-[var(--surface-3)] text-[var(--primary)] shadow-[var(--shadow-xs)]' : 'bg-transparent text-[var(--text-secondary)]'}`} onClick={() => selectTab('assistant')}>{t('messages_tab_assistant')}</button>
+      <div className="hub-tabs" role="tablist" aria-label={t('messages_hub_nav')}>
+        <button role="tab" aria-selected={tab === 'messages'} className={tab === 'messages' ? 'active' : ''} onClick={() => selectTab('messages')}>{t('messages_tab_chat')}</button>
+        <button role="tab" aria-selected={tab === 'assistant'} className={tab === 'assistant' ? 'active' : ''} onClick={() => selectTab('assistant')}>{t('messages_tab_assistant')}</button>
       </div>
 
       {tab === 'assistant' ? <AssistantClient embedded /> : authLoading ? (
-        <div className="rounded-[var(--r-lg)] border border-[var(--border-subtle)] bg-[var(--surface-2)] p-[var(--sp-6)] text-center text-[var(--muted)]">{t('detail_loading')}</div>
+        <div className="hub-state">{t('detail_loading')}</div>
       ) : !user ? (
-        <div className="rounded-[var(--r-lg)] border border-[var(--border-subtle)] bg-[var(--surface-2)] p-[var(--sp-6)] text-center text-[var(--muted)]">{t('chat_login_required')}</div>
+        <div className="hub-state">{t('chat_login_required')}</div>
       ) : loading ? (
-        <div className="rounded-[var(--r-lg)] border border-[var(--border-subtle)] bg-[var(--surface-2)] p-[var(--sp-6)] text-center text-[var(--muted)]">{t('detail_loading')}</div>
-      ) : loadError ? (
-        <LoadError onRetry={() => { setLoading(true); setReloadKey((key) => key + 1); }} />
+        <div className="hub-state">{t('detail_loading')}</div>
       ) : conversations.length === 0 ? (
-        <div className="py-[var(--sp-6)] text-center">
-          <p className="mb-2 text-lg font-semibold text-[var(--primary)]">
+        <div style={{ textAlign: 'center', padding: 'var(--sp-6) 0' }}>
+          <p style={{ fontSize: 18, fontWeight: 600, color: 'var(--primary)', marginBottom: 8 }}>
             {t('chat_none')}
           </p>
-          <p className="text-[var(--muted)]">{t('chat_none_desc')}</p>
+          <p style={{ color: 'var(--muted)' }}>{t('chat_none_desc')}</p>
         </div>
       ) : (
-        <div className="flex flex-col gap-[var(--sp-2)]">
+        <div className="conv-list">
           {conversations.map((conv) => {
             const otherEmail = conv.initiatorId === user.id ? conv.ownerEmail : conv.initiatorEmail;
             const otherName = otherEmail.split('@')[0];
             return (
-              <Link key={conv.id} href={`/messages/${conv.id}`} className="flex items-center gap-[var(--sp-3)] rounded-[var(--r-lg)] border border-[var(--border-subtle)] bg-[var(--surface-2)] px-[var(--sp-4)] py-[var(--sp-3)] text-[var(--text-primary)] no-underline shadow-[var(--shadow-xs)] transition-[transform,box-shadow,border-color] duration-[var(--dur-base)] ease-[var(--ease-out)] hover:-translate-y-0.5 hover:border-[var(--primary-light)] hover:shadow-[var(--shadow-md)] max-[480px]:rounded-[var(--r-md)] max-[480px]:p-[var(--sp-3)]">
-                <div className="relative flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-[var(--r-md)] bg-[var(--thumb-bg)]">
+              <Link key={conv.id} href={`/messages/${conv.id}`} className="conv-item">
+                <div className="conv-thumb">
                   {conv.pet?.photoURL ? (
-                    <Image src={conv.pet.photoURL} alt="" fill sizes="48px" className="rounded-[var(--r-md)] object-cover" />
+                    <Image src={conv.pet.photoURL} alt="" fill sizes="48px" style={{ objectFit: 'cover', borderRadius: 'var(--r-md)' }} />
                   ) : (
-                    <PawPrint size={22} aria-hidden="true" />
+                    <span className="conv-thumb-placeholder">🐾</span>
                   )}
                 </div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center justify-between gap-[var(--sp-2)]">
-                    <span className="text-sm font-semibold">{otherName}</span>
+                <div className="conv-info">
+                  <div className="conv-header">
+                    <span className="conv-name">{otherName}</span>
                     {conv.lastMessage && (
-                      <span className="whitespace-nowrap text-[11px] text-[var(--text-tertiary)]">{relativeTime(conv.lastMessage.createdAt)}</span>
+                      <span className="conv-time">{relativeTime(conv.lastMessage.createdAt)}</span>
                     )}
                   </div>
-                  <p className="my-0.5 text-xs text-[var(--primary)]">
+                  <p className="conv-pet">
                     {conv.pet ? `${conv.pet.type}${conv.pet.name ? ' — ' + conv.pet.name : ''}` : t('chat_deleted_pet')}
                   </p>
                   {conv.lastMessage && (
-                    <p className="my-0.5 overflow-hidden text-ellipsis whitespace-nowrap text-[13px] text-[var(--text-secondary)]">{conv.lastMessage.content}</p>
+                    <p className="conv-preview">{conv.lastMessage.content}</p>
                   )}
                 </div>
               </Link>
@@ -122,6 +114,52 @@ export default function MessagesPage() {
         </div>
       )}
 
+      <style jsx>{`
+        .hub-tabs {
+          display: grid; grid-template-columns: 1fr 1fr; gap: 4px;
+          margin-bottom: var(--sp-4); padding: 4px; border-radius: var(--r-pill);
+          background: var(--surface-2); border: 1px solid var(--border-subtle);
+        }
+        .hub-tabs button {
+          min-height: 44px; padding: 9px 16px; border: 0; border-radius: var(--r-pill);
+          background: transparent; color: var(--text-secondary); font: 600 13px var(--font-body); cursor: pointer;
+        }
+        .hub-tabs button.active { background: var(--surface-3); color: var(--primary); box-shadow: var(--shadow-xs); }
+        .hub-state { padding: var(--sp-6); text-align: center; color: var(--muted); background: var(--surface-2); border: 1px solid var(--border-subtle); border-radius: var(--r-lg); }
+        .conv-list { display: flex; flex-direction: column; gap: var(--sp-2); }
+        .conv-item {
+          display: flex; align-items: center; gap: var(--sp-3);
+          padding: var(--sp-3) var(--sp-4); border-radius: var(--r-lg);
+          text-decoration: none; color: var(--text-primary);
+          background: var(--surface-2); border: 1px solid var(--border-subtle);
+          box-shadow: var(--shadow-xs);
+          transition: transform var(--dur-base) var(--ease-out), box-shadow var(--dur-base) var(--ease-out), border-color var(--dur-base) var(--ease-out);
+        }
+        .conv-item:hover {
+          transform: translateY(-2px);
+          box-shadow: var(--shadow-md);
+          border-color: var(--primary-light);
+        }
+        .conv-thumb {
+          width: 48px; height: 48px; border-radius: var(--r-md); overflow: hidden;
+          background: var(--thumb-bg); position: relative; flex-shrink: 0;
+          display: flex; align-items: center; justify-content: center;
+        }
+        .conv-thumb-placeholder { font-size: 20px; }
+        .conv-info { flex: 1; min-width: 0; }
+        .conv-header { display: flex; justify-content: space-between; align-items: center; gap: var(--sp-2); }
+        .conv-name { font-weight: 600; font-size: 14px; }
+        .conv-time { font-size: 11px; color: var(--text-tertiary); white-space: nowrap; }
+        .conv-pet { font-size: 12px; color: var(--primary); margin: 2px 0; }
+        .conv-preview {
+          font-size: 13px; color: var(--text-secondary); white-space: nowrap;
+          overflow: hidden; text-overflow: ellipsis; margin: 2px 0;
+        }
+        @media (max-width: 480px) {
+          .hub-tabs button { padding-inline: 8px; font-size: 12.5px; }
+          .conv-item { padding: var(--sp-3); border-radius: var(--r-md); }
+        }
+      `}</style>
     </div>
   );
 }

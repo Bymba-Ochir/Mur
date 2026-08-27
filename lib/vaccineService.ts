@@ -2,6 +2,7 @@
 // "Миний амьтад" — хэрэглэгчийн өөрийн бүртгэлтэй амьтад, вакцины хугацааны сануулга
 import { supabase } from './supabase';
 import type { MyPet, UpdateMyPetFields, VaccineStatus } from './types';
+import { cleanText, optionalDecimal, optionalIsoDate } from './inputValidation';
 
 const TABLE = 'my_pets';
 
@@ -39,18 +40,20 @@ export async function createMyPet({
   nextVaccineDate?: string | null;
 }): Promise<MyPet> {
   const userId = await requireUserId();
+  const cleanName = cleanText(name, 100, 'Амьтны нэр', true);
+  const cleanType = cleanText(type, 50, 'Амьтны төрөл', true);
 
   const { data, error } = await supabase
     .from(TABLE)
     .insert({
       user_id: userId,
-      name,
-      type,
-      age: age || null,
-      breed: breed || null,
-      weight: weight ?? null,
-      next_vaccine_name: nextVaccineName || null,
-      next_vaccine_date: nextVaccineDate || null,
+      name: cleanName,
+      type: cleanType,
+      age: cleanText(age, 100, 'Нас') || null,
+      breed: cleanText(breed, 100, 'Үүлдэр') || null,
+      weight: optionalDecimal(weight, { min: 0, max: 999.99, label: 'Жин' }),
+      next_vaccine_name: cleanText(nextVaccineName, 200, 'Вакцины нэр') || null,
+      next_vaccine_date: optionalIsoDate(nextVaccineDate, 'Дараагийн вакцины огноо'),
     })
     .select()
     .single();
@@ -93,14 +96,14 @@ export async function fetchMyPetById(id: string): Promise<MyPet> {
 export async function updateMyPet(id: string, fields: UpdateMyPetFields): Promise<void> {
   const userId = await requireUserId();
   const updateData: Record<string, unknown> = {};
-  if (fields.name !== undefined) updateData.name = fields.name;
-  if (fields.type !== undefined) updateData.type = fields.type;
-  if (fields.age !== undefined) updateData.age = fields.age || null;
-  if (fields.breed !== undefined) updateData.breed = fields.breed || null;
-  if (fields.weight !== undefined) updateData.weight = fields.weight ?? null;
-  if (fields.nextVaccineName !== undefined) updateData.next_vaccine_name = fields.nextVaccineName || null;
+  if (fields.name !== undefined) updateData.name = cleanText(fields.name, 100, 'Амьтны нэр', true);
+  if (fields.type !== undefined) updateData.type = cleanText(fields.type, 50, 'Амьтны төрөл', true);
+  if (fields.age !== undefined) updateData.age = cleanText(fields.age, 100, 'Нас') || null;
+  if (fields.breed !== undefined) updateData.breed = cleanText(fields.breed, 100, 'Үүлдэр') || null;
+  if (fields.weight !== undefined) updateData.weight = optionalDecimal(fields.weight, { min: 0, max: 999.99, label: 'Жин' });
+  if (fields.nextVaccineName !== undefined) updateData.next_vaccine_name = cleanText(fields.nextVaccineName, 200, 'Вакцины нэр') || null;
   if (fields.nextVaccineDate !== undefined) {
-    updateData.next_vaccine_date = fields.nextVaccineDate || null;
+    updateData.next_vaccine_date = optionalIsoDate(fields.nextVaccineDate, 'Дараагийн вакцины огноо');
     // Сануулгыг дахин идэвхжүүлэх
     updateData.last_notified_date = null;
   }

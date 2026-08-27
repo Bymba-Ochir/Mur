@@ -21,19 +21,16 @@ export default function AppointmentsSection({
   const showToast = useToast();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState(false);
 
   useEffect(() => {
     if (!user) return;
     let cancelled = false;
     async function load() {
-      setLoadError(false);
       try {
         const data = await fetchMyAppointments();
         if (!cancelled) setAppointments(data);
       } catch (err) {
         console.error(err);
-        if (!cancelled) setLoadError(true);
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -59,30 +56,33 @@ export default function AppointmentsSection({
   if (!user || loading) return null;
 
   return (
-    <div className="mt-[var(--sp-5)]">
-      <h3 className="mb-[var(--sp-3)] text-sm font-semibold text-[var(--primary)]">
+    <div style={{ marginTop: 'var(--sp-5)' }}>
+      <h3 style={{ fontSize: 14, fontWeight: 600, color: 'var(--primary)', marginBottom: 'var(--sp-3)' }}>
         {t('appts_title')}
       </h3>
 
-      {loadError ? (
-        <p className="text-[13px] text-[var(--alert)]" role="alert">Цаг захиалгын мэдээллийг ачаалж чадсангүй.</p>
-      ) : appointments.length === 0 ? (
-        <p className="text-[13px] text-[var(--muted)]">{t('appts_none')}</p>
+      {appointments.length === 0 ? (
+        <p style={{ fontSize: 13, color: 'var(--muted)' }}>{t('appts_none')}</p>
       ) : (
-        <div className="flex flex-col gap-[var(--sp-2)]">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-2)' }}>
           {appointments.map((a) => {
             const clinic = clinicMap.get(a.clinicId);
             return (
-              <div key={a.id} className="rounded-[var(--r-md)] border border-[var(--line)] bg-[var(--card)] p-[var(--sp-3)]">
-                <div className="flex items-start justify-between">
+              <div key={a.id} style={{
+                padding: 'var(--sp-3)',
+                background: 'var(--card)',
+                border: '1px solid var(--line)',
+                borderRadius: 'var(--r-md)',
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                   <div>
-                    <p className="text-[13px] font-semibold">{clinic?.name || a.clinicId}</p>
-                    <p className="text-xs text-[var(--muted)]">{a.service} · {a.date} · {a.time}</p>
-                    <p className="text-[11px] text-[var(--muted)]">{appointmentStatusLabel(a.status)}</p>
+                    <p style={{ fontSize: 13, fontWeight: 600 }}>{clinic?.name || a.clinicId}</p>
+                    <p style={{ fontSize: 12, color: 'var(--muted)' }}>{a.service} · {a.date} · {a.time}</p>
+                    <p style={{ fontSize: 11, color: 'var(--muted)' }}>{appointmentStatusLabel(a.status)}</p>
                   </div>
                   {(a.status === 'pending' || a.status === 'confirmed') && (
                     <button
-                      className="cursor-pointer rounded-[var(--r-sm)] border border-[var(--alert)] bg-transparent px-2.5 py-1 text-[11px] font-semibold text-[var(--alert)] transition-colors hover:bg-[var(--alert)] hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+                      className="cancel-btn"
                       onClick={() => handleCancel(a.id)}
                     >
                       {t('appts_cancel')}
@@ -94,6 +94,16 @@ export default function AppointmentsSection({
           })}
         </div>
       )}
+
+      <style jsx>{`
+        .cancel-btn {
+          background: none; border: 1px solid var(--alert); color: var(--alert);
+          padding: 4px 10px; border-radius: var(--r-sm); font-size: 11px;
+          cursor: pointer; font-family: var(--font-body); font-weight: 600;
+          transition: all 0.15s ease;
+        }
+        .cancel-btn:hover { background: var(--alert); color: var(--text-on-accent); }
+      `}</style>
     </div>
   );
 }

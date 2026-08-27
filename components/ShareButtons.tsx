@@ -32,18 +32,32 @@ export default function ShareButtons({ url, title }: { url: string; title: strin
   }
 
   return (
-    <div className="mt-3 flex flex-wrap gap-2">
+    <div className="share-row">
       {hasNativeShare && (
-        <button onClick={handleNativeShare} className="inline-block cursor-pointer rounded-[var(--r-sm)] border-0 bg-[var(--brand)] px-3.5 py-[9px] text-[13px] font-semibold text-[var(--text-on-accent)] no-underline transition-[transform,box-shadow,filter] duration-200 hover:-translate-y-px hover:brightness-105 hover:shadow-[var(--shadow-sm)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--border-focus)]">
+        <button onClick={handleNativeShare} className="share-btn native">
           {t('share_native')}
         </button>
       )}
-      <a href={fbShareUrl} target="_blank" rel="noopener noreferrer" className="inline-block rounded-[var(--r-sm)] bg-[#1877F2] px-3.5 py-[9px] text-[13px] font-semibold text-white no-underline transition-[transform,box-shadow,filter] duration-200 hover:-translate-y-px hover:brightness-105 hover:shadow-[var(--shadow-sm)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--border-focus)]">
+      <a href={fbShareUrl} target="_blank" rel="noopener noreferrer" className="share-btn fb">
         {t('share_fb')}
       </a>
-      <button onClick={handleCopy} className="inline-block cursor-pointer rounded-[var(--r-sm)] border-0 bg-[var(--eyebrow-bg)] px-3.5 py-[9px] text-[13px] font-semibold text-[var(--primary)] transition-[transform,box-shadow,filter] duration-200 hover:-translate-y-px hover:brightness-105 hover:shadow-[var(--shadow-sm)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--border-focus)]">
+      <button onClick={handleCopy} className="share-btn copy">
         {copied ? t('share_copied') : t('share_copy')}
       </button>
+
+      <style jsx>{`
+        .share-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+        .share-btn {
+          padding: 9px 14px; border-radius: var(--r-sm); border: none; cursor: pointer;
+          font-size: 13px; font-weight: 600; text-decoration: none; display: inline-block;
+          transition: transform .15s ease, box-shadow .2s ease, filter .2s ease;
+        }
+        .share-btn:hover { transform: translateY(-1px); box-shadow: var(--shadow-sm); filter: brightness(1.05); }
+        .share-btn:focus-visible { outline: 2px solid var(--border-focus); outline-offset: 2px; }
+        .native { background: var(--brand); color: var(--text-on-accent); }
+        .fb { background: #1877F2; color: #fff; }
+        .copy { background: var(--eyebrow-bg); color: var(--primary); }
+      `}</style>
     </div>
   );
 }

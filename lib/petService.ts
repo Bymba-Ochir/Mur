@@ -3,8 +3,8 @@
 import { supabase } from './supabase';
 import { getImageEmbedding, getImageHash, cosineSimilarityScore, EMBEDDING_VERSION } from './similarity';
 import { mapPetRow } from './petMapping';
-import { deleteContent } from './deleteContent';
 import type { Pet, PetStatus, PetFilters, PetReportInput, UpdatePetFields } from './types';
+import { cleanText, optionalCoordinate, optionalInteger, requireMongolianPhone } from './inputValidation';
 
 const TABLE = 'pets';
 const BUCKET = 'pet-photos';
@@ -26,6 +26,10 @@ async function uploadPetPhoto(file: File, statusFolder: PetStatus): Promise<stri
  * @param onProgress - embedding тооцоолж байх үеийн статус мессеж дамжуулах callback
  */
 export async function createPetReport(data: PetReportInput, onProgress?: (message: string) => void): Promise<string> {
+  const phone = requireMongolianPhone(data.phone);
+  const reward = data.hasReward
+    ? optionalInteger(data.reward, { min: 0, max: 100_000_000, label: 'Шагналын дүн' })
+    : null;
   let photoUrl: string | null = null;
   let photoUrls: string[] = [];
   let embedding: number[] | null = null;
@@ -50,23 +54,23 @@ export async function createPetReport(data: PetReportInput, onProgress?: (messag
 
   const payload = {
       status: data.status, // 'lost' | 'found'
-      name: data.name || '',
+      name: cleanText(data.name, 100, 'Нэр'),
       type: data.type, // 'Нохой' | 'Муур' | 'Бусад'
-      breed: data.breed || '',
-      color: data.color || '',
-      place: data.place || '',
+      breed: cleanText(data.breed, 100, 'Үүлдэр'),
+      color: cleanText(data.color, 100, 'Өнгө', true),
+      place: cleanText(data.place, 300, 'Байршил', true),
       district: data.district || '',
-      phone: data.phone || '',
+      phone,
       has_reward: data.hasReward ?? false,
-      reward: data.reward ?? null,
+      reward,
       photo_url: photoUrl,
       photo_urls: photoUrls,
       color_signature: embedding, // browser fallback-д DINOv2 vector-ийг JSONB хэлбэрээр хадгална
       dino_embedding: embedding,
       embedding_version: embedding ? EMBEDDING_VERSION : null,
       image_hash: imageHash,
-      lat: data.lat ?? null,
-      lng: data.lng ?? null,
+      lat: optionalCoordinate(data.lat, 'lat'),
+      lng: optionalCoordinate(data.lng, 'lng'),
   };
 
   let result = await supabase.from(TABLE).insert(payload).select().single();
@@ -140,11 +144,11 @@ export async function updatePet(id: string, fields: UpdatePetFields): Promise<vo
   const { error } = await supabase
     .from(TABLE)
     .update({
-      name: fields.name ?? undefined,
-      color: fields.color ?? undefined,
-      place: fields.place ?? undefined,
+      name: fields.name === undefined ? undefined : cleanText(fields.name, 100, 'Нэр'),
+      color: fields.color === undefined ? undefined : cleanText(fields.color, 100, 'Өнгө', true),
+      place: fields.place === undefined ? undefined : cleanText(fields.place, 300, 'Байршил', true),
       district: fields.district ?? undefined,
-      phone: fields.phone ?? undefined,
+      phone: fields.phone === undefined ? undefined : requireMongolianPhone(fields.phone),
     })
     .eq('id', id);
   if (error) throw error;
@@ -155,7 +159,8 @@ export async function updatePet(id: string, fields: UpdatePetFields): Promise<vo
  * (MVP-д хялбар байдлаар орхигдсон, дараа нь cleanup job нэмж болно).
  */
 export async function deletePet(id: string): Promise<void> {
-  await deleteContent('pet', id);
+  const { error } = await supabase.from(TABLE).delete().eq('id', id);
+  if (error) throw error;
 }
 
 /**
@@ -171,14 +176,8 @@ export async function markResolved(id: string): Promise<void> {
  * Буруу/spam/hoax бичлэгийг мэдээлэх
  */
 export async function reportPet(petId: string, reason: string): Promise<void> {
-  const response = await fetch('/api/reports', {
-    method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ petId, reason }),
-  });
-  if (!response.ok) {
-    const body = await response.json().catch(() => null) as { error?: string } | null;
-    throw new Error(body?.error || 'Мэдээллийг илгээж чадсангүй');
-  }
+  const { error } = await supabase.from('reports').insert({ pet_id: petId, reason });
+  if (error) throw error;
 }
 
 /**

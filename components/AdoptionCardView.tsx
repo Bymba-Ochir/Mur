@@ -4,7 +4,6 @@ import PetIcon from './PetIcon';
 import { relativeTime } from '../lib/relativeTime';
 import { maskPhone, formatPhone } from '../lib/utils';
 import type { PetType } from '../lib/types';
-import { Clock3, MapPin, Phone } from 'lucide-react';
 
 /**
  * Үрчлүүлэх карт — AdoptionCard (жагсаалт) болон AdoptionPreviewCard (форм preview)
@@ -33,41 +32,108 @@ export default function AdoptionCardView({
   ...containerProps
 }: AdoptionCardViewProps) {
   const showMasked = !!phone && !revealed && !!onRevealPhone;
-  const staticClass = interactive ? 'group cursor-pointer hover:-translate-y-1.5 hover:border-transparent hover:shadow-[var(--shadow-lift)]' : 'cursor-default';
+  const staticClass = interactive ? '' : ' static';
 
   return (
-    <div className={`flex h-full flex-col overflow-hidden rounded-[var(--r-lg)] border border-[var(--line)] bg-[var(--card)] shadow-[var(--shadow-sm)] transition-[transform,box-shadow,border-color] duration-[var(--dur-base)] ease-[var(--ease-out)] focus-visible:outline-[2.5px] focus-visible:outline-offset-2 focus-visible:outline-[var(--border-focus)] max-sm:rounded-[var(--r-md)] min-[1025px]:rounded-[var(--r-xl)] ${staticClass}`} {...containerProps}>
-      <div className="relative flex h-[152px] shrink-0 items-center justify-center overflow-hidden bg-[var(--thumb-bg)] after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:z-1 after:h-1/2 after:bg-gradient-to-t after:from-black/45 after:to-transparent max-sm:h-[180px] max-[400px]:h-40 min-[1025px]:h-[200px] [&>img]:h-full [&>img]:w-full [&>img]:object-cover [&>img]:transition-transform [&>img]:duration-400 group-hover:[&>img]:scale-[1.08]">
-        <span className="absolute bottom-2.5 left-2.5 z-2 rounded-[var(--r-pill)] border border-transparent bg-[var(--primary-light)] px-2.5 py-[5px] font-[family-name:var(--font-mono)] text-[9.5px] font-bold tracking-[0.03em] text-[var(--text-on-accent)] shadow-[var(--shadow-xs)] backdrop-blur-lg">{badgeLabel}</span>
+    <div className={`pet-card${staticClass}`} {...containerProps}>
+      <div className="thumb">
+        <span className="badge adopt">{badgeLabel}</span>
         {imageNode ?? (
-          <span className="flex size-20 items-center justify-center rounded-full border border-[var(--glass-border)] bg-[var(--glass-bg)] text-[var(--primary)] shadow-[var(--shadow-sm)] min-[1025px]:size-24" aria-hidden="true"><PetIcon type={type} size={56} /></span>
+          <span className="emoji" aria-hidden="true"><PetIcon type={type} size={56} /></span>
         )}
       </div>
-      <div className="flex flex-1 flex-col gap-0.5 px-[15px] py-3.5 max-[480px]:px-3.5 max-[480px]:py-3 min-[1025px]:gap-[3px] min-[1025px]:px-[18px] min-[1025px]:py-4">
-        <h4 className="mb-0.5 font-[family-name:var(--font-display)] text-[length:var(--text-lg)] font-bold leading-[var(--lh-tight)] text-[var(--text-primary)] max-[480px]:text-[15px] min-[1025px]:mb-1 min-[1025px]:text-[length:var(--text-xl)]">{name || type}</h4>
-        <p className="my-[3px] text-[12.5px] leading-[1.4] text-[var(--muted)]">{type}{breed ? `, ${breed}` : ''}</p>
-        {age && <p className="my-[3px] text-[12.5px] leading-[1.4] text-[var(--muted)]">{age}{gender && gender !== 'Тодорхойгүй' ? ` · ${gender}` : ''}</p>}
-        <p className="my-[3px] flex items-center gap-1 text-[12.5px] leading-[1.4] text-[var(--muted)]"><MapPin size={13} aria-hidden="true" /> {district} — {place}</p>
-        {createdAt && <p className="my-[3px] flex items-center gap-1 text-[12.5px] leading-[1.4] text-[var(--muted)]"><Clock3 size={13} aria-hidden="true" /> {relativeTime(createdAt)}</p>}
+      <div className="info">
+        <h4>{name || type}</h4>
+        <p>{type}{breed ? `, ${breed}` : ''}</p>
+        {age && <p>{age}{gender && gender !== 'Тодорхойгүй' ? ` · ${gender}` : ''}</p>}
+        <p className="place"><span aria-hidden="true">📍</span> {district} — {place}</p>
+        {createdAt && <p className="time"><span aria-hidden="true">🕓</span> {relativeTime(createdAt)}</p>}
         {showMasked ? (
           <button
-            className="mt-2 inline-flex min-h-[var(--touch-target)] w-full cursor-pointer items-center gap-[5px] rounded-[var(--r-pill)] border-0 bg-[var(--eyebrow-bg)] px-3 py-1.5 text-left font-[family-name:inherit] text-[13px] font-semibold text-[var(--primary)] transition-colors hover:bg-[var(--primary)] hover:text-[var(--text-on-accent)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--border-focus)]"
+            className="phone reveal-btn"
             onClick={(e) => { e.stopPropagation(); onRevealPhone!(); }}
             aria-label="Утасны дугаарыг харуулах"
           >
-            <Phone size={14} aria-hidden="true" /> {maskPhone(phone)} · Дугаар харах
+            <span aria-hidden="true">☎</span> {maskPhone(phone)} · Дугаар харах
           </button>
         ) : phone ? (
           <a
-            className="mt-2 inline-flex min-h-[var(--touch-target)] items-center gap-[5px] rounded-[var(--r-pill)] bg-[var(--eyebrow-bg)] px-3 py-1.5 text-[13px] font-semibold text-[var(--primary)] no-underline transition-colors hover:bg-[var(--primary)] hover:text-[var(--text-on-accent)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--border-focus)]"
+            className="phone"
             href={`tel:${phone}`}
             onClick={(e) => e.stopPropagation()}
             aria-label={`Утсаар холбогдох: ${formatPhone(phone)}`}
           >
-            <Phone size={14} aria-hidden="true" /> {formatPhone(phone)}
+            <span aria-hidden="true">☎</span> {formatPhone(phone)}
           </a>
         ) : null}
       </div>
+
+      <style jsx>{`
+        .pet-card {
+          background: var(--card); border: 1px solid var(--line); border-radius: var(--r-lg);
+          overflow: hidden; cursor: pointer; box-shadow: var(--shadow-sm);
+          transition: transform var(--dur-base) var(--ease-out), box-shadow var(--dur-base) var(--ease-out), border-color var(--dur-base) var(--ease-out);
+          display: flex; flex-direction: column; height: 100%;
+        }
+        @media (max-width: 640px) { .pet-card { border-radius: var(--r-md); } }
+        @media (min-width: 1025px) { .pet-card { border-radius: var(--r-xl); } }
+        .pet-card:hover { box-shadow: var(--shadow-lift); transform: translateY(-6px); border-color: transparent; }
+        .pet-card:focus-visible { outline: 2.5px solid var(--border-focus); outline-offset: 2px; }
+        .pet-card.static { cursor: default; }
+        .pet-card.static:hover { transform: none; box-shadow: var(--shadow-sm); border-color: var(--line); }
+        .thumb {
+          height: 152px; background: var(--thumb-bg); position: relative;
+          display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0;
+        }
+        @media (min-width: 1025px) { .thumb { height: 200px; } }
+        @media (max-width: 640px) { .thumb { height: 180px; } }
+        @media (max-width: 400px) { .thumb { height: 160px; } }
+        .thumb::after {
+          content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 50%;
+          background: linear-gradient(to top, rgba(0,0,0,0.45) 0%, transparent 100%);
+          pointer-events: none; z-index: 1;
+        }
+        .thumb :global(img) { transition: transform 0.4s cubic-bezier(.16,1,.3,1); object-fit: cover; width: 100%; height: 100%; }
+        .pet-card:hover .thumb :global(img) { transform: scale(1.08); }
+        .emoji {
+          color: var(--primary); display: flex; align-items: center; justify-content: center;
+          width: 80px; height: 80px;
+          background: var(--glass-bg); border: 1px solid var(--glass-border);
+          border-radius: 50%; box-shadow: var(--shadow-sm);
+        }
+        @media (min-width: 1025px) { .emoji { width: 96px; height: 96px; } }
+        .badge {
+          position: absolute; bottom: 10px; left: 10px; z-index: 2; font-family: var(--font-mono); font-size: 9.5px;
+          padding: 5px 10px; border-radius: var(--r-pill); font-weight: 700; letter-spacing: 0.03em;
+          backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+          background: var(--surface-2); color: var(--text-primary);
+          border: 1px solid var(--border-subtle);
+          box-shadow: var(--shadow-xs);
+        }
+        @media (max-width: 480px) { .badge { font-size: 10px; padding: 5px 11px; bottom: 12px; left: 12px; } }
+        @media (min-width: 1025px) { .badge { font-size: 10.5px; padding: 6px 12px; bottom: 14px; left: 14px; } }
+        .badge.adopt { background: var(--accent); color: var(--accent-ink); border-color: transparent; }
+        .info { padding: 14px 15px; flex: 1; display: flex; flex-direction: column; gap: 2px; }
+        @media (max-width: 480px) { .info { padding: 12px 14px; } }
+        @media (min-width: 1025px) { .info { padding: 16px 18px; gap: 3px; } }
+        h4 { font-family: var(--font-display); font-size: var(--text-lg); font-weight: 700; margin-bottom: 2px; color: var(--text-primary); line-height: var(--lh-tight); }
+        @media (max-width: 480px) { h4 { font-size: 15px; } }
+        @media (min-width: 1025px) { h4 { font-size: var(--text-xl); margin-bottom: 4px; } }
+        p { font-size: 12.5px; color: var(--muted); margin: 3px 0; line-height: 1.4; }
+        @media (max-width: 480px) { p { font-size: 13px; margin: 4px 0; } }
+        @media (min-width: 1025px) { p { font-size: 13.5px; margin: 4px 0; line-height: 1.5; } }
+        .phone {
+          display: inline-flex; align-items: center; gap: 5px; margin-top: 8px; font-size: 13px;
+          color: var(--primary); font-weight: 600; text-decoration: none; min-height: var(--touch-target);
+          background: var(--eyebrow-bg); padding: 6px 12px; border-radius: var(--r-pill);
+          transition: background 0.15s ease, color 0.15s ease;
+        }
+        .phone:hover { background: var(--primary); color: var(--text-on-accent); }
+        @media (max-width: 480px) { .phone { margin-top: 10px; font-size: 14px; } }
+        @media (min-width: 1025px) { .phone { margin-top: 12px; font-size: 14px; } }
+        .reveal-btn { background: none; border: none; padding: 0; cursor: pointer; font-family: inherit; text-align: left; width: 100%; }
+        .reveal-btn:focus-visible, .phone:focus-visible { outline: 2px solid var(--border-focus); outline-offset: 2px; }
+      `}</style>
     </div>
   );
 }

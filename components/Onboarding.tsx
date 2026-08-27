@@ -2,11 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { usePathname } from 'next/navigation';
 import { DISTRICTS } from '../lib/districts';
 import { useLanguage } from '../lib/i18n';
 import { setLocalStorageValue, useLocalStorageValue } from '../lib/useLocalStorageState';
-import { Check, X } from 'lucide-react';
 
 const SEEN_KEY = 'mur-onboarding-v2-seen';
 const OPEN_EVENT = 'mur:open-onboarding';
@@ -28,7 +26,6 @@ function Icon({ name }: { name: Intent | 'location' | 'bell' }) {
 
 export default function Onboarding() {
   const router = useRouter();
-  const pathname = usePathname();
   const { lang } = useLanguage();
   const seen = useLocalStorageValue(SEEN_KEY, '1');
   const [manualOpen, setManualOpen] = useState(false);
@@ -36,9 +33,7 @@ export default function Onboarding() {
   const [intent, setIntent] = useState<Intent | null>(null);
   const [district, setDistrict] = useState('');
   const [notifications, setNotifications] = useState(false);
-  // Анхны welcome урсгал зөвхөн нүүр хуудсанд автоматаар гарна. Бусад хуудасны
-  // ажлыг гэнэт таслахгүй; нүүрний “Яаж ажилладаг вэ” товчоор гараар нээж болно.
-  const visible = manualOpen || (pathname === '/' && seen !== '1');
+  const visible = manualOpen || seen !== '1';
   const en = lang === 'en';
 
   useEffect(() => {
@@ -46,20 +41,6 @@ export default function Onboarding() {
     window.addEventListener(OPEN_EVENT, open);
     return () => window.removeEventListener(OPEN_EVENT, open);
   }, []);
-
-  useEffect(() => {
-    if (!visible) return;
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    const handleKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') close();
-    };
-    window.addEventListener('keydown', handleKey);
-    return () => {
-      document.body.style.overflow = previousOverflow;
-      window.removeEventListener('keydown', handleKey);
-    };
-  }, [visible]);
 
   function close() {
     setLocalStorageValue(SEEN_KEY, '1');
@@ -95,60 +76,99 @@ export default function Onboarding() {
   ];
 
   return (
-    <div className="fixed inset-0 z-500 grid place-items-center bg-[var(--overlay)] p-5 backdrop-blur-lg max-[560px]:items-end max-[560px]:p-0" role="dialog" aria-modal="true" aria-labelledby="onb-title" onClick={close}>
-      <div className="max-h-[min(760px,calc(100dvh-32px))] w-[min(100%,570px)] overflow-y-auto rounded-[var(--r-xl)] border border-[var(--border-subtle)] bg-[var(--card)] p-7 shadow-[var(--shadow-lift)] max-[560px]:max-h-[92dvh] max-[560px]:rounded-t-3xl max-[560px]:rounded-b-none max-[560px]:px-[18px] max-[560px]:pt-[22px] max-[560px]:pb-[calc(18px+env(safe-area-inset-bottom))]" onClick={(event) => event.stopPropagation()}>
-        <div className="mb-[22px] flex items-center justify-between">
-          <div className="flex max-w-[180px] flex-1 gap-[7px]" aria-label={`${step + 1} / 3`}>
-            {[0, 1, 2].map((item) => <span key={item} className={`h-[5px] w-full rounded-full ${item <= step ? 'bg-[var(--primary)]' : 'bg-[var(--surface-3)]'}`} />)}
+    <div className="onb-overlay" role="dialog" aria-modal="true" aria-labelledby="onb-title" onClick={close}>
+      <div className="onb-card" onClick={(event) => event.stopPropagation()}>
+        <div className="onb-top">
+          <div className="onb-progress" aria-label={`${step + 1} / 3`}>
+            {[0, 1, 2].map((item) => <span key={item} className={item <= step ? 'active' : ''} />)}
           </div>
-          <button className="grid size-[38px] cursor-pointer place-items-center rounded-full border border-[var(--border-subtle)] bg-[var(--surface-2)] text-[var(--text-secondary)] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[var(--border-focus)]" type="button" onClick={close} aria-label={en ? 'Close' : 'Хаах'}><X size={19} aria-hidden="true" /></button>
+          <button className="onb-close" type="button" onClick={close} aria-label={en ? 'Close' : 'Хаах'}>×</button>
         </div>
 
         {step === 0 && <>
-          <span className="mb-2 block font-[family-name:var(--font-mono)] text-xs font-bold tracking-[0.08em] text-[var(--primary)]">{en ? 'WELCOME TO МӨР' : 'МӨР-Т ТАВТАЙ МОРИЛ'}</span>
-          <h2 className="m-0 font-[family-name:var(--font-display)] text-[clamp(1.45rem,4vw,2rem)] leading-[1.2] text-[var(--text-primary)]" id="onb-title">{en ? 'What would you like to do?' : 'Та юу хийх вэ?'}</h2>
-          <p className="mt-2.5 mb-[22px] text-sm leading-[1.6] text-[var(--text-secondary)]">{en ? 'Choose one to open the right section immediately.' : 'Танд хэрэгтэй хэсгийг шууд нээхийн тулд нэгийг сонгоно уу.'}</p>
-          <div className="grid grid-cols-2 gap-2.5 max-[560px]:grid-cols-1">
+          <span className="onb-kicker">{en ? 'WELCOME TO МӨР' : 'МӨР-Т ТАВТАЙ МОРИЛ'}</span>
+          <h2 id="onb-title">{en ? 'What would you like to do?' : 'Та юу хийх вэ?'}</h2>
+          <p className="onb-lead">{en ? 'Choose one to open the right section immediately.' : 'Танд хэрэгтэй хэсгийг шууд нээхийн тулд нэгийг сонгоно уу.'}</p>
+          <div className="onb-choices">
             {choices.map((choice) => (
-              <button key={choice.id} type="button" className={`relative flex min-h-[82px] cursor-pointer items-center gap-3 rounded-[var(--r-md)] border bg-[var(--surface-2)] p-3.5 text-left text-[var(--text-primary)] transition duration-200 hover:-translate-y-px hover:border-[var(--primary)] hover:bg-[color-mix(in_srgb,var(--primary)_9%,var(--surface-2))] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[var(--border-focus)] max-[560px]:min-h-[70px] ${intent === choice.id ? '-translate-y-px border-[var(--primary)] bg-[color-mix(in_srgb,var(--primary)_9%,var(--surface-2))]' : 'border-[var(--border-subtle)]'}`} onClick={() => setIntent(choice.id)}>
-                <span className="grid size-11 shrink-0 place-items-center rounded-[14px] bg-[color-mix(in_srgb,var(--primary)_12%,transparent)] text-[var(--primary)]"><Icon name={choice.id} /></span>
-                <span><strong className="block text-sm">{choice.title}</strong><small className="mt-1 block text-[11px] leading-[1.35] text-[var(--text-secondary)]">{choice.text}</small></span>
-                <span className={`absolute top-2 right-2.5 text-[var(--primary)] transition-opacity ${intent === choice.id ? 'opacity-100' : 'opacity-0'}`}><Check size={17} aria-hidden="true" /></span>
+              <button key={choice.id} type="button" className={intent === choice.id ? 'selected' : ''} onClick={() => setIntent(choice.id)}>
+                <span className="choice-icon"><Icon name={choice.id} /></span>
+                <span><strong>{choice.title}</strong><small>{choice.text}</small></span>
+                <span className="choice-check">✓</span>
               </button>
             ))}
           </div>
         </>}
 
-        {step === 1 && <div className="px-3 py-2 text-center">
-          <span className="mx-auto mb-[18px] grid size-16 place-items-center rounded-[20px] bg-[color-mix(in_srgb,var(--primary)_12%,transparent)] text-[var(--primary)] [&>svg]:size-[30px]"><Icon name="location" /></span>
-          <h2 className="m-0 font-[family-name:var(--font-display)] text-[clamp(1.45rem,4vw,2rem)] leading-[1.2] text-[var(--text-primary)]" id="onb-title">{en ? 'Choose your district' : 'Байршлаа сонгоно уу'}</h2>
-          <p className="mt-2.5 mb-[22px] text-sm leading-[1.6] text-[var(--text-secondary)]">{en ? 'We will use it as the default filter. You can change it later.' : 'Жагсаалтыг энэ дүүргээр анхлан шүүнэ. Дараа нь хүссэн үедээ сольж болно.'}</p>
-          <label className="mb-[7px] block text-left text-xs font-bold text-[var(--text-secondary)]" htmlFor="onboarding-district">{en ? 'District' : 'Дүүрэг'}</label>
-          <select className="h-[52px] w-full rounded-[var(--r-md)] border border-[var(--border-subtle)] bg-[var(--surface-2)] px-3.5 font-[family-name:inherit] text-[var(--text-primary)] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[var(--border-focus)]" id="onboarding-district" value={district} onChange={(event) => setDistrict(event.target.value)}>
+        {step === 1 && <div className="onb-centered">
+          <span className="large-icon"><Icon name="location" /></span>
+          <h2 id="onb-title">{en ? 'Choose your district' : 'Байршлаа сонгоно уу'}</h2>
+          <p className="onb-lead">{en ? 'We will use it as the default filter. You can change it later.' : 'Жагсаалтыг энэ дүүргээр анхлан шүүнэ. Дараа нь хүссэн үедээ сольж болно.'}</p>
+          <label htmlFor="onboarding-district">{en ? 'District' : 'Дүүрэг'}</label>
+          <select id="onboarding-district" value={district} onChange={(event) => setDistrict(event.target.value)}>
             <option value="">{en ? 'Choose later' : 'Дараа сонгох'}</option>
             {DISTRICTS.map((item) => <option key={item} value={item}>{item}</option>)}
           </select>
         </div>}
 
-        {step === 2 && <div className="px-3 py-2 text-center">
-          <span className="mx-auto mb-[18px] grid size-16 place-items-center rounded-[20px] bg-[color-mix(in_srgb,var(--primary)_12%,transparent)] text-[var(--primary)] [&>svg]:size-[30px]"><Icon name="bell" /></span>
-          <h2 className="m-0 font-[family-name:var(--font-display)] text-[clamp(1.45rem,4vw,2rem)] leading-[1.2] text-[var(--text-primary)]" id="onb-title">{en ? 'Do not miss a match' : 'Шинэ тохирлыг бүү алдаарай'}</h2>
-          <p className="mt-2.5 mb-[22px] text-sm leading-[1.6] text-[var(--text-secondary)]">{en ? 'Allow notifications for new matches, messages, and vaccine reminders.' : 'Шинэ тохирол, зурвас болон вакцины сануулга ирэхэд мэдэгдэл аваарай.'}</p>
-          <button type="button" className={`flex w-full cursor-pointer items-center gap-3.5 rounded-[var(--r-md)] border bg-[var(--surface-2)] p-4 text-left text-[var(--text-primary)] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[var(--border-focus)] [&>svg]:shrink-0 [&>svg]:text-[var(--primary)] ${notifications ? 'border-[var(--success)]' : 'border-[var(--border-subtle)]'}`} onClick={enableNotifications}>
+        {step === 2 && <div className="onb-centered">
+          <span className="large-icon"><Icon name="bell" /></span>
+          <h2 id="onb-title">{en ? 'Do not miss a match' : 'Шинэ тохирлыг бүү алдаарай'}</h2>
+          <p className="onb-lead">{en ? 'Allow notifications for new matches, messages, and vaccine reminders.' : 'Шинэ тохирол, зурвас болон вакцины сануулга ирэхэд мэдэгдэл аваарай.'}</p>
+          <button type="button" className={`notification-choice ${notifications ? 'enabled' : ''}`} onClick={enableNotifications}>
             <Icon name="bell" />
-            <span><strong className="block text-sm">{notifications ? (en ? 'Notifications enabled' : 'Мэдэгдэл идэвхтэй') : (en ? 'Enable notifications' : 'Мэдэгдэл идэвхжүүлэх')}</strong><small className="mt-1 block text-[11px] leading-[1.35] text-[var(--text-secondary)]">{en ? 'You can turn this off in your browser.' : 'Browser-ын тохиргооноос хүссэн үедээ унтрааж болно.'}</small></span>
+            <span><strong>{notifications ? (en ? 'Notifications enabled' : 'Мэдэгдэл идэвхтэй') : (en ? 'Enable notifications' : 'Мэдэгдэл идэвхжүүлэх')}</strong><small>{en ? 'You can turn this off in your browser.' : 'Browser-ын тохиргооноос хүссэн үедээ унтрааж болно.'}</small></span>
           </button>
-          <p className="mt-3.5 mb-0 text-[11px] text-[var(--text-tertiary)]">{en ? 'МӨР only sends service-related notifications.' : 'МӨР зөвхөн үйлчилгээтэй холбоотой хэрэгтэй мэдэгдэл илгээнэ.'}</p>
+          <p className="privacy-note">{en ? 'МӨР only sends service-related notifications.' : 'МӨР зөвхөн үйлчилгээтэй холбоотой хэрэгтэй мэдэгдэл илгээнэ.'}</p>
         </div>}
 
-        <div className="mt-6 grid grid-cols-[1fr_1.5fr] gap-2.5 border-t border-[var(--border-subtle)] pt-5">
-          {step > 0 ? <button className="min-h-12 cursor-pointer rounded-[var(--r-md)] border border-[var(--border-subtle)] bg-transparent font-bold text-[var(--text-secondary)] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[var(--border-focus)]" type="button" onClick={() => setStep(step - 1)}>{en ? 'Back' : 'Буцах'}</button> : <button className="min-h-12 cursor-pointer rounded-[var(--r-md)] border border-[var(--border-subtle)] bg-transparent font-bold text-[var(--text-secondary)] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[var(--border-focus)]" type="button" onClick={close}>{en ? 'Skip' : 'Алгасах'}</button>}
-          <button className="min-h-12 cursor-pointer rounded-[var(--r-md)] border-0 bg-[var(--primary)] font-bold text-[var(--text-on-accent)] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[var(--border-focus)] disabled:cursor-not-allowed disabled:opacity-45" type="button" disabled={step === 0 && !intent} onClick={() => step === 2 ? finish() : setStep(step + 1)}>
+        <div className="onb-actions">
+          {step > 0 ? <button className="secondary" type="button" onClick={() => setStep(step - 1)}>{en ? 'Back' : 'Буцах'}</button> : <button className="secondary" type="button" onClick={close}>{en ? 'Skip' : 'Алгасах'}</button>}
+          <button className="primary" type="button" disabled={step === 0 && !intent} onClick={() => step === 2 ? finish() : setStep(step + 1)}>
             {step === 2 ? (en ? 'Start' : 'Эхлэх') : (en ? 'Continue' : 'Үргэлжлүүлэх')}
           </button>
         </div>
       </div>
 
+      <style jsx>{`
+        .onb-overlay { position: fixed; inset: 0; z-index: 500; display: grid; place-items: center; padding: 20px; background: var(--overlay); backdrop-filter: blur(8px); }
+        .onb-card { width: min(100%, 570px); max-height: min(760px, calc(100dvh - 32px)); overflow-y: auto; padding: 28px; border: 1px solid var(--border-subtle); border-radius: var(--r-xl); background: var(--card); box-shadow: var(--shadow-lift); animation: onb-pop .22s var(--ease-out); }
+        @keyframes onb-pop { from { opacity: 0; transform: translateY(12px) scale(.98); } }
+        .onb-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px; }
+        .onb-progress { display: flex; gap: 7px; flex: 1; max-width: 180px; }
+        .onb-progress span { width: 100%; height: 5px; border-radius: 999px; background: var(--surface-3); }
+        .onb-progress span.active { background: var(--primary); }
+        .onb-close { width: 38px; height: 38px; border: 1px solid var(--border-subtle); border-radius: 50%; color: var(--text-secondary); background: var(--surface-2); font-size: 26px; line-height: 1; cursor: pointer; }
+        .onb-kicker { display: block; margin-bottom: 8px; color: var(--primary); font-family: var(--font-mono); font-size: 12px; font-weight: 700; letter-spacing: .08em; }
+        h2 { margin: 0; color: var(--text-primary); font-family: var(--font-display); font-size: clamp(1.45rem, 4vw, 2rem); line-height: 1.2; }
+        .onb-lead { margin: 10px 0 22px; color: var(--text-secondary); font-size: 14px; line-height: 1.6; }
+        .onb-choices { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .onb-choices button { position: relative; display: flex; align-items: center; gap: 12px; min-height: 82px; padding: 14px; text-align: left; color: var(--text-primary); background: var(--surface-2); border: 1px solid var(--border-subtle); border-radius: var(--r-md); cursor: pointer; transition: .18s ease; }
+        .onb-choices button:hover, .onb-choices button.selected { border-color: var(--primary); background: color-mix(in srgb, var(--primary) 9%, var(--surface-2)); transform: translateY(-1px); }
+        .choice-icon, .large-icon { display: grid; place-items: center; flex: 0 0 auto; width: 44px; height: 44px; border-radius: 14px; color: var(--primary); background: color-mix(in srgb, var(--primary) 12%, transparent); }
+        strong, small { display: block; }
+        strong { font-size: 14px; }
+        small { margin-top: 4px; color: var(--text-secondary); font-size: 11px; line-height: 1.35; }
+        .choice-check { position: absolute; top: 8px; right: 10px; color: var(--primary); opacity: 0; }
+        .selected .choice-check { opacity: 1; }
+        .onb-centered { text-align: center; padding: 8px 12px; }
+        .large-icon { width: 64px; height: 64px; margin: 0 auto 18px; border-radius: 20px; }
+        .large-icon :global(svg) { width: 30px; height: 30px; }
+        label { display: block; margin: 0 0 7px; color: var(--text-secondary); font-size: 12px; font-weight: 700; text-align: left; }
+        select { width: 100%; height: 52px; padding: 0 14px; color: var(--text-primary); background: var(--surface-2); border: 1px solid var(--border-subtle); border-radius: var(--r-md); font: inherit; }
+        .notification-choice { display: flex; align-items: center; gap: 14px; width: 100%; padding: 16px; color: var(--text-primary); text-align: left; background: var(--surface-2); border: 1px solid var(--border-subtle); border-radius: var(--r-md); cursor: pointer; }
+        .notification-choice :global(svg) { color: var(--primary); flex: 0 0 auto; }
+        .notification-choice.enabled { border-color: var(--success); }
+        .privacy-note { margin: 14px 0 0; color: var(--text-tertiary); font-size: 11px; }
+        .onb-actions { display: grid; grid-template-columns: 1fr 1.5fr; gap: 10px; margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border-subtle); }
+        .onb-actions button { min-height: 48px; border-radius: var(--r-md); font-weight: 700; cursor: pointer; }
+        .onb-actions .secondary { color: var(--text-secondary); background: transparent; border: 1px solid var(--border-subtle); }
+        .onb-actions .primary { color: var(--text-on-accent); background: var(--primary); border: 0; }
+        .onb-actions .primary:disabled { opacity: .45; cursor: not-allowed; }
+        button:focus-visible, select:focus-visible { outline: 3px solid var(--border-focus); outline-offset: 2px; }
+        @media (max-width: 560px) { .onb-overlay { align-items: end; padding: 0; } .onb-card { max-height: 92dvh; padding: 22px 18px calc(18px + env(safe-area-inset-bottom)); border-radius: 24px 24px 0 0; } .onb-choices { grid-template-columns: 1fr; } .onb-choices button { min-height: 70px; } }
+        @media (prefers-reduced-motion: reduce) { .onb-card { animation: none; } }
+      `}</style>
     </div>
   );
 }

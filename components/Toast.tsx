@@ -29,18 +29,18 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <ToastContext.Provider value={showToast}>
       {children}
-      <div className="pointer-events-none fixed bottom-[calc(76px+var(--safe-bottom))] left-1/2 z-[300] flex w-[92%] max-w-[380px] -translate-x-1/2 flex-col gap-[var(--sp-2)]" role="status" aria-live="polite" aria-atomic="false">
+      <div className="toast-stack" role="status" aria-live="polite" aria-atomic="false">
         {toasts.map((t) => (
           <div
             key={t.id}
-            className={`pointer-events-auto flex cursor-pointer items-center gap-[var(--sp-2)] rounded-[var(--r-sm)] px-[var(--sp-4)] py-[var(--sp-3)] text-[length:var(--text-sm)] text-[var(--text-on-accent)] shadow-[var(--shadow-md)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--text-on-accent)] ${t.type === 'error' ? 'bg-[var(--alert)] animate-[toast-slide-up_250ms_ease-out]' : t.type === 'success' ? 'bg-[var(--toast-success-bg)] animate-[toast-slide-bounce_400ms_cubic-bezier(0.34,1.56,0.64,1)]' : 'bg-[var(--brand)] animate-[toast-slide-up_250ms_ease-out]'}`}
+            className={`toast toast-${t.type}`}
             onClick={() => dismiss(t.id)}
             role="button"
             tabIndex={0}
             onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') dismiss(t.id); }}
             aria-label="Мэдэгдлийг хаах"
           >
-            <span className="inline-flex shrink-0" aria-hidden="true">
+            <span className="toast-icon" aria-hidden="true">
               {t.type === 'error' ? (
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" focusable="false">
                   <circle cx="12" cy="12" r="9" /><path d="M15 9l-6 6M9 9l6 6" />
@@ -59,6 +59,34 @@ export function ToastProvider({ children }: { children: ReactNode }) {
           </div>
         ))}
       </div>
+
+      <style jsx>{`
+        .toast-stack {
+          position: fixed; bottom: calc(76px + var(--safe-bottom)); left: 50%; transform: translateX(-50%);
+          z-index: 300; display: flex; flex-direction: column; gap: var(--sp-2);
+          width: 92%; max-width: 380px; pointer-events: none;
+        }
+        .toast {
+          display: flex; align-items: center; gap: var(--sp-2);
+          background: var(--ink); color: var(--text-on-accent); padding: var(--sp-3) var(--sp-4); border-radius: var(--r-sm);
+          font-size: var(--text-sm); box-shadow: var(--shadow-md); cursor: pointer;
+          pointer-events: auto; animation: slideUp 0.25s ease-out;
+        }
+        .toast-icon { display: inline-flex; flex-shrink: 0; }
+        .toast:focus-visible { outline: 2px solid var(--text-on-accent); outline-offset: 2px; }
+        .toast-error { background: var(--alert); }
+        .toast-success { background: var(--toast-success-bg); animation: slideUpBounce 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        .toast-info { background: var(--brand); }
+        @keyframes slideUp {
+          from { opacity: 0; transform: translateY(12px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes slideUpBounce {
+          0% { opacity: 0; transform: translateY(14px) scale(0.9); }
+          70% { opacity: 1; transform: translateY(-2px) scale(1.02); }
+          100% { transform: translateY(0) scale(1); }
+        }
+      `}</style>
     </ToastContext.Provider>
   );
 }

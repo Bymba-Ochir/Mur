@@ -1,8 +1,8 @@
 // lib/sittingService.ts
 // Асрах үйлчилгээний CRUD
 import { supabase } from './supabase';
-import { deleteContent } from './deleteContent';
 import type { SittingListing, SittingListingInput, SittingListingFilters, UpdateSittingListingFields } from './types';
+import { cleanText, optionalCoordinate, optionalInteger, requireMongolianPhone } from './inputValidation';
 
 const TABLE = 'sitting_listings';
 const BUCKET = 'pet-photos';
@@ -56,6 +56,7 @@ async function requireUserId(): Promise<string> {
 
 export async function createSittingListing(data: SittingListingInput): Promise<string> {
   const userId = await requireUserId();
+  const price = optionalInteger(data.price, { min: 0, max: 100_000_000, label: 'Үйлчилгээний үнэ' });
   let photoUrl: string | null = null;
 
   if (data.photoFile) {
@@ -71,16 +72,16 @@ export async function createSittingListing(data: SittingListingInput): Promise<s
     .insert({
       user_id: userId,
       pet_type: data.petType,
-      description: data.description || '',
+      description: cleanText(data.description, 2000, 'Тайлбар', true),
       district: data.district || '',
-      place: data.place || '',
-      experience: data.experience || '',
-      availability: data.availability || '',
-      phone: data.phone || '',
-      price: data.price ?? null,
+      place: cleanText(data.place, 300, 'Байршил', true),
+      experience: cleanText(data.experience, 500, 'Туршлага'),
+      availability: cleanText(data.availability, 500, 'Боломжит цаг'),
+      phone: requireMongolianPhone(data.phone),
+      price,
       photo_url: photoUrl,
-      lat: data.lat ?? null,
-      lng: data.lng ?? null,
+      lat: optionalCoordinate(data.lat, 'lat'),
+      lng: optionalCoordinate(data.lng, 'lng'),
     })
     .select()
     .single();
@@ -127,15 +128,15 @@ export async function updateSittingListing(id: string, fields: UpdateSittingList
   const userId = await requireUserId();
   const updateData: Record<string, unknown> = {};
   if (fields.petType !== undefined) updateData.pet_type = fields.petType;
-  if (fields.description !== undefined) updateData.description = fields.description;
+  if (fields.description !== undefined) updateData.description = cleanText(fields.description, 2000, 'Тайлбар', true);
   if (fields.district !== undefined) updateData.district = fields.district;
-  if (fields.place !== undefined) updateData.place = fields.place;
-  if (fields.experience !== undefined) updateData.experience = fields.experience;
-  if (fields.availability !== undefined) updateData.availability = fields.availability;
-  if (fields.phone !== undefined) updateData.phone = fields.phone;
-  if (fields.price !== undefined) updateData.price = fields.price;
-  if (fields.lat !== undefined) updateData.lat = fields.lat;
-  if (fields.lng !== undefined) updateData.lng = fields.lng;
+  if (fields.place !== undefined) updateData.place = cleanText(fields.place, 300, 'Байршил', true);
+  if (fields.experience !== undefined) updateData.experience = cleanText(fields.experience, 500, 'Туршлага');
+  if (fields.availability !== undefined) updateData.availability = cleanText(fields.availability, 500, 'Боломжит цаг');
+  if (fields.phone !== undefined) updateData.phone = requireMongolianPhone(fields.phone);
+  if (fields.price !== undefined) updateData.price = optionalInteger(fields.price, { min: 0, max: 100_000_000, label: 'Үйлчилгээний үнэ' });
+  if (fields.lat !== undefined) updateData.lat = optionalCoordinate(fields.lat, 'lat');
+  if (fields.lng !== undefined) updateData.lng = optionalCoordinate(fields.lng, 'lng');
 
   const { error } = await supabase
     .from(TABLE)
@@ -146,5 +147,7 @@ export async function updateSittingListing(id: string, fields: UpdateSittingList
 }
 
 export async function deleteSittingListing(id: string): Promise<void> {
-  await deleteContent('sitting', id);
+  const userId = await requireUserId();
+  const { error } = await supabase.from(TABLE).delete().eq('id', id).eq('user_id', userId);
+  if (error) throw error;
 }

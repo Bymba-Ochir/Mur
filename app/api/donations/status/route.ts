@@ -2,19 +2,11 @@
 import { NextResponse } from 'next/server';
 import { checkQPayPayment } from '../../../../lib/qpay';
 import { createAdminClient } from '../../../../lib/supabaseAdmin';
-import { checkRateLimit, getClientIp } from '../../../../lib/rateLimit';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: Request) {
   try {
-    const rate = checkRateLimit(`donation-status:${getClientIp(request)}`, 30, 10 * 60_000);
-    if (!rate.allowed) {
-      return NextResponse.json({ error: 'Хэт олон хүсэлт илгээлээ' }, {
-        status: 429,
-        headers: { 'Retry-After': String(rate.retryAfterSec) },
-      });
-    }
     const { searchParams } = new URL(request.url);
     const donationId = searchParams.get('donationId');
     const statusToken = searchParams.get('statusToken');

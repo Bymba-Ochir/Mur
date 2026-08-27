@@ -1,6 +1,5 @@
 'use client';
 import SittingForm from '../../../components/SittingForm';
-import AuthRequired from '../../../components/AuthRequired';
 import { useLanguage } from '../../../lib/i18n';
 
 export default function NewSittingPage() {
@@ -12,7 +11,7 @@ export default function NewSittingPage() {
         <h1>{t('sitting_new_title')}</h1>
         <p>{t('sitting_new_desc')}</p>
       </div>
-      <AuthRequired><SittingForm /></AuthRequired>
+      <SittingForm />
     </div>
   );
 }

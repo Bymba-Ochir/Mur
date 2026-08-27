@@ -12,6 +12,7 @@ import { useLanguage } from './i18n';
 import type { District } from './districts';
 import type { AdoptionGender, PetType } from './types';
 import { getErrorMessage } from './utils';
+import { cleanText, isInputValidationError, requireMongolianPhone } from './inputValidation';
 
 // Дотоод утга (DB-д хадгалагдах) үргэлж Монгол хэвээр
 export const TYPE_VALUES: PetType[] = ['Нохой', 'Муур', 'Бусад'];
@@ -109,6 +110,12 @@ export function useAdoptionSubmit({
     try {
       const id = await createAdoption({
         ...form,
+        name: cleanText(form.name, 100, 'Нэр'),
+        age: cleanText(form.age, 100, 'Нас'),
+        breed: cleanText(form.breed, 100, 'Үүлдэр'),
+        description: cleanText(form.description, 2000, 'Тайлбар', true),
+        place: cleanText(form.place, 300, 'Байршил', true),
+        phone: requireMongolianPhone(form.phone),
         gender: form.gender || 'Тодорхойгүй',
         photoFiles,
       });
@@ -118,7 +125,7 @@ export function useAdoptionSubmit({
     } catch (err) {
       console.error(err);
       const msg = getErrorMessage(err);
-      setError(msg && msg.includes('олон удаа')
+      setError(isInputValidationError(err) || (msg && msg.includes('олон удаа'))
         ? msg
         : 'Алдаа гарлаа. Дахин оролдоно уу.');
     } finally {

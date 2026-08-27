@@ -2,6 +2,7 @@
 // Амьтны эрүүл мэндийн үйлчилгээ: вакцин, өвчин, эмийн CRUD
 import { supabase } from './supabase';
 import type { Vaccination, MedicalCondition, Medication, PetHealthData } from './types';
+import { assertDateOrder, cleanText, optionalIsoDate } from './inputValidation';
 
 // ─── Тусламжит функцууд ──────────────────────────────────────────────────────
 
@@ -87,14 +88,16 @@ export async function addVaccination(petId: string, input: {
   vetName?: string;
   notes?: string;
 }): Promise<Vaccination> {
+  const vaccinationDate = optionalIsoDate(input.vaccinationDate, 'Вакцины огноо');
+  if (!vaccinationDate) throw new Error('Вакцины огноо оруулна уу.');
   const { data, error } = await supabase
     .from('vaccinations')
     .insert({
       pet_id: petId,
-      vaccine_name: input.vaccineName,
-      vaccination_date: input.vaccinationDate,
-      vet_name: input.vetName || null,
-      notes: input.notes || null,
+      vaccine_name: cleanText(input.vaccineName, 200, 'Вакцины нэр', true),
+      vaccination_date: vaccinationDate,
+      vet_name: cleanText(input.vetName, 200, 'Эмнэлэг, эмчийн нэр') || null,
+      notes: cleanText(input.notes, 1000, 'Тэмдэглэл') || null,
     })
     .select()
     .single();
@@ -119,9 +122,9 @@ export async function addCondition(petId: string, input: {
     .from('medical_conditions')
     .insert({
       pet_id: petId,
-      condition_name: input.conditionName,
-      diagnosis_date: input.diagnosisDate || null,
-      notes: input.notes || null,
+      condition_name: cleanText(input.conditionName, 200, 'Онош', true),
+      diagnosis_date: optionalIsoDate(input.diagnosisDate, 'Оношилсон огноо'),
+      notes: cleanText(input.notes, 1000, 'Тэмдэглэл') || null,
     })
     .select()
     .single();
@@ -145,16 +148,20 @@ export async function addMedication(petId: string, input: {
   endDate?: string;
   nextReminderDate?: string;
 }): Promise<Medication> {
+  const startDate = optionalIsoDate(input.startDate, 'Эхлэх огноо');
+  const endDate = optionalIsoDate(input.endDate, 'Дуусах огноо');
+  const nextReminderDate = optionalIsoDate(input.nextReminderDate, 'Сануулах огноо');
+  assertDateOrder(startDate, endDate);
   const { data, error } = await supabase
     .from('medications')
     .insert({
       pet_id: petId,
-      name: input.name,
-      dosage: input.dosage || null,
-      frequency: input.frequency || null,
-      start_date: input.startDate || null,
-      end_date: input.endDate || null,
-      next_reminder_date: input.nextReminderDate || null,
+      name: cleanText(input.name, 200, 'Эмийн нэр', true),
+      dosage: cleanText(input.dosage, 200, 'Тун') || null,
+      frequency: cleanText(input.frequency, 200, 'Давтамж') || null,
+      start_date: startDate,
+      end_date: endDate,
+      next_reminder_date: nextReminderDate,
     })
     .select()
     .single();
@@ -166,7 +173,7 @@ export async function addMedication(petId: string, input: {
 export async function updateMedicationReminder(id: string, nextReminderDate: string): Promise<void> {
   const { error } = await supabase
     .from('medications')
-    .update({ next_reminder_date: nextReminderDate, last_notified_date: null })
+    .update({ next_reminder_date: optionalIsoDate(nextReminderDate, 'Сануулах огноо'), last_notified_date: null })
     .eq('id', id);
   if (error) throw error;
 }

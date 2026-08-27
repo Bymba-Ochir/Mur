@@ -13,24 +13,23 @@ export default function Home() {
   const { t } = useLanguage();
 
   return (
-    <div className="page-shell">
-      <section className="relative overflow-hidden py-[var(--sp-8)] max-sm:pt-[var(--sp-5)] max-sm:pb-[var(--sp-6)] max-[480px]:pt-[var(--sp-4)] max-[480px]:pb-[var(--sp-5)] min-[1025px]:pb-[calc(var(--sp-8)+var(--sp-4))] min-[1440px]:pt-[calc(var(--sp-8)+var(--sp-3))] min-[1440px]:pb-[calc(var(--sp-8)+var(--sp-6))]">
-        <div className="pointer-events-none absolute inset-0 z-0 opacity-[0.04]" style={{ backgroundImage: PAW_PATTERN, backgroundSize: '110px 110px' }} aria-hidden="true" />
+    <div className="home page-shell">
+      <section className="hero">
         {/* Indigo / Coral ambient glows */}
-        <div className="hero-glow absolute -top-[260px] -left-[180px] size-[560px] bg-[var(--primary)] opacity-10" aria-hidden="true" />
-        <div className="hero-glow absolute top-20 -right-40 size-[420px] bg-[var(--accent)] opacity-[0.06]" aria-hidden="true" />
+        <div className="hero-glow g1" aria-hidden="true" />
+        <div className="hero-glow g2" aria-hidden="true" />
 
-        <div className="relative z-1 grid grid-cols-[1.15fr_.85fr] items-center gap-[var(--sp-7)] max-[900px]:grid-cols-1 max-[900px]:gap-[var(--sp-5)]">
-          <div className="max-w-[720px] min-[1025px]:max-w-[800px]">
+        <div className="hero-inner">
+          <div className="hero-content">
             <div className="eyebrow">
               <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M12 21s-7-4.5-9.5-9C.7 8.3 2 4.8 5.4 4.1 7.6 3.6 9.8 4.6 12 7c2.2-2.4 4.4-3.4 6.6-2.9 3.4.7 4.7 4.2 2.9 7.9C19 16.5 12 21 12 21z" /></svg>
               {t('hero_eyebrow')}
             </div>
-            <h1 className="mb-[var(--sp-5)] text-[clamp(2.6rem,5.4vw,4.4rem)] leading-[1.06] max-sm:mb-[var(--sp-3)] max-sm:text-[length:var(--text-2xl)] max-[480px]:text-[length:var(--text-xl)] min-[1025px]:text-[length:var(--text-display-lg)]">
-              {t('hero_title_1')} <span className="text-[var(--accent)]">{t('hero_title_accent')}</span> {t('hero_title_2')}
+            <h1 className="hero-title">
+              {t('hero_title_1')} <span className="gradient-text">{t('hero_title_accent')}</span> {t('hero_title_2')}
             </h1>
-            <p className="mb-[var(--sp-5)] max-w-[480px] text-[16.5px] leading-[1.6] text-[var(--text-secondary)] max-sm:mb-[var(--sp-4)] max-sm:text-[15px] max-[480px]:text-[14.5px] max-[480px]:leading-[1.65] min-[1025px]:mb-[var(--sp-6)] min-[1025px]:max-w-[540px] min-[1025px]:text-[17px] min-[1025px]:leading-[1.7]">{t('hero_desc')}</p>
-            <div className="flex flex-wrap gap-[var(--sp-3)] [&_[data-variant='accent']]:shadow-[var(--shadow-glow)] [&_.arrow]:transition-transform [&_.btn-base:hover_.arrow]:translate-x-[3px] max-[480px]:flex-col max-[480px]:gap-[var(--sp-2)] max-[480px]:[&_.btn-base]:w-full max-[480px]:[&_.btn-base]:justify-center min-[1025px]:gap-[var(--sp-4)]">
+            <p className="hero-desc">{t('hero_desc')}</p>
+            <div className="hero-actions">
               <Button as="link" href="/report-lost" variant="accent">
                 {t('hero_btn_lost')}
                 <svg className="arrow" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
@@ -40,7 +39,7 @@ export default function Home() {
               <Button as="link" href="/report-found" variant="secondary">{t('hero_btn_found')}</Button>
             </div>
 
-            <ul className="mt-[var(--sp-5)] flex list-none flex-wrap gap-x-[var(--sp-4)] gap-y-[var(--sp-2)] p-0 [&_li]:inline-flex [&_li]:items-center [&_li]:gap-[7px] [&_li]:text-[length:var(--text-xs)] [&_li]:font-medium [&_li]:text-[var(--text-secondary)] [&_svg]:shrink-0 [&_svg]:text-[var(--primary-light)] max-[480px]:mt-[var(--sp-4)] max-[480px]:flex-col max-[480px]:[&_li]:text-[13px]" aria-label="Платформын давуу талууд">
+            <ul className="hero-trust" aria-label="Платформын давуу талууд">
               <li>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
                   <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0Z" /><circle cx="12" cy="10" r="3" />
@@ -63,19 +62,19 @@ export default function Home() {
           </div>
 
           {/* Харагдац карт — гоёл чимэглэл */}
-          <div className="relative flex min-h-[320px] w-full min-w-0 items-center justify-center px-3 max-[900px]:min-h-0 max-[900px]:px-0 max-[900px]:pt-[var(--sp-4)] max-[900px]:pb-[var(--sp-5)]" aria-hidden="true">
-            <div className="relative w-[min(280px,calc(100%-24px))] overflow-hidden rounded-[var(--r-lg)] border border-[var(--border-subtle)] bg-[var(--surface-2)] shadow-[var(--shadow-lift)] motion-safe:animate-[pulse_6s_ease-in-out_infinite]">
-              <div className="relative flex h-[180px] items-center justify-center bg-[radial-gradient(circle_at_40%_30%,color-mix(in_srgb,var(--primary)_24%,transparent),transparent_72%),var(--surface-3)] [&>svg]:text-[var(--primary)] [&>svg]:opacity-35">
-                <span className="absolute top-3 left-3 rounded-[var(--r-pill)] bg-[var(--accent)] px-[11px] py-[5px] text-[11px] font-bold tracking-[0.03em] text-[var(--text-on-accent)]">АЛДСАН</span>
+          <div className="hero-visual" aria-hidden="true">
+            <div className="hero-card">
+              <div className="hero-card-photo">
+                <span className="status-chip">АЛДСАН</span>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" width="64" height="64" focusable="false">
                   <circle cx="12" cy="12" r="7" />
                   <path d="M9 10.5c0-1 .6-1.5 1.4-1.5M14.6 10.5c0-1-.6-1.5-1.4-1.5M9.5 15c1.5 1 3.5 1 5 0" strokeLinecap="round" />
                 </svg>
               </div>
-              <div className="p-[var(--sp-4)]">
-                <h4 className="mb-0.5 font-[family-name:var(--font-display)] text-[17px] text-[var(--text-primary)]">Нохой</h4>
-                <p className="mb-2.5 text-[13px] text-[var(--text-tertiary)]">Голден ретривер, шаргал</p>
-                <div className="flex items-center gap-1.5 text-[12.5px] text-[var(--text-secondary)] [&_svg]:text-[var(--alert-light)]">
+              <div className="hero-card-body">
+                <h4>Нохой</h4>
+                <p>Голден ретривер, шаргал</p>
+                <div className="hero-card-loc">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="13" height="13" focusable="false">
                     <path d="M12 21s-7-4.5-8.5-9.6C2.6 7.8 4.4 5 7.3 4.9c1.9-.1 3.5 1 4.7 2.6C13.2 5.9 14.8 4.8 16.7 4.9c2.9.1 4.7 2.9 3.8 6.5C19 16.5 12 21 12 21z" />
                   </svg>
@@ -83,19 +82,19 @@ export default function Home() {
                 </div>
               </div>
             </div>
-            <div className="absolute bottom-2 left-1/2 flex w-max max-w-[min(240px,calc(100%-24px))] -translate-x-1/2 items-center gap-2 rounded-[var(--r-md)] border border-[var(--border-strong)] bg-[var(--surface-3)] p-[var(--sp-3)] shadow-[var(--shadow-md)] max-[900px]:bottom-3">
-              <span className="size-2 shrink-0 rounded-full bg-[var(--confirmed)] shadow-[0_0_0_4px_color-mix(in_srgb,var(--confirmed)_18%,transparent)]" />
-              <p className="min-w-0 overflow-wrap-anywhere text-[11.5px] font-semibold leading-[1.35] whitespace-normal text-[var(--text-secondary)]">Шинэ тохирол олдлоо</p>
+            <div className="hero-card-mini">
+              <span className="dot" />
+              <p>Шинэ тохирол олдлоо</p>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="py-[var(--sp-9)] max-sm:mt-[var(--sp-6)] max-[480px]:mt-[var(--sp-5)]">
+      <section className="services">
         <div className="eyebrow">{t('services_title')}</div>
-        <h2 className="max-w-[640px] text-[clamp(1.8rem,3.2vw,2.6rem)] leading-[1.15] max-sm:text-[length:var(--text-xl)]">{t('services_subtitle')}</h2>
+        <h2 className="services-title">{t('services_subtitle')}</h2>
 
-        <div className="mt-[var(--sp-5)] grid grid-cols-12 gap-[var(--sp-4)] max-[900px]:gap-[var(--sp-3)] [&>a]:relative [&>a]:col-span-3 [&>a]:block [&>a]:h-full [&>a]:min-h-[150px] [&>a]:rounded-[var(--r-lg)] [&>a]:border [&>a]:border-[var(--border-subtle)] [&>a]:bg-[var(--surface-2)] [&>a]:p-[var(--sp-5)] [&>a]:no-underline [&>a]:shadow-[var(--shadow-sm)] [&>a]:transition-[transform,box-shadow,border-color] [&>a]:duration-[var(--dur-base)] [&>a]:ease-[var(--ease-out)] [&>a:hover]:-translate-y-1 [&>a:hover]:border-[var(--primary-light)] [&>a:hover]:shadow-[var(--shadow-md)] [&>a:nth-child(-n+2)]:col-span-6 max-[900px]:[&>a]:col-span-6 max-[600px]:[&>a]:col-span-12 [&_.service-icon]:mb-[var(--sp-4)] [&_.service-icon]:inline-flex [&_.service-icon]:size-12 [&_.service-icon]:items-center [&_.service-icon]:justify-center [&_.service-icon]:rounded-[var(--r-md)] [&_.service-icon]:bg-[var(--primary)] [&_.service-icon]:text-white [&_.service-icon]:transition-transform [&>a:nth-child(1)_.service-icon]:bg-[var(--accent)] [&>a:nth-child(2)_.service-icon]:bg-[var(--found)] [&>a:nth-child(4)_.service-icon]:bg-[var(--found)] [&>a:nth-child(5)_.service-icon]:bg-[var(--clinic)] [&>a:nth-child(6)_.service-icon]:bg-[var(--assistant)] [&>a:hover_.service-icon]:-rotate-3 [&>a:hover_.service-icon]:scale-105 [&>a_h3]:mb-[var(--sp-1)] [&>a_h3]:font-[family-name:var(--font-display)] [&>a_h3]:text-[length:var(--text-base)] [&>a_h3]:font-bold [&>a_h3]:text-[var(--text-primary)] [&>a_p]:text-[length:var(--text-xs)] [&>a_p]:leading-[1.5] [&>a_p]:text-[var(--text-secondary)] [&_.service-arrow]:absolute [&_.service-arrow]:top-[var(--sp-5)] [&_.service-arrow]:right-[var(--sp-4)] [&_.service-arrow]:text-[var(--text-tertiary)] [&_.service-arrow]:transition-transform [&>a:hover_.service-arrow]:translate-x-[3px] [&>a:hover_.service-arrow]:text-[var(--primary)]">
+        <div className="services-grid">
           <Link href="/report-lost" className="service-card">
             <span className="service-icon" aria-hidden="true">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" focusable="false">
@@ -171,33 +170,275 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="py-[var(--sp-9)] max-sm:mt-[var(--sp-5)] max-[480px]:mt-[var(--sp-4)] min-[1025px]:mt-[var(--sp-7)]">
-        <div className="mb-[var(--sp-5)] flex items-center justify-between gap-[var(--sp-3)] max-sm:mb-[var(--sp-4)] max-sm:flex-col max-sm:items-start max-[480px]:mb-[var(--sp-3)] min-[1025px]:mb-[var(--sp-6)]">
-          <h2 className="mb-0 text-[clamp(1.4rem,3vw,1.9rem)] max-[480px]:text-[length:var(--text-xl)] min-[1025px]:text-[length:var(--text-3xl)]">{t('how_it_works')}</h2>
-          <button type="button" className="inline-flex min-h-[42px] cursor-pointer items-center gap-2 rounded-full border border-[var(--border-subtle)] bg-[var(--surface-2)] px-4 font-bold text-[var(--primary)] hover:border-[var(--primary)] hover:bg-[color-mix(in_srgb,var(--primary)_8%,var(--surface-2))] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[var(--border-focus)] max-[480px]:w-full max-[480px]:justify-center" onClick={() => window.dispatchEvent(new Event('mur:open-onboarding'))}>
+      <section className="how">
+        <div className="how-heading">
+          <h2 className="how-title">{t('how_it_works')}</h2>
+          <button type="button" className="how-guide" onClick={() => window.dispatchEvent(new Event('mur:open-onboarding'))}>
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 2-2.5 2-2.5 4M12 17h.01"/></svg>
             {t('how_it_works')}
           </button>
         </div>
-        <div className="mb-[var(--sp-4)] w-full max-[480px]:mb-[var(--sp-3)] min-[1025px]:mb-[var(--sp-5)]">
+        <div className="trail-wrap">
           <PawTrail labels={[t('step1_title'), t('step2_title'), t('step3_title')]} current={2} />
         </div>
 
-        <div className="grid grid-cols-3 gap-[var(--sp-5)] max-[800px]:grid-cols-1 max-sm:gap-[var(--sp-4)] max-[480px]:gap-[var(--sp-3)] min-[1025px]:gap-[var(--sp-6)]">
-          <ScrollReveal className="relative overflow-hidden rounded-[var(--r-lg)] border border-[var(--border-subtle)] bg-[var(--surface-2)] px-[var(--sp-5)] py-[var(--sp-6)] shadow-[var(--shadow-sm)] transition-[transform,box-shadow,border-color] duration-300 hover:-translate-y-1.5 hover:border-transparent hover:shadow-[var(--shadow-lift)] max-sm:rounded-[var(--r-md)] max-sm:px-[var(--sp-4)] max-sm:py-[var(--sp-5)] max-[480px]:px-[var(--sp-3)] max-[480px]:py-[var(--sp-4)] min-[1025px]:rounded-[var(--r-xl)] min-[1025px]:px-[var(--sp-6)] min-[1025px]:py-[var(--sp-7)]">
-            <span className="mb-[var(--sp-3)] block bg-[var(--grad-accent)] bg-clip-text font-[family-name:var(--font-display)] text-[clamp(2.2rem,7vw,3rem)] leading-none font-extrabold text-transparent opacity-60" aria-hidden="true">01</span>
-            <p className="text-[13.5px] leading-[1.5] text-[var(--text-secondary)] max-[480px]:text-sm max-[480px]:leading-[1.6] min-[1025px]:text-[15px] min-[1025px]:leading-[1.65]">{t('step1_desc')}</p>
+        <div className="grid steps-grid">
+          <ScrollReveal className="step-card">
+            <span className="step-num" aria-hidden="true">01</span>
+            <p className="step-desc">{t('step1_desc')}</p>
           </ScrollReveal>
-          <ScrollReveal className="reveal-delay-1 relative overflow-hidden rounded-[var(--r-lg)] border border-[var(--border-subtle)] bg-[var(--surface-2)] px-[var(--sp-5)] py-[var(--sp-6)] shadow-[var(--shadow-sm)] transition-[transform,box-shadow,border-color] duration-300 hover:-translate-y-1.5 hover:border-transparent hover:shadow-[var(--shadow-lift)] max-sm:rounded-[var(--r-md)] max-sm:px-[var(--sp-4)] max-sm:py-[var(--sp-5)] max-[480px]:px-[var(--sp-3)] max-[480px]:py-[var(--sp-4)] min-[1025px]:rounded-[var(--r-xl)] min-[1025px]:px-[var(--sp-6)] min-[1025px]:py-[var(--sp-7)]">
-            <span className="mb-[var(--sp-3)] block bg-[var(--grad-accent)] bg-clip-text font-[family-name:var(--font-display)] text-[clamp(2.2rem,7vw,3rem)] leading-none font-extrabold text-transparent opacity-60" aria-hidden="true">02</span>
-            <p className="text-[13.5px] leading-[1.5] text-[var(--text-secondary)] max-[480px]:text-sm max-[480px]:leading-[1.6] min-[1025px]:text-[15px] min-[1025px]:leading-[1.65]">{t('step2_desc')}</p>
+          <ScrollReveal className="step-card reveal-delay-1">
+            <span className="step-num" aria-hidden="true">02</span>
+            <p className="step-desc">{t('step2_desc')}</p>
           </ScrollReveal>
-          <ScrollReveal className="reveal-delay-2 relative overflow-hidden rounded-[var(--r-lg)] border border-[var(--border-subtle)] bg-[var(--surface-2)] px-[var(--sp-5)] py-[var(--sp-6)] shadow-[var(--shadow-sm)] transition-[transform,box-shadow,border-color] duration-300 hover:-translate-y-1.5 hover:border-transparent hover:shadow-[var(--shadow-lift)] max-sm:rounded-[var(--r-md)] max-sm:px-[var(--sp-4)] max-sm:py-[var(--sp-5)] max-[480px]:px-[var(--sp-3)] max-[480px]:py-[var(--sp-4)] min-[1025px]:rounded-[var(--r-xl)] min-[1025px]:px-[var(--sp-6)] min-[1025px]:py-[var(--sp-7)]">
-            <span className="mb-[var(--sp-3)] block bg-[var(--grad-accent)] bg-clip-text font-[family-name:var(--font-display)] text-[clamp(2.2rem,7vw,3rem)] leading-none font-extrabold text-transparent opacity-60" aria-hidden="true">03</span>
-            <p className="text-[13.5px] leading-[1.5] text-[var(--text-secondary)] max-[480px]:text-sm max-[480px]:leading-[1.6] min-[1025px]:text-[15px] min-[1025px]:leading-[1.65]">{t('step3_desc')}</p>
+          <ScrollReveal className="step-card reveal-delay-2">
+            <span className="step-num" aria-hidden="true">03</span>
+            <p className="step-desc">{t('step3_desc')}</p>
           </ScrollReveal>
         </div>
       </section>
+
+      <style jsx>{`
+        .hero { position: relative; overflow: hidden; padding: var(--sp-8) 0; }
+        @media (max-width: 640px) { .hero { padding: var(--sp-5) 0 var(--sp-6); } }
+        @media (max-width: 480px) { .hero { padding: var(--sp-4) 0 var(--sp-5); } }
+        @media (min-width: 1025px) { .hero { padding: var(--sp-8) 0 calc(var(--sp-8) + var(--sp-4)); } }
+        @media (min-width: 1440px) { .hero { padding: calc(var(--sp-8) + var(--sp-3)) 0 calc(var(--sp-8) + var(--sp-6)); } }
+
+        /* Ambient glows */
+        :global(.hero-glow.g1) {
+          width: 560px; height: 560px;
+          background: var(--primary); opacity: 0.10;
+          top: -260px; left: -180px;
+        }
+        :global(.hero-glow.g2) {
+          width: 420px; height: 420px;
+          background: var(--accent); opacity: 0.06;
+          top: 80px; right: -160px;
+        }
+
+        /* Зөөлөн paw-print хээ */
+        .hero::after {
+          content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none; opacity: 0.04;
+          background-image: ${PAW_PATTERN}; background-size: 110px 110px;
+        }
+
+        .hero-inner {
+          position: relative; z-index: 1;
+          display: grid; grid-template-columns: 1.15fr 0.85fr; gap: var(--sp-7); align-items: center;
+        }
+        @media (max-width: 900px) {
+          .hero-inner { grid-template-columns: 1fr; gap: var(--sp-5); }
+        }
+
+        .hero-content { max-width: 720px; }
+        @media (min-width: 1025px) { .hero-content { max-width: 800px; } }
+        .hero-title {
+          font-size: clamp(2.6rem, 5.4vw, 4.4rem); margin-bottom: var(--sp-5); line-height: 1.06;
+        }
+        @media (max-width: 640px) { .hero-title { font-size: var(--text-2xl); margin-bottom: var(--sp-3); } }
+        @media (max-width: 480px) { .hero-title { font-size: var(--text-xl); margin-bottom: var(--sp-3); } }
+        @media (min-width: 1025px) { .hero-title { font-size: var(--text-display-lg); margin-bottom: var(--sp-5); } }
+        .hero-desc {
+          color: var(--text-secondary); max-width: 480px; margin-bottom: var(--sp-5);
+          font-size: 16.5px; line-height: 1.6;
+        }
+        @media (max-width: 640px) { .hero-desc { font-size: 15px; margin-bottom: var(--sp-4); } }
+        @media (max-width: 480px) { .hero-desc { font-size: 14.5px; margin-bottom: var(--sp-4); line-height: 1.65; } }
+        @media (min-width: 1025px) { .hero-desc { font-size: 17px; margin-bottom: var(--sp-6); max-width: 540px; line-height: 1.7; } }
+        .hero-actions { display: flex; gap: var(--sp-3); flex-wrap: wrap; }
+        .hero-title :global(.gradient-text) { background: none; color: var(--accent); }
+        @media (max-width: 480px) {
+          .hero-actions { gap: var(--sp-2); flex-direction: column; }
+          .hero-actions :global(.btn-base) { width: 100%; justify-content: center; }
+        }
+        @media (min-width: 1025px) { .hero-actions { gap: var(--sp-4); } }
+
+        /* CTA glow */
+        .hero-actions :global([data-variant='accent']) { box-shadow: var(--shadow-glow); }
+        .hero-actions :global([data-variant='accent']):hover {
+          box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 35%, transparent),
+                      0 12px 36px color-mix(in srgb, var(--accent) 35%, transparent);
+        }
+        .hero-actions .arrow { transition: transform 0.2s ease; }
+        .hero-actions :global(.btn-base):hover .arrow { transform: translateX(3px); }
+        .hero-trust {
+          list-style: none; margin: var(--sp-5) 0 0; padding: 0;
+          display: flex; flex-wrap: wrap; gap: var(--sp-2) var(--sp-4);
+        }
+        .hero-trust li {
+          display: inline-flex; align-items: center; gap: 7px;
+          font-size: var(--text-xs); font-weight: 500; color: var(--text-secondary);
+        }
+        .hero-trust svg { color: var(--primary-light); flex-shrink: 0; }
+        @media (max-width: 480px) {
+          .hero-trust { flex-direction: column; gap: var(--sp-2); margin-top: var(--sp-4); }
+          .hero-trust li { font-size: 13px; }
+        }
+
+        /* Харагдац карт */
+        .hero-visual {
+          position: relative; display: flex; align-items: center; justify-content: center;
+          width: 100%; min-width: 0; min-height: 320px;
+          padding-inline: 12px; box-sizing: border-box;
+        }
+        @media (max-width: 900px) { .hero-visual { min-height: 0; padding: var(--sp-4) 0 var(--sp-5); } }
+        .hero-card {
+          position: relative; width: min(280px, calc(100% - 24px));
+          background: var(--surface-2); border: 1px solid var(--border-subtle);
+          border-radius: var(--r-lg); box-shadow: var(--shadow-lift); overflow: hidden;
+          animation: float 6s ease-in-out infinite;
+        }
+        @keyframes float {
+          0%, 100% { transform: translateY(0) rotate(-2deg); }
+          50% { transform: translateY(-14px) rotate(1deg); }
+        }
+        .hero-card-photo {
+          height: 180px; position: relative; display: flex; align-items: center; justify-content: center;
+          background:
+            radial-gradient(circle at 40% 30%, color-mix(in srgb, var(--primary) 55%, transparent), transparent 75%),
+            var(--surface-3);
+        }
+        .hero-card-photo svg { color: var(--surface-2); opacity: 0.9; }
+        .status-chip {
+          position: absolute; top: 12px; left: 12px;
+          background: var(--accent); color: var(--text-on-accent);
+          font-size: 11px; font-weight: 700; letter-spacing: 0.03em;
+          padding: 5px 11px; border-radius: var(--r-pill);
+        }
+        .hero-card-body { padding: var(--sp-4); }
+        .hero-card-body h4 { font-family: var(--font-display); font-size: 17px; margin-bottom: 2px; color: var(--text-primary); }
+        .hero-card-body p { font-size: 13px; color: var(--text-tertiary); margin-bottom: 10px; }
+        .hero-card-loc { display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--text-secondary); }
+        .hero-card-loc svg { color: var(--alert-light); }
+        .hero-card-mini {
+          position: absolute; bottom: 8px; left: 50%; right: auto; translate: -50% 0;
+          display: flex; align-items: center; gap: 8px;
+          width: max-content; max-width: min(240px, calc(100% - 24px)); box-sizing: border-box;
+          background: var(--surface-3); border: 1px solid var(--border-strong);
+          border-radius: var(--r-md); padding: var(--sp-3);
+          box-shadow: var(--shadow-md);
+          animation: float 7s ease-in-out infinite reverse;
+        }
+        .hero-card-mini .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--confirmed); flex-shrink: 0; box-shadow: 0 0 0 4px color-mix(in srgb, var(--confirmed) 18%, transparent); }
+        .hero-card-mini p { min-width: 0; font-size: 11.5px; line-height: 1.35; color: var(--text-secondary); font-weight: 600; white-space: normal; overflow-wrap: anywhere; }
+        @media (max-width: 900px) { .hero-card-mini { bottom: 12px; } }
+
+        /* Entrance animation */
+        .hero-content > * { opacity: 0; animation: rise-in 0.6s cubic-bezier(0.16,1,0.3,1) forwards; }
+        .hero-content .eyebrow { animation-delay: 0.05s; }
+        .hero-content h1 { animation-delay: 0.15s; }
+        .hero-content .hero-desc { animation-delay: 0.25s; }
+        .hero-content .hero-actions { animation-delay: 0.35s; }
+        .hero-content .hero-trust { animation-delay: 0.45s; }
+        .hero-visual { opacity: 0; animation: rise-in 0.6s cubic-bezier(0.16,1,0.3,1) 0.3s forwards; }
+        @keyframes rise-in {
+          from { opacity: 0; transform: translateY(16px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+
+        .services { margin-top: 0; padding: var(--sp-9) 0; }
+        @media (max-width: 640px) { .services { margin-top: var(--sp-6); } }
+        @media (max-width: 480px) { .services { margin-top: var(--sp-5); } }
+        .services-title { font-size: clamp(1.8rem, 3.2vw, 2.6rem); max-width: 640px; line-height: 1.15; }
+        @media (max-width: 640px) { .services-title { font-size: var(--text-xl); } }
+        .services-grid {
+          display: grid;
+          grid-template-columns: repeat(6, 1fr);
+          gap: var(--sp-4);
+          margin-top: var(--sp-5);
+        }
+        @media (max-width: 900px) { .services-grid { gap: var(--sp-3); } }
+        .service-card {
+          position: relative;
+          display: block;
+          background: var(--surface-2);
+          border: 1px solid var(--border-subtle);
+          border-radius: var(--r-lg);
+          padding: var(--sp-5);
+          text-decoration: none;
+          grid-column: span 2;
+          height: 100%;
+          box-shadow: var(--shadow-sm);
+          transition: transform var(--dur-base) var(--ease-out), box-shadow var(--dur-base) var(--ease-out), border-color var(--dur-base) var(--ease-out);
+        }
+        .service-card:nth-child(-n + 2) { grid-column: span 3; }
+        .service-card:nth-child(1) { --feature-color: var(--accent); --feature-soft: #FF8A8A; }
+        .service-card:nth-child(2) { --feature-color: var(--found); --feature-soft: #7DD8F0; }
+        .service-card:nth-child(3) { --feature-color: var(--primary); --feature-soft: #8178F7; }
+        .service-card:nth-child(4) { --feature-color: var(--found); --feature-soft: #7DD8F0; }
+        .service-card:nth-child(5) { --feature-color: var(--clinic); --feature-soft: #56C7E8; }
+        .service-card:nth-child(6) { --feature-color: var(--assistant); --feature-soft: #A49EFC; }
+        @media (max-width: 900px) { .service-card, .service-card:nth-child(-n + 2) { grid-column: span 3; } }
+        @media (max-width: 600px) { .service-card, .service-card:nth-child(-n + 2) { grid-column: span 6; } }
+        .service-card:hover {
+          transform: translateY(-4px);
+          box-shadow: var(--shadow-md);
+          border-color: color-mix(in srgb, var(--feature-color) 55%, var(--border-subtle));
+        }
+        .service-icon {
+          display: inline-flex; align-items: center; justify-content: center;
+          width: 48px; height: 48px; border-radius: var(--r-md);
+          background: linear-gradient(135deg, var(--feature-soft), var(--feature-color)); color: #FFFFFF;
+          margin-bottom: var(--sp-4);
+          transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+        }
+        .service-card:hover .service-icon { transform: scale(1.06) rotate(-3deg); box-shadow: 0 8px 20px color-mix(in srgb, var(--feature-color) 24%, transparent); }
+        .service-card h3 { font-family: var(--font-display); font-size: var(--text-base); font-weight: 700; color: var(--text-primary); margin-bottom: var(--sp-1); }
+        .service-card p { font-size: var(--text-xs); color: var(--text-secondary); line-height: 1.5; }
+        .service-arrow {
+          position: absolute; top: var(--sp-5); right: var(--sp-4);
+          color: var(--text-tertiary);
+          transition: transform var(--dur-base) var(--ease-out), color var(--dur-base) var(--ease-out);
+        }
+        .service-card:hover .service-arrow { transform: translateX(3px); color: var(--feature-color); }
+
+        .how { margin-top: 0; padding: var(--sp-9) 0; animation: rise-in 0.6s cubic-bezier(0.16,1,0.3,1) 0.55s backwards; }
+        @media (max-width: 640px) { .how { margin-top: var(--sp-5); } }
+        @media (max-width: 480px) { .how { margin-top: var(--sp-4); } }
+        @media (min-width: 1025px) { .how { margin-top: var(--sp-7); } }
+        .how-heading { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3); margin-bottom: var(--sp-5); }
+        .how-title { font-size: clamp(1.4rem, 3vw, 1.9rem); margin-bottom: 0; }
+        .how-guide { display: inline-flex; align-items: center; gap: 8px; min-height: 42px; padding: 0 16px; border: 1px solid var(--border-subtle); border-radius: 999px; color: var(--primary); background: var(--surface-2); font-weight: 700; cursor: pointer; }
+        .how-guide:hover { border-color: var(--primary); background: color-mix(in srgb, var(--primary) 8%, var(--surface-2)); }
+        .how-guide:focus-visible { outline: 3px solid var(--border-focus); outline-offset: 2px; }
+        @media (max-width: 640px) { .how-heading { align-items: flex-start; flex-direction: column; margin-bottom: var(--sp-4); } }
+        @media (max-width: 480px) { .how-heading { margin-bottom: var(--sp-3); } .how-title { font-size: var(--text-xl); } .how-guide { width: 100%; justify-content: center; } }
+        @media (min-width: 1025px) { .how-title { font-size: var(--text-3xl); } .how-heading { margin-bottom: var(--sp-6); } }
+        .trail-wrap { max-width: 520px; margin-bottom: var(--sp-4); }
+        @media (max-width: 480px) { .trail-wrap { margin-bottom: var(--sp-3); } }
+        @media (min-width: 1025px) { .trail-wrap { max-width: 620px; margin-bottom: var(--sp-5); } }
+        .steps-grid { margin-top: 0; gap: var(--sp-5); }
+        @media (max-width: 640px) { .steps-grid { gap: var(--sp-4); } }
+        @media (max-width: 480px) { .steps-grid { gap: var(--sp-3); } }
+        @media (min-width: 1025px) { .steps-grid { gap: var(--sp-6); } }
+        .step-card {
+          position: relative;
+          background: var(--surface-2); border: 1px solid var(--border-subtle); border-radius: var(--r-lg);
+          padding: var(--sp-6) var(--sp-5); box-shadow: var(--shadow-sm); overflow: hidden;
+          transition: transform 0.3s cubic-bezier(0.16,1,0.3,1), box-shadow 0.3s cubic-bezier(0.16,1,0.3,1), border-color 0.3s ease;
+        }
+        @media (max-width: 640px) { .step-card { padding: var(--sp-5) var(--sp-4); border-radius: var(--r-md); } }
+        @media (max-width: 480px) { .step-card { padding: var(--sp-4) var(--sp-3); } }
+        @media (min-width: 1025px) { .step-card { padding: var(--sp-7) var(--sp-6); border-radius: var(--r-xl); } }
+        .step-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-lift); border-color: transparent; }
+        .step-num {
+          display: block; font-family: var(--font-display); font-weight: 800; line-height: 1;
+          font-size: clamp(2.2rem, 7vw, 3rem);
+          background: var(--grad-accent); -webkit-background-clip: text; background-clip: text;
+          color: transparent; opacity: 0.6; margin-bottom: var(--sp-3);
+        }
+        /* Цайвар горимд watermark тоог бүдэг болгох */
+        :global([data-theme="light"]) .step-num { opacity: 0.35; }
+        .step-desc { color: var(--text-secondary); font-size: 13.5px; line-height: 1.5; }
+        @media (max-width: 480px) { .step-desc { font-size: 14px; line-height: 1.6; } }
+        @media (min-width: 1025px) { .step-desc { font-size: 15px; line-height: 1.65; } }
+
+        @media (prefers-reduced-motion: reduce) {
+          .hero-glow, .hero-card, .hero-card-mini { animation: none; }
+          .hero-content > *, .hero-visual, .how { opacity: 1; animation: none; }
+        }
+      `}</style>
     </div>
   );
 }

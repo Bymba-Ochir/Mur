@@ -1,7 +1,5 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { PawPrint, Share2 } from 'lucide-react';
-import { useLocalStorageValue } from '../lib/useLocalStorageState';
 
 const DISMISS_KEY = 'mur-install-dismissed';
 
@@ -12,17 +10,11 @@ interface BeforeInstallPromptEvent extends Event {
 }
 
 export default function InstallPrompt() {
-  const analyticsConsent = useLocalStorageValue('mur-analytics-consent', 'declined');
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [visible, setVisible] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
 
   useEffect(() => {
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js').catch(() => {
-        // PWA хаалттай үед үндсэн сайт хэвийн үргэлжилнэ.
-      });
-    }
     if (localStorage.getItem(DISMISS_KEY)) return;
 
     // Аль хэдийн апп болгож суулгасан эсэхийг шалгах (standalone горим)
@@ -65,26 +57,47 @@ export default function InstallPrompt() {
     setVisible(false);
   }
 
-  // Нууцлалын сонголтын banner-тай зэрэг давхарлаж харагдуулахгүй.
-  if (!visible || analyticsConsent === null) return null;
+  if (!visible) return null;
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-[140] flex flex-wrap items-center justify-between gap-3 bg-[var(--brand)] px-[18px] py-3.5 text-[var(--text-on-accent)] shadow-[0_-4px_16px_rgba(0,0,0,0.15)] max-sm:bottom-[58px]" role="region" aria-label="Аппыг суулгах санал">
-      <div className="flex min-w-[200px] flex-1 items-center gap-3">
-        <PawPrint size={26} aria-hidden="true" />
+    <div className="install-banner" role="region" aria-label="Аппыг суулгах санал">
+      <div className="install-content">
+        <span className="install-icon" aria-hidden="true">🐾</span>
         <div>
           <b>МӨР-ийг гэрийн дэлгэц рүү нэмэх</b>
           {isIOS ? (
-            <p className="mt-0.5 flex items-center gap-1 text-[12.5px] text-[color-mix(in_srgb,var(--text-on-accent)_82%,transparent)]">Safari-ийн <Share2 size={13} aria-hidden="true" /> Share товчоос &quot;Add to Home Screen&quot; дарна уу</p>
+            <p>Safari-ийн доод &quot;Share&quot; (⬆️) товч → &quot;Add to Home Screen&quot; дарна уу</p>
           ) : (
-            <p className="mt-0.5 text-[12.5px] text-[color-mix(in_srgb,var(--text-on-accent)_82%,transparent)]">Апп шиг хурдан нээж ашиглаарай</p>
+            <p>Апп шиг хурдан нээж ашиглаарай</p>
           )}
         </div>
       </div>
-      <div className="flex gap-2">
-        {!isIOS && <button onClick={handleInstall} className="cursor-pointer rounded-[var(--r-pill)] border-0 bg-[image:var(--grad-accent)] px-4 py-2 text-[13px] font-semibold text-[var(--accent-ink)] transition-[transform,box-shadow,filter] duration-200 hover:-translate-y-px hover:saturate-[1.08] hover:shadow-[var(--shadow-sm)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--text-on-accent)]">Нэмэх</button>}
-        <button onClick={dismiss} className="cursor-pointer rounded-[var(--r-pill)] border border-[color-mix(in_srgb,var(--text-on-accent)_35%,transparent)] bg-transparent px-4 py-2 text-[13px] font-semibold text-[var(--text-on-accent)] transition-colors hover:bg-[color-mix(in_srgb,var(--text-on-accent)_12%,transparent)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--text-on-accent)]" aria-label="Аппыг суулгах саналыг хаах">Хаах</button>
+      <div className="install-actions">
+        {!isIOS && <button onClick={handleInstall} className="install-btn primary">Нэмэх</button>}
+        <button onClick={dismiss} className="install-btn ghost" aria-label="Аппыг суулгах саналыг хаах">Хаах</button>
       </div>
+
+      <style jsx>{`
+        .install-banner {
+          position: fixed; bottom: 0; left: 0; right: 0; z-index: 140;
+          background: var(--brand); color: var(--text-on-accent); padding: 14px 18px;
+          display: flex; align-items: center; justify-content: space-between; gap: 12px;
+          flex-wrap: wrap; box-shadow: 0 -4px 16px rgba(0,0,0,0.15);
+        }
+        @media (max-width: 640px) {
+          .install-banner { bottom: 58px; }
+        }
+        .install-content { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 200px; }
+        .install-icon { font-size: 26px; }
+        .install-content p { font-size: 12.5px; color: color-mix(in srgb, var(--text-on-accent) 82%, transparent); margin-top: 2px; }
+        .install-actions { display: flex; gap: 8px; }
+        .install-btn { padding: 8px 16px; border-radius: var(--r-pill); border: none; font-weight: 600; font-size: 13px; cursor: pointer; transition: transform .15s ease, box-shadow .2s ease, filter .2s ease; }
+        .primary { background: var(--grad-accent); color: var(--accent-ink); }
+        .primary:hover { filter: saturate(1.08); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+        .ghost { background: transparent; color: var(--text-on-accent); border: 1px solid color-mix(in srgb, var(--text-on-accent) 35%, transparent); }
+        .ghost:hover { background: color-mix(in srgb, var(--text-on-accent) 12%, transparent); }
+        .install-btn:focus-visible { outline: 2px solid var(--text-on-accent); outline-offset: 2px; }
+      `}</style>
     </div>
   );
 }
