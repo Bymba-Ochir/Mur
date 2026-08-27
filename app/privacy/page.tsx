@@ -59,6 +59,7 @@ const PRIVACY_MN: LegalDoc = {
       heading: '7. Таны эрх ба сонголтууд',
       paragraphs: [
         'Та өөрийн бичлэгийг засах, устгах боломжтой. Бичлэг устгаснаар холбогдох зураг, мэдээлэл устгагдана.',
+        'Та Тохиргоо хэсгээс өөрийн profile болон үйл ажиллагааны мэдээллийг JSON файлаар татах, мөн account болон холбогдох контентоо бүрмөсөн устгах боломжтой.',
         'Байршил, push мэдэгдэл зэрэг зөвшөөрлөө browser-ийн тохиргооноос хүссэн үедээ цуцлах боломжтой.',
       ],
     },
@@ -124,6 +125,7 @@ const PRIVACY_EN: LegalDoc = {
       heading: '7. Your rights and choices',
       paragraphs: [
         'You can edit or delete your own listings. Deleting a listing removes its associated photo and information.',
+        'From Settings, you can download your profile and activity data as JSON or permanently delete your account and associated content.',
         'You can revoke permissions such as location and push notifications at any time in your browser settings.',
       ],
     },

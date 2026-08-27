@@ -6,6 +6,7 @@ import { maskPhone, formatPhone } from '../../../lib/utils';
 import { relativeTime } from '../../../lib/relativeTime';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import Link from 'next/link';
 import ShareButtons from '../../../components/ShareButtons';
 import LocationMap from '../../../components/LocationMap';
 import ReportButton from '../../../components/ReportButton';
@@ -180,6 +181,7 @@ export default function PetDetailClient({ id }: { id: string }) {
               )}
               {/* Чат товч — зөвхөн бусад хэрэглэгчдэд */}
               {!editing && <div style={{ marginTop: 'var(--sp-3)' }}><MessageButton pet={pet} /></div>}
+              {!editing && pet.createdBy && <Link href={`/users/${pet.createdBy}`} style={{ display: 'inline-flex', alignItems: 'center', marginTop: 'var(--sp-3)', color: 'var(--primary)', fontWeight: 650, textDecoration: 'none' }}>Зарын эзний profile →</Link>}
             </div>
           ) : (
             editForm && (

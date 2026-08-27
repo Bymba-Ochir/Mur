@@ -161,6 +161,7 @@ export default function SittingDetailClient({ id }: { id: string }) {
                 <Button variant="ghost" onClick={() => setRevealed(true)}>☎ {maskPhone(listing.phone)} · {t('detail_show_phone')}</Button>
               ) : null}
             </div>
+            <Link href={`/users/${listing.userId}`} className="profile-owner-link">Үйлчилгээ үзүүлэгчийн profile →</Link>
 
             {isOwner && (
               <div className="owner-actions">
@@ -213,6 +214,7 @@ export default function SittingDetailClient({ id }: { id: string }) {
           font-size: 15px; font-weight: 600; color: var(--primary); text-decoration: none;
         }
         .owner-actions { display: flex; gap: var(--sp-2); margin-top: var(--sp-4); }
+        .profile-owner-link { display: inline-flex; margin-top: var(--sp-3); color: var(--primary); font-weight: 650; text-decoration: none; }
         .owner-actions :global(.btn-base) { flex: 1; min-height: var(--touch-target); }
         .map-section { margin-top: var(--sp-5); }
         .map-title { font-size: 13px; font-weight: 600; color: var(--primary); margin-bottom: var(--sp-2); }

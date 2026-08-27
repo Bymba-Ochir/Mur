@@ -33,6 +33,15 @@ export interface AdminAuditItem {
   createdAt: string;
 }
 
+export interface AdminUserReport {
+  id: string;
+  reportedId: string;
+  reportedName: string;
+  reason: string;
+  status: 'pending' | 'reviewed' | 'dismissed';
+  createdAt: string;
+}
+
 export async function isAdmin(): Promise<boolean> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return false;
@@ -156,4 +165,23 @@ export async function fetchAdminAudit(): Promise<AdminAuditItem[]> {
     id: row.id, action: row.action, targetType: row.target_type,
     targetId: row.target_id, details: row.details ?? {}, createdAt: row.created_at,
   }));
+}
+
+export async function fetchUserReports(): Promise<AdminUserReport[]> {
+  const { data, error } = await supabase.from('user_reports').select('id,reported_id,reason,status,created_at').eq('status', 'pending').order('created_at', { ascending: false });
+  if (error) {
+    if (error.code === '42P01' || error.code === 'PGRST205') return [];
+    throw error;
+  }
+  const ids = [...new Set(data.map((row) => row.reported_id))];
+  const profiles = ids.length ? await supabase.from('profiles').select('id,display_name').in('id', ids) : { data: [], error: null };
+  if (profiles.error) throw profiles.error;
+  const names = new Map((profiles.data ?? []).map((row) => [row.id, row.display_name]));
+  return data.map((row) => ({ id: row.id, reportedId: row.reported_id, reportedName: names.get(row.reported_id) || 'Нэргүй хэрэглэгч', reason: row.reason, status: row.status, createdAt: row.created_at }));
+}
+
+export async function resolveUserReport(id: string, status: 'reviewed' | 'dismissed'): Promise<void> {
+  const { error } = await supabase.from('user_reports').update({ status }).eq('id', id);
+  if (error) throw error;
+  await writeAudit(status === 'reviewed' ? 'review_user_report' : 'dismiss_user_report', 'user_report', id);
 }

@@ -6,8 +6,8 @@ import Link from 'next/link';
 import { useAuth } from '../../lib/useAuth';
 import {
   adminDeleteContent, adminDeletePet, dismissReport, fetchAdminAudit,
-  fetchAdminContent, fetchAdminStats, fetchReports, isAdmin, writeAudit,
-  type AdminAuditItem, type AdminContentItem, type AdminContentType, type AdminStats,
+  fetchAdminContent, fetchAdminStats, fetchReports, fetchUserReports, isAdmin, resolveUserReport, writeAudit,
+  type AdminAuditItem, type AdminContentItem, type AdminContentType, type AdminStats, type AdminUserReport,
 } from '../../lib/adminService';
 import { useToast } from '../../components/Toast';
 import Button from '../../components/ui/Button';
@@ -18,7 +18,7 @@ import { useLanguage } from '../../lib/i18n';
 import type { Report } from '../../lib/types';
 import { getErrorMessage } from '../../lib/utils';
 
-type Tab = 'dashboard' | 'reports' | 'content' | 'audit';
+type Tab = 'dashboard' | 'reports' | 'user-reports' | 'content' | 'audit';
 type ContentFilter = 'all' | AdminContentType;
 const EMPTY_STATS: AdminStats = { pets: 0, activePets: 0, resolvedPets: 0, adoptions: 0, sitting: 0, reports: 0 };
 
@@ -33,6 +33,7 @@ export default function AdminPage() {
   const [reports, setReports] = useState<Report[]>([]);
   const [content, setContent] = useState<AdminContentItem[]>([]);
   const [audit, setAudit] = useState<AdminAuditItem[]>([]);
+  const [userReports, setUserReports] = useState<AdminUserReport[]>([]);
   const [filter, setFilter] = useState<ContentFilter>('all');
   const [search, setSearch] = useState('');
   const [dataLoading, setDataLoading] = useState(true);
@@ -41,13 +42,14 @@ export default function AdminPage() {
   const load = useCallback(async () => {
     setDataLoading(true);
     try {
-      const [nextStats, nextReports, nextContent, nextAudit] = await Promise.all([
-        fetchAdminStats(), fetchReports(), fetchAdminContent(), fetchAdminAudit(),
+      const [nextStats, nextReports, nextContent, nextAudit, nextUserReports] = await Promise.all([
+        fetchAdminStats(), fetchReports(), fetchAdminContent(), fetchAdminAudit(), fetchUserReports(),
       ]);
       setStats(nextStats);
       setReports(nextReports);
       setContent(nextContent);
       setAudit(nextAudit);
+      setUserReports(nextUserReports);
     } catch (error) {
       showToast('Admin мэдээлэл ачаалахад алдаа гарлаа: ' + getErrorMessage(error), 'error');
     } finally {
@@ -107,6 +109,12 @@ export default function AdminPage() {
     finally { setBusyId(null); }
   }
 
+  async function handleUserReport(id: string, status: 'reviewed' | 'dismissed') {
+    setBusyId(id);
+    try { await resolveUserReport(id, status); showToast(status === 'reviewed' ? 'Шалгасан төлөвт орууллаа.' : 'Мэдээллийг үл хэрэгслээ.', 'success'); await load(); }
+    catch (error) { showToast(getErrorMessage(error), 'error'); } finally { setBusyId(null); }
+  }
+
   if (loading || !checked) return <div className="grid min-h-[50vh] place-items-center text-muted">{t('detail_loading')}</div>;
   if (!user) return <div className="grid min-h-[50vh] place-items-center text-muted">{t('admin_login_required')}</div>;
   if (!admin) return <div className="page-shell"><div className="page-header"><div className="eyebrow">{t('admin_restricted_eyebrow')}</div><h1>{t('admin_no_access')}</h1></div></div>;
@@ -121,6 +129,7 @@ export default function AdminPage() {
       <nav className="mb-8 flex gap-1.5 overflow-x-auto rounded-card border border-line bg-panel p-1.5 max-[480px]:-mx-[var(--page-pad)] max-[480px]:rounded-none max-[480px]:border-x-0" aria-label="Admin хэсгүүд">
         {([
           ['dashboard', 'Хянах самбар'], ['reports', `Мэдээлэгдсэн (${stats.reports})`],
+          ['user-reports', `Хэрэглэгч (${userReports.length})`],
           ['content', 'Бүх зар'], ['audit', 'Үйлдлийн түүх'],
         ] as Array<[Tab, string]>).map(([id, label]) => (
           <button key={id} type="button" className={`min-h-11 flex-1 shrink-0 basis-max cursor-pointer rounded-control border-0 px-4.5 font-bold ${tab === id ? 'bg-[var(--card)] text-brand shadow-card' : 'bg-transparent text-muted'}`} onClick={() => setTab(id)}>{label}</button>
@@ -147,6 +156,8 @@ export default function AdminPage() {
             </article>)}
           </section>
         )}
+
+        {tab === 'user-reports' && (userReports.length === 0 ? <EmptyState icon={<Icon name="shield" size={30} />} description="Мэдээлэгдсэн хэрэглэгч алга." /> : <section className="admin-list" aria-label="Мэдээлэгдсэн хэрэглэгчид">{userReports.map((report) => <article key={report.id} className="admin-row"><span className="image-placeholder"><Icon name="flag" size={25} /></span><div className="row-copy"><span className="danger-label">{report.reason}</span><Link href={`/users/${report.reportedId}`}>{report.reportedName}</Link><small>{relativeTime(report.createdAt)}</small></div><div className="row-actions"><Button variant="ghost" disabled={busyId === report.id} onClick={() => handleUserReport(report.id, 'dismissed')}>Үл хэрэгсэх</Button><Button variant="secondary" disabled={busyId === report.id} onClick={() => handleUserReport(report.id, 'reviewed')}>Шалгасан</Button></div></article>)}</section>)}
 
         {tab === 'content' && <section>
           <div className="content-tools">

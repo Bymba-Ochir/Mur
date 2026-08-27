@@ -147,6 +147,7 @@ export default function AdoptionDetailClient({ id }: { id: string }) {
                 <Button variant="ghost" onClick={() => setRevealed(true)}>☎ {maskPhone(adoption.phone)} · {t('detail_show_phone')}</Button>
               ) : null}
             </div>
+            {adoption.createdBy && <Link href={`/users/${adoption.createdBy}`} className="profile-owner-link">Зарын эзний profile →</Link>}
 
             {isOwner && (
               <div className="owner-actions">
@@ -194,6 +195,7 @@ export default function AdoptionDetailClient({ id }: { id: string }) {
           font-size: 15px; font-weight: 600; color: var(--primary); text-decoration: none;
         }
         .owner-actions { display: flex; gap: var(--sp-2); margin-top: var(--sp-4); }
+        .profile-owner-link { display: inline-flex; margin-top: var(--sp-3); color: var(--primary); font-weight: 650; text-decoration: none; }
         .owner-actions :global(.btn-base) { flex: 1; min-height: var(--touch-target); }
         .back-row { margin-top: var(--sp-5); }
         .share-section { margin-top: var(--sp-6); text-align: center; }

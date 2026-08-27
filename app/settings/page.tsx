@@ -1,56 +1,65 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Button from '../../components/ui/Button';
 import { useAuth } from '../../lib/useAuth';
-import { supabase } from '../../lib/supabase';
+import { ensureMyProfile, updateMyProfile } from '../../lib/profileService';
+import type { NotificationPreferences, UserProfile } from '../../lib/profileService';
+import { getErrorMessage } from '../../lib/utils';
 import { useToast } from '../../components/Toast';
-import { BadgeCheck } from 'lucide-react';
+import Button from '../../components/ui/Button';
+import Icon from '../../components/ui/icons';
+
+async function authFetch(path: string, init?: RequestInit): Promise<Response> {
+  const { supabase } = await import('../../lib/supabase');
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) throw new Error('Эхлээд нэвтэрнэ үү.');
+  return fetch(path, { ...init, headers: { ...init?.headers, Authorization: `Bearer ${session.access_token}` } });
+}
 
 export default function SettingsPage() {
   const { user, loading, logout } = useAuth();
   const router = useRouter();
-  const toast = useToast();
-  const [confirmText, setConfirmText] = useState('');
-  const [deleting, setDeleting] = useState(false);
+  const showToast = useToast();
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [prefs, setPrefs] = useState<NotificationPreferences>({ messages: true, matches: true, vaccines: true });
+  const [busy, setBusy] = useState(false);
 
-  async function deleteAccount() {
-    if (confirmText !== 'УСТГАХ') return;
-    setDeleting(true);
-    try {
-      const { data } = await supabase.auth.getSession();
-      const token = data.session?.access_token;
-      if (!token) throw new Error('Session олдсонгүй');
-      const res = await fetch('/api/account/delete', { method: 'DELETE', headers: { 'content-type': 'application/json', authorization: `Bearer ${token}` }, body: JSON.stringify({ confirmation: confirmText }) });
-      const result = await res.json();
-      if (!res.ok) throw new Error(result.error || 'Устгаж чадсангүй');
-      await logout();
-      router.replace('/');
-      router.refresh();
-    } catch (error) {
-      toast(error instanceof Error ? error.message : 'Алдаа гарлаа', 'error');
-      setDeleting(false);
-    }
+  useEffect(() => { if (user) ensureMyProfile().then((p) => { setProfile(p); setPrefs(p.notificationPreferences); }).catch((e) => showToast(getErrorMessage(e), 'error')); }, [user, showToast]);
+
+  async function savePreferences() {
+    if (!profile) return;
+    setBusy(true);
+    try { await updateMyProfile({ displayName: profile.displayName, district: profile.district || '', bio: profile.bio, isVolunteer: profile.isVolunteer, notificationPreferences: prefs }); showToast('Мэдэгдлийн тохиргоо хадгалагдлаа.', 'success'); }
+    catch (e) { showToast(getErrorMessage(e), 'error'); } finally { setBusy(false); }
   }
 
-  if (loading) return <p className="py-10 text-[var(--text-secondary)]">Уншиж байна…</p>;
-  if (!user) return <div className="page-header"><h1>Тохиргоо</h1><p>Энэ хэсгийг ашиглахын тулд нэвтэрнэ үү.</p></div>;
+  async function exportData() {
+    setBusy(true);
+    try {
+      const response = await authFetch('/api/account/export');
+      if (!response.ok) throw new Error((await response.json()).error || 'Татаж чадсангүй.');
+      const blob = await response.blob(); const url = URL.createObjectURL(blob); const anchor = document.createElement('a');
+      anchor.href = url; anchor.download = `mur-data-${new Date().toISOString().slice(0, 10)}.json`; anchor.click(); URL.revokeObjectURL(url);
+    } catch (e) { showToast(getErrorMessage(e), 'error'); } finally { setBusy(false); }
+  }
 
-  const section = 'mb-[18px] rounded-[var(--r-lg)] border bg-[var(--surface-2)] p-[22px]';
-  return <div className="mx-auto max-w-[720px]">
-    <div className="eyebrow">Миний бүртгэл</div>
-    <h1 className="mb-6 mt-1.5">Тохиргоо</h1>
-    <section className={`${section} border-[var(--border-subtle)]`}>
-      <h2 className="mb-2.5 text-[19px]">Бүртгэлийн мэдээлэл</h2>
-      <p className="leading-[1.6] text-[var(--text-secondary)]">Имэйл: {user.email}</p>
-      <p className="flex items-center gap-1 font-semibold text-[var(--success-text)]"><BadgeCheck size={16} aria-hidden="true" /> Имэйлээр баталгаажсан нэвтрэлт</p>
-    </section>
-    <section className={`${section} border-[color-mix(in_srgb,var(--alert)_35%,var(--border-subtle))]`}>
-      <h2 className="mb-2.5 text-[19px]">Бүртгэл устгах</h2>
-      <p className="leading-[1.6] text-[var(--text-secondary)]">Таны зар, чат, эрүүл мэндийн мэдээлэл болон захиалга database-ийн холбоосоор бүрмөсөн устна. Энэ үйлдлийг буцаах боломжгүй.</p>
-      <label className="mb-2 mt-4 block text-[var(--text-primary)]" htmlFor="delete-confirm">Баталгаажуулахын тулд <strong>УСТГАХ</strong> гэж бичнэ үү</label>
-      <input id="delete-confirm" className="field mb-3.5 block w-full" value={confirmText} onChange={(event) => setConfirmText(event.target.value)} autoComplete="off" />
-      <Button variant="danger" disabled={confirmText !== 'УСТГАХ' || deleting} onClick={deleteAccount}>{deleting ? 'Устгаж байна…' : 'Бүртгэлээ бүрмөсөн устгах'}</Button>
-    </section>
+  async function deleteAccount() {
+    const confirmation = window.prompt('Account болон бүх зараа бүрмөсөн устгахын тулд УСТГАХ гэж бичнэ үү.');
+    if (confirmation !== 'УСТГАХ') return;
+    setBusy(true);
+    try {
+      const response = await authFetch('/api/account/delete', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ confirmation }) });
+      if (!response.ok) throw new Error((await response.json()).error || 'Account устгаж чадсангүй.');
+      await logout(); router.push('/'); router.refresh();
+    } catch (e) { showToast(getErrorMessage(e), 'error'); setBusy(false); }
+  }
+
+  if (loading) return <p className="page-shell">Уншиж байна...</p>;
+  if (!user) return <div className="page-shell page-shell--narrow"><h1>Тохиргоо</h1><p>Эхлээд нэвтэрнэ үү.</p></div>;
+  return <div className="page-shell page-shell--narrow"><div className="page-header"><div className="eyebrow">Account</div><h1>Тохиргоо</h1><p>{user.email}</p></div>
+    <section className="card setting-card"><h2><Icon name="bell" size={20} /> Мэдэгдэл</h2>{([['messages','Шинэ мессеж'],['matches','Төстэй амьтны зар'],['vaccines','Вакцины сануулга']] as const).map(([key,label]) => <label className="toggle-row" key={key}><span>{label}</span><input type="checkbox" checked={prefs[key]} onChange={(e) => setPrefs({ ...prefs, [key]: e.target.checked })} /></label>)}<Button variant="primary" onClick={savePreferences} disabled={busy || !profile}>Хадгалах</Button></section>
+    <section className="card setting-card"><h2><Icon name="lock" size={20} /> Миний өгөгдөл</h2><p>Profile, зар, хүсэлт болон бүртгэлтэй мэдээллээ JSON файлаар татна.</p><Button variant="secondary" onClick={exportData} disabled={busy}>Мэдээллээ татах</Button></section>
+    <section className="card setting-card danger-zone"><h2><Icon name="trash" size={20} /> Account устгах</h2><p>Profile болон таны нийтэлсэн контент бүрмөсөн устна. Энэ үйлдлийг буцаах боломжгүй.</p><Button variant="danger" onClick={deleteAccount} disabled={busy}>Account бүрмөсөн устгах</Button></section>
+    <style jsx>{`.setting-card{padding:var(--sp-5);margin-bottom:var(--sp-4)}.setting-card h2{display:flex;align-items:center;gap:8px;font-size:18px;margin-bottom:12px}.setting-card p{color:var(--muted);line-height:1.6;margin-bottom:14px}.toggle-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}.toggle-row input{width:20px;height:20px}.danger-zone{border-color:color-mix(in srgb,var(--alert) 35%,var(--line))}`}</style>
   </div>;
 }

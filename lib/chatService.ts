@@ -99,6 +99,8 @@ export async function findOrCreateConversation(petId: string): Promise<string> {
 
   if (petErr || !pet?.created_by) throw new Error('Амьтны мэдээлэл олдсонгүй');
   if (pet.created_by === user.id) throw new Error('Өөрийнхөө амьтанд чат үүсгэх боломжгүй');
+  const { data: blocked } = await supabase.from('user_blocks').select('blocked_id').eq('blocker_id', user.id).eq('blocked_id', pet.created_by).maybeSingle();
+  if (blocked) throw new Error('Та энэ хэрэглэгчийг хаасан тул чат эхлүүлэх боломжгүй.');
 
   // Шинэ харилцаа үүсгэх (имэйл нь trigger-аар нөхөгдөнө)
   const { data: conv, error: convErr } = await supabase
@@ -156,7 +158,10 @@ export async function fetchMessages(conversationId: string): Promise<Message[]> 
     .eq('conversation_id', conversationId)
     .order('created_at', { ascending: true });
 
-  if (error) throw error;
+  if (error) {
+    if (error.code === '42501') throw new Error('Хэрэглэгчийн харилцах тохиргооноос шалтгаалан мессеж илгээх боломжгүй.');
+    throw error;
+  }
   return (data as MessageRow[]).map(mapMessageRow);
 }
 

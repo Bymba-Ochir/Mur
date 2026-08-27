@@ -112,6 +112,8 @@ export default function Navbar() {
   const railLinks = allLinks.slice(4);
 
   const userMenuItems: UserMenuItem[] = [
+    { href: '/profile', label: 'Миний profile', isLink: true, icon: 'paw' },
+    { href: '/settings', label: 'Тохиргоо', isLink: true, icon: 'lock' },
     { href: '/my-pets', label: t('nav_mypets'), isLink: true, icon: 'vaccine' },
     { href: '/messages', label: t('messages_hub_nav'), isLink: true, icon: 'message' },
     ...(admin ? [{ href: '/admin', label: t('nav_admin'), isLink: true, accent: true, icon: 'shield' as IconName }] : []),
@@ -181,7 +183,7 @@ export default function Navbar() {
                 aria-haspopup="true"
                 aria-label={t('nav_user_menu_label')}
               >
-                <span className="user-avatar" aria-hidden="true">👤</span>
+                <span className="user-avatar" aria-hidden="true"><Icon name="paw" size={15} /></span>
                 <span className="user-email">{user.email ? truncateEmail(user.email) : ''}</span>
                 <span className="user-chevron" aria-hidden="true">{showUserMenu ? '▲' : '▼'}</span>
               </button>
@@ -284,10 +286,12 @@ export default function Navbar() {
               {user ? (
                 <div className="mobile-user-section">
                   <div className="mobile-user-info">
-                    <span className="user-avatar" aria-hidden="true">👤</span>
+                    <span className="user-avatar" aria-hidden="true"><Icon name="paw" size={15} /></span>
                     <span>{user.email ? truncateEmail(user.email) : t('nav_guest')}</span>
                   </div>
                   <div className="mobile-user-actions">
+                    <Link href="/profile" className="mobile-nav-link" onClick={handleMobileLinkClick}><Icon name="paw" size={18} /> Миний profile</Link>
+                    <Link href="/settings" className="mobile-nav-link" onClick={handleMobileLinkClick}><Icon name="lock" size={18} /> Тохиргоо</Link>
                     <Button variant="danger" fullWidth onClick={() => { logout(); setShowMobileMenu(false); }}>
                       {t('nav_logout')}
                     </Button>
