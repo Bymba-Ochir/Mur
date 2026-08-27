@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { PawPrint, Share2 } from 'lucide-react';
+import { useLocalStorageValue } from '../lib/useLocalStorageState';
 
 const DISMISS_KEY = 'mur-install-dismissed';
 
@@ -11,6 +12,7 @@ interface BeforeInstallPromptEvent extends Event {
 }
 
 export default function InstallPrompt() {
+  const analyticsConsent = useLocalStorageValue('mur-analytics-consent', 'declined');
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [visible, setVisible] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
@@ -63,7 +65,8 @@ export default function InstallPrompt() {
     setVisible(false);
   }
 
-  if (!visible) return null;
+  // Нууцлалын сонголтын banner-тай зэрэг давхарлаж харагдуулахгүй.
+  if (!visible || analyticsConsent === null) return null;
 
   return (
     <div className="fixed inset-x-0 bottom-0 z-[140] flex flex-wrap items-center justify-between gap-3 bg-[var(--brand)] px-[18px] py-3.5 text-[var(--text-on-accent)] shadow-[0_-4px_16px_rgba(0,0,0,0.15)] max-sm:bottom-[58px]" role="region" aria-label="Аппыг суулгах санал">

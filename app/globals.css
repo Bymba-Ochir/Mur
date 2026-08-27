@@ -3,7 +3,7 @@
 @layer theme, base, components, utilities;
 @import 'tailwindcss/theme.css' layer(theme);
 @import 'tailwindcss/utilities.css' layer(utilities);
-@import 'leaflet/dist/leaflet.css';
+@import 'leaflet/dist/leaflet.css' layer(components);
 
 @theme inline {
   --color-brand: var(--primary);
@@ -27,6 +27,13 @@
   --shadow-card: var(--shadow-sm);
   --shadow-lift: var(--shadow-lift);
 }
+
+/*
+ * Legacy design system-ийг components layer-т байрлуулна. Ингэснээр Tailwind
+ * utility class (padding, margin, grid, responsive гэх мэт) нь global reset-ээс
+ * зөв давуу эрхтэй болж, production дээр utility-ууд 0 утгаар дарагдахгүй.
+ */
+@layer components {
 
 /* ═══════════════════════════════════════════════════════
    МӨР — Design tokens: Indigo / Coral / Sky
@@ -954,4 +961,5 @@ textarea.field { min-height: 90px; resize: vertical; }
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   .reveal, .stagger-children > * { transition: none !important; opacity: 1 !important; transform: none !important; }
+}
 }

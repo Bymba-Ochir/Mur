@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { DISTRICTS } from '../lib/districts';
 import { useLanguage } from '../lib/i18n';
 import { setLocalStorageValue, useLocalStorageValue } from '../lib/useLocalStorageState';
-import { Check } from 'lucide-react';
+import { Check, X } from 'lucide-react';
 
 const SEEN_KEY = 'mur-onboarding-v2-seen';
 const OPEN_EVENT = 'mur:open-onboarding';
@@ -27,6 +28,7 @@ function Icon({ name }: { name: Intent | 'location' | 'bell' }) {
 
 export default function Onboarding() {
   const router = useRouter();
+  const pathname = usePathname();
   const { lang } = useLanguage();
   const seen = useLocalStorageValue(SEEN_KEY, '1');
   const [manualOpen, setManualOpen] = useState(false);
@@ -34,7 +36,9 @@ export default function Onboarding() {
   const [intent, setIntent] = useState<Intent | null>(null);
   const [district, setDistrict] = useState('');
   const [notifications, setNotifications] = useState(false);
-  const visible = manualOpen || seen !== '1';
+  // Анхны welcome урсгал зөвхөн нүүр хуудсанд автоматаар гарна. Бусад хуудасны
+  // ажлыг гэнэт таслахгүй; нүүрний “Яаж ажилладаг вэ” товчоор гараар нээж болно.
+  const visible = manualOpen || (pathname === '/' && seen !== '1');
   const en = lang === 'en';
 
   useEffect(() => {
@@ -42,6 +46,20 @@ export default function Onboarding() {
     window.addEventListener(OPEN_EVENT, open);
     return () => window.removeEventListener(OPEN_EVENT, open);
   }, []);
+
+  useEffect(() => {
+    if (!visible) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const handleKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') close();
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener('keydown', handleKey);
+    };
+  }, [visible]);
 
   function close() {
     setLocalStorageValue(SEEN_KEY, '1');
@@ -83,7 +101,7 @@ export default function Onboarding() {
           <div className="flex max-w-[180px] flex-1 gap-[7px]" aria-label={`${step + 1} / 3`}>
             {[0, 1, 2].map((item) => <span key={item} className={`h-[5px] w-full rounded-full ${item <= step ? 'bg-[var(--primary)]' : 'bg-[var(--surface-3)]'}`} />)}
           </div>
-          <button className="size-[38px] cursor-pointer rounded-full border border-[var(--border-subtle)] bg-[var(--surface-2)] text-[26px] leading-none text-[var(--text-secondary)] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[var(--border-focus)]" type="button" onClick={close} aria-label={en ? 'Close' : 'Хаах'}>×</button>
+          <button className="grid size-[38px] cursor-pointer place-items-center rounded-full border border-[var(--border-subtle)] bg-[var(--surface-2)] text-[var(--text-secondary)] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[var(--border-focus)]" type="button" onClick={close} aria-label={en ? 'Close' : 'Хаах'}><X size={19} aria-hidden="true" /></button>
         </div>
 
         {step === 0 && <>
