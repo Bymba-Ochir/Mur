@@ -1,31 +1,29 @@
 import { NextResponse } from 'next/server';
-import { createAdminClient } from '../../../lib/supabaseAdmin';
+import { requireRequestUser } from '../../../lib/serverAuth';
 import { checkRateLimit, getClientIp } from '../../../lib/rateLimit';
+import { cleanText } from '../../../lib/inputValidation';
 
-const REASONS = new Set(['Хуурамч мэдээлэл', 'Спам', 'Зохисгүй агуулга', 'Дахин нийтэлсэн', 'Бусад']);
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const ALLOWED_REASONS = new Set(['Хуурамч мэдээлэл', 'Спам', 'Зохисгүй агуулга', 'Дахин нийтэлсэн', 'Бусад']);
 
 export async function POST(request: Request) {
-  const rate = checkRateLimit(`report:${getClientIp(request)}`, 5, 60 * 60_000);
-  if (!rate.allowed) {
-    return NextResponse.json({ error: 'Хэт олон мэдээлэл илгээлээ. Түр хүлээнэ үү.' }, {
-      status: 429,
-      headers: { 'Retry-After': String(rate.retryAfterSec) },
-    });
+  try {
+    const { user, admin } = await requireRequestUser(request);
+    const limit = checkRateLimit(`report:${user.id}:${getClientIp(request)}`, 8, 60 * 60_000);
+    if (!limit.allowed) return NextResponse.json({ error: 'Хэт олон report илгээлээ. Түр хүлээнэ үү.' }, { status: 429, headers: { 'Retry-After': String(limit.retryAfterSec) } });
+    const body = await request.json() as { petId?: unknown; reason?: unknown };
+    if (typeof body.petId !== 'string' || !UUID.test(body.petId)) return NextResponse.json({ error: 'Зарын дугаар буруу байна.' }, { status: 400 });
+    if (typeof body.reason !== 'string' || !ALLOWED_REASONS.has(body.reason)) return NextResponse.json({ error: 'Report-ийн шалтгаан буруу байна.' }, { status: 400 });
+    const { data: pet, error: petError } = await admin.from('pets').select('created_by').eq('id', body.petId).maybeSingle();
+    if (petError) throw petError;
+    if (!pet) return NextResponse.json({ error: 'Зар олдсонгүй.' }, { status: 404 });
+    if (pet.created_by === user.id) return NextResponse.json({ error: 'Өөрийн зарыг report хийх боломжгүй.' }, { status: 400 });
+    const { error } = await admin.from('reports').insert({ pet_id: body.petId, reporter_id: user.id, reason: cleanText(body.reason, 100, 'Шалтгаан', true), status: 'pending' });
+    if (error?.code === '23505') return NextResponse.json({ error: 'Энэ зарыг өмнө нь шалгуулахаар илгээсэн байна.' }, { status: 409 });
+    if (error) throw error;
+    return NextResponse.json({ ok: true }, { status: 201 });
+  } catch (error) {
+    const unauthorized = error instanceof Error && error.message === 'UNAUTHORIZED';
+    return NextResponse.json({ error: unauthorized ? 'Report илгээхийн тулд нэвтэрнэ үү.' : 'Report хадгалахад алдаа гарлаа.' }, { status: unauthorized ? 401 : 500 });
   }
-
-  const body = await request.json().catch(() => null) as { petId?: unknown; reason?: unknown } | null;
-  const petId = typeof body?.petId === 'string' ? body.petId : '';
-  const reason = typeof body?.reason === 'string' ? body.reason : '';
-  if (!UUID.test(petId) || !REASONS.has(reason)) {
-    return NextResponse.json({ error: 'Мэдээллийн утга буруу байна' }, { status: 400 });
-  }
-
-  const admin = createAdminClient();
-  const { data: pet } = await admin.from('pets').select('id').eq('id', petId).maybeSingle();
-  if (!pet) return NextResponse.json({ error: 'Зар олдсонгүй' }, { status: 404 });
-
-  const { error } = await admin.from('reports').insert({ pet_id: petId, reason });
-  if (error) return NextResponse.json({ error: 'Мэдээллийг хадгалж чадсангүй' }, { status: 500 });
-  return NextResponse.json({ ok: true }, { status: 201 });
 }

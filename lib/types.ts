@@ -237,6 +237,7 @@ export interface Adoption {
   photoURLs?: string[];
   createdBy: string | null;
   createdAt: string;
+  adopted?: boolean;
 }
 
 export interface AdoptionInput {
@@ -307,6 +308,7 @@ export interface ConversationPetSummary {
 export interface ConversationPreview extends Conversation {
   pet: ConversationPetSummary | null;
   lastMessage: Message | null;
+  unreadCount: number;
 }
 
 // ─── Pet Profile (Амьтны сошиал профайл) ────────────────────────────────────

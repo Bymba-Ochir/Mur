@@ -17,6 +17,7 @@ import { fetchSittingListingById, updateSittingListing, deleteSittingListing } f
 import { relativeTime } from '../../../lib/relativeTime';
 import { maskPhone, formatPhone, normalizePhone, getErrorMessage } from '../../../lib/utils';
 import type { SittingListing, SittingPetType } from '../../../lib/types';
+import SittingBookingPanel from '../../../components/SittingBookingPanel';
 
 function subscribeLocation(cb: () => void) {
   window.addEventListener('popstate', cb);
@@ -181,6 +182,8 @@ export default function SittingDetailClient({ id }: { id: string }) {
           <LocationMap lat={listing.lat} lng={listing.lng} />
         </div>
       )}
+
+      <SittingBookingPanel listingId={listing.id} sitterId={listing.userId} dailyPrice={listing.price} />
 
       <div className="back-row">
         <Button as="link" href="/sitting" variant="ghost">{t('sitting_back_to_list')}</Button>

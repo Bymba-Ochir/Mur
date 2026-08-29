@@ -8,6 +8,8 @@ import { fetchConversationList } from '../../lib/chatService';
 import { relativeTime } from '../../lib/relativeTime';
 import type { ConversationPreview } from '../../lib/types';
 import AssistantClient from '../assistant/AssistantClient';
+import { getErrorMessage } from '../../lib/utils';
+import Button from '../../components/ui/Button';
 
 type HubTab = 'messages' | 'assistant';
 
@@ -25,6 +27,7 @@ export default function MessagesPage() {
   const { t } = useLanguage();
   const [conversations, setConversations] = useState<ConversationPreview[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const tab = useSyncExternalStore(subscribeToHistory, getTabFromUrl, () => 'messages');
 
   function selectTab(next: HubTab) {
@@ -39,15 +42,16 @@ export default function MessagesPage() {
     let cancelled = false;
     async function load() {
       try {
+        setError('');
         const data = await fetchConversationList();
         if (!cancelled) setConversations(data);
       } catch (err) {
-        console.error(err);
+        if (!cancelled) setError(getErrorMessage(err));
       } finally {
         if (!cancelled) setLoading(false);
       }
     }
-    load();
+    void Promise.resolve().then(load);
 
     const onFocus = () => load();
     window.addEventListener('focus', onFocus);
@@ -73,6 +77,8 @@ export default function MessagesPage() {
         <div className="hub-state">{t('chat_login_required')}</div>
       ) : loading ? (
         <div className="hub-state">{t('detail_loading')}</div>
+      ) : error ? (
+        <div className="hub-state" role="alert"><p>{error}</p><Button variant="secondary" onClick={() => window.location.reload()}>Дахин оролдох</Button></div>
       ) : conversations.length === 0 ? (
         <div style={{ textAlign: 'center', padding: 'var(--sp-6) 0' }}>
           <p style={{ fontSize: 18, fontWeight: 600, color: 'var(--primary)', marginBottom: 8 }}>
@@ -86,7 +92,7 @@ export default function MessagesPage() {
             const otherEmail = conv.initiatorId === user.id ? conv.ownerEmail : conv.initiatorEmail;
             const otherName = otherEmail.split('@')[0];
             return (
-              <Link key={conv.id} href={`/messages/${conv.id}`} className="conv-item">
+              <Link key={conv.id} href={`/messages/${conv.id}`} className={`conv-item${conv.unreadCount ? ' unread' : ''}`}>
                 <div className="conv-thumb">
                   {conv.pet?.photoURL ? (
                     <Image src={conv.pet.photoURL} alt="" fill sizes="48px" style={{ objectFit: 'cover', borderRadius: 'var(--r-md)' }} />
@@ -97,6 +103,7 @@ export default function MessagesPage() {
                 <div className="conv-info">
                   <div className="conv-header">
                     <span className="conv-name">{otherName}</span>
+                    {conv.unreadCount > 0 && <span className="unread-count" aria-label={`${conv.unreadCount} уншаагүй мессеж`}>{conv.unreadCount > 99 ? '99+' : conv.unreadCount}</span>}
                     {conv.lastMessage && (
                       <span className="conv-time">{relativeTime(conv.lastMessage.createdAt)}</span>
                     )}
@@ -140,6 +147,8 @@ export default function MessagesPage() {
           box-shadow: var(--shadow-md);
           border-color: var(--primary-light);
         }
+        .conv-item.unread { border-color: color-mix(in srgb, var(--accent) 45%, var(--border-subtle)); background: color-mix(in srgb, var(--accent) 6%, var(--surface-2)); }
+        .unread-count { min-width: 20px; height: 20px; padding: 0 6px; display: inline-flex; align-items: center; justify-content: center; border-radius: var(--r-pill); background: var(--accent); color: var(--accent-ink); font-size: 10px; font-weight: 800; }
         .conv-thumb {
           width: 48px; height: 48px; border-radius: var(--r-md); overflow: hidden;
           background: var(--thumb-bg); position: relative; flex-shrink: 0;

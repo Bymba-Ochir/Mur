@@ -1,59 +1,45 @@
 import { NextResponse } from 'next/server';
-import { createAdminClient } from '../../../../../lib/supabaseAdmin';
-import { checkRateLimit, getClientIp } from '../../../../../lib/rateLimit';
+import { requireRequestUser } from '../../../../../lib/serverAuth';
+import { petPhotoStoragePath } from '../../../../../lib/storageObjectPath';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-const TABLES = {
-  pet: { table: 'pets', owner: 'created_by' },
-  adoption: { table: 'adoptions', owner: 'created_by' },
-  sitting: { table: 'sitting_listings', owner: 'user_id' },
-} as const;
+type ContentKind = 'pets' | 'adoptions' | 'sitting';
 
-function storagePath(value: unknown): string | null {
-  if (typeof value !== 'string') return null;
+export async function DELETE(request: Request, context: { params: Promise<{ kind: string; id: string }> }) {
   try {
-    const pathname = new URL(value).pathname;
-    const marker = '/storage/v1/object/public/pet-photos/';
-    const index = pathname.indexOf(marker);
-    return index >= 0 ? decodeURIComponent(pathname.slice(index + marker.length)) : null;
-  } catch {
-    return null;
+    const { kind: rawKind, id } = await context.params;
+    if (!['pets', 'adoptions', 'sitting'].includes(rawKind) || !UUID.test(id)) return NextResponse.json({ error: 'Устгах хүсэлт буруу байна.' }, { status: 400 });
+    const kind = rawKind as ContentKind;
+    const { user, admin } = await requireRequestUser(request);
+    const { data: adminRow } = await admin.from('admins').select('user_id').eq('user_id', user.id).maybeSingle();
+    let row: Record<string, unknown> | null = null;
+    let table = '';
+    let ownerColumn = '';
+    if (kind === 'pets') {
+      table = 'pets'; ownerColumn = 'created_by';
+      const result = await admin.from(table).select('created_by,photo_url,photo_urls').eq('id', id).maybeSingle();
+      if (result.error) throw result.error; row = result.data;
+    } else if (kind === 'adoptions') {
+      table = 'adoptions'; ownerColumn = 'created_by';
+      let result = await admin.from(table).select('created_by,photo_url,photo_urls').eq('id', id).maybeSingle();
+      if (result.error && /photo_urls|schema cache/i.test(result.error.message)) result = await admin.from(table).select('created_by,photo_url').eq('id', id).maybeSingle();
+      if (result.error) throw result.error; row = result.data;
+    } else {
+      table = 'sitting_listings'; ownerColumn = 'user_id';
+      const result = await admin.from(table).select('user_id,photo_url').eq('id', id).maybeSingle();
+      if (result.error) throw result.error; row = result.data;
+    }
+    if (!row) return NextResponse.json({ error: 'Устгах мэдээлэл олдсонгүй.' }, { status: 404 });
+    if (row[ownerColumn] !== user.id && !adminRow) return NextResponse.json({ error: 'Энэ мэдээллийг устгах эрхгүй байна.' }, { status: 403 });
+    const urls = [row.photo_url, ...(Array.isArray(row.photo_urls) ? row.photo_urls : [])];
+    const paths = [...new Set(urls.map(petPhotoStoragePath).filter((path): path is string => Boolean(path)))];
+    const { error: deleteError } = await admin.from(table).delete().eq('id', id);
+    if (deleteError) throw deleteError;
+    let storageCleaned = true;
+    if (paths.length) { const { error } = await admin.storage.from('pet-photos').remove(paths); storageCleaned = !error; }
+    return NextResponse.json({ ok: true, storageCleaned });
+  } catch (error) {
+    const unauthorized = error instanceof Error && error.message === 'UNAUTHORIZED';
+    return NextResponse.json({ error: unauthorized ? 'Эхлээд нэвтэрнэ үү.' : 'Устгахад алдаа гарлаа.' }, { status: unauthorized ? 401 : 500 });
   }
-}
-
-export async function DELETE(request: Request, { params }: { params: Promise<{ kind: string; id: string }> }) {
-  const { kind, id } = await params;
-  const config = TABLES[kind as keyof typeof TABLES];
-  if (!config || !UUID.test(id)) return NextResponse.json({ error: 'Хүсэлт буруу байна' }, { status: 400 });
-
-  const rate = checkRateLimit(`content-delete:${getClientIp(request)}`, 20, 60 * 60_000);
-  if (!rate.allowed) return NextResponse.json({ error: 'Хэт олон хүсэлт илгээлээ' }, { status: 429 });
-
-  const authorization = request.headers.get('authorization');
-  if (!authorization?.startsWith('Bearer ')) return NextResponse.json({ error: 'Нэвтэрнэ үү' }, { status: 401 });
-
-  const admin = createAdminClient();
-  const { data: authData } = await admin.auth.getUser(authorization.slice(7));
-  const user = authData.user;
-  if (!user) return NextResponse.json({ error: 'Нэвтрэлт хүчингүй байна' }, { status: 401 });
-
-  const { data: row, error: readError } = await admin.from(config.table).select('*').eq('id', id).maybeSingle();
-  if (readError) return NextResponse.json({ error: 'Зарыг шалгаж чадсангүй' }, { status: 500 });
-  if (!row) return NextResponse.json({ ok: true });
-
-  const { data: adminRow } = await admin.from('admins').select('user_id').eq('user_id', user.id).maybeSingle();
-  if (row[config.owner] !== user.id && !adminRow) {
-    return NextResponse.json({ error: 'Энэ зарыг устгах эрхгүй' }, { status: 403 });
-  }
-
-  const imageUrls = [row.photo_url, ...(Array.isArray(row.photo_urls) ? row.photo_urls : [])];
-  const paths = [...new Set(imageUrls.map(storagePath).filter((path): path is string => Boolean(path)))];
-  const { error: deleteError } = await admin.from(config.table).delete().eq('id', id);
-  if (deleteError) return NextResponse.json({ error: 'Зарыг устгаж чадсангүй' }, { status: 500 });
-
-  if (paths.length) {
-    const { error: storageError } = await admin.storage.from('pet-photos').remove(paths);
-    if (storageError) console.error('content-delete: storage cleanup алдаа', storageError.message);
-  }
-  return NextResponse.json({ ok: true, removedImages: paths.length });
 }

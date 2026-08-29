@@ -13,6 +13,7 @@ import {
   sendMessage,
   subscribeToMessages,
   otherParticipant,
+  markConversationRead,
 } from '../../../lib/chatService';
 import { relativeTime } from '../../../lib/relativeTime';
 import { getErrorMessage } from '../../../lib/utils';
@@ -54,6 +55,7 @@ export default function MessageThreadClient({ id }: { id: string }) {
         setConv(conversation);
         setMessages(msgs);
         msgs.forEach((m) => seenIds.current.add(m.id));
+        await markConversationRead(id);
       } catch (err) {
         if (!cancelled) setError(getErrorMessage(err) || 'Алдаа');
       } finally {
@@ -74,10 +76,11 @@ export default function MessageThreadClient({ id }: { id: string }) {
         seenIds.current.add(msg.id);
         setMessages((prev) => [...prev, msg]);
       }
+      if (user && msg.senderId !== user.id) void markConversationRead(conv.id);
     });
 
     return unsubscribe;
-  }, [conv]);
+  }, [conv, user]);
 
   // Шинэ мессеж ирэхэд доод хэсэг рүү скролл хийх
   useEffect(() => {

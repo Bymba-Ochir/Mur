@@ -7,6 +7,7 @@ import { fetchMyAppointments, cancelAppointment, appointmentStatusLabel } from '
 import { getErrorMessage } from '../lib/utils';
 import { VET_CLINICS } from '../lib/vetClinics';
 import type { Appointment } from '../lib/types';
+import Button from './ui/Button';
 
 const clinicMap = new Map(VET_CLINICS.map((c) => [c.id, c]));
 
@@ -21,6 +22,7 @@ export default function AppointmentsSection({
   const showToast = useToast();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     if (!user) return;
@@ -28,9 +30,9 @@ export default function AppointmentsSection({
     async function load() {
       try {
         const data = await fetchMyAppointments();
-        if (!cancelled) setAppointments(data);
+        if (!cancelled) { setAppointments(data); setError(''); }
       } catch (err) {
-        console.error(err);
+        if (!cancelled) setError(getErrorMessage(err));
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -54,6 +56,8 @@ export default function AppointmentsSection({
   }
 
   if (!user || loading) return null;
+
+  if (error) return <div role="alert" style={{ marginTop: 'var(--sp-5)', padding: 'var(--sp-3)', border: '1px solid var(--alert)', borderRadius: 'var(--r-md)' }}><p style={{ color: 'var(--alert)', marginBottom: 8 }}>{error}</p><Button variant="secondary" onClick={onChange}>Дахин оролдох</Button></div>;
 
   return (
     <div style={{ marginTop: 'var(--sp-5)' }}>

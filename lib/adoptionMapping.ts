@@ -17,6 +17,7 @@ interface AdoptionRow {
   photo_urls?: unknown;
   created_by: string | null;
   created_at: string;
+  adopted?: boolean | null;
 }
 
 export function mapAdoptionRow(row: AdoptionRow): Adoption {
@@ -37,5 +38,6 @@ export function mapAdoptionRow(row: AdoptionRow): Adoption {
       : row.photo_url ? [row.photo_url] : [],
     createdBy: row.created_by,
     createdAt: row.created_at,
+    adopted: Boolean(row.adopted),
   };
 }

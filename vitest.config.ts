@@ -4,7 +4,7 @@ import react from '@vitejs/plugin-react';
 // Бүх эх кодыг .ts/.tsx болгосон тул jsxInJs plugin шаардлагагүй болсон —
 // Vite/React нь .tsx доторх JSX-г өөрөө боловсруулдаг.
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react({ babel: { plugins: ['styled-jsx/babel'] } })],
   test: {
     environment: 'jsdom',
     setupFiles: ['./tests/setup.ts'],

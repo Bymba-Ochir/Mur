@@ -4,6 +4,7 @@ import { supabase } from './supabase';
 import { mapAdoptionRow } from './adoptionMapping';
 import type { Adoption, AdoptionInput, AdoptionFilters, UpdateAdoptionFields } from './types';
 import { cleanText, requireMongolianPhone } from './inputValidation';
+import { apiError, authenticatedFetch } from './apiClient';
 
 const TABLE = 'adoptions';
 const BUCKET = 'pet-photos';
@@ -12,8 +13,8 @@ const PAGE_SIZE = 24;
 /**
  * Зураг Storage bucket-д хуулаад, public URL буцаана
  */
-async function uploadAdoptionPhoto(file: File): Promise<string> {
-  const path = `adoptions/${Date.now()}_${file.name}`;
+async function uploadAdoptionPhoto(file: File, userId: string): Promise<string> {
+  const path = `${userId}/adoptions/${Date.now()}_${file.name}`;
   const { error } = await supabase.storage.from(BUCKET).upload(path, file);
   if (error) throw error;
   const { data } = supabase.storage.from(BUCKET).getPublicUrl(path);
@@ -24,12 +25,14 @@ async function uploadAdoptionPhoto(file: File): Promise<string> {
  * Шинэ үрчлүүлэх зар нэмэх
  */
 export async function createAdoption(data: AdoptionInput): Promise<string> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('Эхлээд нэвтэрнэ үү.');
   let photoUrl: string | null = null;
   let photoUrls: string[] = [];
 
   const files = (data.photoFiles?.length ? data.photoFiles : data.photoFile ? [data.photoFile] : []).slice(0, 4);
   if (files.length) {
-    photoUrls = await Promise.all(files.map(uploadAdoptionPhoto));
+    photoUrls = await Promise.all(files.map((file) => uploadAdoptionPhoto(file, user.id)));
     photoUrl = photoUrls[0];
   }
 
@@ -84,6 +87,7 @@ export async function fetchAdoptionById(id: string): Promise<Adoption> {
 export async function fetchAdoptions(filters: AdoptionFilters = {}): Promise<{ adoptions: Adoption[]; hasMore: boolean }> {
   const { type, gender, district, search, page = 0 } = filters;
   let q = supabase.from(TABLE).select('*').order('created_at', { ascending: false });
+  q = q.eq('adopted', false);
 
   if (type) q = q.eq('type', type);
   if (gender) q = q.eq('gender', gender);
@@ -134,6 +138,6 @@ export async function updateAdoption(id: string, fields: UpdateAdoptionFields): 
  * Зохиогч өөрийн зарыг устгах
  */
 export async function deleteAdoption(id: string): Promise<void> {
-  const { error } = await supabase.from(TABLE).delete().eq('id', id);
-  if (error) throw error;
+  const response = await authenticatedFetch(`/api/content/adoptions/${encodeURIComponent(id)}`, { method: 'DELETE' });
+  if (!response.ok) throw await apiError(response);
 }

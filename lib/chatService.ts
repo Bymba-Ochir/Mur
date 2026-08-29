@@ -140,7 +140,8 @@ export async function fetchConversationById(id: string): Promise<Conversation | 
     .eq('id', id)
     .maybeSingle();
 
-  if (error || !data) return null;
+  if (error) throw error;
+  if (!data) return null;
   const conv = mapConversationRow(data);
   return {
     ...conv,
@@ -203,25 +204,29 @@ export async function fetchConversationList(): Promise<ConversationPreview[]> {
     .or(`initiator_id.eq.${user.id},owner_id.eq.${user.id}`)
     .order('created_at', { ascending: false });
 
-  if (convErr || !convs) return [];
+  if (convErr) throw convErr;
+  if (!convs) return [];
 
   if (convs.length === 0) return [];
 
   // Сүүлийн мессежүүдийг татах
   const convIds = convs.map((c) => c.id);
-  const { data: msgs } = await supabase
+  const { data: msgs, error: msgError } = await supabase
     .from('messages')
     .select('*')
     .in('conversation_id', convIds)
     .order('created_at', { ascending: false });
+  if (msgError) throw msgError;
 
   // Харилцаа бүрийн хувьд сүүлийн мессежийг олох
   const lastMsgMap = new Map<string, MessageRow>();
+  const unreadMap = new Map<string, number>();
   if (msgs) {
     for (const m of msgs) {
       if (!lastMsgMap.has(m.conversation_id)) {
         lastMsgMap.set(m.conversation_id, m);
       }
+      if (m.sender_id !== user.id && !m.read_at) unreadMap.set(m.conversation_id, (unreadMap.get(m.conversation_id) ?? 0) + 1);
     }
   }
 
@@ -229,7 +234,17 @@ export async function fetchConversationList(): Promise<ConversationPreview[]> {
     ...mapConversationRow(row),
     pet: row.pets ? mapPetSummary(row.pets) : null,
     lastMessage: lastMsgMap.get(row.id) ? mapMessageRow(lastMsgMap.get(row.id)!) : null,
+    unreadCount: unreadMap.get(row.id) ?? 0,
   }));
+}
+
+export async function markConversationRead(conversationId: string): Promise<void> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return;
+  const now = new Date().toISOString();
+  const { error } = await supabase.from('messages').update({ read_at: now }).eq('conversation_id', conversationId).neq('sender_id', user.id).is('read_at', null);
+  if (error) throw error;
+  await supabase.from('notifications').update({ read_at: now }).eq('href', `/messages/${conversationId}`).is('read_at', null);
 }
 
 /**

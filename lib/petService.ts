@@ -5,6 +5,7 @@ import { getImageEmbedding, getImageHash, cosineSimilarityScore, EMBEDDING_VERSI
 import { mapPetRow } from './petMapping';
 import type { Pet, PetStatus, PetFilters, PetReportInput, UpdatePetFields } from './types';
 import { cleanText, optionalCoordinate, optionalInteger, requireMongolianPhone } from './inputValidation';
+import { apiError, authenticatedFetch } from './apiClient';
 
 const TABLE = 'pets';
 const BUCKET = 'pet-photos';
@@ -12,8 +13,8 @@ const BUCKET = 'pet-photos';
 /**
  * Зураг Storage bucket-д хуулаад, public URL буцаана (зөвхөн дотор ашиглана)
  */
-async function uploadPetPhoto(file: File, statusFolder: PetStatus): Promise<string> {
-  const path = `${statusFolder}/${Date.now()}_${file.name}`;
+async function uploadPetPhoto(file: File, statusFolder: PetStatus, userId: string): Promise<string> {
+  const path = `${userId}/${statusFolder}/${Date.now()}_${file.name}`;
   const { error } = await supabase.storage.from(BUCKET).upload(path, file);
   if (error) throw error;
   const { data } = supabase.storage.from(BUCKET).getPublicUrl(path);
@@ -26,6 +27,8 @@ async function uploadPetPhoto(file: File, statusFolder: PetStatus): Promise<stri
  * @param onProgress - embedding тооцоолж байх үеийн статус мессеж дамжуулах callback
  */
 export async function createPetReport(data: PetReportInput, onProgress?: (message: string) => void): Promise<string> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('Эхлээд нэвтэрнэ үү.');
   const phone = requireMongolianPhone(data.phone);
   const reward = data.hasReward
     ? optionalInteger(data.reward, { min: 0, max: 100_000_000, label: 'Шагналын дүн' })
@@ -38,7 +41,7 @@ export async function createPetReport(data: PetReportInput, onProgress?: (messag
   const files = (data.photoFiles?.length ? data.photoFiles : data.photoFile ? [data.photoFile] : []).slice(0, 4);
   if (files.length) {
     onProgress?.(`1/${files.length} зураг хадгалж байна...`);
-    photoUrls = await Promise.all(files.map((file) => uploadPetPhoto(file, data.status)));
+    photoUrls = await Promise.all(files.map((file) => uploadPetPhoto(file, data.status, user.id)));
     photoUrl = photoUrls[0] ?? null;
     try {
       [embedding, imageHash] = await Promise.all([
@@ -154,13 +157,9 @@ export async function updatePet(id: string, fields: UpdatePetFields): Promise<vo
   if (error) throw error;
 }
 
-/**
- * Зохиогч өөрийн бичлэгийг устгах. Storage дахь зургийг цэвэрлэхгүй
- * (MVP-д хялбар байдлаар орхигдсон, дараа нь cleanup job нэмж болно).
- */
 export async function deletePet(id: string): Promise<void> {
-  const { error } = await supabase.from(TABLE).delete().eq('id', id);
-  if (error) throw error;
+  const response = await authenticatedFetch(`/api/content/pets/${encodeURIComponent(id)}`, { method: 'DELETE' });
+  if (!response.ok) throw await apiError(response);
 }
 
 /**
@@ -176,8 +175,8 @@ export async function markResolved(id: string): Promise<void> {
  * Буруу/spam/hoax бичлэгийг мэдээлэх
  */
 export async function reportPet(petId: string, reason: string): Promise<void> {
-  const { error } = await supabase.from('reports').insert({ pet_id: petId, reason });
-  if (error) throw error;
+  const response = await authenticatedFetch('/api/reports', { method: 'POST', body: JSON.stringify({ petId, reason }) });
+  if (!response.ok) throw await apiError(response);
 }
 
 /**

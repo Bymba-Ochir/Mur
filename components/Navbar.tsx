@@ -12,6 +12,7 @@ import { useLanguage } from '../lib/i18n';
 import Icon from './ui/icons';
 import type { IconName } from './ui/icons';
 import Button from './ui/Button';
+import { subscribeToNotifications, unreadNotificationCount } from '../lib/workflowService';
 
 function truncateEmail(email: string): string {
   const [local, domain] = email.split('@');
@@ -34,6 +35,7 @@ export default function Navbar() {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [admin, setAdmin] = useState(false);
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
   const userMenuRef = useRef<HTMLDivElement>(null);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
   const mobileMenuButtonRef = useRef<HTMLButtonElement>(null);
@@ -59,6 +61,17 @@ export default function Navbar() {
     const task = user ? isAdmin() : Promise.resolve(false);
     task.then(setAdmin);
   }, [user]);
+
+  useEffect(() => {
+    if (!user) return;
+    let active = true;
+    const refresh = () => { void unreadNotificationCount().then((count) => { if (active) setUnreadNotifications(count); }); };
+    refresh();
+    const unsubscribe = subscribeToNotifications(user.id, refresh);
+    return () => { active = false; unsubscribe(); };
+  }, [user, pathname]);
+
+  const visibleUnreadNotifications = user ? unreadNotifications : 0;
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -113,6 +126,8 @@ export default function Navbar() {
 
   const userMenuItems: UserMenuItem[] = [
     { href: '/profile', label: 'Миний profile', isLink: true, icon: 'paw' },
+    { href: '/notifications', label: visibleUnreadNotifications ? `Мэдэгдэл (${visibleUnreadNotifications})` : 'Мэдэгдэл', isLink: true, icon: 'bell' },
+    { href: '/activity', label: 'Миний хүсэлтүүд', isLink: true, icon: 'calendar' },
     { href: '/settings', label: 'Тохиргоо', isLink: true, icon: 'lock' },
     { href: '/my-pets', label: t('nav_mypets'), isLink: true, icon: 'vaccine' },
     { href: '/messages', label: t('messages_hub_nav'), isLink: true, icon: 'message' },
@@ -185,6 +200,7 @@ export default function Navbar() {
               >
                 <span className="user-avatar" aria-hidden="true"><Icon name="paw" size={15} /></span>
                 <span className="user-email">{user.email ? truncateEmail(user.email) : ''}</span>
+                {visibleUnreadNotifications > 0 && <span className="notification-badge" aria-label={`${visibleUnreadNotifications} уншаагүй мэдэгдэл`}>{visibleUnreadNotifications > 99 ? '99+' : visibleUnreadNotifications}</span>}
                 <span className="user-chevron" aria-hidden="true">{showUserMenu ? '▲' : '▼'}</span>
               </button>
               {showUserMenu && (
@@ -291,6 +307,8 @@ export default function Navbar() {
                   </div>
                   <div className="mobile-user-actions">
                     <Link href="/profile" className="mobile-nav-link" onClick={handleMobileLinkClick}><Icon name="paw" size={18} /> Миний profile</Link>
+                    <Link href="/notifications" className="mobile-nav-link" onClick={handleMobileLinkClick}><Icon name="bell" size={18} /> Мэдэгдэл {visibleUnreadNotifications > 0 && <span className="mobile-badge">{visibleUnreadNotifications}</span>}</Link>
+                    <Link href="/activity" className="mobile-nav-link" onClick={handleMobileLinkClick}><Icon name="calendar" size={18} /> Миний хүсэлтүүд</Link>
                     <Link href="/settings" className="mobile-nav-link" onClick={handleMobileLinkClick}><Icon name="lock" size={18} /> Тохиргоо</Link>
                     <Button variant="danger" fullWidth onClick={() => { logout(); setShowMobileMenu(false); }}>
                       {t('nav_logout')}
@@ -550,6 +568,21 @@ export default function Navbar() {
           margin-right: 6px;
           transition: transform 0.15s ease;
         }
+        .notification-badge,.mobile-badge {
+          min-width: 19px;
+          height: 19px;
+          padding: 0 5px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: var(--r-pill);
+          background: var(--alert);
+          color: #fff;
+          font-size: 10px;
+          font-weight: 800;
+          line-height: 1;
+        }
+        .mobile-badge { margin-left: auto; }
 
         .user-dropdown {
           position: absolute;

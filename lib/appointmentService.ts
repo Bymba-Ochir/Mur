@@ -100,10 +100,10 @@ export async function deleteAppointment(id: string): Promise<void> {
 // ─── Тусламжит ───────────────────────────────────────────────────────────────
 
 const STATUS_LABELS: Record<AppointmentStatus, string> = {
-  pending: '⏳ Хүлээгдэж байна',
-  confirmed: '✅ Баталгаажсан',
-  completed: '🏁 Хийгдсэн',
-  cancelled: '❌ Цуцалсан',
+  pending: 'Хүлээгдэж байна',
+  confirmed: 'Баталгаажсан',
+  completed: 'Хийгдсэн',
+  cancelled: 'Цуцалсан',
 };
 
 export function appointmentStatusLabel(status: AppointmentStatus): string {

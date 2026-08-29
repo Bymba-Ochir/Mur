@@ -7,26 +7,31 @@ import Button from './ui/Button';
 import { useLanguage } from '../lib/i18n';
 import type { Sighting } from '../lib/types';
 import { getErrorMessage } from '../lib/utils';
+import { useAuth } from '../lib/useAuth';
+import Icon from './ui/icons';
 
 export default function SightingsList({ petId }: { petId: string }) {
   const showToast = useToast();
   const { t } = useLanguage();
+  const { user } = useAuth();
   const [sightings, setSightings] = useState<Sighting[]>([]);
   const [message, setMessage] = useState('');
   const [place, setPlace] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [showForm, setShowForm] = useState(false);
+  const [loadError, setLoadError] = useState('');
 
   useEffect(() => {
-    load();
+    void Promise.resolve().then(load);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [petId]);
 
   async function load() {
     try {
+      setLoadError('');
       setSightings(await fetchSightings(petId));
     } catch (err) {
-      console.error(err);
+      setLoadError(getErrorMessage(err));
     }
   }
 
@@ -55,12 +60,14 @@ export default function SightingsList({ petId }: { petId: string }) {
           {t('sightings_title')} ({sightings.length})
         </p>
         <button
-          onClick={() => setShowForm((s) => !s)}
+          onClick={() => user ? setShowForm((s) => !s) : showToast('Мэдээлэл нэмэхийн тулд нэвтэрнэ үү.', 'error')}
           style={{ background: 'none', border: 'none', color: 'var(--accent)', fontSize: 12.5, fontWeight: 600, cursor: 'pointer' }}
         >
           {showForm ? t('sightings_close') : t('sightings_add')}
         </button>
       </div>
+
+      {loadError && <div role="alert" style={{ color: 'var(--alert)', fontSize: 12.5, marginBottom: 'var(--sp-2)' }}>{loadError} <button type="button" onClick={() => void load()} style={{ color: 'var(--accent)', background: 'none', border: 0, cursor: 'pointer' }}>Дахин оролдох</button></div>}
 
       {showForm && (
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-2)', marginBottom: 'var(--sp-3)' }}>
@@ -94,7 +101,7 @@ export default function SightingsList({ petId }: { petId: string }) {
             <div key={s.id} style={{ background: 'var(--card)', border: '1px solid var(--line)', borderRadius: 'var(--r-sm)', padding: '10px 12px' }}>
               <p style={{ fontSize: 13.5, color: 'var(--ink)' }}>{s.message}</p>
               <p style={{ fontSize: 11.5, color: 'var(--muted)', marginTop: 'var(--sp-1)' }}>
-                {s.place && `📍 ${s.place} · `}{relativeTime(s.createdAt)}
+                {s.place && <><Icon name="pin" size={12} aria-hidden="true" /> {s.place} · </>}{relativeTime(s.createdAt)}
               </p>
             </div>
           ))}

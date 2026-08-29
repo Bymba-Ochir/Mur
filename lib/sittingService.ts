@@ -3,6 +3,7 @@
 import { supabase } from './supabase';
 import type { SittingListing, SittingListingInput, SittingListingFilters, UpdateSittingListingFields } from './types';
 import { cleanText, optionalCoordinate, optionalInteger, requireMongolianPhone } from './inputValidation';
+import { apiError, authenticatedFetch } from './apiClient';
 
 const TABLE = 'sitting_listings';
 const BUCKET = 'pet-photos';
@@ -60,7 +61,7 @@ export async function createSittingListing(data: SittingListingInput): Promise<s
   let photoUrl: string | null = null;
 
   if (data.photoFile) {
-    const path = `sitting/${Date.now()}_${data.photoFile.name}`;
+    const path = `${userId}/sitting/${Date.now()}_${data.photoFile.name}`;
     const { error: uploadErr } = await supabase.storage.from(BUCKET).upload(path, data.photoFile);
     if (uploadErr) throw uploadErr;
     const { data: urlData } = supabase.storage.from(BUCKET).getPublicUrl(path);
@@ -147,7 +148,6 @@ export async function updateSittingListing(id: string, fields: UpdateSittingList
 }
 
 export async function deleteSittingListing(id: string): Promise<void> {
-  const userId = await requireUserId();
-  const { error } = await supabase.from(TABLE).delete().eq('id', id).eq('user_id', userId);
-  if (error) throw error;
+  const response = await authenticatedFetch(`/api/content/sitting/${encodeURIComponent(id)}`, { method: 'DELETE' });
+  if (!response.ok) throw await apiError(response);
 }

@@ -24,6 +24,7 @@ const PRIVACY_MN: LegalDoc = {
         'Нэвтрэлтийн мэдээлэл: Нэвтрэхдээ имэйл хаягаа оруулна. Нууц үг бидэнд хадгалагдахгүй — зөвхөн нэг удаагийн нэвтрэх холбоос имэйлээр илгээгдэнэ.',
         'Байршлын мэдээлэл: Хэрэв та зөвшөөрвөл байршлаа тодорхойлж, дүүргээ автоматаар бөглөх боломжтой. Байршил нь зөвхөн тэр мөчид ашиглагдаж, хадгалагдахгүй.',
         'Төхөөрөмжийн мэдээлэл: Хэрэв та мэдэгдэл хүлээн авахаар бүртгүүлбэл push subscription мэдээлэл (төхөөрөмжийн түлхүүр) хадгалагдана.',
+        'Үйл ажиллагааны мэдээлэл: Үрчлүүлэх хүсэлт, асрах захиалга, үйлчилгээний үнэлгээ болон тэдгээрийн төлөвийг үйлчилгээ үзүүлэх, маргаан шалгах зорилгоор хадгална.',
       ],
     },
     {
@@ -90,6 +91,7 @@ const PRIVACY_EN: LegalDoc = {
         'Account information: When logging in, you provide your email address. We do not store passwords — a one-time login link is sent to your email.',
         'Location information: If you allow it, we can determine your location to auto-fill your district. The location is used only at that moment and is not stored.',
         'Device information: If you subscribe to notifications, we store your push subscription data (device key).',
+        'Activity information: We store adoption applications, sitting bookings, service reviews, and their statuses to provide the service and investigate disputes.',
       ],
     },
     {

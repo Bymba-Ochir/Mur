@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { subscribeToNearbyAlerts, isSubscribed, isPushSupported } from '../lib/push';
 import type { District } from '../lib/districts';
 import { getErrorMessage } from '../lib/utils';
+import Icon from './ui/icons';
 
 export default function NotifySubscribe({ district }: { district: District }) {
   const [subscribed, setSubscribed] = useState(false);
@@ -40,11 +41,11 @@ export default function NotifySubscribe({ district }: { district: District }) {
   return (
     <div className="notify-box">
       {subscribed ? (
-        <p>🔔 Танай дүүрэгт шинэ мэдэгдэл бүртгэгдэхэд push мэдэгдэл авна.</p>
+        <p><Icon name="bell" size={15} aria-hidden="true" /> Танай дүүрэгт шинэ мэдэгдэл бүртгэгдэхэд push мэдэгдэл авна.</p>
       ) : (
         <>
           <button onClick={handleSubscribe} disabled={loading} className="notify-btn">
-            {loading ? 'Бүртгүүлж байна...' : `🔔 "${district}" дүүргийн шинэ мэдэгдэл авах`}
+            <Icon name="bell" size={15} aria-hidden="true" /> {loading ? 'Бүртгүүлж байна...' : `"${district}" дүүргийн шинэ мэдэгдэл авах`}
           </button>
           {error && <p className="notify-error">{error}</p>}
         </>
@@ -58,6 +59,7 @@ export default function NotifySubscribe({ district }: { district: District }) {
         }
         .notify-btn:disabled { opacity: 0.6; cursor: not-allowed; }
         .notify-error { color: var(--alert); font-size: 12px; margin-top: 6px; }
+        p,.notify-btn { display: inline-flex; align-items: center; gap: 7px; }
         p { font-size: 13px; color: var(--muted); }
       `}</style>
     </div>

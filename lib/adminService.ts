@@ -2,6 +2,7 @@
 import { supabase } from './supabase';
 import { mapPetSummary } from './petMapping';
 import type { Report } from './types';
+import { apiError, authenticatedFetch } from './apiClient';
 
 export type AdminContentType = 'pet' | 'adoption' | 'sitting';
 
@@ -77,8 +78,8 @@ export async function dismissReport(reportId: string): Promise<void> {
 }
 
 export async function adminDeletePet(petId: string): Promise<void> {
-  const { error } = await supabase.from('pets').delete().eq('id', petId);
-  if (error) throw error;
+  const response = await authenticatedFetch(`/api/content/pets/${encodeURIComponent(petId)}`, { method: 'DELETE' });
+  if (!response.ok) throw await apiError(response);
   await writeAudit('delete', 'pet', petId);
 }
 
@@ -135,9 +136,9 @@ export async function fetchAdminContent(): Promise<AdminContentItem[]> {
 }
 
 export async function adminDeleteContent(kind: AdminContentType, id: string): Promise<void> {
-  const table = kind === 'pet' ? 'pets' : kind === 'adoption' ? 'adoptions' : 'sitting_listings';
-  const { error } = await supabase.from(table).delete().eq('id', id);
-  if (error) throw error;
+  const routeKind = kind === 'pet' ? 'pets' : kind === 'adoption' ? 'adoptions' : 'sitting';
+  const response = await authenticatedFetch(`/api/content/${routeKind}/${encodeURIComponent(id)}`, { method: 'DELETE' });
+  if (!response.ok) throw await apiError(response);
   await writeAudit('delete', kind, id);
 }
 

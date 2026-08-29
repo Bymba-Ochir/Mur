@@ -17,6 +17,7 @@ import { relativeTime } from '../../../lib/relativeTime';
 import { maskPhone, formatPhone, getErrorMessage } from '../../../lib/utils';
 import type { Adoption } from '../../../lib/types';
 import { getBreedLabel } from '../../../lib/petBreeds';
+import AdoptionApplicationPanel from '../../../components/AdoptionApplicationPanel';
 
 function subscribeLocation(cb: () => void) {
   window.addEventListener('popstate', cb);
@@ -166,6 +167,8 @@ export default function AdoptionDetailClient({ id }: { id: string }) {
           {t('profiles_view_profile')}
         </Button>
       </div>
+
+      <AdoptionApplicationPanel adoptionId={adoption.id} ownerId={adoption.createdBy} />
 
       <div className="share-section">
         <ShareButtons url={url} title={`Үрчлүүлэх ${adoption.type}${adoption.name ? ' — ' + adoption.name : ''}`} />

@@ -54,13 +54,13 @@ async function subscribePush({ district, userId }: { district?: District | null;
   });
 
   const json = subscription.toJSON();
-  const { error } = await supabase.from('push_subscriptions').insert({
-    district: district || null,
-    user_id: userId || null,
-    endpoint: json.endpoint,
-    keys: json.keys,
+  const { data: { session } } = await supabase.auth.getSession();
+  const response = await fetch('/api/push-subscriptions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...(session ? { Authorization: `Bearer ${session.access_token}` } : {}) },
+    body: JSON.stringify({ endpoint: json.endpoint, keys: json.keys, district: district || null, vaccine: Boolean(userId) }),
   });
-  if (error && !error.message.includes('duplicate')) throw error;
+  if (!response.ok) { const payload = await response.json().catch(() => null) as { error?: string } | null; throw new Error(payload?.error || 'Push бүртгэл хадгалахад алдаа гарлаа.'); }
 }
 
 export async function isSubscribed(): Promise<boolean> {
