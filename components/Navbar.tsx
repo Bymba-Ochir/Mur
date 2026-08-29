@@ -127,6 +127,7 @@ export default function Navbar() {
   const userMenuItems: UserMenuItem[] = [
     { href: '/profile', label: 'Миний profile', isLink: true, icon: 'paw' },
     { href: '/notifications', label: visibleUnreadNotifications ? `Мэдэгдэл (${visibleUnreadNotifications})` : 'Мэдэгдэл', isLink: true, icon: 'bell' },
+    { href: '/saved', label: 'Хадгалсан', isLink: true, icon: 'heart' },
     { href: '/activity', label: 'Миний хүсэлтүүд', isLink: true, icon: 'calendar' },
     { href: '/settings', label: 'Тохиргоо', isLink: true, icon: 'lock' },
     { href: '/my-pets', label: t('nav_mypets'), isLink: true, icon: 'vaccine' },
@@ -308,6 +309,7 @@ export default function Navbar() {
                   <div className="mobile-user-actions">
                     <Link href="/profile" className="mobile-nav-link" onClick={handleMobileLinkClick}><Icon name="paw" size={18} /> Миний profile</Link>
                     <Link href="/notifications" className="mobile-nav-link" onClick={handleMobileLinkClick}><Icon name="bell" size={18} /> Мэдэгдэл {visibleUnreadNotifications > 0 && <span className="mobile-badge">{visibleUnreadNotifications}</span>}</Link>
+                    <Link href="/saved" className="mobile-nav-link" onClick={handleMobileLinkClick}><Icon name="heart" size={18} /> Хадгалсан</Link>
                     <Link href="/activity" className="mobile-nav-link" onClick={handleMobileLinkClick}><Icon name="calendar" size={18} /> Миний хүсэлтүүд</Link>
                     <Link href="/settings" className="mobile-nav-link" onClick={handleMobileLinkClick}><Icon name="lock" size={18} /> Тохиргоо</Link>
                     <Button variant="danger" fullWidth onClick={() => { logout(); setShowMobileMenu(false); }}>

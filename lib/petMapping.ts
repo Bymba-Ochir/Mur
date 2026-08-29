@@ -5,7 +5,7 @@ import type { Pet, ReportPet } from './types';
 
 // pets хүснэгтийн мөр. Generated types байхгүй тул шаардлагатай талбаруудыг
 // сонгон авна (null-able талбарууд DB-ийн default-той нийцнэ).
-interface PetRow {
+export interface PetRow {
   id: string;
   status: string;
   name: string | null;

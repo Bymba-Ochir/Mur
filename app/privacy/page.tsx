@@ -25,6 +25,7 @@ const PRIVACY_MN: LegalDoc = {
         'Байршлын мэдээлэл: Хэрэв та зөвшөөрвөл байршлаа тодорхойлж, дүүргээ автоматаар бөглөх боломжтой. Байршил нь зөвхөн тэр мөчид ашиглагдаж, хадгалагдахгүй.',
         'Төхөөрөмжийн мэдээлэл: Хэрэв та мэдэгдэл хүлээн авахаар бүртгүүлбэл push subscription мэдээлэл (төхөөрөмжийн түлхүүр) хадгалагдана.',
         'Үйл ажиллагааны мэдээлэл: Үрчлүүлэх хүсэлт, асрах захиалга, үйлчилгээний үнэлгээ болон тэдгээрийн төлөвийг үйлчилгээ үзүүлэх, маргаан шалгах зорилгоор хадгална.',
+        'Хадгалсан мэдээлэл: Таны хадгалсан зар, хайлтын шүүлтүүр болон тохирох шинэ зарын мэдэгдлийг зөвхөн таны account-д холбоотой хадгална.',
       ],
     },
     {
@@ -92,6 +93,7 @@ const PRIVACY_EN: LegalDoc = {
         'Location information: If you allow it, we can determine your location to auto-fill your district. The location is used only at that moment and is not stored.',
         'Device information: If you subscribe to notifications, we store your push subscription data (device key).',
         'Activity information: We store adoption applications, sitting bookings, service reviews, and their statuses to provide the service and investigate disputes.',
+        'Saved information: Saved listings, search filters, and matching-listing notifications are stored only in connection with your account.',
       ],
     },
     {

@@ -23,6 +23,7 @@ import type { Pet } from '../../../lib/types';
 import { getErrorMessage } from '../../../lib/utils';
 import { getBreedLabel } from '../../../lib/petBreeds';
 import PetImageGallery from '../../../components/PetImageGallery';
+import FavoriteButton from '../../../components/FavoriteButton';
 
 // URL-ийн snapshot — share холбоосын зориулалттай (useSyncExternalStore;
 // effect-д setUrl хийхгүй, SSR-д хоосон string)
@@ -180,7 +181,7 @@ export default function PetDetailClient({ id }: { id: string }) {
                 </button>
               )}
               {/* Чат товч — зөвхөн бусад хэрэглэгчдэд */}
-              {!editing && <div style={{ marginTop: 'var(--sp-3)' }}><MessageButton pet={pet} /></div>}
+              {!editing && <div style={{ marginTop: 'var(--sp-3)', display: 'flex', gap: 'var(--sp-2)', flexWrap: 'wrap' }}><MessageButton pet={pet} /><FavoriteButton petId={pet.id} /></div>}
               {!editing && pet.createdBy && <Link href={`/users/${pet.createdBy}`} style={{ display: 'inline-flex', alignItems: 'center', marginTop: 'var(--sp-3)', color: 'var(--primary)', fontWeight: 650, textDecoration: 'none' }}>Зарын эзний profile →</Link>}
             </div>
           ) : (

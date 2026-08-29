@@ -14,12 +14,17 @@ import { DISTRICTS as DISTRICT_VALUES } from '../../lib/districts';
 import type { District } from '../../lib/districts';
 import type { Pet, PetStatus, PetType } from '../../lib/types';
 import { getErrorMessage } from '../../lib/utils';
+import { saveSearch } from '../../lib/listingService';
+import { useAuth } from '../../lib/useAuth';
+import { useToast } from '../../components/Toast';
 
 // Шүүлтүүрийн "Бүгд" сонголт (хоосон) 9 дүүргийн өмнө явна
 const DISTRICTS: (District | '')[] = ['', ...DISTRICT_VALUES];
 
 export default function ListingsPage() {
   const { t } = useLanguage();
+  const { user } = useAuth();
+  const showToast = useToast();
   const [status, setStatus] = useState<PetStatus | ''>('');
   const [type, setType] = useState<PetType | ''>('');
   const [district, setDistrict] = useState<District | ''>('');
@@ -34,6 +39,8 @@ export default function ListingsPage() {
   const [matchError, setMatchError] = useState<string | null>(null);
   const [matchedCount, setMatchedCount] = useState<number | null>(null);
   const [matchSource, setMatchSource] = useState<'database' | 'browser' | null>(null);
+  const [loadError, setLoadError] = useState('');
+  const [savingSearch, setSavingSearch] = useState(false);
   const matchAbortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
@@ -46,6 +53,7 @@ export default function ListingsPage() {
   async function load(pageToLoad = 0) {
     if (pageToLoad === 0) setLoading(true);
     else setLoadingMore(true);
+    setLoadError('');
     try {
       const { pets: data, hasMore: more } = await fetchPets({
         status: status || undefined,
@@ -58,11 +66,22 @@ export default function ListingsPage() {
       setHasMore(more);
       setPage(pageToLoad);
     } catch (err) {
-      console.error(err);
+      setLoadError(getErrorMessage(err));
     } finally {
       setLoading(false);
       setLoadingMore(false);
     }
+  }
+
+  async function handleSaveSearch() {
+    if (!user) { showToast('Хайлтаа хадгалахын тулд нэвтэрнэ үү.', 'info'); return; }
+    if (!status && !type && !district && !search.trim()) { showToast('Эхлээд нэгээс доошгүй шүүлтүүр сонгоно уу.', 'info'); return; }
+    setSavingSearch(true);
+    try {
+      await saveSearch({ status: status || undefined, petType: type || undefined, district: district || undefined, searchText: search || undefined });
+      showToast('Хайлт хадгалагдлаа. Тохирох шинэ зар гарахад мэдэгдэнэ.', 'success');
+    } catch (reason) { showToast(getErrorMessage(reason), 'error'); }
+    finally { setSavingSearch(false); }
   }
 
   function handleLoadMore() {
@@ -155,6 +174,12 @@ export default function ListingsPage() {
           ))}
         </select>
       </div>
+      <div className="filter-actions">
+        <Button variant="ghost" onClick={() => void handleSaveSearch()} disabled={savingSearch}>
+          {savingSearch ? 'Хадгалж байна...' : 'Хайлтыг хадгалах'}
+        </Button>
+        <Link href="/saved" className="saved-link">Хадгалсан зүйлсээ харах</Link>
+      </div>
 
       {district && <VolunteerBadge district={district} />}
       {district && <NotifySubscribe district={district} />}
@@ -180,7 +205,9 @@ export default function ListingsPage() {
         {matchError && <span className="match-status err"> — {matchError}</span>}
       </div>
 
-      {loading ? (
+      {loadError ? (
+        <div className="error-state" role="alert"><p>{loadError}</p><Button variant="secondary" onClick={() => void load(0)}>Дахин оролдох</Button></div>
+      ) : loading ? (
         <div className="grid">
           {Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)}
         </div>
@@ -220,6 +247,9 @@ export default function ListingsPage() {
 
       <style jsx>{`
         .match-upload { display: flex; align-items: center; gap: var(--sp-2); flex-wrap: wrap; margin-bottom: var(--sp-5); }
+        .filter-actions { display:flex; align-items:center; gap:var(--sp-3); flex-wrap:wrap; margin:calc(var(--sp-3) * -1) 0 var(--sp-4); }
+        .saved-link { color:var(--primary); font-size:13px; font-weight:650; text-decoration:none; }
+        .error-state { display:grid; justify-items:start; gap:var(--sp-3); padding:var(--sp-4); border:1px solid var(--alert); border-radius:var(--r-md); background:var(--card); }
         @media (max-width: 640px) {
           .match-upload { margin-bottom: var(--sp-4); }
         }
