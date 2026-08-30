@@ -9,6 +9,9 @@ import { useLanguage } from '../../lib/i18n';
 import { DISTRICTS as DISTRICT_VALUES } from '../../lib/districts';
 import type { District } from '../../lib/districts';
 import type { Adoption, AdoptionGender, PetType } from '../../lib/types';
+import EmptyState from '../../components/ui/EmptyState';
+import Icon from '../../components/ui/icons';
+import { getErrorMessage } from '../../lib/utils';
 
 const DISTRICTS: (District | '')[] = ['', ...DISTRICT_VALUES];
 const TYPE_VALUES: (PetType | '')[] = ['', 'Нохой', 'Муур', 'Бусад'];
@@ -25,6 +28,7 @@ export default function AdoptionsPage() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(false);
+  const [loadError, setLoadError] = useState('');
 
   useEffect(() => {
     const timer = setTimeout(() => load(0), 400);
@@ -35,6 +39,7 @@ export default function AdoptionsPage() {
   async function load(pageToLoad = 0) {
     if (pageToLoad === 0) setLoading(true);
     else setLoadingMore(true);
+    setLoadError('');
     try {
       const { adoptions: data, hasMore: more } = await fetchAdoptions({
         type: type || undefined,
@@ -47,7 +52,7 @@ export default function AdoptionsPage() {
       setHasMore(more);
       setPage(pageToLoad);
     } catch (err) {
-      console.error(err);
+      setLoadError(getErrorMessage(err));
     } finally {
       setLoading(false);
       setLoadingMore(false);
@@ -89,18 +94,18 @@ export default function AdoptionsPage() {
         </select>
       </div>
 
-      {loading ? (
+      {loadError ? (
+        <div className="state-panel state-panel--error" role="alert">
+          <span className="state-panel__icon"><Icon name="alert" size={28} /></span>
+          <h2>Үрчлүүлэх заруудыг ачаалж чадсангүй</h2><p>{loadError}</p>
+          <Button variant="secondary" onClick={() => void load(0)}>Дахин оролдох</Button>
+        </div>
+      ) : loading ? (
         <div className="grid"><SkeletonCard /><SkeletonCard /><SkeletonCard /><SkeletonCard /><SkeletonCard /><SkeletonCard /></div>
       ) : adoptions.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: 'var(--sp-6) 0' }}>
-          <p style={{ fontSize: 18, fontWeight: 600, color: 'var(--primary)', marginBottom: 8 }}>
-            {search || type || gender || district ? t('empty_no_results_title') : t('adoptions_empty_title')}
-          </p>
-          <p style={{ color: 'var(--muted)', marginBottom: 16 }}>
-            {search || type || gender || district ? t('empty_no_results_desc') : t('adoptions_empty_desc')}
-          </p>
+        <EmptyState icon={<Icon name="heart" size={30} />} title={search || type || gender || district ? t('empty_no_results_title') : t('adoptions_empty_title')} description={search || type || gender || district ? t('empty_no_results_desc') : t('adoptions_empty_desc')}>
           <Button as="link" href="/adoptions/new" variant="accent">{t('adoptions_new_btn')}</Button>
-        </div>
+        </EmptyState>
       ) : (
         <>
           <p className="result-count">{adoptions.length} {t('results_count')}</p>

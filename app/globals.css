@@ -440,7 +440,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   .grid { grid-template-columns: repeat(2, 1fr); gap: var(--sp-4); }
 }
 @media (min-width: 481px) and (max-width: 640px) {
-  .grid { grid-template-columns: repeat(2, 1fr); gap: var(--sp-4); }
+  .grid { grid-template-columns: 1fr; gap: var(--sp-4); }
 }
 @media (max-width: 480px) {
   .grid { grid-template-columns: 1fr; gap: var(--sp-3); }
@@ -510,12 +510,39 @@ select.filter:focus-visible, input.filter:focus-visible {
 .page-header .eyebrow { margin-bottom: var(--sp-3); }
 .page-header h1 { font-size: clamp(1.6rem, 4vw, 2.3rem); margin-bottom: var(--sp-2); }
 .page-header p { color: var(--text-secondary); max-width: 560px; line-height: 1.55; }
+.page-header--split { display:flex; align-items:flex-end; justify-content:space-between; gap:var(--sp-4); }
+.page-header--split > :first-child { min-width:0; }
+
+.state-panel {
+  display:grid; justify-items:center; gap:var(--sp-2); width:100%;
+  padding:clamp(28px, 6vw, 52px) var(--sp-4); text-align:center;
+  color:var(--text-secondary); background:var(--surface-2);
+  border:1px solid var(--border-subtle); border-radius:var(--r-lg); box-shadow:var(--shadow-xs);
+}
+.state-panel h2 { font-size:var(--text-lg); color:var(--text-primary); }
+.state-panel p { max-width:52ch; line-height:var(--lh-relaxed); }
+.state-panel__icon {
+  display:grid; place-items:center; width:64px; height:64px; margin-bottom:var(--sp-1);
+  color:var(--primary); background:var(--eyebrow-bg); border:1px solid var(--glass-border); border-radius:50%;
+}
+.state-panel--error { border-color:color-mix(in srgb,var(--alert) 35%,var(--border-subtle)); }
+.state-panel--error .state-panel__icon { color:var(--alert); background:color-mix(in srgb,var(--alert) 9%,var(--surface-2)); }
+.detail-meta { display:flex; align-items:center; gap:var(--sp-2); flex-wrap:wrap; color:var(--text-tertiary); font-size:var(--text-xs); }
+.detail-meta svg { flex:0 0 auto; }
+.detail-actions { display:flex; align-items:center; gap:var(--sp-2); flex-wrap:wrap; }
+.detail-surface { background:var(--surface-2); border:1px solid var(--border-subtle); border-radius:var(--r-lg); box-shadow:var(--shadow-sm); }
+.section-heading { display:flex; align-items:flex-end; justify-content:space-between; gap:var(--sp-4); margin-bottom:var(--sp-4); }
+.section-heading h2 { font-size:var(--text-xl); }
+.section-heading p { color:var(--text-secondary); margin-top:var(--sp-1); }
 
 @media (max-width: 640px) {
   .page-header { margin-bottom: var(--sp-4); padding-bottom: var(--sp-4); }
   .page-header .eyebrow { margin-bottom: var(--sp-2); }
   .page-header h1 { font-size: clamp(1.4rem, 5vw, 1.8rem); }
   .page-header p { font-size: 14px; line-height: 1.6; }
+  .page-header--split,.section-heading { align-items:stretch; flex-direction:column; }
+  .detail-actions > .btn-base { flex:1 1 100%; }
+  .detail-surface,.state-panel { border-radius:var(--r-md); }
 }
 @media (max-width: 480px) {
   .page-header { margin-bottom: var(--sp-3); }
@@ -570,8 +597,10 @@ textarea.field { min-height: 90px; resize: vertical; }
 
 /* ═══════════════════════════════════════
    Navbar structural fallback
-   These rules keep the dock intact before/without client hydration.
+   These rules are isolated to no-script clients. Navbar.tsx owns the normal
+   hydrated UI so the same declarations cannot compete in two places.
    ═══════════════════════════════════════ */
+@media (scripting: none) {
 .navbar-wrap {
   position: fixed;
   top: 16px;
@@ -836,6 +865,7 @@ textarea.field { min-height: 90px; resize: vertical; }
 }
 @media (max-width: 480px) {
   .navbar-wrap .mobile-dropdown { top: 64px; left: var(--sp-2); right: var(--sp-2); max-height: calc(100dvh - 72px); }
+}
 }
 
 /* Login modal is portalled to document.body, so its styles must be global. */

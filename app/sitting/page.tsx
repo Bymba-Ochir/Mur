@@ -9,6 +9,9 @@ import Button from '../../components/ui/Button';
 import { DISTRICTS } from '../../lib/districts';
 import type { SittingListing, SittingPetType } from '../../lib/types';
 import type { District } from '../../lib/districts';
+import EmptyState from '../../components/ui/EmptyState';
+import Icon from '../../components/ui/icons';
+import { getErrorMessage } from '../../lib/utils';
 
 const TYPE_VALUES: (SittingPetType | '')[] = ['', 'Нохой', 'Муур', 'Бусад', 'Бүгд'];
 
@@ -22,6 +25,7 @@ export default function SittingPage() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(false);
+  const [loadError, setLoadError] = useState('');
 
   useEffect(() => {
     const timer = setTimeout(() => load(0), 400);
@@ -31,6 +35,7 @@ export default function SittingPage() {
 
   async function load(p = 0) {
     if (p === 0) setLoading(true); else setLoadingMore(true);
+    setLoadError('');
     try {
       const { listings: data, hasMore: more } = await fetchSittingListings({
         petType: petType || undefined, district: district || undefined,
@@ -38,7 +43,7 @@ export default function SittingPage() {
       });
       setListings((prev) => (p === 0 ? data : [...prev, ...data]));
       setHasMore(more); setPage(p);
-    } catch (err) { console.error(err); }
+    } catch (err) { setLoadError(getErrorMessage(err)); }
     finally { setLoading(false); setLoadingMore(false); }
   }
 
@@ -64,23 +69,18 @@ export default function SittingPage() {
           {DISTRICTS.map((d) => <option key={d}>{d}</option>)}
         </select>
       </div>
-      {loading ? (
+      {loadError ? (
+        <div className="state-panel state-panel--error" role="alert">
+          <span className="state-panel__icon"><Icon name="alert" size={28} /></span>
+          <h2>Асрах үйлчилгээний заруудыг ачаалж чадсангүй</h2><p>{loadError}</p>
+          <Button variant="secondary" onClick={() => void load(0)}>Дахин оролдох</Button>
+        </div>
+      ) : loading ? (
         <div className="grid"><SkeletonCard /><SkeletonCard /><SkeletonCard /><SkeletonCard /></div>
       ) : listings.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: 'var(--sp-6) 0' }}>
-          {petType || district || search.trim() ? (
-            <>
-              <p style={{ fontSize: 18, fontWeight: 600, color: 'var(--primary)', marginBottom: 8 }}>{t('empty_no_results_title')}</p>
-              <p style={{ color: 'var(--muted)', marginBottom: 16 }}>{t('empty_no_results_desc')}</p>
-            </>
-          ) : (
-            <>
-              <p style={{ fontSize: 18, fontWeight: 600, color: 'var(--primary)', marginBottom: 8 }}>{t('sitting_empty_title')}</p>
-              <p style={{ color: 'var(--muted)', marginBottom: 16 }}>{t('sitting_empty_desc')}</p>
-            </>
-          )}
+        <EmptyState icon={<Icon name="home" size={30} />} title={petType || district || search.trim() ? t('empty_no_results_title') : t('sitting_empty_title')} description={petType || district || search.trim() ? t('empty_no_results_desc') : t('sitting_empty_desc')}>
           <Button as="link" href="/sitting/new" variant="accent">{t('sitting_new_btn')}</Button>
-        </div>
+        </EmptyState>
       ) : (
         <>
           <p className="result-count">{listings.length} {t('results_count')}</p>

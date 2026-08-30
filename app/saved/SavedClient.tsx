@@ -41,10 +41,10 @@ export default function SavedClient() {
     } catch (reason) { showToast(getErrorMessage(reason), 'error'); }
   }
 
-  if (authLoading) return <p className="page-shell">Уншиж байна...</p>;
-  if (!user) return <main className="page-shell page-shell--narrow"><h1>Хадгалсан</h1><p>Хадгалсан зар, хайлтаа харахын тулд эхлээд нэвтэрнэ үү.</p></main>;
+  if (authLoading) return <div className="page-shell page-shell--narrow"><div className="state-panel" aria-live="polite"><span className="state-panel__icon"><Icon name="heart" size={28} /></span><h2>Хадгалсан мэдээлэл ачаалж байна</h2></div></div>;
+  if (!user) return <div className="page-shell page-shell--narrow"><div className="state-panel"><span className="state-panel__icon"><Icon name="lock" size={28} /></span><h2>Хадгалсан</h2><p>Хадгалсан зар, хайлтаа харахын тулд эхлээд нэвтэрнэ үү.</p></div></div>;
 
-  return <main className="page-shell saved-page">
+  return <div className="page-shell saved-page">
     <div className="page-header"><div className="eyebrow">Account</div><h1>Хадгалсан</h1><p>Сонирхсон зар болон шинэ зарын мэдэгдэл авах хайлтууд.</p></div>
     {error && <div className="error-state" role="alert"><p>{error}</p><Button variant="secondary" onClick={load}>Дахин оролдох</Button></div>}
     {loading ? <p>Хадгалсан мэдээлэл ачаалж байна...</p> : <>
@@ -58,5 +58,5 @@ export default function SavedClient() {
       </section>
     </>}
     <style jsx>{`.saved-page{padding-bottom:var(--sp-8)}.saved-section{margin-top:var(--sp-6)}.section-heading{display:flex;align-items:end;justify-content:space-between;gap:16px;margin-bottom:var(--sp-3)}.section-heading h2{display:flex;align-items:center;gap:8px;font-size:20px}.section-heading p,.search-item small,.empty p{color:var(--muted)}.section-heading a{color:var(--primary);font-weight:650;text-decoration:none}.search-list{display:grid;gap:10px}.search-item{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px}.search-item>div{display:grid;gap:5px}.empty{display:grid;justify-items:center;gap:8px;text-align:center;padding:32px}.error-state{display:grid;justify-items:start;gap:12px;padding:16px;border:1px solid var(--alert);border-radius:var(--r-md)}@media(max-width:600px){.section-heading{align-items:start;flex-direction:column}.search-item{align-items:start;flex-direction:column}}`}</style>
-  </main>;
+  </div>;
 }

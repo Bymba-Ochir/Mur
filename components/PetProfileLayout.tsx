@@ -8,6 +8,7 @@ import { maskPhone, formatPhone } from '../lib/utils';
 import { vaccineStatus } from '../lib/vaccineService';
 import PetIcon from './PetIcon';
 import Button from './ui/Button';
+import { Icon, type IconName } from './ui';
 import ShareButtons from './ShareButtons';
 import type { PetProfileData } from '../lib/types';
 
@@ -17,11 +18,11 @@ function subscribeLocation(cb: () => void) {
   return () => { window.removeEventListener('popstate', cb); window.removeEventListener('hashchange', cb); };
 }
 
-const VAX_STATUS: Record<string, { text: string; color: string }> = {
-  overdue: { text: '⚠️ Хугацаа хэтэрсэн', color: 'var(--alert)' },
-  soon: { text: '🔔 Удахгүй болно', color: 'var(--accent)' },
-  ok: { text: '✅ Хэвийн', color: 'var(--success)' },
-  none: { text: 'Огноо тохируулаагүй', color: 'var(--muted)' },
+const VAX_STATUS: Record<string, { text: string; color: string; icon: IconName }> = {
+  overdue: { text: 'Хугацаа хэтэрсэн', color: 'var(--alert)', icon: 'alert' },
+  soon: { text: 'Удахгүй болно', color: 'var(--accent)', icon: 'bell' },
+  ok: { text: 'Хэвийн', color: 'var(--success)', icon: 'check' },
+  none: { text: 'Огноо тохируулаагүй', color: 'var(--muted)', icon: 'calendar' },
 };
 
 export default function PetProfileLayout({
@@ -81,8 +82,8 @@ export default function PetProfileLayout({
         </div>
 
         {vaxStatus && vaxLabel && (
-          <div style={{ marginTop: 'var(--sp-2)', fontSize: 12, fontFamily: 'var(--font-mono)', fontWeight: 600, color: vaxLabel.color }}>
-            {vaxLabel.text}
+          <div className="vax-status" style={{ color: vaxLabel.color }}>
+            <Icon name={vaxLabel.icon} size={15} /> {vaxLabel.text}
             {data.nextVaccineName && <span style={{ fontWeight: 400, color: 'var(--muted)' }}> · {data.nextVaccineName}</span>}
           </div>
         )}
@@ -152,10 +153,10 @@ export default function PetProfileLayout({
           {data.phone && (
             <div style={{ marginTop: 'var(--sp-2)' }}>
               {phoneRevealed ? (
-                <a href={`tel:${data.phone}`} className="phone-link">☎ {formatPhone(data.phone)}</a>
+                <a href={`tel:${data.phone}`} className="phone-link"><Icon name="phone" size={17} /> {formatPhone(data.phone)}</a>
               ) : (
                 <Button variant="ghost" onClick={() => setPhoneRevealed(true)} style={{ fontSize: 13, minHeight: 36 }}>
-                  ☎ {maskPhone(data.phone)} · {t('detail_show_phone')}
+                  <Icon name="phone" size={17} /> {maskPhone(data.phone)} · {t('detail_show_phone')}
                 </Button>
               )}
             </div>
@@ -199,6 +200,7 @@ export default function PetProfileLayout({
           background: var(--surface-3); border-radius: var(--r-pill);
           color: var(--primary); font-weight: 600;
         }
+        .vax-status { margin-top: var(--sp-2); font-size: 12px; font-family: var(--font-mono); font-weight: 600; display: inline-flex; align-items: center; gap: 5px; }
 
         .tab-bar {
           display: flex; gap: 2px; margin-bottom: var(--sp-4);
@@ -235,7 +237,7 @@ export default function PetProfileLayout({
         }
         .section-title { font-size: 14px; font-weight: 600; color: var(--primary); margin-bottom: var(--sp-2); }
         .contact-card p { font-size: 13px; margin: 4px 0; }
-        .phone-link { font-size: 14px; font-weight: 600; color: var(--primary); text-decoration: none; }
+        .phone-link { font-size: 14px; font-weight: 600; color: var(--primary); text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
 
         .share-section { text-align: center; margin: var(--sp-4) 0; }
         .share-hint { font-size: 12px; color: var(--muted); margin-top: var(--sp-2); }

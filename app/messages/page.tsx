@@ -10,6 +10,8 @@ import type { ConversationPreview } from '../../lib/types';
 import AssistantClient from '../assistant/AssistantClient';
 import { getErrorMessage } from '../../lib/utils';
 import Button from '../../components/ui/Button';
+import Icon from '../../components/ui/icons';
+import EmptyState from '../../components/ui/EmptyState';
 
 type HubTab = 'messages' | 'assistant';
 
@@ -72,20 +74,15 @@ export default function MessagesPage() {
       </div>
 
       {tab === 'assistant' ? <AssistantClient embedded /> : authLoading ? (
-        <div className="hub-state">{t('detail_loading')}</div>
+        <div className="state-panel" aria-live="polite"><span className="state-panel__icon"><Icon name="message" size={28} /></span><h2>{t('detail_loading')}</h2></div>
       ) : !user ? (
-        <div className="hub-state">{t('chat_login_required')}</div>
+        <div className="state-panel"><span className="state-panel__icon"><Icon name="lock" size={28} /></span><h2>{t('chat_login_required')}</h2><p>Зурвас зөвхөн таны account-д харагдана.</p></div>
       ) : loading ? (
-        <div className="hub-state">{t('detail_loading')}</div>
+        <div className="state-panel" aria-live="polite"><span className="state-panel__icon"><Icon name="message" size={28} /></span><h2>{t('detail_loading')}</h2></div>
       ) : error ? (
-        <div className="hub-state" role="alert"><p>{error}</p><Button variant="secondary" onClick={() => window.location.reload()}>Дахин оролдох</Button></div>
+        <div className="state-panel state-panel--error" role="alert"><span className="state-panel__icon"><Icon name="alert" size={28} /></span><h2>Зурвасуудыг ачаалж чадсангүй</h2><p>{error}</p><Button variant="secondary" onClick={() => window.location.reload()}>Дахин оролдох</Button></div>
       ) : conversations.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: 'var(--sp-6) 0' }}>
-          <p style={{ fontSize: 18, fontWeight: 600, color: 'var(--primary)', marginBottom: 8 }}>
-            {t('chat_none')}
-          </p>
-          <p style={{ color: 'var(--muted)' }}>{t('chat_none_desc')}</p>
-        </div>
+        <EmptyState icon={<Icon name="message" size={30} />} title={t('chat_none')} description={t('chat_none_desc')} />
       ) : (
         <div className="conv-list">
           {conversations.map((conv) => {
@@ -97,7 +94,7 @@ export default function MessagesPage() {
                   {conv.pet?.photoURL ? (
                     <Image src={conv.pet.photoURL} alt="" fill sizes="48px" style={{ objectFit: 'cover', borderRadius: 'var(--r-md)' }} />
                   ) : (
-                    <span className="conv-thumb-placeholder">🐾</span>
+                    <span className="conv-thumb-placeholder"><Icon name="paw" size={22} /></span>
                   )}
                 </div>
                 <div className="conv-info">

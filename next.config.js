@@ -46,9 +46,9 @@ const nextConfig = {
   },
 };
 
-// Sentry-ийн DSN/токен тохируулаагүй үед ч build амжилттай явахаар, source map
-// upload-ыг зөвхөн шаардлагатай тохиргоо байгаа үед л хийнэ (silent: true).
-module.exports = withSentryConfig(nextConfig, {
+// Local/offline build дээр SKIP_SENTRY_BUILD=1 тохируулбал source-map upload болон
+// Sentry-ийн build plugin-ийг алгасана. Runtime error capture хэвээр ажиллана.
+const sentryBuildConfig = {
   silent: true,
   org: process.env.SENTRY_ORG,
   project: process.env.SENTRY_PROJECT,
@@ -60,4 +60,8 @@ module.exports = withSentryConfig(nextConfig, {
   sourcemaps: {
     deleteSourcemapsAfterUpload: true,
   },
-});
+};
+
+module.exports = process.env.SKIP_SENTRY_BUILD === '1'
+  ? nextConfig
+  : withSentryConfig(nextConfig, sentryBuildConfig);

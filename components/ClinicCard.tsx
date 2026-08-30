@@ -3,6 +3,7 @@ import { useLanguage } from '../lib/i18n';
 import Button from './ui/Button';
 import { distanceLabel } from '../lib/clinicService';
 import type { VetClinic } from '../lib/types';
+import Icon from './ui/icons';
 
 const SERVICE_I18N: Record<string, string> = {
   'Үзлэг': 'service_exam',
@@ -57,7 +58,7 @@ export default function ClinicCard({
         </div>
         <div className="clinic-actions">
           <Button as="anchor" href={`tel:${clinic.phone}`} variant="ghost" style={{ fontSize: 12, minHeight: 36, minWidth: 'auto' }}>
-            ☎ {t('clinics_call')}
+            <Icon name="phone" size={14} aria-hidden="true" /> {t('clinics_call')}
           </Button>
           {onBook && (
             <Button variant="primary" style={{ fontSize: 12, minHeight: 36, minWidth: 148, background: 'var(--clinic)', justifyContent: 'center' }} onClick={(e) => { e.stopPropagation(); onBook(); }}>

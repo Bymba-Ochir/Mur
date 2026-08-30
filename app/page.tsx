@@ -21,10 +21,10 @@ export default function Home() {
 
         <div className="hero-inner">
           <div className="hero-content">
-            <div className="eyebrow">
+            <p className="eyebrow">
               <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M12 21s-7-4.5-9.5-9C.7 8.3 2 4.8 5.4 4.1 7.6 3.6 9.8 4.6 12 7c2.2-2.4 4.4-3.4 6.6-2.9 3.4.7 4.7 4.2 2.9 7.9C19 16.5 12 21 12 21z" /></svg>
               {t('hero_eyebrow')}
-            </div>
+            </p>
             <h1 className="hero-title">
               {t('hero_title_1')} <span className="gradient-text">{t('hero_title_accent')}</span> {t('hero_title_2')}
             </h1>
@@ -39,7 +39,7 @@ export default function Home() {
               <Button as="link" href="/report-found" variant="secondary">{t('hero_btn_found')}</Button>
             </div>
 
-            <ul className="hero-trust" aria-label="Платформын давуу талууд">
+            <ul className="hero-trust" aria-label={t('hero_trust_aria')}>
               <li>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
                   <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0Z" /><circle cx="12" cy="10" r="3" />
@@ -65,34 +65,34 @@ export default function Home() {
           <div className="hero-visual" aria-hidden="true">
             <div className="hero-card">
               <div className="hero-card-photo">
-                <span className="status-chip">АЛДСАН</span>
+                <span className="status-chip">{t('filter_lost')}</span>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" width="64" height="64" focusable="false">
                   <circle cx="12" cy="12" r="7" />
                   <path d="M9 10.5c0-1 .6-1.5 1.4-1.5M14.6 10.5c0-1-.6-1.5-1.4-1.5M9.5 15c1.5 1 3.5 1 5 0" strokeLinecap="round" />
                 </svg>
               </div>
               <div className="hero-card-body">
-                <h4>Нохой</h4>
-                <p>Голден ретривер, шаргал</p>
+                <h4>{t('type_dog')}</h4>
+                <p>{t('hero_preview_breed')}</p>
                 <div className="hero-card-loc">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="13" height="13" focusable="false">
                     <path d="M12 21s-7-4.5-8.5-9.6C2.6 7.8 4.4 5 7.3 4.9c1.9-.1 3.5 1 4.7 2.6C13.2 5.9 14.8 4.8 16.7 4.9c2.9.1 4.7 2.9 3.8 6.5C19 16.5 12 21 12 21z" />
                   </svg>
-                  Баянзүрх — 22 хороо
+                  {t('hero_preview_location')}
                 </div>
               </div>
             </div>
             <div className="hero-card-mini">
               <span className="dot" />
-              <p>Шинэ тохирол олдлоо</p>
+              <p>{t('hero_preview_match')}</p>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="services">
-        <div className="eyebrow">{t('services_title')}</div>
-        <h2 className="services-title">{t('services_subtitle')}</h2>
+      <section className="services" aria-labelledby="services-heading">
+        <p className="eyebrow">{t('services_title')}</p>
+        <h2 id="services-heading" className="services-title">{t('services_subtitle')}</h2>
 
         <div className="services-grid">
           <Link href="/report-lost" className="service-card">
@@ -170,12 +170,12 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="how">
+      <section className="how" aria-labelledby="how-heading">
         <div className="how-heading">
-          <h2 className="how-title">{t('how_it_works')}</h2>
+          <h2 id="how-heading" className="how-title">{t('how_it_works')}</h2>
           <button type="button" className="how-guide" onClick={() => window.dispatchEvent(new Event('mur:open-onboarding'))}>
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 2-2.5 2-2.5 4M12 17h.01"/></svg>
-            {t('how_it_works')}
+            {t('how_open_guide')}
           </button>
         </div>
         <div className="trail-wrap">
@@ -199,11 +199,9 @@ export default function Home() {
       </section>
 
       <style jsx>{`
-        .hero { position: relative; overflow: hidden; padding: var(--sp-8) 0; }
-        @media (max-width: 640px) { .hero { padding: var(--sp-5) 0 var(--sp-6); } }
-        @media (max-width: 480px) { .hero { padding: var(--sp-4) 0 var(--sp-5); } }
-        @media (min-width: 1025px) { .hero { padding: var(--sp-8) 0 calc(var(--sp-8) + var(--sp-4)); } }
-        @media (min-width: 1440px) { .hero { padding: calc(var(--sp-8) + var(--sp-3)) 0 calc(var(--sp-8) + var(--sp-6)); } }
+        .hero { position: relative; overflow: hidden; padding: clamp(32px, 5vw, 64px) 0 clamp(48px, 7vw, 88px); }
+        @media (max-width: 640px) { .hero { padding: var(--sp-5) 0 var(--sp-7); } }
+        @media (max-width: 480px) { .hero { padding: var(--sp-4) 0 var(--sp-6); } }
 
         /* Ambient glows */
         :global(.hero-glow.g1) {
@@ -227,7 +225,7 @@ export default function Home() {
           position: relative; z-index: 1;
           display: grid; grid-template-columns: 1.15fr 0.85fr; gap: var(--sp-7); align-items: center;
         }
-        @media (max-width: 900px) {
+        @media (max-width: 860px) {
           .hero-inner { grid-template-columns: 1fr; gap: var(--sp-5); }
         }
 
@@ -279,10 +277,10 @@ export default function Home() {
         /* Харагдац карт */
         .hero-visual {
           position: relative; display: flex; align-items: center; justify-content: center;
-          width: 100%; min-width: 0; min-height: 320px;
+          width: 100%; max-width: 380px; min-width: 0; min-height: 320px; justify-self: center;
           padding-inline: 12px; box-sizing: border-box;
         }
-        @media (max-width: 900px) { .hero-visual { min-height: 0; padding: var(--sp-4) 0 var(--sp-5); } }
+        @media (max-width: 860px) { .hero-visual { min-height: 0; padding: var(--sp-3) 0 var(--sp-5); } }
         .hero-card {
           position: relative; width: min(280px, calc(100% - 24px));
           background: var(--surface-2); border: 1px solid var(--border-subtle);
@@ -322,7 +320,14 @@ export default function Home() {
         }
         .hero-card-mini .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--confirmed); flex-shrink: 0; box-shadow: 0 0 0 4px color-mix(in srgb, var(--confirmed) 18%, transparent); }
         .hero-card-mini p { min-width: 0; font-size: 11.5px; line-height: 1.35; color: var(--text-secondary); font-weight: 600; white-space: normal; overflow-wrap: anywhere; }
-        @media (max-width: 900px) { .hero-card-mini { bottom: 12px; } }
+        @media (max-width: 860px) { .hero-card-mini { bottom: 12px; } }
+        @media (max-width: 480px) {
+          .hero-visual { max-width: 300px; padding-bottom: var(--sp-4); }
+          .hero-card { width: min(240px, calc(100% - 32px)); }
+          .hero-card-photo { height: 138px; }
+          .hero-card-body { padding: var(--sp-3); }
+          .hero-card-mini { bottom: 0; padding: 9px 11px; }
+        }
 
         /* Entrance animation */
         .hero-content > * { opacity: 0; animation: rise-in 0.6s cubic-bezier(0.16,1,0.3,1) forwards; }
@@ -337,9 +342,9 @@ export default function Home() {
           to { opacity: 1; transform: translateY(0); }
         }
 
-        .services { margin-top: 0; padding: var(--sp-9) 0; }
-        @media (max-width: 640px) { .services { margin-top: var(--sp-6); } }
-        @media (max-width: 480px) { .services { margin-top: var(--sp-5); } }
+        .services { margin-top: 0; padding: clamp(48px, 7vw, 80px) 0; border-top: 1px solid var(--border-subtle); }
+        @media (max-width: 640px) { .services { padding: var(--sp-7) 0; } }
+        @media (max-width: 480px) { .services { padding: var(--sp-6) 0; } }
         .services-title { font-size: clamp(1.8rem, 3.2vw, 2.6rem); max-width: 640px; line-height: 1.15; }
         @media (max-width: 640px) { .services-title { font-size: var(--text-xl); } }
         .services-grid {
@@ -359,6 +364,7 @@ export default function Home() {
           text-decoration: none;
           grid-column: span 2;
           height: 100%;
+          min-height: 190px;
           box-shadow: var(--shadow-sm);
           transition: transform var(--dur-base) var(--ease-out), box-shadow var(--dur-base) var(--ease-out), border-color var(--dur-base) var(--ease-out);
         }
@@ -369,19 +375,21 @@ export default function Home() {
         .service-card:nth-child(4) { --feature-color: var(--found); --feature-soft: #7DD8F0; }
         .service-card:nth-child(5) { --feature-color: var(--clinic); --feature-soft: #56C7E8; }
         .service-card:nth-child(6) { --feature-color: var(--assistant); --feature-soft: #A49EFC; }
-        @media (max-width: 900px) { .service-card, .service-card:nth-child(-n + 2) { grid-column: span 3; } }
-        @media (max-width: 600px) { .service-card, .service-card:nth-child(-n + 2) { grid-column: span 6; } }
-        .service-card:hover {
+        @media (max-width: 900px) { .service-card, .service-card:nth-child(-n + 2) { grid-column: span 3; min-height: 178px; } }
+        @media (max-width: 720px) { .service-card, .service-card:nth-child(-n + 2) { grid-column: span 6; min-height: 0; } }
+        @media (hover: hover) and (pointer: fine) { .service-card:hover {
           transform: translateY(-4px);
           box-shadow: var(--shadow-md);
           border-color: color-mix(in srgb, var(--feature-color) 55%, var(--border-subtle));
-        }
+        } }
+        .service-card:active { transform: translateY(-1px) scale(0.995); }
+        .service-card:focus-visible { outline: 3px solid var(--border-focus); outline-offset: 3px; }
         .service-icon {
           display: inline-flex; align-items: center; justify-content: center;
           width: 48px; height: 48px; border-radius: var(--r-md);
           background: linear-gradient(135deg, var(--feature-soft), var(--feature-color)); color: #FFFFFF;
           margin-bottom: var(--sp-4);
-          transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+          transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out), transform var(--dur-base) var(--ease-out), box-shadow var(--dur-base) var(--ease-out);
         }
         .service-card:hover .service-icon { transform: scale(1.06) rotate(-3deg); box-shadow: 0 8px 20px color-mix(in srgb, var(--feature-color) 24%, transparent); }
         .service-card h3 { font-family: var(--font-display); font-size: var(--text-base); font-weight: 700; color: var(--text-primary); margin-bottom: var(--sp-1); }
@@ -393,10 +401,9 @@ export default function Home() {
         }
         .service-card:hover .service-arrow { transform: translateX(3px); color: var(--feature-color); }
 
-        .how { margin-top: 0; padding: var(--sp-9) 0; animation: rise-in 0.6s cubic-bezier(0.16,1,0.3,1) 0.55s backwards; }
-        @media (max-width: 640px) { .how { margin-top: var(--sp-5); } }
-        @media (max-width: 480px) { .how { margin-top: var(--sp-4); } }
-        @media (min-width: 1025px) { .how { margin-top: var(--sp-7); } }
+        .how { margin-top: 0; padding: clamp(48px, 7vw, 80px) 0; border-top: 1px solid var(--border-subtle); animation: rise-in 0.6s cubic-bezier(0.16,1,0.3,1) 0.55s backwards; }
+        @media (max-width: 640px) { .how { padding: var(--sp-7) 0; } }
+        @media (max-width: 480px) { .how { padding: var(--sp-6) 0; } }
         .how-heading { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3); margin-bottom: var(--sp-5); }
         .how-title { font-size: clamp(1.4rem, 3vw, 1.9rem); margin-bottom: 0; }
         .how-guide { display: inline-flex; align-items: center; gap: 8px; min-height: 42px; padding: 0 16px; border: 1px solid var(--border-subtle); border-radius: 999px; color: var(--primary); background: var(--surface-2); font-weight: 700; cursor: pointer; }
@@ -408,9 +415,10 @@ export default function Home() {
         .trail-wrap { max-width: 520px; margin-bottom: var(--sp-4); }
         @media (max-width: 480px) { .trail-wrap { margin-bottom: var(--sp-3); } }
         @media (min-width: 1025px) { .trail-wrap { max-width: 620px; margin-bottom: var(--sp-5); } }
-        .steps-grid { margin-top: 0; gap: var(--sp-5); }
+        .steps-grid { margin-top: 0; gap: var(--sp-5); grid-template-columns: repeat(3, minmax(0, 1fr)); }
         @media (max-width: 640px) { .steps-grid { gap: var(--sp-4); } }
         @media (max-width: 480px) { .steps-grid { gap: var(--sp-3); } }
+        @media (max-width: 720px) { .steps-grid { grid-template-columns: 1fr; } }
         @media (min-width: 1025px) { .steps-grid { gap: var(--sp-6); } }
         .step-card {
           position: relative;
@@ -421,7 +429,7 @@ export default function Home() {
         @media (max-width: 640px) { .step-card { padding: var(--sp-5) var(--sp-4); border-radius: var(--r-md); } }
         @media (max-width: 480px) { .step-card { padding: var(--sp-4) var(--sp-3); } }
         @media (min-width: 1025px) { .step-card { padding: var(--sp-7) var(--sp-6); border-radius: var(--r-xl); } }
-        .step-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-lift); border-color: transparent; }
+        @media (hover: hover) and (pointer: fine) { .step-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-lift); border-color: transparent; } }
         .step-num {
           display: block; font-family: var(--font-display); font-weight: 800; line-height: 1;
           font-size: clamp(2.2rem, 7vw, 3rem);

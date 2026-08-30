@@ -24,6 +24,7 @@ import { getErrorMessage } from '../../../lib/utils';
 import { getBreedLabel } from '../../../lib/petBreeds';
 import PetImageGallery from '../../../components/PetImageGallery';
 import FavoriteButton from '../../../components/FavoriteButton';
+import Icon from '../../../components/ui/icons';
 
 // URL-ийн snapshot — share холбоосын зориулалттай (useSyncExternalStore;
 // effect-д setUrl хийхгүй, SSR-д хоосон string)
@@ -59,6 +60,7 @@ export default function PetDetailClient({ id }: { id: string }) {
   }, [id]);
 
   async function load() {
+    setError(null);
     try {
       const p = await fetchPetById(id);
       setPet(p);
@@ -75,7 +77,7 @@ export default function PetDetailClient({ id }: { id: string }) {
       await markResolved(id);
       await load();
       fireConfetti();
-      showToast('🎉 ' + t('detail_resolved_badge').replace('✅ ', ''), 'success');
+      showToast(t('detail_resolved_badge').replace('✅ ', ''), 'success');
     } catch (err) {
       showToast('Алдаа гарлаа: ' + getErrorMessage(err), 'error');
     } finally {
@@ -109,23 +111,24 @@ export default function PetDetailClient({ id }: { id: string }) {
     }
   }
 
-  if (error) return <p style={{ color: 'var(--alert)' }}>{t('detail_not_found')}</p>;
-  if (!pet) return <p style={{ color: 'var(--muted)' }}>{t('detail_loading')}</p>;
+  if (error) return <div className="page-shell page-shell--narrow"><div className="state-panel state-panel--error" role="alert"><span className="state-panel__icon"><Icon name="alert" size={28} /></span><h2>{t('detail_not_found')}</h2><p>{error}</p><div className="detail-actions"><Button variant="secondary" onClick={() => void load()}>Дахин оролдох</Button><Button as="link" href="/listings" variant="ghost">Жагсаалт руу буцах</Button></div></div></div>;
+  if (!pet) return <div className="page-shell page-shell--narrow"><div className="state-panel" aria-live="polite"><span className="state-panel__icon"><Icon name="paw" size={28} /></span><h2>{t('detail_loading')}</h2><p>Зарын мэдээллийг бэлтгэж байна.</p></div></div>;
 
   const title = `${pet.status === 'lost' ? t('nav_lost') : t('nav_found')} ${pet.type}${pet.name ? ' — ' + pet.name : ''}`;
   const isOwner = user && pet.createdBy && user.id === pet.createdBy;
 
   return (
     <div className="page-shell page-shell--detail">
-      <div className="eyebrow">{pet.status === 'lost' ? t('report_lost_eyebrow') : t('report_found_eyebrow')}</div>
-      <h1 style={{ fontSize: 24, marginBottom: 'var(--sp-1)' }}>{title}</h1>
-      {pet.createdAt && (
-        <p style={{ fontSize: 12.5, color: 'var(--muted)', marginBottom: 'var(--sp-3)' }}>🕓 {relativeTime(pet.createdAt)}</p>
-      )}
+      <div className="detail-back"><Button as="link" href="/listings" variant="ghost">Жагсаалт руу буцах</Button></div>
+      <div className="page-header">
+        <div className="eyebrow">{pet.status === 'lost' ? t('report_lost_eyebrow') : t('report_found_eyebrow')}</div>
+        <h1>{title}</h1>
+        {pet.createdAt && <p className="detail-meta"><Icon name="calendar" size={14} aria-hidden="true" /> {relativeTime(pet.createdAt)}</p>}
+      </div>
 
       {pet.resolved && (
-        <div className="pop-in" style={{ background: 'var(--success-bg)', border: '1.5px solid var(--success)', borderRadius: 'var(--r-sm)', padding: '8px 14px', marginBottom: 'var(--sp-3)', color: 'var(--success-text)', fontSize: 13.5, fontWeight: 600 }}>
-          {t('detail_resolved_badge')}
+        <div className="pop-in resolved-banner" style={{ background: 'var(--success-bg)', border: '1.5px solid var(--success)', borderRadius: 'var(--r-sm)', padding: '8px 14px', marginBottom: 'var(--sp-3)', color: 'var(--success-text)', fontSize: 13.5, fontWeight: 600 }}>
+          <Icon name="check" size={16} aria-hidden="true" /> {t('detail_resolved_badge').replace('✅ ', '')}
         </div>
       )}
 
@@ -166,18 +169,18 @@ export default function PetDetailClient({ id }: { id: string }) {
               <p style={{ marginBottom: 'var(--sp-1)' }}><b>{t('detail_district')}</b> {pet.district}</p>
               <p style={{ marginBottom: 'var(--sp-1)' }}><b>{t('detail_place')}</b> {pet.place}</p>
               {pet.hasReward ? (
-                <p style={{ marginBottom: 'var(--sp-1)' }}><b>🎁 {t('reward_prefix')}</b></p>
+                <p style={{ marginBottom: 'var(--sp-1)', display:'flex', alignItems:'center', gap:6 }}><Icon name="sparkles" size={15} aria-hidden="true" /><b>{t('reward_prefix')}</b></p>
               ) : null}
               {revealed ? (
                 <a href={`tel:${pet.phone}`} style={{ display: 'inline-block', marginTop: 'var(--sp-2)', fontWeight: 700, color: 'var(--primary)' }}>
-                  ☎ {formatPhone(pet.phone)}
+                  <Icon name="phone" size={15} aria-hidden="true" /> {formatPhone(pet.phone)}
                 </a>
               ) : (
                 <button
                   onClick={() => setRevealed(true)}
                   style={{ display: 'inline-block', marginTop: 'var(--sp-2)', fontWeight: 700, color: 'var(--primary)', background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: 'inherit' }}
                 >
-                  ☎ {maskPhone(pet.phone)} · {t('detail_show_phone')}
+                  <Icon name="phone" size={15} aria-hidden="true" /> {maskPhone(pet.phone)} · {t('detail_show_phone')}
                 </button>
               )}
               {/* Чат товч — зөвхөн бусад хэрэглэгчдэд */}
@@ -240,6 +243,7 @@ export default function PetDetailClient({ id }: { id: string }) {
       <SightingsList petId={pet.id} />
 
       <style jsx>{`
+        .resolved-banner { display: flex; align-items: center; gap: 7px; }
         .detail-grid {
           display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
           gap: var(--sp-5); align-items: start; margin-bottom: var(--sp-4);
@@ -255,6 +259,7 @@ export default function PetDetailClient({ id }: { id: string }) {
         }
         .detail-media { min-width: 0; }
         .detail-info { min-width: 0; display: flex; flex-direction: column; }
+        .detail-back { margin-bottom:var(--sp-3); }
       `}</style>
     </div>
   );

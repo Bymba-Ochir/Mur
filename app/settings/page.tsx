@@ -54,8 +54,8 @@ export default function SettingsPage() {
     } catch (e) { showToast(getErrorMessage(e), 'error'); setBusy(false); }
   }
 
-  if (loading) return <p className="page-shell">Уншиж байна...</p>;
-  if (!user) return <div className="page-shell page-shell--narrow"><h1>Тохиргоо</h1><p>Эхлээд нэвтэрнэ үү.</p></div>;
+  if (loading) return <div className="page-shell page-shell--narrow"><div className="state-panel" aria-live="polite"><span className="state-panel__icon"><Icon name="lock" size={28} /></span><h2>Тохиргоо ачаалж байна</h2></div></div>;
+  if (!user) return <div className="page-shell page-shell--narrow"><div className="state-panel"><span className="state-panel__icon"><Icon name="lock" size={28} /></span><h2>Тохиргоо</h2><p>Эхлээд нэвтэрнэ үү.</p></div></div>;
   return <div className="page-shell page-shell--narrow"><div className="page-header"><div className="eyebrow">Account</div><h1>Тохиргоо</h1><p>{user.email}</p></div>
     <section className="card setting-card"><h2><Icon name="bell" size={20} /> Мэдэгдэл</h2>{([['messages','Шинэ мессеж'],['matches','Төстэй амьтны зар'],['vaccines','Вакцины сануулга']] as const).map(([key,label]) => <label className="toggle-row" key={key}><span>{label}</span><input type="checkbox" checked={prefs[key]} onChange={(e) => setPrefs({ ...prefs, [key]: e.target.checked })} /></label>)}<Button variant="primary" onClick={savePreferences} disabled={busy || !profile}>Хадгалах</Button></section>
     <section className="card setting-card"><h2><Icon name="lock" size={20} /> Миний өгөгдөл</h2><p>Profile, зар, хүсэлт болон бүртгэлтэй мэдээллээ JSON файлаар татна.</p><Button variant="secondary" onClick={exportData} disabled={busy}>Мэдээллээ татах</Button></section>

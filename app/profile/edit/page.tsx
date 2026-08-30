@@ -47,8 +47,8 @@ export default function ProfileEditPage() {
     finally { setBusy(false); }
   }
 
-  if (loading) return <p className="page-shell">Уншиж байна...</p>;
-  if (!user) return <div className="page-shell page-shell--narrow"><h1>Profile засах</h1><p>Эхлээд нэвтэрнэ үү.</p></div>;
+  if (loading) return <div className="page-shell page-shell--narrow"><div className="state-panel" aria-live="polite"><span className="state-panel__icon"><Icon name="paw" size={28} /></span><h2>Profile ачаалж байна</h2></div></div>;
+  if (!user) return <div className="page-shell page-shell--narrow"><div className="state-panel"><span className="state-panel__icon"><Icon name="lock" size={28} /></span><h2>Profile засах</h2><p>Эхлээд нэвтэрнэ үү.</p></div></div>;
 
   return <div className="page-shell page-shell--narrow"><div className="page-header"><div className="eyebrow">Миний бүртгэл</div><h1>Profile засах</h1><p>Нийтэд харагдах мэдээллээ удирдана.</p></div>
     <section className="card edit-card">

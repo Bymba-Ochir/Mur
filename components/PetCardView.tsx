@@ -4,6 +4,7 @@ import PetIcon from './PetIcon';
 import { relativeTime } from '../lib/relativeTime';
 import { maskPhone, formatPhone } from '../lib/utils';
 import type { PetStatus, PetType } from '../lib/types';
+import Icon from './ui/icons';
 
 /**
  * Нийтлэг pet карт (presentational) — PetCard (жагсаалт) болон PetPreviewCard
@@ -57,16 +58,16 @@ export default function PetCardView({
       <div className="info">
         <h4>{name || type}</h4>
         <p>{type}{breed ? `, ${breed}` : ''}{color ? `, ${color}` : ''}</p>
-        <p className="place"><span aria-hidden="true">📍</span> {district} — {place}</p>
-        {hasReward ? <p className="reward"><span aria-hidden="true">🎁</span> {rewardLabel}</p> : null}
-        {createdAt && <p className="time"><span aria-hidden="true">🕓</span> {relativeTime(createdAt)}</p>}
+        <p className="place"><Icon name="pin" size={14} aria-hidden="true" /> {district} — {place}</p>
+        {hasReward ? <p className="reward"><Icon name="sparkles" size={14} aria-hidden="true" /> {rewardLabel}</p> : null}
+        {createdAt && <p className="time"><Icon name="calendar" size={14} aria-hidden="true" /> {relativeTime(createdAt)}</p>}
         {showMasked ? (
           <button
             className="phone reveal-btn"
             onClick={(e) => { e.stopPropagation(); onRevealPhone!(); }}
             aria-label="Утасны дугаарыг харуулах"
           >
-            <span aria-hidden="true">☎</span> {maskPhone(phone)} · Дугаар харах
+            <Icon name="phone" size={14} aria-hidden="true" /> {maskPhone(phone)} · Дугаар харах
           </button>
         ) : phone ? (
           <a
@@ -75,7 +76,7 @@ export default function PetCardView({
             onClick={(e) => e.stopPropagation()}
             aria-label={`Утсаар холбогдох: ${formatPhone(phone)}`}
           >
-            <span aria-hidden="true">☎</span> {formatPhone(phone)}
+            <Icon name="phone" size={14} aria-hidden="true" /> {formatPhone(phone)}
           </a>
         ) : null}
       </div>
@@ -183,7 +184,9 @@ export default function PetCardView({
         @media (min-width: 1025px) {
           p { font-size: 13.5px; margin: 4px 0; line-height: 1.5; }
         }
-        .reward { display: block; margin-top: 6px; font-size: 12.5px; color: var(--accent); font-weight: 600; }
+        .place,.reward,.time { display:flex; align-items:center; gap:6px; }
+        .place :global(svg),.reward :global(svg),.time :global(svg) { flex:0 0 auto; }
+        .reward { margin-top: 6px; font-size: 12.5px; color: var(--accent); font-weight: 600; }
         @media (max-width: 480px) {
           .reward { margin-top: 8px; font-size: 13px; }
         }

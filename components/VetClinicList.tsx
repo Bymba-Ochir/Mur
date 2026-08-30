@@ -11,6 +11,8 @@ import ClinicCard from './ClinicCard';
 import AppointmentModal from './AppointmentModal';
 import AppointmentsSection from './AppointmentsSection';
 import LoginModal from './LoginModal';
+import EmptyState from './ui/EmptyState';
+import { Icon } from './ui';
 import type { VetClinic, VetService } from '../lib/types';
 
 const SERVICE_OPTIONS: (VetService | '')[] = ['', 'Үзлэг', 'Вакцин', 'Мэс засал', 'Шүд арчилгаа'];
@@ -114,9 +116,13 @@ export default function VetClinicList({ embedded = false }: { embedded?: boolean
 
       {/* Эмнэлгүүдийн жагсаалт */}
       {filtered.length === 0 ? (
-        <p style={{ textAlign: 'center', color: 'var(--muted)', padding: 'var(--sp-6) 0' }}>
-          {t('empty_no_results_title')}
-        </p>
+        <EmptyState
+          icon={<Icon name="cross" size={30} />}
+          title={t('empty_no_results_title')}
+          description="Шүүлтүүрээ цэвэрлээд дахин хайж үзнэ үү. Эмнэлгийн мэдээллийг нийтлэхээс өмнө баталгаажуулдаг."
+        >
+          <Button variant="secondary" onClick={() => { setDistrict(''); setService(''); setQuery(''); setUserCoords(null); }}>Шүүлтүүр цэвэрлэх</Button>
+        </EmptyState>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-3)' }}>
           {filtered.map((c) => (

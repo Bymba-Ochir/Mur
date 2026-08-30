@@ -39,6 +39,7 @@ export default function Navbar() {
   const userMenuRef = useRef<HTMLDivElement>(null);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
   const mobileMenuButtonRef = useRef<HTMLButtonElement>(null);
+  const mobileCloseButtonRef = useRef<HTMLButtonElement>(null);
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -49,12 +50,39 @@ export default function Navbar() {
   }, []);
 
   useEffect(() => {
-    if (showMobileMenu) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
+    if (!showMobileMenu) return;
+    const previousOverflow = document.body.style.overflow;
+    const mobileTrigger = mobileMenuButtonRef.current;
+    document.body.style.overflow = 'hidden';
+    const focusTimer = window.requestAnimationFrame(() => mobileCloseButtonRef.current?.focus());
+
+    function keepFocusInside(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        setShowMobileMenu(false);
+        return;
+      }
+      if (event.key !== 'Tab' || !mobileMenuRef.current) return;
+      const focusable = Array.from(mobileMenuRef.current.querySelectorAll<HTMLElement>('a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (!first || !last) return;
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
     }
-    return () => { document.body.style.overflow = ''; };
+
+    document.addEventListener('keydown', keepFocusInside);
+    return () => {
+      window.cancelAnimationFrame(focusTimer);
+      document.removeEventListener('keydown', keepFocusInside);
+      document.body.style.overflow = previousOverflow;
+      mobileTrigger?.focus();
+    };
   }, [showMobileMenu]);
 
   useEffect(() => {
@@ -105,6 +133,7 @@ export default function Navbar() {
   }, []);
 
   const handleMobileLinkClick = () => { setShowMobileMenu(false); };
+  const isActiveRoute = (href: string) => pathname === href || (href !== '/' && pathname.startsWith(`${href}/`));
 
   interface NavLinkItem { href: string; label: string; icon?: IconName; }
   interface UserMenuItem { href?: string; label: string; isLink: boolean; accent?: boolean; danger?: boolean; onClick?: () => void; icon?: IconName; }
@@ -125,11 +154,11 @@ export default function Navbar() {
   const railLinks = allLinks.slice(4);
 
   const userMenuItems: UserMenuItem[] = [
-    { href: '/profile', label: 'Миний profile', isLink: true, icon: 'paw' },
-    { href: '/notifications', label: visibleUnreadNotifications ? `Мэдэгдэл (${visibleUnreadNotifications})` : 'Мэдэгдэл', isLink: true, icon: 'bell' },
-    { href: '/saved', label: 'Хадгалсан', isLink: true, icon: 'heart' },
-    { href: '/activity', label: 'Миний хүсэлтүүд', isLink: true, icon: 'calendar' },
-    { href: '/settings', label: 'Тохиргоо', isLink: true, icon: 'lock' },
+    { href: '/profile', label: t('nav_profile'), isLink: true, icon: 'paw' },
+    { href: '/notifications', label: visibleUnreadNotifications ? `${t('nav_notifications')} (${visibleUnreadNotifications})` : t('nav_notifications'), isLink: true, icon: 'bell' },
+    { href: '/saved', label: t('nav_saved'), isLink: true, icon: 'heart' },
+    { href: '/activity', label: t('nav_activity'), isLink: true, icon: 'calendar' },
+    { href: '/settings', label: t('nav_settings'), isLink: true, icon: 'lock' },
     { href: '/my-pets', label: t('nav_mypets'), isLink: true, icon: 'vaccine' },
     { href: '/messages', label: t('messages_hub_nav'), isLink: true, icon: 'message' },
     ...(admin ? [{ href: '/admin', label: t('nav_admin'), isLink: true, accent: true, icon: 'shield' as IconName }] : []),
@@ -138,20 +167,21 @@ export default function Navbar() {
 
   return (
     <header className={`navbar-wrap${scrolled ? ' scrolled' : ''}`}>
-      <header className="navbar">
+      <div className="navbar">
         {/* Brand */}
-        <Link href="/" className="brand" aria-label="МӨР — Нүүр хуудас">
+        <Link href="/" className="brand" aria-label={t('brand_home_label')}>
           <span className="brand-mark">{PawSVG}</span>
           <span className="brand-name">МӨР</span>
         </Link>
 
         {/* Desktop: text nav links */}
-        <nav className="nav-links" aria-label="Үндсэн цэс">
+        <nav className="nav-links" aria-label={t('nav_primary_label')}>
           {primaryLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className={`nav-link${pathname === link.href ? ' active' : ''}`}
+              className={`nav-link${isActiveRoute(link.href) ? ' active' : ''}`}
+              aria-current={isActiveRoute(link.href) ? 'page' : undefined}
             >
               {link.label}
             </Link>
@@ -166,7 +196,8 @@ export default function Navbar() {
             <Link
               key={link.href}
               href={link.href}
-              className={`icon-rail-btn${pathname === link.href ? ' active' : ''}`}
+              className={`icon-rail-btn${isActiveRoute(link.href) ? ' active' : ''}`}
+              aria-current={isActiveRoute(link.href) ? 'page' : undefined}
               data-tip={link.label}
               aria-label={link.label}
             >
@@ -196,24 +227,23 @@ export default function Navbar() {
                 className="user-pill"
                 onClick={() => setShowUserMenu(!showUserMenu)}
                 aria-expanded={showUserMenu}
-                aria-haspopup="true"
+                aria-haspopup="menu"
+                aria-controls="user-menu-popover"
                 aria-label={t('nav_user_menu_label')}
               >
                 <span className="user-avatar" aria-hidden="true"><Icon name="paw" size={15} /></span>
                 <span className="user-email">{user.email ? truncateEmail(user.email) : ''}</span>
                 {visibleUnreadNotifications > 0 && <span className="notification-badge" aria-label={`${visibleUnreadNotifications} уншаагүй мэдэгдэл`}>{visibleUnreadNotifications > 99 ? '99+' : visibleUnreadNotifications}</span>}
-                <span className="user-chevron" aria-hidden="true">{showUserMenu ? '▲' : '▼'}</span>
+                <svg className={`user-chevron${showUserMenu ? ' open' : ''}`} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true" focusable="false"><path d="m6 9 6 6 6-6" /></svg>
               </button>
               {showUserMenu && (
-                <div className="user-dropdown" role="menu">
+                <div id="user-menu-popover" className="user-dropdown" aria-label={t('nav_user_menu_label')}>
                   {userMenuItems.map((item, idx) => (
                     item.isLink && item.href ? (
                       <Link
                         key={idx}
                         href={item.href}
                         className={`dropdown-item${item.accent ? ' dropdown-accent' : ''}`}
-                        role="menuitem"
-                        style={item.accent ? { color: 'var(--accent)' } : undefined}
                         onClick={() => setShowUserMenu(false)}
                       >
                         {item.icon && <Icon name={item.icon} size={16} aria-hidden="true" />}
@@ -223,7 +253,6 @@ export default function Navbar() {
                       <button
                         key={idx}
                         className={`dropdown-item${item.danger ? ' dropdown-danger' : ''}`}
-                        role="menuitem"
                         onClick={() => { item.onClick?.(); setShowUserMenu(false); }}
                       >
                         {item.label}
@@ -257,25 +286,34 @@ export default function Navbar() {
             </span>
           </button>
         </div>
-      </header>
+      </div>
 
       {/* Mobile Dropdown */}
       {showMobileMenu && (
-        <div
-          id="mobile-menu"
-          className="mobile-dropdown"
-          ref={mobileMenuRef}
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="mobile-menu-title"
-        >
-          <div className="mobile-dropdown-inner">
-            <nav className="mobile-nav" aria-label="Мобайл цэс">
+        <>
+          <button className="mobile-backdrop" type="button" aria-label={t('nav_close_menu')} onClick={() => setShowMobileMenu(false)} />
+          <div
+            id="mobile-menu"
+            className="mobile-dropdown"
+            ref={mobileMenuRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="mobile-menu-title"
+          >
+            <div className="mobile-dropdown-inner">
+              <div className="mobile-menu-heading">
+                <h2 id="mobile-menu-title">{t('nav_menu_title')}</h2>
+                <button ref={mobileCloseButtonRef} type="button" className="mobile-close-btn" aria-label={t('nav_close_menu')} onClick={() => setShowMobileMenu(false)}>
+                  <Icon name="close" size={19} />
+                </button>
+              </div>
+            <nav className="mobile-nav" aria-label={t('nav_mobile_label')}>
               {allLinks.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`mobile-nav-link${pathname === link.href ? ' active' : ''}`}
+                  className={`mobile-nav-link${isActiveRoute(link.href) ? ' active' : ''}`}
+                  aria-current={isActiveRoute(link.href) ? 'page' : undefined}
                   onClick={handleMobileLinkClick}
                 >
                   {link.icon && <Icon name={link.icon} size={18} aria-hidden="true" />}
@@ -285,8 +323,7 @@ export default function Navbar() {
               {admin && (
                 <Link
                   href="/admin"
-                  className={`mobile-nav-link${pathname === '/admin' ? ' active' : ''}`}
-                  style={{ color: 'var(--accent)' }}
+                  className={`mobile-nav-link mobile-nav-link--admin${pathname === '/admin' ? ' active' : ''}`}
                   onClick={handleMobileLinkClick}
                 >
                   <Icon name="shield" size={18} aria-hidden="true" />
@@ -307,11 +344,11 @@ export default function Navbar() {
                     <span>{user.email ? truncateEmail(user.email) : t('nav_guest')}</span>
                   </div>
                   <div className="mobile-user-actions">
-                    <Link href="/profile" className="mobile-nav-link" onClick={handleMobileLinkClick}><Icon name="paw" size={18} /> Миний profile</Link>
-                    <Link href="/notifications" className="mobile-nav-link" onClick={handleMobileLinkClick}><Icon name="bell" size={18} /> Мэдэгдэл {visibleUnreadNotifications > 0 && <span className="mobile-badge">{visibleUnreadNotifications}</span>}</Link>
-                    <Link href="/saved" className="mobile-nav-link" onClick={handleMobileLinkClick}><Icon name="heart" size={18} /> Хадгалсан</Link>
-                    <Link href="/activity" className="mobile-nav-link" onClick={handleMobileLinkClick}><Icon name="calendar" size={18} /> Миний хүсэлтүүд</Link>
-                    <Link href="/settings" className="mobile-nav-link" onClick={handleMobileLinkClick}><Icon name="lock" size={18} /> Тохиргоо</Link>
+                    <Link href="/profile" className="mobile-nav-link" onClick={handleMobileLinkClick}><Icon name="paw" size={18} /> {t('nav_profile')}</Link>
+                    <Link href="/notifications" className="mobile-nav-link" onClick={handleMobileLinkClick}><Icon name="bell" size={18} /> {t('nav_notifications')} {visibleUnreadNotifications > 0 && <span className="mobile-badge">{visibleUnreadNotifications}</span>}</Link>
+                    <Link href="/saved" className="mobile-nav-link" onClick={handleMobileLinkClick}><Icon name="heart" size={18} /> {t('nav_saved')}</Link>
+                    <Link href="/activity" className="mobile-nav-link" onClick={handleMobileLinkClick}><Icon name="calendar" size={18} /> {t('nav_activity')}</Link>
+                    <Link href="/settings" className="mobile-nav-link" onClick={handleMobileLinkClick}><Icon name="lock" size={18} /> {t('nav_settings')}</Link>
                     <Button variant="danger" fullWidth onClick={() => { logout(); setShowMobileMenu(false); }}>
                       {t('nav_logout')}
                     </Button>
@@ -323,8 +360,9 @@ export default function Navbar() {
                 </Button>
               )}
             </div>
+            </div>
           </div>
-        </div>
+        </>
       )}
 
       {showLogin && <LoginModal onClose={() => setShowLogin(false)} />}
@@ -333,7 +371,7 @@ export default function Navbar() {
         /* ─── Outer wrapper — floating dock ─── */
         .navbar-wrap {
           position: fixed;
-          top: 16px;
+          top: max(12px, env(safe-area-inset-top));
           left: 0;
           right: 0;
           z-index: 90;
@@ -441,10 +479,15 @@ export default function Navbar() {
         .nav-link:hover { color: var(--text-primary); background: var(--surface-3); }
         .nav-link.active { color: var(--text-primary); background: var(--surface-3); font-weight: 600; }
 
-        /* Medium desktop: preserve the action rail without squeezing the CTA. */
-        @media (max-width: 1180px) {
-          .nav-links { display: none; }
-          .nav-divider { display: none; }
+        /* Medium desktop: холбоосуудыг алга болголгүй бага зэрэг шахна. */
+        @media (min-width: 1041px) and (max-width: 1180px) {
+          .navbar { gap: 8px; padding-inline: var(--sp-3); }
+          .nav-links { gap: 0; padding-left: var(--sp-1); }
+          .nav-link { padding-inline: 8px; font-size: 12.5px; }
+          .nav-divider { margin-inline: 0; }
+          .icon-rail { gap: 3px; padding-inline: 5px; }
+          .icon-rail-btn { width: 32px; height: 34px; }
+          .nav-right { gap: 5px; }
         }
 
         /* ─── Divider ─── */
@@ -455,10 +498,6 @@ export default function Navbar() {
           flex-shrink: 0;
           margin: 0 var(--sp-1);
         }
-        @media (max-width: 1180px) {
-          .nav-divider { display: none; }
-        }
-
         /* ─── Desktop icon rail ─── */
         .icon-rail {
           display: flex;
@@ -487,7 +526,8 @@ export default function Navbar() {
         .icon-rail-btn.active { color: var(--text-primary); background: var(--surface-3); }
         .icon-rail-btn.is-admin { color: var(--primary-light); }
 
-        .icon-rail-btn[data-tip]:hover::after {
+        .icon-rail-btn[data-tip]:hover::after,
+        .icon-rail-btn[data-tip]:focus-visible::after {
           content: attr(data-tip);
           position: absolute;
           top: calc(100% + 8px);
@@ -506,14 +546,7 @@ export default function Navbar() {
           z-index: 5;
         }
 
-        @media (max-width: 1040px) {
-          .icon-rail { display: none; }
-        }
-
-        @media (min-width: 1041px) and (max-width: 1100px) {
-          .icon-rail { gap: 4px; padding-inline: 5px; }
-          .icon-rail-btn { width: 34px; }
-        }
+        @media (max-width: 1120px) and (min-width: 1041px) { .nav-right :global(.donate-btn) { display: none; } }
 
         /* ─── Right side actions ─── */
         .nav-right {
@@ -538,6 +571,7 @@ export default function Navbar() {
           font-weight: 500;
           color: var(--text-secondary);
           cursor: pointer;
+          min-height: 38px;
           transition: border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
         }
         .user-pill:hover { border-color: var(--border-strong); background: var(--surface-3); }
@@ -564,12 +598,12 @@ export default function Navbar() {
           .user-email { max-width: 160px; }
         }
         .user-chevron {
-          font-size: 10px;
           color: var(--text-secondary);
           opacity: 0.6;
           margin-right: 6px;
           transition: transform 0.15s ease;
         }
+        .user-chevron.open { transform: rotate(180deg); }
         .notification-badge,.mobile-badge {
           min-width: 19px;
           height: 19px;
@@ -663,6 +697,7 @@ export default function Navbar() {
           transition: all 0.3s var(--ease-out);
         }
         .mobile-menu-btn:hover { background: var(--surface-3); border-color: var(--border-strong); }
+        .mobile-menu-btn:active { transform: scale(0.96); }
 
         .menu-icon {
           display: flex;
@@ -682,9 +717,16 @@ export default function Navbar() {
         .mobile-menu-btn.active .menu-line:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
 
         /* ─── Mobile Dropdown Panel ─── */
+        .mobile-backdrop {
+          position: fixed; inset: 0; z-index: 88; pointer-events: auto;
+          border: 0; background: color-mix(in srgb, var(--overlay) 72%, transparent);
+          -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px);
+          animation: backdropIn 0.18s ease-out;
+        }
+        @keyframes backdropIn { from { opacity: 0; } to { opacity: 1; } }
         .mobile-dropdown {
           position: absolute;
-          top: calc(16px + 52px + 8px);
+          top: calc(max(12px, env(safe-area-inset-top)) + 60px + 8px);
           left: var(--sp-3);
           right: var(--sp-3);
           background: var(--surface-2);
@@ -706,10 +748,23 @@ export default function Navbar() {
           display: flex;
           flex-direction: column;
         }
+        .mobile-menu-heading {
+          display: flex; align-items: center; justify-content: space-between;
+          min-height: 56px; padding: 8px var(--sp-3) 6px var(--sp-4);
+          border-bottom: 1px solid var(--border-subtle);
+        }
+        .mobile-menu-heading h2 { margin: 0; font-size: var(--text-base); }
+        .mobile-close-btn {
+          width: var(--touch-target); height: var(--touch-target); display: inline-flex;
+          align-items: center; justify-content: center; border: 1px solid var(--border-subtle);
+          border-radius: var(--r-pill); color: var(--text-secondary); background: var(--surface-2); cursor: pointer;
+        }
+        .mobile-close-btn:hover { color: var(--text-primary); background: var(--surface-3); }
+        .mobile-close-btn:active { transform: scale(0.96); }
 
         .mobile-nav {
-          display: flex;
-          flex-direction: column;
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
           padding: var(--sp-3) var(--sp-3) 0;
           gap: var(--sp-1);
         }
@@ -728,7 +783,9 @@ export default function Navbar() {
           transition: all 0.15s ease;
         }
         .mobile-nav-link:hover { background: var(--surface-3); color: var(--text-primary); }
-        .mobile-nav-link.active { background: var(--surface-3); color: var(--text-primary); font-weight: 600; }
+        .mobile-nav-link.active { background: color-mix(in srgb, var(--primary) 10%, var(--surface-2)); color: var(--primary); font-weight: 650; }
+        .mobile-nav-link--admin { color: var(--primary); }
+        .mobile-nav-link:active { transform: scale(0.985); }
 
         .mobile-menu-actions {
           padding: var(--sp-3);
@@ -786,12 +843,22 @@ export default function Navbar() {
         /* ─── Responsive: ≤1040px hide desktop rails, show hamburger ─── */
         @media (max-width: 1040px) {
           .mobile-actions { display: flex; }
+          .nav-links, .nav-divider, .icon-rail { display: none; }
           .nav-right :global(.donate-btn) { display: none; }
         }
 
         /* ─── Responsive: ≤640px hide toggles from nav-right (use hamburger) ─── */
         @media (max-width: 640px) {
           .nav-right { display: none; }
+          .mobile-dropdown { top: calc(max(12px, env(safe-area-inset-top)) + 52px + 8px); }
+          .mobile-nav { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 480px) {
+          .mobile-dropdown { top: calc(max(12px, env(safe-area-inset-top)) + 48px + 8px); left: var(--sp-2); right: var(--sp-2); max-height: calc(100dvh - 72px); }
+          .mobile-menu-heading { min-height: 52px; padding-left: var(--sp-3); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .brand, .brand-mark, .mobile-menu-btn, .menu-line, .mobile-dropdown, .mobile-backdrop, .user-dropdown { animation: none; transition: none; }
         }
       `}</style>
     </header>

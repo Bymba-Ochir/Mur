@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -18,6 +18,7 @@ import { relativeTime } from '../../../lib/relativeTime';
 import { maskPhone, formatPhone, normalizePhone, getErrorMessage } from '../../../lib/utils';
 import type { SittingListing, SittingPetType } from '../../../lib/types';
 import SittingBookingPanel from '../../../components/SittingBookingPanel';
+import Icon from '../../../components/ui/icons';
 
 function subscribeLocation(cb: () => void) {
   window.addEventListener('popstate', cb);
@@ -40,11 +41,13 @@ export default function SittingDetailClient({ id }: { id: string }) {
 
   const url = useSyncExternalStore(subscribeLocation, () => typeof window !== 'undefined' ? window.location.href : '');
 
-  useEffect(() => {
-    fetchSittingListingById(id)
-      .then(setListing)
-      .catch((err) => setError(getErrorMessage(err) || 'Алдаа'));
+  const load = useCallback(async () => {
+    setError(null);
+    try { setListing(await fetchSittingListingById(id)); }
+    catch (reason) { setError(getErrorMessage(reason) || 'Алдаа'); }
   }, [id]);
+
+  useEffect(() => { void Promise.resolve().then(load); }, [load]);
 
   const isOwner = user && listing && listing.userId === user.id;
 
@@ -91,17 +94,18 @@ export default function SittingDetailClient({ id }: { id: string }) {
     }
   }
 
-  if (error) return <p style={{ color: 'var(--alert)' }}>{error}</p>;
-  if (!listing) return <p>{t('detail_loading')}</p>;
+  if (error) return <div className="page-shell page-shell--narrow"><div className="state-panel state-panel--error" role="alert"><span className="state-panel__icon"><Icon name="alert" size={28} /></span><h2>Асрах үйлчилгээ нээгдсэнгүй</h2><p>{error}</p><div className="detail-actions"><Button variant="secondary" onClick={() => void load()}>Дахин оролдох</Button><Button as="link" href="/sitting" variant="ghost">Жагсаалт руу буцах</Button></div></div></div>;
+  if (!listing) return <div className="page-shell page-shell--narrow"><div className="state-panel" aria-live="polite"><span className="state-panel__icon"><Icon name="home" size={28} /></span><h2>{t('detail_loading')}</h2><p>Үйлчилгээний мэдээллийг бэлтгэж байна.</p></div></div>;
 
   const label = petTypeLabel(listing.petType);
 
   return (
     <div className="page-shell page-shell--detail">
+      <div className="back-row top"><Button as="link" href="/sitting" variant="ghost">{t('sitting_back_to_list')}</Button></div>
       <div className="page-header">
         <div className="eyebrow">{t('sitting_eyebrow')}</div>
         <h1>{label}</h1>
-        <p>{relativeTime(listing.createdAt)}</p>
+        <p className="detail-meta"><Icon name="calendar" size={14} aria-hidden="true" /> {relativeTime(listing.createdAt)}</p>
       </div>
 
       {editing ? (
@@ -157,9 +161,9 @@ export default function SittingDetailClient({ id }: { id: string }) {
 
             <div className="phone-section">
               {revealed ? (
-                <a className="phone-link" href={`tel:${listing.phone}`}>☎ {formatPhone(listing.phone)}</a>
+                <a className="phone-link" href={`tel:${listing.phone}`}><Icon name="phone" size={15} aria-hidden="true" /> {formatPhone(listing.phone)}</a>
               ) : listing.phone ? (
-                <Button variant="ghost" onClick={() => setRevealed(true)}>☎ {maskPhone(listing.phone)} · {t('detail_show_phone')}</Button>
+                <Button variant="ghost" onClick={() => setRevealed(true)}><Icon name="phone" size={15} aria-hidden="true" /> {maskPhone(listing.phone)} · {t('detail_show_phone')}</Button>
               ) : null}
             </div>
             <Link href={`/users/${listing.userId}`} className="profile-owner-link">Үйлчилгээ үзүүлэгчийн profile →</Link>
@@ -222,6 +226,7 @@ export default function SittingDetailClient({ id }: { id: string }) {
         .map-section { margin-top: var(--sp-5); }
         .map-title { font-size: 13px; font-weight: 600; color: var(--primary); margin-bottom: var(--sp-2); }
         .back-row { margin-top: var(--sp-5); }
+        .back-row.top { margin:0 0 var(--sp-3); }
         .share-section { margin-top: var(--sp-6); text-align: center; }
         .share-hint { font-size: 12px; color: var(--muted); margin-top: var(--sp-2); }
       `}</style>

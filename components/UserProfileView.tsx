@@ -27,10 +27,10 @@ export default function UserProfileView({ userId, own = false }: { userId?: stri
     if (user && user.id !== targetId) isUserBlocked(targetId).then(setBlocked).catch(() => {});
   }, [targetId, user]);
 
-  if (authLoading && own) return <p className="page-shell">Уншиж байна...</p>;
-  if (own && !user) return <div className="page-shell page-shell--narrow"><div className="card profile-panel"><h1>Миний profile</h1><p>Profile харахын тулд нэвтэрнэ үү.</p></div></div>;
-  if (error) return <p className="page-shell error" role="alert">{error}</p>;
-  if (!profile || !stats) return <p className="page-shell">Profile ачаалж байна...</p>;
+  if (authLoading && own) return <div className="page-shell page-shell--narrow"><div className="state-panel" aria-live="polite"><span className="state-panel__icon"><Icon name="paw" size={28} /></span><h2>Profile ачаалж байна</h2></div></div>;
+  if (own && !user) return <div className="page-shell page-shell--narrow"><div className="state-panel"><span className="state-panel__icon"><Icon name="lock" size={28} /></span><h2>Миний profile</h2><p>Profile харахын тулд нэвтэрнэ үү.</p></div></div>;
+  if (error) return <div className="page-shell page-shell--narrow"><div className="state-panel state-panel--error" role="alert"><span className="state-panel__icon"><Icon name="alert" size={28} /></span><h2>Profile нээгдсэнгүй</h2><p>{error}</p><Button variant="secondary" onClick={() => window.location.reload()}>Дахин оролдох</Button></div></div>;
+  if (!profile || !stats) return <div className="page-shell page-shell--narrow"><div className="state-panel" aria-live="polite"><span className="state-panel__icon"><Icon name="paw" size={28} /></span><h2>Profile ачаалж байна</h2></div></div>;
 
   async function toggleBlock() {
     if (!targetId) return;

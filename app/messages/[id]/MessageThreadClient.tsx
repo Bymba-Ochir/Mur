@@ -1,9 +1,9 @@
 'use client';
 import { useEffect, useState, useRef, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import Button from '../../../components/ui/Button';
+import { Icon } from '../../../components/ui';
 import { useAuth } from '../../../lib/useAuth';
 import { useToast } from '../../../components/Toast';
 import { useLanguage } from '../../../lib/i18n';
@@ -20,7 +20,6 @@ import { getErrorMessage } from '../../../lib/utils';
 import type { Conversation, Message } from '../../../lib/types';
 
 export default function MessageThreadClient({ id }: { id: string }) {
-  const router = useRouter();
   const { user, loading: authLoading } = useAuth();
   const showToast = useToast();
   const { t } = useLanguage();
@@ -121,21 +120,17 @@ export default function MessageThreadClient({ id }: { id: string }) {
     }
   }
 
-  if (authLoading || loading) {
-    return <p style={{ padding: 'var(--sp-6)' }}>{t('detail_loading')}</p>;
+  if (authLoading || (user && loading)) {
+    return <div className="page-shell page-shell--narrow"><div className="state-panel" aria-live="polite"><span className="state-panel__icon"><Icon name="message" size={28} /></span><h2>{t('detail_loading')}</h2></div></div>;
   }
 
   if (!user) {
-    router.push('/');
-    return null;
+    return <div className="page-shell page-shell--narrow"><div className="state-panel"><span className="state-panel__icon"><Icon name="lock" size={28} /></span><h2>Мессеж үзэхийн тулд нэвтэрнэ үү</h2><p>Харилцан яриа зөвхөн оролцогчдод харагдана.</p><Button as="link" href="/messages" variant="secondary">Мессежүүд рүү буцах</Button></div></div>;
   }
 
   if (error) {
     return (
-      <div style={{ padding: 'var(--sp-6)', textAlign: 'center' }}>
-        <p style={{ color: 'var(--alert)', marginBottom: 'var(--sp-3)' }}>{error}</p>
-        <Button as="link" href="/messages" variant="ghost">{t('chat_list_title')}</Button>
-      </div>
+      <div className="page-shell page-shell--narrow"><div className="state-panel state-panel--error" role="alert"><span className="state-panel__icon"><Icon name="alert" size={28} /></span><h2>Харилцан яриа нээгдсэнгүй</h2><p>{error}</p><Button as="link" href="/messages" variant="ghost">{t('chat_list_title')}</Button></div></div>
     );
   }
 

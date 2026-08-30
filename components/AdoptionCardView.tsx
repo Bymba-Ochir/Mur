@@ -4,6 +4,7 @@ import PetIcon from './PetIcon';
 import { relativeTime } from '../lib/relativeTime';
 import { maskPhone, formatPhone } from '../lib/utils';
 import type { PetType } from '../lib/types';
+import Icon from './ui/icons';
 
 /**
  * Үрчлүүлэх карт — AdoptionCard (жагсаалт) болон AdoptionPreviewCard (форм preview)
@@ -46,15 +47,15 @@ export default function AdoptionCardView({
         <h4>{name || type}</h4>
         <p>{type}{breed ? `, ${breed}` : ''}</p>
         {age && <p>{age}{gender && gender !== 'Тодорхойгүй' ? ` · ${gender}` : ''}</p>}
-        <p className="place"><span aria-hidden="true">📍</span> {district} — {place}</p>
-        {createdAt && <p className="time"><span aria-hidden="true">🕓</span> {relativeTime(createdAt)}</p>}
+        <p className="place"><Icon name="pin" size={14} aria-hidden="true" /> {district} — {place}</p>
+        {createdAt && <p className="time"><Icon name="calendar" size={14} aria-hidden="true" /> {relativeTime(createdAt)}</p>}
         {showMasked ? (
           <button
             className="phone reveal-btn"
             onClick={(e) => { e.stopPropagation(); onRevealPhone!(); }}
             aria-label="Утасны дугаарыг харуулах"
           >
-            <span aria-hidden="true">☎</span> {maskPhone(phone)} · Дугаар харах
+            <Icon name="phone" size={14} aria-hidden="true" /> {maskPhone(phone)} · Дугаар харах
           </button>
         ) : phone ? (
           <a
@@ -63,7 +64,7 @@ export default function AdoptionCardView({
             onClick={(e) => e.stopPropagation()}
             aria-label={`Утсаар холбогдох: ${formatPhone(phone)}`}
           >
-            <span aria-hidden="true">☎</span> {formatPhone(phone)}
+            <Icon name="phone" size={14} aria-hidden="true" /> {formatPhone(phone)}
           </a>
         ) : null}
       </div>
@@ -120,6 +121,8 @@ export default function AdoptionCardView({
         @media (max-width: 480px) { h4 { font-size: 15px; } }
         @media (min-width: 1025px) { h4 { font-size: var(--text-xl); margin-bottom: 4px; } }
         p { font-size: 12.5px; color: var(--muted); margin: 3px 0; line-height: 1.4; }
+        .place,.time { display:flex; align-items:center; gap:6px; }
+        .place :global(svg),.time :global(svg) { flex:0 0 auto; }
         @media (max-width: 480px) { p { font-size: 13px; margin: 4px 0; } }
         @media (min-width: 1025px) { p { font-size: 13.5px; margin: 4px 0; line-height: 1.5; } }
         .phone {

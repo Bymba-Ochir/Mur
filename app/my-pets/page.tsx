@@ -37,16 +37,18 @@ export default function MyPetsPage() {
   const [subscribed, setSubscribed] = useState(false);
   const [notifyError, setNotifyError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [petsError, setPetsError] = useState('');
 
   const TYPE_LABELS: Record<string, string> = { 'Нохой': t('type_dog'), 'Муур': t('type_cat') };
 
   const load = useCallback(async () => {
     setPetsLoading(true);
+    setPetsError('');
     try {
       const data = await fetchMyPets();
       setPets(data);
     } catch (err) {
-      console.error(err);
+      setPetsError(getErrorMessage(err));
     } finally {
       setPetsLoading(false);
     }
@@ -101,11 +103,11 @@ export default function MyPetsPage() {
 
   const selectedPet = pets.find((p) => p.id === selectedPetId) || null;
 
-  if (loading) return <p style={{ color: 'var(--muted)' }}>{t('detail_loading')}</p>;
+  if (loading) return <div className="page-shell page-shell--narrow"><div className="state-panel" aria-live="polite"><span className="state-panel__icon"><Icon name="vaccine" size={28} /></span><h2>{t('detail_loading')}</h2></div></div>;
 
   if (!user) {
     return (
-      <div>
+      <div className="page-shell page-shell--narrow">
         <div className="page-header">
           <div className="eyebrow">{t('mypets_eyebrow')}</div>
           <h1>{t('mypets_title')}</h1>
@@ -139,7 +141,7 @@ export default function MyPetsPage() {
           {/* Нэмэх форм */}
           <form onSubmit={handleAdd} style={{ marginBottom: 'var(--sp-4)' }} aria-label="Шинэ амьтан нэмэх">
             <FieldHint mn="Нэр, төрөл заавал. Нас, үүлдэр, жин болон вакцины мэдээлэл мэдэхгүй бол дараа нь нэмж болно." en="Name and type are required. Age, breed, weight and vaccine details can be added later." />
-            <div style={{ display: 'flex', gap: 'var(--sp-2)', marginBottom: 'var(--sp-2)' }}>
+            <div className="pet-form-row">
               <input
                 className="field" value={name} onChange={(e) => setName(e.target.value)}
                 placeholder={t('mypets_name_ph')} required maxLength={100}
@@ -150,12 +152,12 @@ export default function MyPetsPage() {
                 <option value="Муур">{TYPE_LABELS['Муур']}</option>
               </select>
             </div>
-            <div style={{ display: 'flex', gap: 'var(--sp-2)', marginBottom: 'var(--sp-2)' }}>
+            <div className="pet-form-row">
               <input className="field" value={age} onChange={(e) => setAge(e.target.value)} placeholder={t('health_age_ph')} maxLength={100} style={{ flex: 1 }} />
               <input className="field" value={breed} onChange={(e) => setBreed(e.target.value)} placeholder={t('health_breed_ph')} maxLength={100} style={{ flex: 1 }} />
               <input className="field" type="number" step="0.01" min="0" max="999.99" value={weight} onChange={(e) => setWeight(e.target.value)} placeholder={t('health_weight_ph')} style={{ flex: 1 }} />
             </div>
-            <div style={{ display: 'flex', gap: 'var(--sp-2)' }}>
+            <div className="pet-form-row pet-form-row--submit">
               <span className="sr-only">Дараагийн вакцины нэр болон огноо</span>
               <input className="field" value={vaxName} onChange={(e) => setVaxName(e.target.value)} placeholder={t('health_next_vaccine_name_ph')} maxLength={200} style={{ flex: 1 }} />
               <input className="field" type="date" value={date} onChange={(e) => setDate(e.target.value)} style={{ width: 'auto' }} />
@@ -164,7 +166,9 @@ export default function MyPetsPage() {
           </form>
 
           {/* Амьтдын жагсаалт */}
-          {petsLoading ? (
+          {petsError ? (
+            <div className="state-panel state-panel--error" role="alert"><span className="state-panel__icon"><Icon name="alert" size={28} /></span><h2>Амьтдын мэдээллийг ачаалж чадсангүй</h2><p>{petsError}</p><Button variant="secondary" onClick={() => void load()}>Дахин оролдох</Button></div>
+          ) : petsLoading ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-2)' }}>
               {[0, 1].map((i) => (
                 <div key={i} className="skel-row" style={{
@@ -201,6 +205,13 @@ export default function MyPetsPage() {
       </>
 
       <style jsx>{`
+        .pet-form-row { display: flex; gap: var(--sp-2); margin-bottom: var(--sp-2); align-items: stretch; }
+        .pet-form-row--submit { margin-bottom: 0; }
+        @media (max-width: 640px) {
+          .pet-form-row { flex-direction: column; }
+          .pet-form-row :global(.field), .pet-form-row :global(select), .pet-form-row :global(input) { width: 100% !important; flex-basis: auto !important; }
+          .pet-form-row--submit :global(button) { width: 100%; justify-content: center; }
+        }
       `}</style>
     </div>
   );

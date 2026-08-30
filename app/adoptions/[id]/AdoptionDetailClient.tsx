@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useSyncExternalStore } from 'react';
@@ -18,6 +18,7 @@ import { maskPhone, formatPhone, getErrorMessage } from '../../../lib/utils';
 import type { Adoption } from '../../../lib/types';
 import { getBreedLabel } from '../../../lib/petBreeds';
 import AdoptionApplicationPanel from '../../../components/AdoptionApplicationPanel';
+import Icon from '../../../components/ui/icons';
 
 function subscribeLocation(cb: () => void) {
   window.addEventListener('popstate', cb);
@@ -40,11 +41,13 @@ export default function AdoptionDetailClient({ id }: { id: string }) {
 
   const url = useSyncExternalStore(subscribeLocation, () => typeof window !== 'undefined' ? window.location.href : '');
 
-  useEffect(() => {
-    fetchAdoptionById(id)
-      .then(setAdoption)
-      .catch((err) => setError(getErrorMessage(err) || 'Алдаа'));
+  const load = useCallback(async () => {
+    setError(null);
+    try { setAdoption(await fetchAdoptionById(id)); }
+    catch (reason) { setError(getErrorMessage(reason) || 'Алдаа'); }
   }, [id]);
+
+  useEffect(() => { void Promise.resolve().then(load); }, [load]);
 
   const isOwner = user && adoption && adoption.createdBy === user.id;
 
@@ -78,19 +81,16 @@ export default function AdoptionDetailClient({ id }: { id: string }) {
     }
   }
 
-  if (error) return <p style={{ color: 'var(--alert)' }}>{error}</p>;
-  if (!adoption) return <p>{t('detail_loading')}</p>;
+  if (error) return <div className="page-shell page-shell--narrow"><div className="state-panel state-panel--error" role="alert"><span className="state-panel__icon"><Icon name="alert" size={28} /></span><h2>Үрчлүүлэх зар нээгдсэнгүй</h2><p>{error}</p><div className="detail-actions"><Button variant="secondary" onClick={() => void load()}>Дахин оролдох</Button><Button as="link" href="/adoptions" variant="ghost">Жагсаалт руу буцах</Button></div></div></div>;
+  if (!adoption) return <div className="page-shell page-shell--narrow"><div className="state-panel" aria-live="polite"><span className="state-panel__icon"><Icon name="heart" size={28} /></span><h2>{t('detail_loading')}</h2><p>Үрчлүүлэх зарын мэдээллийг бэлтгэж байна.</p></div></div>;
 
   return (
     <div className="page-shell page-shell--detail">
+      <div className="back-row"><Button as="link" href="/adoptions" variant="ghost">{t('adoptions_back_to_list')}</Button></div>
       <div className="page-header">
         <div className="eyebrow">{t('adoptions_eyebrow')}</div>
         <h1>{adoption.type}{adoption.name ? ` — ${adoption.name}` : ''}</h1>
-        <p>{relativeTime(adoption.createdAt)}</p>
-      </div>
-
-      <div className="back-row">
-        <Button as="link" href="/adoptions" variant="ghost">{t('adoptions_back_to_list')}</Button>
+        <p className="detail-meta"><Icon name="calendar" size={14} aria-hidden="true" /> {relativeTime(adoption.createdAt)}</p>
       </div>
 
       {editing ? (
@@ -143,9 +143,9 @@ export default function AdoptionDetailClient({ id }: { id: string }) {
 
             <div className="phone-section">
               {revealed ? (
-                <a className="phone-link" href={`tel:${adoption.phone}`}>☎ {formatPhone(adoption.phone)}</a>
+                <a className="phone-link" href={`tel:${adoption.phone}`}><Icon name="phone" size={15} aria-hidden="true" /> {formatPhone(adoption.phone)}</a>
               ) : adoption.phone ? (
-                <Button variant="ghost" onClick={() => setRevealed(true)}>☎ {maskPhone(adoption.phone)} · {t('detail_show_phone')}</Button>
+                <Button variant="ghost" onClick={() => setRevealed(true)}><Icon name="phone" size={15} aria-hidden="true" /> {maskPhone(adoption.phone)} · {t('detail_show_phone')}</Button>
               ) : null}
             </div>
             {adoption.createdBy && <Link href={`/users/${adoption.createdBy}`} className="profile-owner-link">Зарын эзний profile →</Link>}
@@ -200,7 +200,7 @@ export default function AdoptionDetailClient({ id }: { id: string }) {
         .owner-actions { display: flex; gap: var(--sp-2); margin-top: var(--sp-4); }
         .profile-owner-link { display: inline-flex; margin-top: var(--sp-3); color: var(--primary); font-weight: 650; text-decoration: none; }
         .owner-actions :global(.btn-base) { flex: 1; min-height: var(--touch-target); }
-        .back-row { margin-top: var(--sp-5); }
+        .back-row { margin-bottom: var(--sp-3); }
         .share-section { margin-top: var(--sp-6); text-align: center; }
         .share-hint { font-size: 12px; color: var(--muted); margin-top: var(--sp-2); }
       `}</style>

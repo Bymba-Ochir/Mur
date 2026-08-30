@@ -4,6 +4,8 @@ import { useLanguage } from '../../../../lib/i18n';
 import { fetchMyPetById } from '../../../../lib/vaccineService';
 import { fetchPetHealth } from '../../../../lib/petHealthService';
 import PetProfileLayout from '../../../../components/PetProfileLayout';
+import Button from '../../../../components/ui/Button';
+import { Icon } from '../../../../components/ui';
 import VaccinationsSection from '../../../../components/VaccinationsSection';
 import ConditionsSection from '../../../../components/ConditionsSection';
 import MedicationsSection from '../../../../components/MedicationsSection';
@@ -17,6 +19,7 @@ export default function MyPetProfileClient({ id }: { id: string }) {
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(() => {
+    setError(null);
     fetchMyPetById(id)
       .then((p) => {
         setPet(p);
@@ -26,10 +29,10 @@ export default function MyPetProfileClient({ id }: { id: string }) {
       .catch((err) => setError(getErrorMessage(err) || t('profiles_not_found')));
   }, [id, t]);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => { void Promise.resolve().then(load); }, [load]);
 
-  if (error) return <p style={{ color: 'var(--alert)', padding: 'var(--sp-6)' }}>{error}</p>;
-  if (!pet) return <p style={{ color: 'var(--muted)', padding: 'var(--sp-6)' }}>{t('detail_loading')}</p>;
+  if (error) return <div className="page-shell page-shell--narrow"><div className="state-panel state-panel--error" role="alert"><span className="state-panel__icon"><Icon name="alert" size={28} /></span><h2>{t('profiles_not_found')}</h2><p>{error}</p><div className="detail-actions"><Button variant="secondary" onClick={() => void load()}>Дахин оролдох</Button><Button as="link" href="/my-pets" variant="ghost">Миний амьтад руу буцах</Button></div></div></div>;
+  if (!pet) return <div className="page-shell page-shell--narrow"><div className="state-panel" aria-live="polite"><span className="state-panel__icon"><Icon name="vaccine" size={28} /></span><h2>{t('detail_loading')}</h2></div></div>;
 
   const data: PetProfileData = {
     kind: 'mypet',

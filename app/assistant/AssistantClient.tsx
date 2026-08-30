@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import { Icon } from '../../components/ui';
 import { useLanguage } from '../../lib/i18n';
 import { getAssistantReply, SUGGESTED_QUESTIONS } from '../../lib/assistant/engine';
 import { relativeTime } from '../../lib/relativeTime';
@@ -148,8 +149,8 @@ export default function AssistantClient({ embedded = false }: { embedded?: boole
               )}
               {msg.role === 'assistant' && msg.id !== 'greeting' && (
                 <div className="feedback" aria-label={t('assistant_feedback')}>
-                  <button className={feedback[msg.id] === 'up' ? 'active' : ''} onClick={() => setFeedback((prev) => ({ ...prev, [msg.id]: 'up' }))} aria-label={t('assistant_helpful')}>👍</button>
-                  <button className={feedback[msg.id] === 'down' ? 'active' : ''} onClick={() => setFeedback((prev) => ({ ...prev, [msg.id]: 'down' }))} aria-label={t('assistant_not_helpful')}>👎</button>
+                  <button className={feedback[msg.id] === 'up' ? 'active' : ''} onClick={() => setFeedback((prev) => ({ ...prev, [msg.id]: 'up' }))} aria-label={t('assistant_helpful')}><Icon name="thumb" size={16} /></button>
+                  <button className={feedback[msg.id] === 'down' ? 'active down' : 'down'} onClick={() => setFeedback((prev) => ({ ...prev, [msg.id]: 'down' }))} aria-label={t('assistant_not_helpful')}><Icon name="thumb" size={16} /></button>
                   {msg.confidence && <span>{t(`assistant_confidence_${msg.confidence}`)}</span>}
                 </div>
               )}
@@ -343,6 +344,7 @@ export default function AssistantClient({ embedded = false }: { embedded?: boole
         .feedback { display: flex; align-items: center; gap: 5px; margin-top: 7px; color: var(--muted); font-size: 10px; }
         .feedback button { border: 0; background: transparent; padding: 3px; opacity: .55; cursor: pointer; }
         .feedback button.active { opacity: 1; transform: scale(1.1); }
+        .feedback button.down :global(svg) { transform: rotate(180deg); }
         .bubble-time {
           display: block; font-size: 10px; margin-top: 4px; opacity: 0.7; text-align: right;
         }
