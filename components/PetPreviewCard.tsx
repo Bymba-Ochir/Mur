@@ -34,6 +34,7 @@ export default function PetPreviewCard({
         badgeLabel={status === 'lost' ? t('nav_lost').toUpperCase() : t('nav_found').toUpperCase()}
         name={name}
         type={type}
+        typeLabel={typeLabel}
         breed={breed ? getBreedLabel(breed, lang) : undefined}
         color={color}
         district={district}
@@ -41,6 +42,9 @@ export default function PetPreviewCard({
         phone={phone}
         hasReward={hasReward}
         rewardLabel={t('reward_prefix')}
+        showPhoneLabel={t('listings_card_show_phone')}
+        callPhoneLabel={t('listings_card_call')}
+        language={lang}
         interactive={false}
         imageNode={
           photoPreview ? (
@@ -51,8 +55,8 @@ export default function PetPreviewCard({
       />
 
       <style jsx>{`
-        .preview-wrap { max-width: 260px; }
-        .preview-label { font-size: 12px; color: var(--muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.03em; }
+        .preview-wrap { width: 100%; max-width: 20rem; }
+        .preview-label { margin: 0 0 var(--sp-2); color: var(--muted); font-size: var(--text-xs); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
       `}</style>
     </div>
   );

@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { useLanguage } from '../lib/i18n';
 
 // Улаанбаатар хотын төв (анхдагч байршил)
 const UB_CENTER: [number, number] = [47.9184, 106.9177];
@@ -11,9 +12,12 @@ interface LocationMapProps {
   editable?: boolean;
   /** editable=true үед сонгосон {lat,lng}-г буцаана */
   onPick?: (coords: { lat: number; lng: number }) => void;
+  /** screen reader-д газрын зургийн зорилгыг тайлбарлана */
+  label?: string;
 }
 
-export default function LocationMap({ lat, lng, editable = false, onPick }: LocationMapProps) {
+export default function LocationMap({ lat, lng, editable = false, onPick, label }: LocationMapProps) {
+  const { t } = useLanguage();
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<import('leaflet').Map | null>(null);
   const markerRef = useRef<import('leaflet').Marker | null>(null);
@@ -83,18 +87,15 @@ export default function LocationMap({ lat, lng, editable = false, onPick }: Loca
     }
   }, [lat, lng]);
 
-  return (
-    <div
-      ref={containerRef}
-      style={{
-        height: 'clamp(200px, 50vw, 280px)',
-        width: '100%',
-        borderRadius: 'var(--r-md)',
-        overflow: 'hidden',
-        border: '1px solid var(--line)',
-        // Force layout so leaflet can measure correctly
-        minHeight: 'clamp(200px, 50vw, 280px)',
-      }}
-    />
-  );
+  return <>
+    <div ref={containerRef} className="location-map" role="region" aria-label={label || t('detail_map_heading')} />
+    <style jsx>{`
+      .location-map {
+        width: 100%; height: clamp(220px, 42vw, 320px); min-height: clamp(220px, 42vw, 320px);
+        overflow: hidden; border: 1px solid var(--border-subtle); border-radius: var(--r-md);
+      }
+      .location-map:focus-within { outline: 2px solid var(--border-focus); outline-offset: 2px; }
+      @media (max-width: 480px) { .location-map { height: 240px; min-height: 240px; } }
+    `}</style>
+  </>;
 }

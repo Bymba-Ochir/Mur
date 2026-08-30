@@ -37,6 +37,7 @@ export interface PetFormData {
 // ---------- Зураг: шахалт + content moderation ----------
 export function usePhotoUpload() {
   const showToast = useToast();
+  const { t } = useLanguage();
   const [photoFiles, setPhotoFiles] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
   const [compressing, setCompressing] = useState(false);
@@ -45,11 +46,12 @@ export function usePhotoUpload() {
   async function handlePhoto(e: ChangeEvent<HTMLInputElement>) {
     const selected = Array.from(e.target.files ?? []).slice(0, 4);
     if (!selected.length) return;
+    previews.forEach((url) => URL.revokeObjectURL(url));
     setCompressing(true);
     try {
       const accepted: File[] = [];
       for (let index = 0; index < selected.length; index += 1) {
-        setCompressStatus(`${index + 1}/${selected.length} зураг оновчлож байна...`);
+        setCompressStatus(`${index + 1}/${selected.length} ${t('photo_optimizing')}`);
         const compressed = await compressImage(selected[index]);
         const check = await checkImageContent(compressed, setCompressStatus);
         if (!check.ok) {
@@ -62,7 +64,7 @@ export function usePhotoUpload() {
       if (accepted.length) {
         setPhotoFiles(accepted);
         setPreviews(accepted.map((file) => URL.createObjectURL(file)));
-        showToast(`${accepted.length} зураг бэлэн боллоо`, 'success');
+        showToast(`${accepted.length} ${t('photo_ready')}`, 'success');
       }
     } catch {
       setPhotoFiles(selected);
@@ -70,6 +72,7 @@ export function usePhotoUpload() {
     } finally {
       setCompressing(false);
       setCompressStatus('');
+      e.target.value = '';
     }
   }
 
@@ -97,12 +100,13 @@ export function usePhotoUpload() {
 // ---------- Байршил: geolocation + ойролцоо дүүрэг ----------
 export function usePetLocation(onDistrictGuess: (d: District) => void) {
   const showToast = useToast();
+  const { t } = useLanguage();
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [locating, setLocating] = useState(false);
 
   function handleUseLocation() {
     if (!navigator.geolocation) {
-      showToast('Энэ browser байршил тодорхойлохыг дэмждэггүй', 'error');
+      showToast(t('location_not_supported'), 'error');
       return;
     }
     setLocating(true);
@@ -113,11 +117,11 @@ export function usePetLocation(onDistrictGuess: (d: District) => void) {
         const guessed = nearestDistrict(latitude, longitude);
         onDistrictGuess(guessed);
         setLocating(false);
-        showToast(`Байршлыг тодорхойлов: ${guessed} дүүрэг`, 'success');
+        showToast(`${t('location_success')} ${guessed}`, 'success');
       },
       () => {
         setLocating(false);
-        showToast('Байршил тодорхойлж чадсангүй. Зөвшөөрөл шалгана уу.', 'error');
+        showToast(t('location_failed'), 'error');
       }
     );
   }
@@ -180,7 +184,7 @@ export function usePetSubmit({
       const msg = getErrorMessage(err);
       setError(isInputValidationError(err) || (msg && msg.includes('олон удаа'))
         ? msg
-        : 'Алдаа гарлаа. Дахин оролдоно уу.');
+        : t('form_generic_error'));
     } finally {
       setSubmitting(false);
       setStatusMsg('');

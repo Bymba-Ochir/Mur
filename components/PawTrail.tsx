@@ -5,9 +5,9 @@
  * мөрний трал — зөвхөн жинхэнэ дараалалтай контентод (алхмууд) ашиглана
  * (Нүүр хуудасны "Яаж ажилладаг вэ", мэдэгдэх формын 4 алхам).
  */
-export default function PawTrail({ labels, current }: { labels: string[]; current: number }) {
+export default function PawTrail({ labels, current, ariaLabel = 'Алхмууд' }: { labels: string[]; current: number; ariaLabel?: string }) {
   return (
-    <div className="paw-trail" role="list" aria-label="Алхмууд">
+    <div className="paw-trail" role="list" aria-label={ariaLabel}>
       {labels.map((label, i) => {
         const state = i < current ? 'done' : i === current ? 'active' : 'upcoming';
         return (

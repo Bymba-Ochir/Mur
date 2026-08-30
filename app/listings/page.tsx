@@ -17,6 +17,7 @@ import { getErrorMessage } from '../../lib/utils';
 import { saveSearch } from '../../lib/listingService';
 import { useAuth } from '../../lib/useAuth';
 import { useToast } from '../../components/Toast';
+import Icon from '../../components/ui/icons';
 
 // Шүүлтүүрийн "Бүгд" сонголт (хоосон) 9 дүүргийн өмнө явна
 const DISTRICTS: (District | '')[] = ['', ...DISTRICT_VALUES];
@@ -42,6 +43,7 @@ export default function ListingsPage() {
   const [loadError, setLoadError] = useState('');
   const [savingSearch, setSavingSearch] = useState(false);
   const matchAbortRef = useRef<AbortController | null>(null);
+  const hasFilters = Boolean(status || type || district || search.trim());
 
   useEffect(() => {
     // Шүүлтүүр өөрчлөгдөхөд эхний хуудаснаас дахин ачаална
@@ -74,12 +76,12 @@ export default function ListingsPage() {
   }
 
   async function handleSaveSearch() {
-    if (!user) { showToast('Хайлтаа хадгалахын тулд нэвтэрнэ үү.', 'info'); return; }
-    if (!status && !type && !district && !search.trim()) { showToast('Эхлээд нэгээс доошгүй шүүлтүүр сонгоно уу.', 'info'); return; }
+    if (!user) { showToast(t('listings_save_login'), 'info'); return; }
+    if (!hasFilters) { showToast(t('listings_save_filter_required'), 'info'); return; }
     setSavingSearch(true);
     try {
       await saveSearch({ status: status || undefined, petType: type || undefined, district: district || undefined, searchText: search || undefined });
-      showToast('Хайлт хадгалагдлаа. Тохирох шинэ зар гарахад мэдэгдэнэ.', 'success');
+      showToast(t('listings_save_success'), 'success');
     } catch (reason) { showToast(getErrorMessage(reason), 'error'); }
     finally { setSavingSearch(false); }
   }
@@ -104,7 +106,7 @@ export default function ListingsPage() {
         getImageEmbedding(file, (msg) => setMatching(msg), controller.signal),
         getImageHash(file),
       ]);
-      setMatching('Бүх зар дундаас тохирол хайж байна...');
+      setMatching(t('listings_match_searching'));
       const databaseMatches = await fetchPetMatches({
         embedding,
         imageHash,
@@ -128,7 +130,7 @@ export default function ListingsPage() {
       }
     } catch (err) {
       if (err instanceof DOMException && err.name === 'AbortError') return;
-      setMatchError(getErrorMessage(err) || 'Төстэй байдал тооцоход алдаа гарлаа. Дахин оролдоно уу.');
+      setMatchError(getErrorMessage(err) || t('listings_match_error'));
     } finally {
       if (!controller.signal.aborted) setMatching(false);
     }
@@ -143,74 +145,115 @@ export default function ListingsPage() {
   return (
     <div className="page-shell">
       <div className="page-header">
-        <div className="eyebrow">{t('listings_eyebrow')}</div>
+        <p className="eyebrow">{t('listings_eyebrow')}</p>
         <h1>{t('listings_title')}</h1>
+        <p>{t('listings_desc')}</p>
       </div>
 
-      <div className="filter-bar content-panel">
-        <input
-          type="text"
-          placeholder={t('search_placeholder')}
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="filter"
-          aria-label={t('search_placeholder')}
-          style={{ flex: '1 1 220px', minWidth: 180 }}
-        />
-        <select className="filter" value={status} onChange={(e) => setStatus(e.target.value as PetStatus | '')} aria-label="Статусаар шүүх">
-          <option value="">{t('filter_all')}</option>
-          <option value="lost">{t('filter_lost')}</option>
-          <option value="found">{t('filter_found')}</option>
-        </select>
-        <select className="filter" value={type} onChange={(e) => setType(e.target.value as PetType | '')} aria-label="Төрлөөр шүүх">
-          <option value="">{t('filter_all_types')}</option>
-          <option value="Нохой">{t('type_dog')}</option>
-          <option value="Муур">{t('type_cat')}</option>
-          <option value="Бусад">{t('type_other')}</option>
-        </select>
-        <select className="filter" value={district} onChange={(e) => setDistrict(e.target.value as District | '')} aria-label="Дүүргээр шүүх">
-          {DISTRICTS.map((d) => (
-            <option key={d} value={d}>{d || t('filter_all_districts')}</option>
-          ))}
-        </select>
-      </div>
+      <section className="filters-panel content-panel" aria-labelledby="listings-filters-heading">
+        <h2 id="listings-filters-heading" className="sr-only">{t('listings_filters_label')}</h2>
+        <div className="filter-bar">
+          <label className="filter-field filter-field--search">
+            <span className="filter-label">{t('listings_search_label')}</span>
+            <span className="search-control">
+              <Icon name="search" size={18} aria-hidden="true" />
+              <input
+                type="search"
+                placeholder={t('search_placeholder')}
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="filter"
+              />
+            </span>
+          </label>
+          <label className="filter-field">
+            <span className="filter-label">{t('listings_status_label')}</span>
+            <select className="filter" value={status} onChange={(e) => setStatus(e.target.value as PetStatus | '')}>
+              <option value="">{t('filter_all')}</option>
+              <option value="lost">{t('filter_lost')}</option>
+              <option value="found">{t('filter_found')}</option>
+            </select>
+          </label>
+          <label className="filter-field">
+            <span className="filter-label">{t('listings_type_label')}</span>
+            <select className="filter" value={type} onChange={(e) => setType(e.target.value as PetType | '')}>
+              <option value="">{t('filter_all_types')}</option>
+              <option value="Нохой">{t('type_dog')}</option>
+              <option value="Муур">{t('type_cat')}</option>
+              <option value="Бусад">{t('type_other')}</option>
+            </select>
+          </label>
+          <label className="filter-field">
+            <span className="filter-label">{t('listings_district_label')}</span>
+            <select className="filter" value={district} onChange={(e) => setDistrict(e.target.value as District | '')}>
+              {DISTRICTS.map((d) => (
+                <option key={d} value={d}>{d || t('filter_all_districts')}</option>
+              ))}
+            </select>
+          </label>
+        </div>
+      </section>
       <div className="filter-actions">
-        <Button variant="ghost" onClick={() => void handleSaveSearch()} disabled={savingSearch}>
-          {savingSearch ? 'Хадгалж байна...' : 'Хайлтыг хадгалах'}
+        <Button variant="ghost" onClick={() => void handleSaveSearch()} disabled={savingSearch} aria-busy={savingSearch}>
+          <Icon name="heart" size={16} aria-hidden="true" />
+          {savingSearch ? t('listings_saving_search') : t('listings_save_search')}
         </Button>
-        <Link href="/saved" className="saved-link">Хадгалсан зүйлсээ харах</Link>
+        <Link href="/saved" className="saved-link">{t('listings_saved_link')}</Link>
       </div>
 
-      {district && <VolunteerBadge district={district} />}
-      {district && <NotifySubscribe district={district} />}
+      {district && (
+        <div className="district-tools">
+          <VolunteerBadge district={district} />
+          <NotifySubscribe district={district} />
+        </div>
+      )}
 
-      <div className="match-upload">
+      <section className="match-upload" aria-labelledby="match-upload-heading">
+        <div className="match-heading">
+          <span className="match-icon" aria-hidden="true"><Icon name="camera" size={19} /></span>
+          <div>
+            <h2 id="match-upload-heading">{t('listings_match_group')}</h2>
+            <p>{t('match_label')}</p>
+          </div>
+        </div>
         <input
           type="file" id="match-file" accept="image/*"
           onChange={handleMatchUpload} disabled={!!matching} className="file-input"
-          aria-label="Төстэй байдлаар эрэмбэлэх зураг сонгох"
+          aria-label={t('listings_match_file_label')}
         />
-        <Button as="label" htmlFor="match-file" variant="ghost">{t('match_label')}</Button>
-        {matching && <span className="match-status"> — {typeof matching === 'string' ? matching : 'AI шинжилж байна (эхний удаа 10-30 сек)...'}</span>}
-        {matching && <Button variant="ghost" onClick={cancelMatching}>{t('match_cancel')}</Button>}
+        <div className="match-actions">
+          <Button as="label" htmlFor="match-file" variant="ghost" size="sm">
+            <Icon name="camera" size={16} aria-hidden="true" /> {t('listings_match_file_label')}
+          </Button>
+          {matching && <Button variant="ghost" size="sm" onClick={cancelMatching}>{t('match_cancel')}</Button>}
+        </div>
+        <div className="match-feedback" aria-live="polite">
+        {matching && <p className="match-status">{typeof matching === 'string' ? matching : t('listings_match_initial')}</p>}
         {matchFile && !matching && !matchError && matchedCount === 0 && (
-          <span className="match-status err">
-            — Харьцуулах боломжтой бичлэг олдсонгүй (хуучин бичлэгүүд өөр
-            embedding-тэй байж болзошгүй — шинээр бүртгэсэн 2 бичлэгээр туршина уу).
-          </span>
+          <p className="match-status err">{t('listings_match_none')}</p>
         )}
         {matchFile && !matching && !matchError && matchedCount != null && matchedCount > 0 && (
-          <span className="match-status"> — {matchedCount} {t('match_results')} · {matchSource === 'database' ? t('match_all_database') : t('match_browser_fallback')}</span>
+          <p className="match-status success">{matchedCount} {t('match_results')} · {matchSource === 'database' ? t('match_all_database') : t('match_browser_fallback')}</p>
         )}
-        {matchError && <span className="match-status err"> — {matchError}</span>}
-      </div>
-
-      {loadError ? (
-        <div className="error-state" role="alert"><p>{loadError}</p><Button variant="secondary" onClick={() => void load(0)}>Дахин оролдох</Button></div>
-      ) : loading ? (
-        <div className="grid">
-          {Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)}
+        {matchError && <p className="match-status err">{matchError}</p>}
         </div>
+      </section>
+
+      <section className="results-section" aria-label={t('listings_results_region')} aria-busy={loading || loadingMore}>
+      {loadError ? (
+        <div className="state-panel state-panel--error" role="alert">
+          <span className="state-panel__icon" aria-hidden="true"><Icon name="alert" size={28} /></span>
+          <h2>{t('err_title')}</h2>
+          <p>{loadError}</p>
+          <Button variant="secondary" onClick={() => void load(0)}>{t('err_retry')}</Button>
+        </div>
+      ) : loading ? (
+        <>
+          <p className="sr-only" role="status">{t('listings_loading')}</p>
+          <div className="listings-grid" aria-hidden="true">
+          {Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)}
+          </div>
+        </>
       ) : pets.length === 0 ? (
         <div className="empty-state">
           <div className="empty-icon" aria-hidden="true">
@@ -231,8 +274,8 @@ export default function ListingsPage() {
         </div>
       ) : (
         <>
-          <p className="result-count">{pets.length} {t('results_count')}</p>
-          <div className="grid">
+          <p className="result-count" aria-live="polite">{pets.length} {t('results_count')}</p>
+          <div className="listings-grid">
             {pets.map((p) => <PetCard key={p.id} pet={p} />)}
           </div>
           {hasMore && !matchFile && (
@@ -244,23 +287,96 @@ export default function ListingsPage() {
           )}
         </>
       )}
+      </section>
 
       <style jsx>{`
-        .match-upload { display: flex; align-items: center; gap: var(--sp-2); flex-wrap: wrap; margin-bottom: var(--sp-5); }
-        .filter-actions { display:flex; align-items:center; gap:var(--sp-3); flex-wrap:wrap; margin:calc(var(--sp-3) * -1) 0 var(--sp-4); }
-        .saved-link { color:var(--primary); font-size:13px; font-weight:650; text-decoration:none; }
-        .error-state { display:grid; justify-items:start; gap:var(--sp-3); padding:var(--sp-4); border:1px solid var(--alert); border-radius:var(--r-md); background:var(--card); }
-        @media (max-width: 640px) {
-          .match-upload { margin-bottom: var(--sp-4); }
+        .sr-only {
+          position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+          overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
         }
-        .file-input { position: absolute; width: 1px; height: 1px; opacity: 0; overflow: hidden; }
-        .file-input:focus-visible + label { outline: 2.5px solid var(--accent); outline-offset: 2px; }
-        .file-input:disabled + label { opacity: 0.6; cursor: not-allowed; }
-        .match-status { font-size: 12px; color: var(--muted); line-height: 1.5; }
-        @media (max-width: 480px) {
-          .match-status { font-size: 13px; line-height: 1.6; width: 100%; margin-top: var(--sp-1); }
+        .filters-panel { margin-bottom: var(--sp-3); }
+        .filters-panel .filter-bar {
+          display: grid; grid-template-columns: minmax(240px, 1.6fr) repeat(3, minmax(140px, 1fr));
+          align-items: end; gap: var(--sp-3); margin: 0;
         }
-        .match-status.err { color: var(--alert); }
+        .filter-field { display: grid; min-width: 0; gap: var(--sp-2); }
+        .filter-label { color: var(--text-secondary); font-size: var(--text-xs); font-weight: 650; }
+        .filter-field .filter { width: 100%; min-width: 0; margin: 0; }
+        .search-control {
+          display: flex; align-items: center; min-height: var(--touch-target); padding-inline: var(--sp-3);
+          color: var(--text-tertiary); background: var(--card); border: 1.5px solid var(--line);
+          border-radius: var(--r-md); transition: border-color var(--dur-fast) ease, box-shadow var(--dur-fast) ease;
+        }
+        .search-control:hover { border-color: var(--muted); }
+        .search-control:focus-within { border-color: var(--border-focus); box-shadow: 0 0 0 3px rgba(98, 91, 246, 0.12); }
+        .search-control .filter { min-height: 41px; padding: var(--sp-2); border: 0; background: transparent; box-shadow: none; }
+        .search-control .filter:focus-visible { outline: none; box-shadow: none; }
+        .filter-actions {
+          display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3);
+          flex-wrap: wrap; margin: 0 0 var(--sp-5); padding-inline: var(--sp-1);
+        }
+        .saved-link {
+          min-height: 36px; display: inline-flex; align-items: center; color: var(--primary);
+          font-size: var(--text-xs); font-weight: 650; text-decoration: underline;
+          text-decoration-color: transparent; text-underline-offset: 4px;
+          transition: color var(--dur-fast) ease, text-decoration-color var(--dur-fast) ease;
+        }
+        .saved-link:hover { color: var(--primary-deep); text-decoration-color: currentColor; }
+        .district-tools { display: grid; gap: var(--sp-2); margin-bottom: var(--sp-4); }
+        .match-upload {
+          display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center;
+          gap: var(--sp-3) var(--sp-5); margin-bottom: var(--sp-5); padding: var(--sp-4);
+          background: color-mix(in srgb, var(--primary) 4%, var(--surface-2));
+          border: 1px solid var(--border-subtle); border-radius: var(--r-lg);
+        }
+        .match-heading { display: flex; align-items: flex-start; gap: var(--sp-3); min-width: 0; }
+        .match-icon {
+          width: 40px; height: 40px; flex: 0 0 40px; display: grid; place-items: center;
+          color: var(--primary); background: var(--eyebrow-bg); border-radius: var(--r-md);
+        }
+        .match-heading h2 { margin-bottom: var(--sp-1); font-size: var(--text-base); }
+        .match-heading p { max-width: 62ch; color: var(--text-secondary); font-size: var(--text-xs); line-height: 1.5; }
+        .match-actions { display: flex; align-items: center; justify-content: flex-end; gap: var(--sp-2); flex-wrap: wrap; }
+        .match-feedback { grid-column: 1 / -1; min-height: 0; }
+        .match-feedback:empty { display: none; }
+        .file-input {
+          position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+          overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+        }
+        .file-input:focus-visible ~ .match-actions :global(label) { outline: 2.5px solid var(--border-focus); outline-offset: 2px; }
+        .file-input:disabled ~ .match-actions :global(label) { opacity: 0.55; cursor: not-allowed; }
+        .match-status {
+          display: flex; align-items: center; min-height: 36px; padding: var(--sp-2) var(--sp-3);
+          color: var(--text-secondary); background: var(--surface-2); border-radius: var(--r-sm);
+          font-size: var(--text-xs); line-height: 1.5;
+        }
+        .match-status.err { color: var(--alert); background: color-mix(in srgb, var(--alert) 8%, var(--surface-2)); }
+        .match-status.success { color: var(--success); background: color-mix(in srgb, var(--success) 8%, var(--surface-2)); }
+        .results-section { min-height: 240px; }
+        .listings-grid {
+          display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+          align-items: stretch; gap: var(--sp-5); margin-top: var(--sp-4);
+        }
+        @media (max-width: 980px) {
+          .filters-panel .filter-bar { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
+        @media (max-width: 900px) {
+          .listings-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-4); }
+          .match-upload { grid-template-columns: 1fr; }
+          .match-actions { justify-content: flex-start; }
+        }
+        @media (max-width: 600px) {
+          .listings-grid { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 560px) {
+          .filters-panel .filter-bar { grid-template-columns: 1fr; }
+          .filter-actions { align-items: stretch; flex-direction: column; }
+          .filter-actions :global(.btn-base), .saved-link { width: 100%; justify-content: center; }
+          .match-upload { padding: var(--sp-3); border-radius: var(--r-md); }
+          .match-actions { align-items: stretch; flex-direction: column; }
+          .match-actions :global(.btn-base) { width: 100%; white-space: normal; text-align: center; }
+          .match-status { font-size: 13px; }
+        }
         .empty-state {
           text-align: center; padding: 52px 24px; margin-top: var(--sp-2);
           background: var(--card); border: 1px solid var(--line); border-radius: var(--r-xl);

@@ -32,7 +32,9 @@ export type IconName =
   | 'plus'
   | 'close'
   | 'info'
-  | 'sparkles';
+  | 'sparkles'
+  | 'arrowLeft'
+  | 'arrowRight';
 
 const ICONS: Record<IconName, { viewBox: string; paths: ReactNode }> = {
   paw: {
@@ -242,6 +244,14 @@ const ICONS: Record<IconName, { viewBox: string; paths: ReactNode }> = {
   sparkles: {
     viewBox: '0 0 24 24',
     paths: <path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9Z" />,
+  },
+  arrowLeft: {
+    viewBox: '0 0 24 24',
+    paths: <path d="m15 18-6-6 6-6" />,
+  },
+  arrowRight: {
+    viewBox: '0 0 24 24',
+    paths: <path d="m9 18 6-6-6-6" />,
   },
 };
 

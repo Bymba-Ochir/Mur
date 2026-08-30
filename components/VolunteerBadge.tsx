@@ -6,10 +6,13 @@ import Button from './ui/Button';
 import { useToast } from './Toast';
 import type { District } from '../lib/districts';
 import { getErrorMessage } from '../lib/utils';
+import { useLanguage } from '../lib/i18n';
+import Icon from './ui/icons';
 
 export default function VolunteerBadge({ district }: { district: District }) {
   const { user } = useAuth();
   const showToast = useToast();
+  const { t } = useLanguage();
   const [count, setCount] = useState(0);
   const [joined, setJoined] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -22,7 +25,7 @@ export default function VolunteerBadge({ district }: { district: District }) {
 
   async function handleToggle() {
     if (!user) {
-      showToast('Эхлээд нэвтэрнэ үү', 'error');
+      showToast(t('listings_volunteer_login'), 'error');
       return;
     }
     setBusy(true);
@@ -31,36 +34,49 @@ export default function VolunteerBadge({ district }: { district: District }) {
         await leaveAsVolunteer(district);
         setJoined(false);
         setCount((c) => Math.max(0, c - 1));
-        showToast('Сайн дурын жагсаалтаас гарлаа', 'info');
+        showToast(t('listings_volunteer_left'), 'info');
       } else {
         await joinAsVolunteer(district);
         setJoined(true);
         setCount((c) => c + 1);
-        showToast('Баярлалаа! Та одоо сайн дурын идэвхтэн боллоо 🙌', 'success');
+        showToast(t('listings_volunteer_joined'), 'success');
       }
     } catch (err) {
-      showToast('Алдаа гарлаа: ' + getErrorMessage(err), 'error');
+      showToast(getErrorMessage(err), 'error');
     } finally {
       setBusy(false);
     }
   }
 
   return (
-    <div style={{
-      display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 'var(--sp-2)',
-      background: 'var(--eyebrow-bg)', borderRadius: 'var(--r-sm)', padding: '10px 14px', marginBottom: 'var(--sp-2)',
-    }}>
-      <span style={{ fontSize: 13, color: 'var(--primary)' }}>
-        🙋 <b>{count}</b> сайн дурын идэвхтэн &quot;{district}&quot; дүүрэгт
+    <div className="volunteer-box">
+      <span className="volunteer-copy">
+        <span className="volunteer-icon" aria-hidden="true"><Icon name="heart" size={17} /></span>
+        <span><b>{count}</b> {t('listings_volunteer_count')} · &quot;{district}&quot; {t('listings_volunteer_in')}</span>
       </span>
       <Button
         onClick={handleToggle}
         disabled={busy}
+        aria-busy={busy}
         variant={joined ? 'ghost' : 'primary'}
-        style={{ fontSize: 12, padding: '8px 12px' }}
+        size="sm"
       >
-        {joined ? 'Гарах' : '+ Нэгдэх'}
+        {joined ? t('listings_volunteer_leave') : t('listings_volunteer_join')}
       </Button>
+
+      <style jsx>{`
+        .volunteer-box {
+          display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3);
+          min-height: 58px; padding: var(--sp-2) var(--sp-3); color: var(--primary);
+          background: var(--eyebrow-bg); border: 1px solid var(--glass-border); border-radius: var(--r-md);
+        }
+        .volunteer-copy { display: flex; align-items: center; gap: var(--sp-2); min-width: 0; font-size: 13px; line-height: 1.45; }
+        .volunteer-icon { width: 32px; height: 32px; flex: 0 0 32px; display: grid; place-items: center; background: var(--surface-2); border-radius: 50%; }
+        @media (max-width: 560px) {
+          .volunteer-box { align-items: stretch; flex-direction: column; padding: var(--sp-3); }
+          .volunteer-box :global(.btn-base) { width: 100%; }
+        }
+      `}</style>
     </div>
   );
 }

@@ -7,7 +7,7 @@ export default function ReportLostPage() {
   return (
     <div className="page-shell">
       <div className="page-header">
-        <div className="eyebrow">{t('report_lost_eyebrow')}</div>
+        <p className="eyebrow">{t('report_lost_eyebrow')}</p>
         <h1>{t('report_lost_title')}</h1>
         <p>{t('report_lost_desc')}</p>
       </div>

@@ -8,6 +8,7 @@ import LoginModal from './LoginModal';
 import { useToast } from './Toast';
 import { getErrorMessage } from '../lib/utils';
 import type { Pet } from '../lib/types';
+import Icon from './ui/icons';
 
 /**
  * Амьтны дэлгэрэнгүй хуудаснаас эзэнтэй холбогдох товч.
@@ -40,7 +41,7 @@ export default function MessageButton({ pet }: { pet: Pet }) {
       if (msg?.includes('Өөрийнхөө')) {
         showToast(t('chat_cannot_message'), 'error');
       } else {
-        showToast(msg || 'Алдаа', 'error');
+        showToast(msg || t('err_title'), 'error');
       }
     } finally {
       setBusy(false);
@@ -53,8 +54,9 @@ export default function MessageButton({ pet }: { pet: Pet }) {
         className="chat-btn"
         onClick={handleClick}
         disabled={busy}
+        aria-busy={busy}
       >
-        {busy ? t('chat_starting') : t('chat_send_btn')}
+        <Icon name="message" size={17} aria-hidden="true" /> {busy ? t('chat_starting') : t('chat_send_btn')}
       </button>
       {showLogin && <LoginModal onClose={() => setShowLogin(false)} />}
       <style jsx>{`
@@ -70,7 +72,7 @@ export default function MessageButton({ pet }: { pet: Pet }) {
           font-weight: 600;
           cursor: pointer;
           transition: background 0.15s ease, color 0.15s ease;
-          min-height: var(--touch-target);
+          min-height: var(--touch-target); display:inline-flex; align-items:center; justify-content:center; gap:var(--sp-2);
         }
         .chat-btn:hover:not(:disabled) {
           background: var(--primary);

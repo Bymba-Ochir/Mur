@@ -1,5 +1,6 @@
 'use client';
 import type { HTMLAttributes, ReactNode } from 'react';
+import Link from 'next/link';
 import PetIcon from './PetIcon';
 import { relativeTime } from '../lib/relativeTime';
 import { maskPhone, formatPhone } from '../lib/utils';
@@ -17,6 +18,7 @@ export interface PetCardViewProps extends HTMLAttributes<HTMLDivElement> {
   badgeLabel: string;
   name: string;
   type: PetType;
+  typeLabel?: string;
   breed?: string;
   color: string;
   district: string;
@@ -30,6 +32,12 @@ export interface PetCardViewProps extends HTMLAttributes<HTMLDivElement> {
   /** "Шагналтай" гэж харуулах (дүнг нууц — зөвхөн тэмдэг харагдана) */
   hasReward?: boolean;
   rewardLabel?: string;
+  similarityLabel?: string;
+  showPhoneLabel?: string;
+  callPhoneLabel?: string;
+  detailHref?: string;
+  detailLabel?: string;
+  language?: 'mn' | 'en';
   /** false + onRevealPhone = утас далд (masked) эхэлнэ */
   revealed?: boolean;
   onRevealPhone?: () => void;
@@ -38,8 +46,10 @@ export interface PetCardViewProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 export default function PetCardView({
-  status, badgeLabel, name, type, breed, color, district, place, phone,
+  status, badgeLabel, name, type, typeLabel, breed, color, district, place, phone,
   imageNode, createdAt, similarity, hybridScore, hasReward, rewardLabel = 'Шагналтай',
+  similarityLabel = 'тохирол', showPhoneLabel = 'Дугаар харах', callPhoneLabel = 'Утсаар холбогдох',
+  detailHref, detailLabel = 'Дэлгэрэнгүй үзэх', language = 'mn',
   revealed = true, onRevealPhone, interactive = true,
   ...containerProps
 }: PetCardViewProps) {
@@ -53,38 +63,45 @@ export default function PetCardView({
         {imageNode ?? (
           <span className="emoji" aria-hidden="true"><PetIcon type={type} size={56} /></span>
         )}
-        {(hybridScore ?? similarity) != null && <span className="similarity">{hybridScore ?? similarity}% тохирол</span>}
+        {(hybridScore ?? similarity) != null && <span className="similarity">{hybridScore ?? similarity}% {similarityLabel}</span>}
       </div>
       <div className="info">
-        <h4>{name || type}</h4>
-        <p>{type}{breed ? `, ${breed}` : ''}{color ? `, ${color}` : ''}</p>
+        <h3>{name || typeLabel || type}</h3>
+        <p>{typeLabel || type}{breed ? `, ${breed}` : ''}{color ? `, ${color}` : ''}</p>
         <p className="place"><Icon name="pin" size={14} aria-hidden="true" /> {district} — {place}</p>
         {hasReward ? <p className="reward"><Icon name="sparkles" size={14} aria-hidden="true" /> {rewardLabel}</p> : null}
-        {createdAt && <p className="time"><Icon name="calendar" size={14} aria-hidden="true" /> {relativeTime(createdAt)}</p>}
+        {createdAt && <p className="time"><Icon name="calendar" size={14} aria-hidden="true" /> {relativeTime(createdAt, language)}</p>}
+        <div className="card-actions">
         {showMasked ? (
           <button
             className="phone reveal-btn"
             onClick={(e) => { e.stopPropagation(); onRevealPhone!(); }}
-            aria-label="Утасны дугаарыг харуулах"
+            aria-label={showPhoneLabel}
           >
-            <Icon name="phone" size={14} aria-hidden="true" /> {maskPhone(phone)} · Дугаар харах
+            <Icon name="phone" size={14} aria-hidden="true" /> {maskPhone(phone)} · {showPhoneLabel}
           </button>
         ) : phone ? (
           <a
             className="phone"
             href={`tel:${phone}`}
             onClick={(e) => e.stopPropagation()}
-            aria-label={`Утсаар холбогдох: ${formatPhone(phone)}`}
+            aria-label={`${callPhoneLabel}: ${formatPhone(phone)}`}
           >
             <Icon name="phone" size={14} aria-hidden="true" /> {formatPhone(phone)}
           </a>
         ) : null}
+        {detailHref ? (
+          <Link className="detail-link" href={detailHref}>
+            {detailLabel}<span aria-hidden="true">→</span>
+          </Link>
+        ) : null}
+        </div>
       </div>
 
       <style jsx>{`
         .pet-card {
           background: var(--card); border: 1px solid var(--line); border-radius: var(--r-lg);
-          overflow: hidden; cursor: pointer; box-shadow: var(--shadow-sm);
+          overflow: hidden; box-shadow: var(--shadow-sm);
           transition: transform var(--dur-base) var(--ease-out), box-shadow var(--dur-base) var(--ease-out), border-color var(--dur-base) var(--ease-out);
           display: flex; flex-direction: column; height: 100%;
         }
@@ -94,11 +111,11 @@ export default function PetCardView({
         @media (min-width: 1025px) {
           .pet-card { border-radius: var(--r-xl); }
         }
-        .pet-card:hover { box-shadow: var(--shadow-lift); transform: translateY(-6px); border-color: transparent; }
-        .pet-card:focus-visible {
-          outline: 2.5px solid var(--border-focus); outline-offset: 2px;
+        @media (hover: hover) and (pointer: fine) {
+          .pet-card:not(.static):hover { box-shadow: var(--shadow-lift); transform: translateY(-4px); border-color: var(--primary-light); }
+          .pet-card:not(.static):hover .thumb :global(img) { transform: scale(1.045); }
         }
-        .pet-card.static { cursor: default; }
+        .pet-card:focus-within { border-color: var(--primary-light); box-shadow: var(--shadow-md); }
         .pet-card.static:hover { transform: none; box-shadow: var(--shadow-sm); border-color: var(--line); }
         .thumb {
           height: 152px; background: var(--thumb-bg); position: relative;
@@ -120,7 +137,6 @@ export default function PetCardView({
           pointer-events: none; z-index: 1;
         }
         .thumb :global(img) { transition: transform 0.4s cubic-bezier(.16,1,.3,1); object-fit: cover; width: 100%; height: 100%; }
-        .pet-card:hover .thumb :global(img) { transform: scale(1.08); }
         .emoji {
           color: var(--primary);
           display: flex;
@@ -170,12 +186,12 @@ export default function PetCardView({
         @media (min-width: 1025px) {
           .info { padding: 16px 18px; gap: 3px; }
         }
-        h4 { font-family: var(--font-display); font-size: var(--text-lg); font-weight: 700; margin-bottom: 2px; color: var(--text-primary); line-height: var(--lh-tight); }
+        h3 { font-family: var(--font-display); font-size: var(--text-lg); font-weight: 700; margin-bottom: 2px; color: var(--text-primary); line-height: var(--lh-tight); }
         @media (max-width: 480px) {
-          h4 { font-size: 15px; }
+          h3 { font-size: 15px; }
         }
         @media (min-width: 1025px) {
-          h4 { font-size: var(--text-xl); margin-bottom: 4px; }
+          h3 { font-size: var(--text-xl); margin-bottom: 4px; }
         }
         p { font-size: 12.5px; color: var(--muted); margin: 3px 0; line-height: 1.4; }
         @media (max-width: 480px) {
@@ -193,21 +209,29 @@ export default function PetCardView({
         @media (min-width: 1025px) {
           .reward { margin-top: 8px; font-size: 13.5px; }
         }
-        .phone {
-          display: inline-flex; align-items: center; gap: 5px; margin-top: 8px; font-size: 13px;
-          color: var(--primary); font-weight: 600; text-decoration: none; min-height: var(--touch-target);
-          background: var(--eyebrow-bg); padding: 6px 12px; border-radius: var(--r-pill);
-          transition: background 0.15s ease, color 0.15s ease;
+        .card-actions {
+          display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--sp-2);
+          margin-top: auto; padding-top: var(--sp-3);
         }
-        .phone:hover { background: var(--primary); color: var(--text-on-accent); }
+        .phone, .detail-link {
+          display: inline-flex; align-items: center; justify-content: center; gap: 5px; min-height: var(--touch-target);
+          color: var(--primary); font-size: 13px; font-weight: 650; text-decoration: none;
+          background: var(--eyebrow-bg); border: 1px solid transparent; padding: 6px 12px; border-radius: var(--r-md);
+          transition: background var(--dur-fast) ease, color var(--dur-fast) ease, border-color var(--dur-fast) ease;
+        }
+        .detail-link { justify-content: space-between; background: transparent; border-color: var(--border-subtle); }
+        .phone:hover, .detail-link:hover { background: var(--primary); color: var(--text-on-accent); border-color: var(--primary); }
         @media (max-width: 480px) {
-          .phone { margin-top: 10px; font-size: 14px; }
+          .phone, .detail-link { font-size: 14px; }
         }
         @media (min-width: 1025px) {
-          .phone { margin-top: 12px; font-size: 14px; }
+          .phone, .detail-link { font-size: 14px; }
         }
-        .reveal-btn { background: none; border: none; padding: 0; cursor: pointer; font-family: inherit; text-align: left; width: 100%; }
-        .reveal-btn:focus-visible, .phone:focus-visible { outline: 2px solid var(--border-focus); outline-offset: 2px; }
+        .reveal-btn { cursor: pointer; font-family: inherit; width: 100%; }
+        .reveal-btn:focus-visible, .phone:focus-visible, .detail-link:focus-visible { outline: 2px solid var(--border-focus); outline-offset: 2px; }
+        @media (prefers-reduced-motion: reduce) {
+          .pet-card, .thumb :global(img) { transition: none; }
+        }
       `}</style>
     </div>
   );

@@ -36,6 +36,47 @@ describe('page detail safeguards', () => {
     expect(footer).toContain('grid-template-columns: repeat(2, minmax(0, 1fr))');
   });
 
+  it('listings keeps explicit filter labels and stable responsive grids', () => {
+    const listings = source('app/listings/page.tsx');
+    expect(listings).toContain('listings_search_label');
+    expect(listings).toContain('aria-labelledby="listings-filters-heading"');
+    expect(listings).toContain('grid-template-columns: repeat(3, minmax(0, 1fr))');
+    expect(listings).toContain('@media (max-width: 900px)');
+    expect(listings).toContain('@media (max-width: 600px)');
+    expect(listings).not.toContain('style={{ flex:');
+  });
+
+  it('listing cards expose separate phone and detail controls', () => {
+    const card = source('components/PetCardView.tsx');
+    const listingCard = source('components/PetCard.tsx');
+    expect(card).toContain('className="card-actions"');
+    expect(card).toContain('className="detail-link"');
+    expect(listingCard).not.toContain('role="link"');
+    expect(listingCard).not.toContain('tabIndex={0}');
+  });
+
+  it('lost and found detail uses semantic sections and a stable mobile breakpoint', () => {
+    const detail = source('app/pets/[id]/PetDetailClient.tsx');
+    expect(detail).toContain('className="pet-facts"');
+    expect(detail).toContain('className="contact-block"');
+    expect(detail).toContain('className="owner-panel"');
+    expect(detail).toContain('@media (max-width: 900px)');
+    expect(detail).not.toContain('style={{');
+  });
+
+  it('pet detail shared controls are accessible and avoid inline layout styles', () => {
+    const gallery = source('components/PetImageGallery.tsx');
+    const editForm = source('components/PetEditForm.tsx');
+    const sightings = source('components/SightingsList.tsx');
+    expect(gallery).toContain('role="group"');
+    expect(gallery).toContain('detail_gallery_previous');
+    expect(gallery).not.toContain('>‹</button>');
+    expect(editForm).toContain('<form className="edit-form"');
+    expect(editForm).toContain('aria-invalid');
+    expect(sightings).toContain('aria-controls="sighting-form"');
+    expect(sightings).not.toContain('style={{');
+  });
+
   it('detail pages provide retry and back actions', () => {
     for (const path of [
       'app/pets/[id]/PetDetailClient.tsx',
@@ -46,8 +87,8 @@ describe('page detail safeguards', () => {
     ]) {
       const detail = source(path);
       expect(detail).toContain('state-panel--error');
-      expect(detail).toContain('Дахин оролдох');
-      expect(detail).toMatch(/буцах|Буцах/);
+      expect(detail).toMatch(/Дахин оролдох|err_retry/);
+      expect(detail).toMatch(/буцах|Буцах|detail_back_listings/);
     }
   });
 
@@ -55,5 +96,28 @@ describe('page detail safeguards', () => {
     const message = source('app/messages/[id]/MessageThreadClient.tsx');
     expect(message).not.toContain("router.push('/');");
     expect(message).toContain('Icon name="lock"');
+  });
+
+  it('lost and found report forms use semantic steps and inline validation', () => {
+    const form = source('components/PetForm.tsx');
+    const lost = source('app/report-lost/page.tsx');
+    const found = source('app/report-found/page.tsx');
+    expect(form).toContain('<fieldset className="form-step">');
+    expect(form).toContain('aria-invalid={Boolean(fieldErrors.color)}');
+    expect(form).toContain('aria-invalid={Boolean(fieldErrors.place)}');
+    expect(form).toContain('aria-invalid={Boolean(fieldErrors.phone)}');
+    expect(form).toContain('@media (max-width: 900px)');
+    expect(form).not.toContain('style={{');
+    expect(form).not.toMatch(/⏳|📍|🎁/);
+    expect(lost).toContain('<p className="eyebrow">');
+    expect(found).toContain('<p className="eyebrow">');
+  });
+
+  it('report form status messages are localized and reusable', () => {
+    const hook = source('lib/usePetForm.ts');
+    expect(hook).toContain("t('photo_optimizing')");
+    expect(hook).toContain("t('location_failed')");
+    expect(hook).toContain("t('form_generic_error')");
+    expect(hook).not.toContain("'Алдаа гарлаа. Дахин оролдоно уу.'");
   });
 });

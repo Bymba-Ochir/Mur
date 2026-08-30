@@ -5,7 +5,6 @@ import { useAuth } from '../../../lib/useAuth';
 import { maskPhone, formatPhone } from '../../../lib/utils';
 import { relativeTime } from '../../../lib/relativeTime';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image';
 import Link from 'next/link';
 import ShareButtons from '../../../components/ShareButtons';
 import LocationMap from '../../../components/LocationMap';
@@ -79,7 +78,7 @@ export default function PetDetailClient({ id }: { id: string }) {
       fireConfetti();
       showToast(t('detail_resolved_badge').replace('✅ ', ''), 'success');
     } catch (err) {
-      showToast('Алдаа гарлаа: ' + getErrorMessage(err), 'error');
+      showToast(getErrorMessage(err), 'error');
     } finally {
       setResolving(false);
     }
@@ -91,9 +90,9 @@ export default function PetDetailClient({ id }: { id: string }) {
       await updatePet(id, values);
       setEditing(false);
       await load();
-      showToast('Мэдээлэл хадгалагдлаа', 'success');
+      showToast(t('detail_edit_success'), 'success');
     } catch (err) {
-      showToast('Алдаа гарлаа: ' + getErrorMessage(err), 'error');
+      showToast(getErrorMessage(err), 'error');
     } finally {
       setSaving(false);
     }
@@ -106,87 +105,74 @@ export default function PetDetailClient({ id }: { id: string }) {
       await deletePet(id);
       router.push('/listings');
     } catch (err) {
-      showToast('Алдаа гарлаа: ' + getErrorMessage(err), 'error');
+      showToast(getErrorMessage(err), 'error');
       setDeleting(false);
     }
   }
 
-  if (error) return <div className="page-shell page-shell--narrow"><div className="state-panel state-panel--error" role="alert"><span className="state-panel__icon"><Icon name="alert" size={28} /></span><h2>{t('detail_not_found')}</h2><p>{error}</p><div className="detail-actions"><Button variant="secondary" onClick={() => void load()}>Дахин оролдох</Button><Button as="link" href="/listings" variant="ghost">Жагсаалт руу буцах</Button></div></div></div>;
-  if (!pet) return <div className="page-shell page-shell--narrow"><div className="state-panel" aria-live="polite"><span className="state-panel__icon"><Icon name="paw" size={28} /></span><h2>{t('detail_loading')}</h2><p>Зарын мэдээллийг бэлтгэж байна.</p></div></div>;
+  if (error) return <div className="page-shell page-shell--narrow"><div className="state-panel state-panel--error" role="alert"><span className="state-panel__icon"><Icon name="alert" size={28} /></span><h2>{t('detail_not_found')}</h2><p>{error}</p><div className="detail-actions"><Button variant="secondary" onClick={() => void load()}>{t('err_retry')}</Button><Button as="link" href="/listings" variant="ghost">{t('detail_back_listings')}</Button></div></div></div>;
+  if (!pet) return <div className="page-shell page-shell--detail"><div className="detail-skeleton" aria-live="polite"><span className="sr-only">{t('detail_loading')}</span><div className="skeleton-media skel-row" /><div className="skeleton-copy"><div className="skeleton-line skeleton-line--short skel-row" /><div className="skeleton-line skeleton-line--title skel-row" /><div className="skeleton-line skel-row" /><div className="skeleton-card skel-row" /></div></div></div>;
 
-  const title = `${pet.status === 'lost' ? t('nav_lost') : t('nav_found')} ${pet.type}${pet.name ? ' — ' + pet.name : ''}`;
+  const typeLabel = pet.type === 'Нохой' ? t('type_dog') : pet.type === 'Муур' ? t('type_cat') : t('type_other');
+  const title = `${pet.status === 'lost' ? t('nav_lost') : t('nav_found')} ${typeLabel}${pet.name ? ' — ' + pet.name : ''}`;
   const isOwner = user && pet.createdBy && user.id === pet.createdBy;
 
   return (
     <div className="page-shell page-shell--detail">
-      <div className="detail-back"><Button as="link" href="/listings" variant="ghost">Жагсаалт руу буцах</Button></div>
+      <div className="detail-back"><Button as="link" href="/listings" variant="ghost" size="sm">← {t('detail_back_listings')}</Button></div>
       <div className="page-header">
-        <div className="eyebrow">{pet.status === 'lost' ? t('report_lost_eyebrow') : t('report_found_eyebrow')}</div>
+        <p className="eyebrow">{pet.status === 'lost' ? t('report_lost_eyebrow') : t('report_found_eyebrow')}</p>
         <h1>{title}</h1>
-        {pet.createdAt && <p className="detail-meta"><Icon name="calendar" size={14} aria-hidden="true" /> {relativeTime(pet.createdAt)}</p>}
+        {pet.createdAt && <p className="detail-meta"><Icon name="calendar" size={14} aria-hidden="true" /> {relativeTime(pet.createdAt, lang)}</p>}
       </div>
 
       {pet.resolved && (
-        <div className="pop-in resolved-banner" style={{ background: 'var(--success-bg)', border: '1.5px solid var(--success)', borderRadius: 'var(--r-sm)', padding: '8px 14px', marginBottom: 'var(--sp-3)', color: 'var(--success-text)', fontSize: 13.5, fontWeight: 600 }}>
-          <Icon name="check" size={16} aria-hidden="true" /> {t('detail_resolved_badge').replace('✅ ', '')}
+        <div className="pop-in resolved-banner" role="status">
+          <Icon name="check" size={18} aria-hidden="true" /> {t('detail_resolved_badge')}
         </div>
       )}
 
       <div className="detail-grid">
-        {/* Зураг — зүүн талд, том */}
-        <div className="detail-media">
-          <div style={{
-            borderRadius: 'var(--r-md)', overflow: 'hidden', background: 'var(--thumb-bg)',
-            aspectRatio: '4 / 3', width: '100%',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            opacity: pet.resolved ? 0.6 : 1, position: 'relative',
-          }}>
+        <figure className={`detail-media${pet.resolved ? ' is-resolved' : ''}`}>
+          <div className="media-frame">
             {pet.photoURLs.length ? (
-              <PetImageGallery images={pet.photoURLs} alt={`${pet.type}${pet.name ? ', ' + pet.name : ''}${pet.color ? ', ' + pet.color : ''}`} />
+              <PetImageGallery images={pet.photoURLs} alt={`${typeLabel}${pet.name ? ', ' + pet.name : ''}${pet.color ? ', ' + pet.color : ''}`} />
             ) : (
-              <span style={{
-                color: 'var(--primary)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                width: 120,
-                height: 120,
-                background: 'var(--glass-bg)',
-                border: '1px solid var(--glass-border)',
-                borderRadius: '50%',
-                boxShadow: 'var(--shadow-sm)',
-              }}><PetIcon type={pet.type} size={72} /></span>
+              <div className="media-placeholder">
+                <span className="placeholder-icon" aria-hidden="true"><PetIcon type={pet.type} size={72} /></span>
+                <span>{t('detail_no_photo')}</span>
+              </div>
             )}
           </div>
-        </div>
+        </figure>
 
-        {/* Мэдээлэл — баруун талд */}
         <div className="detail-info">
           {!editing ? (
-            <div className="card" style={{ padding: 'var(--sp-4)' }}>
-              <p style={{ marginBottom: 'var(--sp-1)' }}><b>{t('detail_type')}</b> {pet.type}{pet.color ? `, ${pet.color}` : ''}</p>
-              {pet.breed && <p style={{ marginBottom: 'var(--sp-1)' }}><b>{t('detail_breed')}</b> {getBreedLabel(pet.breed, lang)}</p>}
-              <p style={{ marginBottom: 'var(--sp-1)' }}><b>{t('detail_district')}</b> {pet.district}</p>
-              <p style={{ marginBottom: 'var(--sp-1)' }}><b>{t('detail_place')}</b> {pet.place}</p>
-              {pet.hasReward ? (
-                <p style={{ marginBottom: 'var(--sp-1)', display:'flex', alignItems:'center', gap:6 }}><Icon name="sparkles" size={15} aria-hidden="true" /><b>{t('reward_prefix')}</b></p>
-              ) : null}
-              {revealed ? (
-                <a href={`tel:${pet.phone}`} style={{ display: 'inline-block', marginTop: 'var(--sp-2)', fontWeight: 700, color: 'var(--primary)' }}>
-                  <Icon name="phone" size={15} aria-hidden="true" /> {formatPhone(pet.phone)}
-                </a>
-              ) : (
-                <button
-                  onClick={() => setRevealed(true)}
-                  style={{ display: 'inline-block', marginTop: 'var(--sp-2)', fontWeight: 700, color: 'var(--primary)', background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: 'inherit' }}
-                >
-                  <Icon name="phone" size={15} aria-hidden="true" /> {maskPhone(pet.phone)} · {t('detail_show_phone')}
-                </button>
-              )}
-              {/* Чат товч — зөвхөн бусад хэрэглэгчдэд */}
-              {!editing && <div style={{ marginTop: 'var(--sp-3)', display: 'flex', gap: 'var(--sp-2)', flexWrap: 'wrap' }}><MessageButton pet={pet} /><FavoriteButton petId={pet.id} /></div>}
-              {!editing && pet.createdBy && <Link href={`/users/${pet.createdBy}`} style={{ display: 'inline-flex', alignItems: 'center', marginTop: 'var(--sp-3)', color: 'var(--primary)', fontWeight: 650, textDecoration: 'none' }}>Зарын эзний profile →</Link>}
-            </div>
+            <section className="info-card" aria-labelledby="pet-info-heading">
+              <h2 id="pet-info-heading">{t('detail_info_heading')}</h2>
+              <dl className="pet-facts">
+                <div><dt>{t('detail_type').replace(':', '')}</dt><dd>{typeLabel}{pet.color ? `, ${pet.color}` : ''}</dd></div>
+                {pet.breed && <div><dt>{t('detail_breed').replace(':', '')}</dt><dd>{getBreedLabel(pet.breed, lang)}</dd></div>}
+                <div><dt>{t('detail_district').replace(':', '')}</dt><dd>{pet.district}</dd></div>
+                <div><dt>{t('detail_place').replace(':', '')}</dt><dd>{pet.place}</dd></div>
+                {pet.hasReward && <div className="reward-row"><dt>{t('reward_prefix')}</dt><dd><Icon name="sparkles" size={16} aria-hidden="true" /> {t('reward_prefix')}</dd></div>}
+              </dl>
+
+              <div className="contact-block">
+                <h3>{t('detail_contact_heading')}</h3>
+                {revealed ? (
+                  <a href={`tel:${pet.phone}`} className="phone-action" aria-label={`${t('detail_call_phone')}: ${formatPhone(pet.phone)}`}>
+                    <Icon name="phone" size={17} aria-hidden="true" /> {formatPhone(pet.phone)}
+                  </a>
+                ) : (
+                  <button onClick={() => setRevealed(true)} className="phone-action">
+                    <Icon name="phone" size={17} aria-hidden="true" /> {maskPhone(pet.phone)} · {t('detail_show_phone')}
+                  </button>
+                )}
+                <div className="contact-actions"><MessageButton pet={pet} /><FavoriteButton petId={pet.id} /></div>
+                {pet.createdBy && <Link href={`/users/${pet.createdBy}`} className="owner-link">{t('detail_owner_profile')} <span aria-hidden="true">→</span></Link>}
+              </div>
+            </section>
           ) : (
             editForm && (
               <PetEditForm
@@ -199,67 +185,119 @@ export default function PetDetailClient({ id }: { id: string }) {
           )}
 
           {isOwner && !editing && (
-            <div style={{ display: 'flex', gap: 'var(--sp-2)', marginTop: 'var(--sp-2)' }}>
-              <Button variant="ghost" onClick={() => setEditing(true)} style={{ flex: 1, fontSize: 13 }}>
-                {t('detail_edit_btn')}
-              </Button>
-              <Button variant="ghost" onClick={handleDelete} disabled={deleting}
-                style={{ background: 'var(--card)', color: 'var(--alert)', border: '1.5px solid var(--alert)', flex: 1, justifyContent: 'center', fontSize: 13 }}>
-                {deleting ? t('detail_deleting') : t('detail_delete_btn')}
-              </Button>
-            </div>
-          )}
-
-          {isOwner && !pet.resolved && !editing && (
-            <Button
-              onClick={handleResolve}
-              disabled={resolving}
-              variant="primary"
-              style={{ marginTop: 'var(--sp-2)', background: 'var(--success)', color: '#fff', width: '100%', justifyContent: 'center' }}
-            >
-              {resolving ? t('detail_resolving') : t('detail_resolve_btn')}
-            </Button>
+            <section className="owner-panel" aria-labelledby="owner-actions-heading">
+              <h2 id="owner-actions-heading">{t('detail_owner_actions')}</h2>
+              <div className="owner-actions">
+                <Button variant="ghost" onClick={() => setEditing(true)}><Icon name="pencil" size={16} aria-hidden="true" /> {t('detail_edit_btn')}</Button>
+                <Button variant="danger" onClick={handleDelete} disabled={deleting} aria-busy={deleting}><Icon name="trash" size={16} aria-hidden="true" /> {deleting ? t('detail_deleting') : t('detail_delete_btn')}</Button>
+                {!pet.resolved && <Button onClick={handleResolve} disabled={resolving} aria-busy={resolving} variant="secondary"><Icon name="check" size={16} aria-hidden="true" /> {resolving ? t('detail_resolving') : t('detail_resolve_btn')}</Button>}
+              </div>
+            </section>
           )}
         </div>
       </div>
 
       {pet.lat != null && pet.lng != null && (
-        <div style={{ marginTop: 'var(--sp-4)' }}>
-          <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--primary)', marginBottom: 'var(--sp-2)' }}>
-            {t('detail_last_seen_loc')}
-          </p>
-          <LocationMap lat={pet.lat} lng={pet.lng} />
-        </div>
+        <section className="detail-section map-section" aria-labelledby="pet-map-heading">
+          <div className="section-heading"><div><h2 id="pet-map-heading">{t('detail_map_heading')}</h2><p>{t('detail_last_seen_loc')}</p></div></div>
+          <LocationMap lat={pet.lat} lng={pet.lng} label={t('detail_last_seen_loc')} />
+        </section>
       )}
 
-      <ShareButtons url={url} title={title} />
-
-      <p style={{ fontSize: 12, color: 'var(--muted)', marginTop: 'var(--sp-3)' }}>
-        {t('detail_share_hint')}
-      </p>
-
-      <ReportButton petId={pet.id} />
+      <section className="detail-section share-section" aria-labelledby="pet-share-heading">
+        <div className="section-heading"><div><h2 id="pet-share-heading">{t('detail_share_heading')}</h2><p>{t('detail_share_hint')}</p></div></div>
+        <ShareButtons url={url} title={title} />
+        <ReportButton petId={pet.id} />
+      </section>
 
       <SightingsList petId={pet.id} />
 
       <style jsx>{`
-        .resolved-banner { display: flex; align-items: center; gap: 7px; }
-        .detail-grid {
-          display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
-          gap: var(--sp-5); align-items: start; margin-bottom: var(--sp-4);
+        .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+        .detail-back { margin-bottom: var(--sp-3); }
+        .resolved-banner {
+          display: flex; align-items: center; gap: var(--sp-2); min-height: 48px;
+          margin-bottom: var(--sp-4); padding: var(--sp-2) var(--sp-3);
+          color: var(--success-text); background: var(--success-bg);
+          border: 1.5px solid var(--success); border-radius: var(--r-md); font-size: 13.5px; font-weight: 650;
         }
-        @media (max-width: 1024px) {
-          .detail-grid { grid-template-columns: 1fr; gap: var(--sp-4); }
+        .detail-grid {
+          display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(340px, .9fr);
+          gap: var(--sp-6); align-items: start; margin-bottom: var(--sp-6);
+        }
+        .detail-media { min-width: 0; margin: 0; }
+        .media-frame {
+          position: relative; width: 100%; aspect-ratio: 4 / 3; display: grid; place-items: center;
+          overflow: hidden; background: var(--thumb-bg); border: 1px solid var(--border-subtle);
+          border-radius: var(--r-xl); box-shadow: var(--shadow-sm);
+        }
+        .detail-media.is-resolved .media-frame { opacity: .72; filter: saturate(.75); }
+        .media-placeholder { display: grid; justify-items: center; gap: var(--sp-3); color: var(--text-secondary); font-size: var(--text-sm); }
+        .placeholder-icon {
+          width: 124px; height: 124px; display: grid; place-items: center; color: var(--primary);
+          background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 50%; box-shadow: var(--shadow-sm);
+        }
+        .detail-info { min-width: 0; display: flex; flex-direction: column; gap: var(--sp-3); }
+        .info-card, .owner-panel, .detail-section {
+          padding: var(--sp-4); background: var(--surface-2); border: 1px solid var(--border-subtle);
+          border-radius: var(--r-lg); box-shadow: var(--shadow-sm);
+        }
+        .info-card > h2, .owner-panel h2 { margin-bottom: var(--sp-3); font-size: var(--text-lg); }
+        .pet-facts { display: grid; margin: 0; }
+        .pet-facts > div {
+          display: grid; grid-template-columns: minmax(96px, .7fr) minmax(0, 1.3fr); gap: var(--sp-3);
+          padding: var(--sp-2) 0; border-bottom: 1px solid var(--border-subtle);
+        }
+        .pet-facts dt { color: var(--text-secondary); font-size: var(--text-xs); font-weight: 650; }
+        .pet-facts dd { margin: 0; color: var(--text-primary); font-size: var(--text-sm); line-height: 1.5; overflow-wrap: anywhere; }
+        .reward-row dd { display: flex; align-items: center; gap: var(--sp-1); color: var(--accent); font-weight: 650; }
+        .contact-block { padding-top: var(--sp-4); }
+        .contact-block h3 { margin-bottom: var(--sp-2); font-size: var(--text-base); }
+        .phone-action {
+          width: 100%; min-height: var(--touch-target); display: flex; align-items: center; justify-content: center; gap: var(--sp-2);
+          padding: var(--sp-2) var(--sp-3); color: var(--text-on-accent); background: var(--grad-accent);
+          border: 0; border-radius: var(--r-md); font: 700 var(--text-sm) var(--font-body); cursor: pointer; text-decoration: none;
+          transition: transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
+        }
+        .phone-action:hover { transform: translateY(-1px); box-shadow: var(--shadow-md); }
+        .contact-actions { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--sp-2); margin-top: var(--sp-2); }
+        .owner-link {
+          min-height: 40px; display: inline-flex; align-items: center; gap: var(--sp-1); margin-top: var(--sp-2);
+          color: var(--primary); font-size: var(--text-xs); font-weight: 650; text-decoration: underline;
+          text-decoration-color: transparent; text-underline-offset: 4px;
+        }
+        .owner-link:hover { text-decoration-color: currentColor; }
+        .owner-panel { box-shadow: none; }
+        .owner-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-2); }
+        .owner-actions :global(.btn-base:last-child:nth-child(3)) { grid-column: 1 / -1; }
+        .detail-section { margin-top: var(--sp-5); }
+        .map-section { padding-bottom: var(--sp-4); }
+        .share-section { box-shadow: none; }
+        .detail-skeleton { display: grid; grid-template-columns: 1.1fr .9fr; gap: var(--sp-6); align-items: start; }
+        .skeleton-media { aspect-ratio: 4 / 3; border-radius: var(--r-xl); }
+        .skeleton-copy { display: grid; gap: var(--sp-3); }
+        .skeleton-line { height: 14px; border-radius: var(--r-sm); }
+        .skeleton-line--short { width: 34%; }
+        .skeleton-line--title { width: 76%; height: 30px; }
+        .skeleton-card { height: 280px; border-radius: var(--r-lg); }
+        @media (max-width: 900px) {
+          .detail-grid, .detail-skeleton { grid-template-columns: 1fr; gap: var(--sp-4); }
+          .media-frame { aspect-ratio: 16 / 10; }
+          .skeleton-media { aspect-ratio: 16 / 10; }
         }
         @media (max-width: 640px) {
-          .detail-grid { gap: var(--sp-3); margin-bottom: var(--sp-3); }
+          .detail-grid { gap: var(--sp-3); margin-bottom: var(--sp-4); }
+          .media-frame { aspect-ratio: 4 / 3; border-radius: var(--r-md); }
+          .placeholder-icon { width: 96px; height: 96px; }
+          .info-card, .owner-panel, .detail-section { padding: var(--sp-3); border-radius: var(--r-md); }
+          .pet-facts > div { grid-template-columns: 1fr; gap: var(--sp-1); }
+          .contact-actions { grid-template-columns: 1fr; }
+          .owner-actions { grid-template-columns: 1fr; }
+          .owner-actions :global(.btn-base) { width: 100%; }
+          .owner-actions :global(.btn-base:last-child:nth-child(3)) { grid-column: auto; }
+          .detail-section { margin-top: var(--sp-4); }
         }
-        @media (min-width: 1440px) {
-          .detail-grid { gap: var(--sp-7); margin-bottom: var(--sp-6); }
-        }
-        .detail-media { min-width: 0; }
-        .detail-info { min-width: 0; display: flex; flex-direction: column; }
-        .detail-back { margin-bottom:var(--sp-3); }
+        @media (prefers-reduced-motion: reduce) { .phone-action { transition: none; } }
       `}</style>
     </div>
   );

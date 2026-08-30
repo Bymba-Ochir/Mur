@@ -1,6 +1,7 @@
 'use client';
 import { useSyncExternalStore, useState } from 'react';
 import { useLanguage } from '../lib/i18n';
+import Icon from './ui/icons';
 
 // Клиент дээр sync render-ээр утгыг тооцно; SSR/hydration-д false (server snapshot).
 // useSyncExternalStore нь effect-д setState хийлгүйгээр hydration-аюулгүй байлгана.
@@ -10,7 +11,7 @@ const getClientSnapshot = (): boolean => typeof navigator !== 'undefined' && 'sh
 
 export default function ShareButtons({ url, title }: { url: string; title: string }) {
   const { t } = useLanguage();
-  const [copied, setCopied] = useState(false);
+  const [copyStatus, setCopyStatus] = useState<'idle' | 'copied' | 'error'>('idle');
   const hasNativeShare = useSyncExternalStore(emptySubscribe, getClientSnapshot, getServerSnapshot);
 
   const fbShareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
@@ -26,30 +27,36 @@ export default function ShareButtons({ url, title }: { url: string; title: strin
   }
 
   async function handleCopy() {
-    await navigator.clipboard.writeText(url);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopyStatus('copied');
+    } catch {
+      setCopyStatus('error');
+    }
+    setTimeout(() => setCopyStatus('idle'), 2400);
   }
 
   return (
     <div className="share-row">
       {hasNativeShare && (
         <button onClick={handleNativeShare} className="share-btn native">
-          {t('share_native')}
+          <Icon name="share" size={16} aria-hidden="true" /> {t('share_native')}
         </button>
       )}
       <a href={fbShareUrl} target="_blank" rel="noopener noreferrer" className="share-btn fb">
-        {t('share_fb')}
+        <Icon name="share" size={16} aria-hidden="true" /> {t('share_fb')}
       </a>
       <button onClick={handleCopy} className="share-btn copy">
-        {copied ? t('share_copied') : t('share_copy')}
+        <Icon name={copyStatus === 'copied' ? 'check' : 'share'} size={16} aria-hidden="true" />
+        {copyStatus === 'copied' ? t('share_copied') : copyStatus === 'error' ? t('share_copy_error') : t('share_copy')}
       </button>
 
       <style jsx>{`
-        .share-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+        .share-row { display: flex; gap: var(--sp-2); flex-wrap: wrap; }
         .share-btn {
-          padding: 9px 14px; border-radius: var(--r-sm); border: none; cursor: pointer;
-          font-size: 13px; font-weight: 600; text-decoration: none; display: inline-block;
+          min-height:var(--touch-target); display:inline-flex; align-items:center; justify-content:center; gap:var(--sp-2);
+          padding: var(--sp-2) var(--sp-3); border-radius: var(--r-md); border: none; cursor: pointer;
+          font-family:var(--font-body); font-size: 13px; font-weight: 650; text-decoration: none;
           transition: transform .15s ease, box-shadow .2s ease, filter .2s ease;
         }
         .share-btn:hover { transform: translateY(-1px); box-shadow: var(--shadow-sm); filter: brightness(1.05); }
@@ -57,6 +64,8 @@ export default function ShareButtons({ url, title }: { url: string; title: strin
         .native { background: var(--brand); color: var(--text-on-accent); }
         .fb { background: #1877F2; color: #fff; }
         .copy { background: var(--eyebrow-bg); color: var(--primary); }
+        @media(max-width:560px){.share-row{display:grid;grid-template-columns:1fr}.share-btn{width:100%}}
+        @media(prefers-reduced-motion:reduce){.share-btn{transition:none}}
       `}</style>
     </div>
   );

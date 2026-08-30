@@ -74,4 +74,10 @@ describe('PetCard — утасны дугаар нуух/харуулах', () =
     const { container } = renderCard();
     expect(container.querySelector('svg')).toBeInTheDocument();
   });
+
+  it('утас болон дэлгэрэнгүйг тусдаа accessible control-оор харуулна', () => {
+    renderCard();
+    expect(screen.getByRole('button', { name: 'Дугаар харах' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Дэлгэрэнгүй үзэх/ })).toHaveAttribute('href', '/pets/test-id');
+  });
 });

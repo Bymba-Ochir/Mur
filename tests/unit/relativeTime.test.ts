@@ -37,4 +37,8 @@ describe('relativeTime', () => {
     expect(relativeTime(null)).toBe('');
     expect(relativeTime(undefined)).toBe('');
   });
+
+  it('англи хэлний богино хугацааг англиар буцаана', () => {
+    expect(relativeTime(minutesAgo(5), 'en')).toBe('5 min ago');
+  });
 });
