@@ -5,7 +5,7 @@ import nextVitals from 'eslint-config-next/core-web-vitals';
 
 const config = [
   {
-    ignores: ['.next/**', 'out/**', 'public/**', 'next-env.d.ts', 'coverage/**', 'playwright-report/**', 'test-results/**'],
+    ignores: ['.next/**', '.next-*/**', 'out/**', 'public/**', 'next-env.d.ts', 'coverage/**', 'playwright-report/**', 'test-results/**'],
   },
   ...nextVitals,
 ];

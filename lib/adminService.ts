@@ -43,6 +43,16 @@ export interface AdminUserReport {
   createdAt: string;
 }
 
+export interface AdminSystemHealth {
+  status: 'ok' | 'degraded';
+  version: string;
+  checks: {
+    configuration: boolean;
+    database: boolean;
+  };
+  timestamp: string;
+}
+
 export async function isAdmin(): Promise<boolean> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return false;
@@ -185,4 +195,13 @@ export async function resolveUserReport(id: string, status: 'reviewed' | 'dismis
   const { error } = await supabase.from('user_reports').update({ status }).eq('id', id);
   if (error) throw error;
   await writeAudit(status === 'reviewed' ? 'review_user_report' : 'dismiss_user_report', 'user_report', id);
+}
+
+export async function fetchAdminSystemHealth(): Promise<AdminSystemHealth> {
+  const response = await fetch('/api/health', { cache: 'no-store' });
+  const payload = await response.json().catch(() => null) as AdminSystemHealth | null;
+  if (!payload || (payload.status !== 'ok' && payload.status !== 'degraded')) {
+    throw new Error('Invalid system health response');
+  }
+  return payload;
 }

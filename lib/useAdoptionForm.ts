@@ -33,6 +33,7 @@ export interface AdoptionFormData {
 // ---------- Зураг: шахалт (content moderationгүй) ----------
 export function useAdoptionPhoto() {
   const showToast = useToast();
+  const { t } = useLanguage();
   const [photoFiles, setPhotoFiles] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
   const [compressing, setCompressing] = useState(false);
@@ -43,7 +44,7 @@ export function useAdoptionPhoto() {
     const available = Math.max(0, 4 - photoFiles.length);
     const files = selected.slice(0, available);
     if (!files.length) {
-      showToast('Дээд тал нь 4 зураг оруулах боломжтой.', 'info');
+      showToast(t('adoption_photo_limit'), 'info');
       e.target.value = '';
       return;
     }
@@ -54,9 +55,9 @@ export function useAdoptionPhoto() {
       }));
       setPhotoFiles((current) => [...current, ...compressed].slice(0, 4));
       setPreviews((current) => [...current, ...compressed.map((file) => URL.createObjectURL(file))].slice(0, 4));
-      showToast(`${compressed.length} зураг нэмэгдлээ.`, 'success');
+      showToast(`${compressed.length} ${t('adoption_photo_added')}`, 'success');
     } catch {
-      showToast('Зураг боловсруулахад алдаа гарлаа.', 'error');
+      showToast(t('adoption_photo_error'), 'error');
     } finally {
       setCompressing(false);
       e.target.value = '';
@@ -127,7 +128,7 @@ export function useAdoptionSubmit({
       const msg = getErrorMessage(err);
       setError(isInputValidationError(err) || (msg && msg.includes('олон удаа'))
         ? msg
-        : 'Алдаа гарлаа. Дахин оролдоно уу.');
+        : t('form_generic_error'));
     } finally {
       setSubmitting(false);
       setStatusMsg('');

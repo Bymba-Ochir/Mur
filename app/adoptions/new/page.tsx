@@ -7,7 +7,7 @@ export default function NewAdoptionPage() {
   return (
     <div className="page-shell">
       <div className="page-header">
-        <div className="eyebrow">{t('adoptions_new_eyebrow')}</div>
+        <p className="eyebrow">{t('adoptions_new_eyebrow')}</p>
         <h1>{t('adoptions_new_title')}</h1>
         <p>{t('adoptions_new_desc')}</p>
       </div>

@@ -67,6 +67,7 @@ export function searchClinics(opts: {
 /**
  * Зайг хүндрүүлэгч тэмдэглэгээ
  */
-export function distanceLabel(km: number): string {
-  return km < 1 ? `${Math.round(km * 1000)} м` : `${km.toFixed(1)} км`;
+export function distanceLabel(km: number, lang: 'mn' | 'en' = 'mn'): string {
+  if (km < 1) return `${Math.round(km * 1000)} ${lang === 'mn' ? 'м' : 'm'}`;
+  return `${km.toFixed(1)} ${lang === 'mn' ? 'км' : 'km'}`;
 }

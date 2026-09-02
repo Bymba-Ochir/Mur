@@ -1,25 +1,34 @@
 'use client';
-import { useCallback, useEffect, useState } from 'react';
+
 import Link from 'next/link';
-import { useAuth } from '../../lib/useAuth';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import LoginModal from '../../components/LoginModal';
+import PetCard from '../../components/PetCard';
+import { useToast } from '../../components/Toast';
+import Button from '../../components/ui/Button';
+import Icon from '../../components/ui/icons';
+import { useLanguage } from '../../lib/i18n';
 import { deleteSavedSearch, fetchFavorites, fetchSavedSearches } from '../../lib/listingService';
 import type { SavedSearch } from '../../lib/listingService';
 import type { Pet } from '../../lib/types';
+import { useAuth } from '../../lib/useAuth';
 import { getErrorMessage } from '../../lib/utils';
-import PetCard from '../../components/PetCard';
-import Button from '../../components/ui/Button';
-import Icon from '../../components/ui/icons';
-import { useToast } from '../../components/Toast';
 
-const date = new Intl.DateTimeFormat('mn-MN', { dateStyle: 'medium' });
+function SavedSkeleton({ label }: { label: string }) {
+  return <div className="saved-skeleton" aria-live="polite" aria-label={label}>{[0, 1, 2].map((item) => <div className="skeleton-card" key={item}><span /><span /><span /></div>)}<style jsx>{`.saved-skeleton{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--sp-4)}.skeleton-card{display:grid;gap:12px;min-height:250px;padding:var(--sp-4);background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg)}.skeleton-card span{height:18px;background:linear-gradient(90deg,var(--surface-subtle),var(--eyebrow-bg),var(--surface-subtle));background-size:220% 100%;border-radius:8px;animation:shimmer 1.4s infinite}.skeleton-card span:first-child{height:145px}.skeleton-card span:last-child{width:62%}@keyframes shimmer{to{background-position:-220% 0}}@media(max-width:900px){.saved-skeleton{grid-template-columns:repeat(2,minmax(0,1fr))}.skeleton-card:last-child{display:none}}@media(max-width:600px){.saved-skeleton{grid-template-columns:1fr}.skeleton-card:nth-child(2){display:none}}@media(prefers-reduced-motion:reduce){.skeleton-card span{animation:none}}`}</style></div>;
+}
 
 export default function SavedClient() {
   const { user, loading: authLoading } = useAuth();
+  const { t, lang } = useLanguage();
   const showToast = useToast();
   const [favorites, setFavorites] = useState<Pet[]>([]);
   const [searches, setSearches] = useState<SavedSearch[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [deletingId, setDeletingId] = useState('');
+  const [showLogin, setShowLogin] = useState(false);
+  const dateFormatter = useMemo(() => new Intl.DateTimeFormat(lang === 'mn' ? 'mn-MN' : 'en-US', { dateStyle: 'medium' }), [lang]);
 
   const load = useCallback(async () => {
     if (!user) { setLoading(false); return; }
@@ -34,29 +43,41 @@ export default function SavedClient() {
   useEffect(() => { void Promise.resolve().then(load); }, [load]);
 
   async function removeSearch(id: string) {
+    setDeletingId(id);
     try {
       await deleteSavedSearch(id);
       setSearches((items) => items.filter((item) => item.id !== id));
-      showToast('Хадгалсан хайлтыг устгалаа.', 'success');
+      showToast(t('saved_deleted'), 'success');
     } catch (reason) { showToast(getErrorMessage(reason), 'error'); }
+    finally { setDeletingId(''); }
   }
 
-  if (authLoading) return <div className="page-shell page-shell--narrow"><div className="state-panel" aria-live="polite"><span className="state-panel__icon"><Icon name="heart" size={28} /></span><h2>Хадгалсан мэдээлэл ачаалж байна</h2></div></div>;
-  if (!user) return <div className="page-shell page-shell--narrow"><div className="state-panel"><span className="state-panel__icon"><Icon name="lock" size={28} /></span><h2>Хадгалсан</h2><p>Хадгалсан зар, хайлтаа харахын тулд эхлээд нэвтэрнэ үү.</p></div></div>;
+  if (authLoading) return <main className="page-shell page-shell--narrow"><SavedSkeleton label={t('saved_loading')} /></main>;
+  if (!user) return <main className="page-shell page-shell--narrow"><div className="state-panel saved-login"><span className="state-panel__icon"><Icon name="lock" size={28} /></span><h1>{t('saved_login_title')}</h1><p>{t('saved_login_desc')}</p><Button variant="primary" onClick={() => setShowLogin(true)}>{t('login_button')}</Button></div>{showLogin && <LoginModal onClose={() => setShowLogin(false)} />}</main>;
 
-  return <div className="page-shell saved-page">
-    <div className="page-header"><div className="eyebrow">Account</div><h1>Хадгалсан</h1><p>Сонирхсон зар болон шинэ зарын мэдэгдэл авах хайлтууд.</p></div>
-    {error && <div className="error-state" role="alert"><p>{error}</p><Button variant="secondary" onClick={load}>Дахин оролдох</Button></div>}
-    {loading ? <p>Хадгалсан мэдээлэл ачаалж байна...</p> : <>
+  return <main className="page-shell saved-page">
+    <header className="saved-hero">
+      <div><p className="eyebrow">{t('saved_eyebrow')}</p><h1>{t('saved_title')}</h1><p>{t('saved_desc')}</p></div>
+      <div className="summary" aria-label={t('saved_summary')}><div><Icon name="heart" size={20} /><strong>{favorites.length}</strong><span>{t('saved_favorites_title')}</span></div><div><Icon name="search" size={20} /><strong>{searches.length}</strong><span>{t('saved_searches_title')}</span></div></div>
+    </header>
+
+    {error && <div className="error-state" role="alert"><span><Icon name="alert" size={22} /></span><div><strong>{t('saved_load_error')}</strong><p>{error}</p></div><Button variant="ghost" size="sm" onClick={() => void load()}>{t('saved_retry')}</Button></div>}
+    {loading ? <SavedSkeleton label={t('saved_loading')} /> : <>
       <section className="saved-section" aria-labelledby="favorite-title">
-        <div className="section-heading"><div><h2 id="favorite-title"><Icon name="heart" size={21} /> Хадгалсан зар</h2><p>{favorites.length} зар</p></div><Link href="/listings">Заруудаас хайх</Link></div>
-        {favorites.length ? <div className="grid">{favorites.map((pet) => <PetCard key={pet.id} pet={pet} />)}</div> : <div className="card empty"><Icon name="heart" size={28} /><h3>Хадгалсан зар алга</h3><p>Зарын дэлгэрэнгүйгээс “Хадгалах” товч дарж энд цуглуулна.</p></div>}
+        <div className="section-heading"><div><h2 id="favorite-title"><Icon name="heart" size={21} />{t('saved_favorites_title')}</h2><p>{favorites.length} {t('saved_listing_count')}</p></div><Link href="/listings"><Icon name="search" size={16} />{t('saved_browse')}</Link></div>
+        {favorites.length ? <div className="favorites-grid">{favorites.map((pet) => <PetCard key={pet.id} pet={pet} />)}</div> : <div className="empty-state"><span><Icon name="heart" size={28} /></span><h3>{t('saved_favorites_empty')}</h3><p>{t('saved_favorites_empty_desc')}</p><Button as="link" href="/listings" variant="secondary" size="sm">{t('saved_browse')}</Button></div>}
       </section>
       <section className="saved-section" aria-labelledby="search-title">
-        <div className="section-heading"><div><h2 id="search-title"><Icon name="search" size={21} /> Хадгалсан хайлт</h2><p>Тохирох шинэ зар гарахад Мэдэгдэл хэсэгт ирнэ.</p></div><Link href="/listings">Шинэ хайлт</Link></div>
-        {searches.length ? <div className="search-list">{searches.map((item) => <article className="card search-item" key={item.id}><div><strong>{item.name}</strong><small>{date.format(new Date(item.createdAt))} · {item.notify ? 'Мэдэгдэл идэвхтэй' : 'Мэдэгдэл унтраалттай'}</small></div><Button variant="ghost" onClick={() => void removeSearch(item.id)} aria-label={`${item.name} хайлтыг устгах`}><Icon name="trash" size={16} /> Устгах</Button></article>)}</div> : <div className="card empty"><Icon name="search" size={28} /><h3>Хадгалсан хайлт алга</h3><p>Жагсаалтын шүүлтүүрээ сонгоод “Хайлтыг хадгалах” товчийг дарна.</p></div>}
+        <div className="section-heading"><div><h2 id="search-title"><Icon name="search" size={21} />{t('saved_searches_title')}</h2><p>{t('saved_searches_desc')}</p></div><Link href="/listings"><Icon name="plus" size={16} />{t('saved_new_search')}</Link></div>
+        {searches.length ? <div className="search-list">{searches.map((item) => <article className="search-item" key={item.id}>
+          <div className="search-icon"><Icon name="search" size={20} /></div>
+          <div className="search-copy"><div className="search-title"><h3>{item.name}</h3><span className={item.notify ? 'notify active' : 'notify'}><Icon name="bell" size={13} />{item.notify ? t('saved_notify_on') : t('saved_notify_off')}</span></div><p>{[item.status ? (item.status === 'lost' ? t('listings_badge_lost') : t('listings_badge_found')) : '', item.petType || '', item.district || '', item.searchText || ''].filter(Boolean).join(' · ') || t('saved_searches_title')}</p><small><Icon name="calendar" size={13} />{dateFormatter.format(new Date(item.createdAt))}</small></div>
+          <Button variant="ghost" size="sm" onClick={() => void removeSearch(item.id)} disabled={deletingId === item.id} aria-busy={deletingId === item.id} aria-label={t('saved_delete_label') + ': ' + item.name}><Icon name="trash" size={16} />{t('saved_delete')}</Button>
+        </article>)}</div> : <div className="empty-state"><span><Icon name="search" size={28} /></span><h3>{t('saved_searches_empty')}</h3><p>{t('saved_searches_empty_desc')}</p><Button as="link" href="/listings" variant="secondary" size="sm">{t('saved_new_search')}</Button></div>}
       </section>
     </>}
-    <style jsx>{`.saved-page{padding-bottom:var(--sp-8)}.saved-section{margin-top:var(--sp-6)}.section-heading{display:flex;align-items:end;justify-content:space-between;gap:16px;margin-bottom:var(--sp-3)}.section-heading h2{display:flex;align-items:center;gap:8px;font-size:20px}.section-heading p,.search-item small,.empty p{color:var(--muted)}.section-heading a{color:var(--primary);font-weight:650;text-decoration:none}.search-list{display:grid;gap:10px}.search-item{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px}.search-item>div{display:grid;gap:5px}.empty{display:grid;justify-items:center;gap:8px;text-align:center;padding:32px}.error-state{display:grid;justify-items:start;gap:12px;padding:16px;border:1px solid var(--alert);border-radius:var(--r-md)}@media(max-width:600px){.section-heading{align-items:start;flex-direction:column}.search-item{align-items:start;flex-direction:column}}`}</style>
-  </div>;
+    <style jsx>{`
+      .saved-page{padding-bottom:var(--sp-8)}.saved-hero{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:var(--sp-5);align-items:end;margin-bottom:var(--sp-6);padding:clamp(20px,4vw,36px);background:linear-gradient(135deg,var(--eyebrow-bg),color-mix(in srgb,var(--found) 12%,var(--card)));border:1px solid var(--line);border-radius:var(--r-xl)}.saved-hero .eyebrow{margin-bottom:6px;color:var(--primary);font-size:var(--text-xs);font-weight:750;letter-spacing:.1em;text-transform:uppercase}.saved-hero h1{font-family:var(--font-display);font-size:clamp(30px,5vw,48px);line-height:1.05}.saved-hero>div>p:last-child{max-width:650px;margin-top:10px;color:var(--muted);line-height:1.6}.summary{display:grid;grid-template-columns:repeat(2,minmax(110px,1fr));gap:10px}.summary>div{display:grid;grid-template-columns:auto auto;gap:2px 8px;align-items:center;padding:var(--sp-3);color:var(--primary);background:var(--card);border:1px solid var(--line);border-radius:var(--r-md);box-shadow:var(--shadow-xs)}.summary strong{font-size:var(--text-xl)}.summary span{grid-column:1/-1;color:var(--muted);font-size:var(--text-xs)}.saved-section{margin-top:var(--sp-7)}.section-heading{display:flex;align-items:end;justify-content:space-between;gap:16px;margin-bottom:var(--sp-4)}.section-heading h2{display:flex;align-items:center;gap:8px;font-size:clamp(20px,3vw,25px)}.section-heading p{margin-top:4px;color:var(--muted);font-size:var(--text-sm)}.section-heading a{display:inline-flex;align-items:center;gap:7px;color:var(--primary);font-size:var(--text-sm);font-weight:700;text-decoration:none}.section-heading a:hover{text-decoration:underline}.section-heading a:focus-visible{outline:2.5px solid var(--border-focus);outline-offset:4px;border-radius:4px}.favorites-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--sp-4)}.search-list{display:grid;gap:10px}.search-item{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:var(--sp-3);align-items:center;padding:var(--sp-4);background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--shadow-xs);transition:transform var(--dur-fast),border-color var(--dur-fast),box-shadow var(--dur-fast)}.search-item:hover{transform:translateY(-1px);border-color:var(--primary-light);box-shadow:var(--shadow-sm)}.search-icon{display:grid;width:42px;height:42px;place-items:center;color:var(--primary);background:var(--eyebrow-bg);border-radius:var(--r-md)}.search-copy{display:grid;gap:5px;min-width:0}.search-title{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.search-title h3{overflow-wrap:anywhere;font-size:var(--text-base)}.notify{display:inline-flex;align-items:center;gap:4px;padding:3px 7px;color:var(--muted);background:var(--surface-subtle);border:1px solid var(--line);border-radius:999px;font-size:11px;font-weight:650}.notify.active{color:var(--primary);background:var(--eyebrow-bg);border-color:var(--primary-light)}.search-copy p,.search-copy small{color:var(--muted);font-size:var(--text-xs);overflow-wrap:anywhere}.search-copy small{display:flex;align-items:center;gap:5px}.empty-state{display:grid;justify-items:center;gap:8px;padding:clamp(28px,6vw,52px) var(--sp-4);text-align:center;background:var(--card);border:1px dashed var(--line);border-radius:var(--r-xl)}.empty-state>span{display:grid;width:54px;height:54px;place-items:center;color:var(--primary);background:var(--eyebrow-bg);border-radius:999px}.empty-state h3{font-size:var(--text-lg)}.empty-state p{max-width:480px;margin-bottom:4px;color:var(--muted);font-size:var(--text-sm);line-height:1.55}.error-state{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:var(--sp-3);align-items:center;padding:var(--sp-4);color:var(--alert);background:color-mix(in srgb,var(--alert) 8%,var(--card));border:1px solid color-mix(in srgb,var(--alert) 32%,var(--line));border-radius:var(--r-lg)}.error-state>span{display:grid;width:40px;height:40px;place-items:center}.error-state strong{color:var(--text)}.error-state p{margin-top:3px;color:var(--muted);font-size:var(--text-xs)}:global(.saved-login){margin-top:var(--sp-7)}@media(max-width:960px){.saved-hero{grid-template-columns:1fr;align-items:start}.summary{width:100%}.favorites-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:640px){.saved-hero{padding:var(--sp-5)}.summary{grid-template-columns:1fr 1fr}.section-heading{align-items:flex-start;flex-direction:column}.favorites-grid{grid-template-columns:1fr}.search-item{grid-template-columns:auto minmax(0,1fr)}.search-item :global(.btn-base){grid-column:1/-1;width:100%}.error-state{grid-template-columns:auto minmax(0,1fr)}.error-state :global(.btn-base){grid-column:1/-1;width:100%}}
+    `}</style>
+  </main>;
 }

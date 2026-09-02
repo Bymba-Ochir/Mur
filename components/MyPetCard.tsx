@@ -1,108 +1,26 @@
 'use client';
-import { useRouter } from 'next/navigation';
+import Button from './ui/Button';
+import Icon, { type IconName } from './ui/icons';
 import { useLanguage } from '../lib/i18n';
 import { vaccineStatus } from '../lib/vaccineService';
 import type { MyPet, VaccineStatus } from '../lib/types';
 
-const STATUS_LABEL: Record<VaccineStatus, { text: string; color: string }> = {
-  overdue: { text: '⚠️ Хугацаа хэтэрсэн', color: 'var(--alert)' },
-  soon: { text: '🔔 Удахгүй болно', color: 'var(--accent)' },
-  ok: { text: '✅ Хэвийн', color: 'var(--success)' },
-  none: { text: 'Огноо тохируулаагүй', color: 'var(--muted)' },
-};
+const STATUS_ICON: Record<VaccineStatus, IconName> = { overdue: 'alert', soon: 'bell', ok: 'check', none: 'calendar' };
 
-export default function MyPetCard({
-  pet, selected, onSelect, onDateChange, onDelete,
-}: {
-  pet: MyPet;
-  selected: boolean;
-  onSelect: () => void;
-  onDateChange: (date: string) => void;
-  onDelete: () => void;
-}) {
-  const router = useRouter();
+export default function MyPetCard({ pet, selected, onSelect, onDateChange, onDelete, dateBusy = false }: { pet: MyPet; selected: boolean; onSelect: () => void; onDateChange: (date: string) => void; onDelete: () => void; dateBusy?: boolean }) {
   const { t } = useLanguage();
   const status = vaccineStatus(pet.nextVaccineDate);
-  const label = STATUS_LABEL[status];
+  const statusLabel = status === 'overdue' ? t('mypets_status_overdue') : status === 'soon' ? t('mypets_status_soon') : status === 'ok' ? t('mypets_status_ok') : t('mypets_status_none');
   const typeLabel = pet.type === 'Нохой' ? t('type_dog') : pet.type === 'Муур' ? t('type_cat') : t('type_other');
+  const panelId = `health-panel-${pet.id}`;
 
-  return (
-    <div
-      className={`card pet-card ${selected ? 'selected' : ''}`}
-      onClick={onSelect}
-      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(); } }}
-      role="button"
-      tabIndex={0}
-      style={{ cursor: 'pointer' }}
-    >
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <p style={{ fontFamily: 'var(--font-display)', fontWeight: 600, color: 'var(--primary)', fontSize: 14.5, marginBottom: 2 }}>
-          {pet.name}
-        </p>
-        <p style={{ fontSize: 12.5, color: 'var(--muted)', margin: '2px 0' }}>{typeLabel}</p>
-        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 4 }}>
-          {pet.age && <span className="chip">{pet.age}</span>}
-          {pet.breed && <span className="chip">{pet.breed}</span>}
-          {pet.weight != null && <span className="chip">{pet.weight} кг</span>}
-        </div>
-        <p style={{ fontSize: 11, fontFamily: 'var(--font-mono)', fontWeight: 600, color: label.color, marginTop: 4 }}>
-          {label.text}
-        </p>
-      </div>
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
-        <input
-          type="date"
-          className="field"
-          defaultValue={pet.nextVaccineDate || ''}
-          onChange={(e) => { e.stopPropagation(); onDateChange(e.target.value); }}
-          onClick={(e) => e.stopPropagation()}
-          style={{ fontSize: 12, padding: '6px 8px', width: 130, minHeight: 'auto' }}
-          aria-label={t('health_vax_next_date')}
-        />
-        <button
-          className="danger-link"
-          onClick={(e) => { e.stopPropagation(); if (confirm('Устгах уу?')) onDelete(); }}
-        >
-          {t('mypets_delete')}
-        </button>
-        <button
-          className="profile-link"
-          onClick={(e) => { e.stopPropagation(); router.push(`/profiles/mypet/${pet.id}`); }}
-        >
-          {t('profiles_view_profile')}
-        </button>
-      </div>
-
-      <style jsx>{`
-        .pet-card {
-          display: flex; gap: var(--sp-3); align-items: flex-start;
-          transition: transform var(--dur-base) var(--ease-out), box-shadow var(--dur-base) var(--ease-out), border-color var(--dur-base) var(--ease-out);
-        }
-        .pet-card:hover {
-          transform: translateY(-3px);
-          box-shadow: var(--shadow-md);
-          border-color: var(--primary-light);
-        }
-        .pet-card.selected { border-color: var(--border-focus); box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 20%, transparent); }
-        .chip {
-          display: inline-block; font-size: 11px; padding: 3px 10px;
-          background: var(--surface-3); border-radius: var(--r-pill);
-          color: var(--primary); font-weight: 600;
-        }
-        .danger-link {
-          background: none; border: none; color: var(--alert); font-size: 12px;
-          cursor: pointer; padding: 4px 8px; font-family: var(--font-body);
-          opacity: 0.7; transition: opacity var(--dur-fast) ease;
-        }
-        .danger-link:hover { opacity: 1; }
-        .profile-link {
-          background: none; border: 1px solid var(--accent); color: var(--accent);
-          font-size: 11px; cursor: pointer; padding: 4px 10px; font-family: var(--font-body);
-          font-weight: 600; border-radius: var(--r-sm);
-          transition: all var(--dur-fast) var(--ease-out);
-        }
-        .profile-link:hover { background: var(--accent); color: var(--text-on-accent); }
-      `}</style>
-    </div>
-  );
+  return <article className={`pet-card${selected ? ' selected' : ''}`}>
+    <div className="pet-icon" aria-hidden="true"><Icon name="paw" size={26} /></div>
+    <div className="pet-info"><div className="pet-heading"><div><h3>{pet.name}</h3><p>{typeLabel}</p></div><span className={`vaccine-status ${status}`}><Icon name={STATUS_ICON[status]} size={14} />{statusLabel}</span></div><div className="pet-facts">{pet.age && <span>{pet.age}</span>}{pet.breed && <span>{pet.breed}</span>}{pet.weight != null && <span>{pet.weight} kg</span>}</div><label className="date-field" htmlFor={`vaccine-date-${pet.id}`}><span>{t('mypets_vaccine_date_update')}</span><input id={`vaccine-date-${pet.id}`} type="date" className="field" value={pet.nextVaccineDate || ''} onChange={(event) => onDateChange(event.target.value)} disabled={dateBusy} /></label></div>
+    <div className="pet-actions"><button type="button" className="health-toggle" onClick={onSelect} aria-expanded={selected} aria-controls={panelId}><Icon name="vaccine" size={16} />{t('mypets_open_health')}<Icon name="arrowRight" size={15} className={selected ? 'toggle-arrow open' : 'toggle-arrow'} /></button><Button as="link" href={`/profiles/mypet/${pet.id}`} variant="ghost" size="sm"><Icon name="eye" size={15} />{t('profiles_view_profile')}</Button><Button variant="ghost" size="sm" onClick={onDelete} aria-label={`${pet.name} — ${t('mypets_delete')}`}><Icon name="trash" size={15} />{t('mypets_delete')}</Button></div>
+    <style jsx>{`
+      .pet-card{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:start;gap:var(--sp-4);padding:var(--sp-4);background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--shadow-xs);transition:border-color var(--dur-fast) var(--ease-out),box-shadow var(--dur-fast) var(--ease-out),transform var(--dur-fast) var(--ease-out)}.pet-card:hover{border-color:var(--primary-light);box-shadow:var(--shadow-sm);transform:translateY(-1px)}.pet-card.selected{border-color:var(--border-focus);box-shadow:0 0 0 2px color-mix(in srgb,var(--primary) 16%,transparent)}.pet-icon{display:flex;align-items:center;justify-content:center;width:3rem;height:3rem;color:var(--primary);background:var(--eyebrow-bg);border-radius:var(--r-md)}.pet-info{min-width:0}.pet-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--sp-3)}.pet-heading h3{margin:0;color:var(--ink);font-family:var(--font-display);font-size:var(--text-lg)}.pet-heading p{margin:2px 0 0;color:var(--muted);font-size:var(--text-xs)}.vaccine-status{display:inline-flex;align-items:center;gap:var(--sp-1);padding:5px 8px;color:var(--muted);background:var(--surface-3);border-radius:var(--r-pill);font-size:10px;font-weight:750;white-space:nowrap}.vaccine-status.overdue{color:var(--alert);background:var(--alert-bg)}.vaccine-status.soon{color:var(--accent-deep);background:color-mix(in srgb,var(--accent) 14%,var(--card))}.vaccine-status.ok{color:var(--success-text);background:var(--success-bg)}.pet-facts{display:flex;flex-wrap:wrap;gap:var(--sp-1);margin-top:var(--sp-2)}.pet-facts span{padding:3px 8px;color:var(--primary);background:var(--surface-3);border-radius:var(--r-pill);font-size:10px;font-weight:650}.date-field{display:flex;align-items:center;gap:var(--sp-2);margin-top:var(--sp-3);color:var(--muted);font-size:var(--text-xs)}.date-field .field{width:auto;min-height:2.25rem;padding:5px 8px;font-size:var(--text-xs)}.pet-actions{display:flex;align-items:stretch;min-width:11rem;flex-direction:column;gap:var(--sp-2)}.health-toggle{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-2);min-height:2.25rem;padding:var(--sp-2) var(--sp-3);color:var(--primary);background:var(--eyebrow-bg);border:1px solid var(--glass-border);border-radius:var(--r-md);font:650 var(--text-xs) var(--font-body);cursor:pointer}.health-toggle:focus-visible{outline:2px solid var(--border-focus);outline-offset:2px}.toggle-arrow{transition:transform var(--dur-fast) var(--ease-out)}.toggle-arrow.open{transform:rotate(90deg)}.pet-actions :global(.btn-base){justify-content:flex-start;width:100%}
+      @media(max-width:760px){.pet-card{grid-template-columns:auto minmax(0,1fr)}.pet-actions{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));width:100%}.pet-actions :global(.btn-base),.health-toggle{justify-content:center}}@media(max-width:520px){.pet-card{grid-template-columns:1fr;padding:var(--sp-3);border-radius:var(--r-md)}.pet-icon{display:none}.pet-heading{align-items:flex-start;flex-direction:column}.date-field{align-items:stretch;flex-direction:column}.date-field .field{width:100%}.pet-actions{grid-column:auto;grid-template-columns:1fr}.pet-actions :global(.btn-base){justify-content:center}}@media(prefers-reduced-motion:reduce){.pet-card,.toggle-arrow{transition:none}.pet-card:hover{transform:none}}
+    `}</style>
+  </article>;
 }

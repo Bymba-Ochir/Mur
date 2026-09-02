@@ -23,6 +23,7 @@ export default function AdoptionPreviewCard({
 }) {
   const { t, lang } = useLanguage();
   const genderLabel = gender === 'Эрэгтэй' ? t('gender_male') : gender === 'Эмэгтэй' ? t('gender_female') : t('gender_unknown');
+  const typeLabel = type === 'Муур' ? t('type_cat') : type === 'Нохой' ? t('type_dog') : t('type_other');
 
   return (
     <div className="preview-wrap">
@@ -31,13 +32,18 @@ export default function AdoptionPreviewCard({
         badgeLabel={t('nav_adoptions').toUpperCase()}
         name={name}
         type={type}
+        typeLabel={typeLabel}
         age={age}
         gender={genderLabel}
+        genderLabel={genderLabel}
         breed={breed ? getBreedLabel(breed, lang) : ''}
         district={district}
         place={place}
         phone={phone}
         interactive={false}
+        showPhoneLabel={t('listings_card_show_phone')}
+        callPhoneLabel={t('listings_card_call')}
+        language={lang}
         imageNode={
           photoPreview ? (
             // eslint-disable-next-line @next/next/no-img-element
@@ -47,8 +53,8 @@ export default function AdoptionPreviewCard({
       />
 
       <style jsx>{`
-        .preview-wrap { max-width: 260px; }
-        .preview-label { font-size: 12px; color: var(--muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.03em; }
+        .preview-wrap { width: 100%; max-width: 20rem; }
+        .preview-label { margin: 0 0 var(--sp-2); color: var(--muted); font-size: var(--text-xs); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
       `}</style>
     </div>
   );

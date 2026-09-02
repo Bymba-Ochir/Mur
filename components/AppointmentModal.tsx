@@ -9,128 +9,31 @@ import { getErrorMessage } from '../lib/utils';
 import type { VetClinic, MyPet, VetService } from '../lib/types';
 import Modal from './ui/Modal';
 import FieldHint from './ui/FieldHint';
+import Button from './ui/Button';
+import Icon from './ui/icons';
 
-const SERVICE_I18N: Record<string, string> = {
-  'Үзлэг': 'service_exam',
-  'Вакцин': 'service_vaccination',
-  'Мэс засал': 'service_surgery',
-  'Шүд арчилгаа': 'service_dental',
-};
+const SERVICE_I18N: Record<string, 'service_exam' | 'service_vaccination' | 'service_surgery' | 'service_dental'> = { 'Үзлэг': 'service_exam', 'Вакцин': 'service_vaccination', 'Мэс засал': 'service_surgery', 'Шүд арчилгаа': 'service_dental' };
 
-export default function AppointmentModal({
-  clinic, onClose, onCreated,
-}: {
-  clinic: VetClinic;
-  onClose: () => void;
-  onCreated: () => void;
-}) {
-  const { user } = useAuth();
-  const { t } = useLanguage();
-  const showToast = useToast();
-
-  const [pets, setPets] = useState<MyPet[]>([]);
-  const [petId, setPetId] = useState('');
-  const [service, setService] = useState<VetService>(clinic.services[0]);
-  const [date, setDate] = useState('');
-  const [time, setTime] = useState('');
-  const [notes, setNotes] = useState('');
-  const [busy, setBusy] = useState(false);
-
+export default function AppointmentModal({ clinic, onClose, onCreated }: { clinic: VetClinic; onClose: () => void; onCreated: () => void; }) {
+  const { user } = useAuth(); const { t } = useLanguage(); const showToast = useToast();
+  const [pets, setPets] = useState<MyPet[]>([]); const [petId, setPetId] = useState(''); const [service, setService] = useState<VetService>(clinic.services[0]); const [date, setDate] = useState(''); const [time, setTime] = useState(''); const [notes, setNotes] = useState(''); const [busy, setBusy] = useState(false); const [petsError, setPetsError] = useState('');
   const today = new Date().toISOString().slice(0, 10);
-
-  useEffect(() => {
-    if (user) {
-      fetchMyPets().then(setPets).catch(() => {});
-    }
-  }, [user]);
-
-  async function handleSubmit() {
-    if (!date || !time) {
-      showToast(t('appt_required'), 'error');
-      return;
-    }
-    setBusy(true);
-    try {
-      await createAppointment({
-        clinicId: clinic.id,
-        petId: petId || null,
-        service,
-        date,
-        time,
-        notes: notes.trim() || undefined,
-      });
-      showToast(t('appt_success'), 'success');
-      onCreated();
-      onClose();
-    } catch (err) {
-      showToast(getErrorMessage(err), 'error');
-    } finally {
-      setBusy(false);
-    }
-  }
+  useEffect(() => { if (!user) return; let cancelled = false; fetchMyPets().then((data) => { if (!cancelled) { setPets(data); setPetsError(''); } }).catch((error) => { if (!cancelled) setPetsError(getErrorMessage(error)); }); return () => { cancelled = true; }; }, [user]);
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) { event.preventDefault(); if (!date || !time) { showToast(t('appt_required'), 'error'); return; } setBusy(true); try { await createAppointment({ clinicId: clinic.id, petId: petId || null, service, date, time, notes: notes.trim() || undefined }); showToast(t('appt_success'), 'success'); onCreated(); onClose(); } catch (error) { showToast(getErrorMessage(error) || t('form_generic_error'), 'error'); } finally { setBusy(false); } }
 
   return (
     <Modal open onClose={onClose} title={t('appt_title')} closeLabel={t('close')} width="sm" panelClassName="appointment-modal">
-        <p style={{ fontSize: 13, color: 'var(--muted)', marginBottom: 12 }}>
-          {t('appt_clinic')} <strong>{clinic.name}</strong>
-        </p>
-
-        <label htmlFor="appt-pet">{t('appt_pet_label')}</label>
-        <FieldHint mn="Миний амьтад хэсэгт бүртгэсэн амьтнаа сонгоно. Бүртгээгүй бол хоосон үлдээж болно." en="Choose a pet registered under My Pets, or leave blank if none is registered." />
-        <select id="appt-pet" value={petId} onChange={(e) => setPetId(e.target.value)}>
-          <option value="">{t('appt_pet_none')}</option>
-          {pets.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
-        </select>
-
-        <label htmlFor="appt-service">{t('appt_service_label')}</label>
-        <FieldHint mn="Энэ эмнэлгээс авах шаардлагатай үйлчилгээг сонгоно." en="Choose the service you need from this clinic." />
-        <select id="appt-service" value={service} onChange={(e) => setService(e.target.value as VetService)}>
-          {clinic.services.map((s) => (
-            <option key={s} value={s}>{t(SERVICE_I18N[s] as 'service_exam')}</option>
-          ))}
-        </select>
-
-        <label htmlFor="appt-date">{t('appt_date_label')}</label>
-        <FieldHint mn="Өнөөдрөөс хойших боломжтой өдрийг сонгоно." en="Choose an available date from today onward." />
-        <input id="appt-date" type="date" min={today} value={date} onChange={(e) => setDate(e.target.value)} required />
-
-        <label htmlFor="appt-time">{t('appt_time_label')}</label>
-        <FieldHint mn="Эмнэлэгт очих боломжтой цагаа сонгоно." en="Choose a time when you can arrive at the clinic." />
-        <select id="appt-time" value={time} onChange={(e) => setTime(e.target.value)} required>
-          <option value="">--</option>
-          {TIME_SLOTS.map((s) => <option key={s} value={s}>{s}</option>)}
-        </select>
-
-        <label htmlFor="appt-notes">{t('appt_notes_label')}</label>
-        <FieldHint mn="Шинж тэмдэг эсвэл эмчид урьдчилан хэлэх зүйлээ товч бичнэ. Заавал биш." en="Briefly describe symptoms or anything the vet should know. Optional." />
-        <textarea id="appt-notes" value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} />
-
-        <button
-          className="submit-btn"
-          onClick={handleSubmit}
-          disabled={busy || !date || !time}
-        >
-          {busy ? t('appt_submitting') : t('appt_submit')}
-        </button>
-      <style jsx>{`
-        label { font-size: 12.5px; font-weight: 600; color: var(--primary); display: block; margin-top: 10px; margin-bottom: 4px; }
-        select, input, textarea {
-          width: 100%; padding: var(--sp-2) var(--sp-3); border: 1.5px solid var(--line);
-          border-radius: var(--r-sm); font-size: var(--text-base); background: var(--card);
-          color: var(--ink); font-family: inherit; min-height: var(--touch-target);
-        }
-        .submit-btn {
-          width: 100%; margin-top: 16px; padding: 13px;
-          border-radius: var(--r-md); border: none;
-          background: var(--grad-brand); color: var(--text-on-accent);
-          font-weight: 700; cursor: pointer; font-size: 14px;
-          font-family: var(--font-body);
-          transition: transform 0.15s ease, box-shadow 0.2s ease;
-          box-shadow: var(--shadow-sm);
-        }
-        .submit-btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: var(--shadow-md); }
-        .submit-btn:disabled { opacity: 0.55; cursor: not-allowed; }
-      `}</style>
+      <form className="appointment-form" onSubmit={handleSubmit}>
+        <div className="clinic-summary"><span><Icon name="cross" size={20} /></span><div><small>{t('appt_clinic')}</small><strong>{clinic.name}</strong></div></div>
+        <label htmlFor="appt-pet"><span>{t('appt_pet_label')}</span><FieldHint mn="Миний амьтад хэсэгт бүртгэсэн амьтнаа сонгоно. Бүртгээгүй бол хоосон үлдээж болно." en="Choose a pet registered under My Pets, or leave blank if none is registered." /><select id="appt-pet" value={petId} onChange={(event) => setPetId(event.target.value)} aria-describedby={petsError ? 'appt-pets-error' : undefined}><option value="">{t('appt_pet_none')}</option>{pets.map((pet) => <option key={pet.id} value={pet.id}>{pet.name}</option>)}</select>{petsError && <small className="field-error" id="appt-pets-error" role="alert">{petsError}</small>}</label>
+        <label htmlFor="appt-service"><span>{t('appt_service_label')}</span><FieldHint mn="Энэ эмнэлгээс авах шаардлагатай үйлчилгээг сонгоно." en="Choose the service you need from this clinic." /><select id="appt-service" value={service} onChange={(event) => setService(event.target.value as VetService)}>{clinic.services.map((value) => <option key={value} value={value}>{t(SERVICE_I18N[value])}</option>)}</select></label>
+        <div className="date-grid"><label htmlFor="appt-date"><span>{t('appt_date_label')}</span><FieldHint mn="Өнөөдрөөс хойших боломжтой өдрийг сонгоно." en="Choose an available date from today onward." /><input id="appt-date" type="date" min={today} value={date} onChange={(event) => setDate(event.target.value)} required /></label><label htmlFor="appt-time"><span>{t('appt_time_label')}</span><FieldHint mn="Эмнэлэгт очих боломжтой цагаа сонгоно." en="Choose a time when you can arrive at the clinic." /><select id="appt-time" value={time} onChange={(event) => setTime(event.target.value)} required><option value="">--</option>{TIME_SLOTS.map((value) => <option key={value}>{value}</option>)}</select></label></div>
+        <label htmlFor="appt-notes"><span>{t('appt_notes_label')}</span><FieldHint mn="Шинж тэмдэг эсвэл эмчид урьдчилан хэлэх зүйлээ товч бичнэ. Заавал биш." en="Briefly describe symptoms or anything the vet should know. Optional." /><textarea id="appt-notes" value={notes} onChange={(event) => setNotes(event.target.value)} rows={3} maxLength={1000} /></label>
+        <div className="form-actions"><Button type="button" variant="ghost" onClick={onClose}>{t('detail_cancel')}</Button><Button type="submit" variant="primary" disabled={busy || !date || !time} aria-busy={busy}>{busy ? t('appt_submitting') : t('appt_submit')}</Button></div>
+        <style jsx>{`
+          .appointment-form{display:flex;flex-direction:column;gap:var(--sp-4)}.clinic-summary{display:flex;align-items:center;gap:var(--sp-3);padding:var(--sp-3);background:color-mix(in srgb,var(--clinic) 10%,var(--card));border-radius:var(--r-md)}.clinic-summary>span{display:flex;padding:var(--sp-2);color:var(--clinic);background:var(--card);border-radius:var(--r-sm)}.clinic-summary div{display:flex;flex-direction:column;gap:2px}.clinic-summary small{color:var(--muted)}.clinic-summary strong{color:var(--ink)}label{display:flex;flex-direction:column;gap:var(--sp-2);color:var(--primary);font-size:var(--text-xs);font-weight:700}select,input,textarea{width:100%;min-height:var(--touch-target);padding:var(--sp-2) var(--sp-3);color:var(--ink);background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r-sm);font:inherit;font-size:var(--text-base)}textarea{resize:vertical}.date-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-3)}select:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--border-focus);outline-offset:1px}.field-error{color:var(--alert);font-size:var(--text-xs)}.form-actions{display:flex;justify-content:flex-end;gap:var(--sp-2);padding-top:var(--sp-2)}@media(max-width:520px){.date-grid{grid-template-columns:1fr}.form-actions{align-items:stretch;flex-direction:column-reverse}.form-actions :global(.btn-base){width:100%}}
+        `}</style>
+      </form>
     </Modal>
   );
 }

@@ -4,6 +4,7 @@ import type { LegalDoc } from '../../components/LegalContent';
 
 export const metadata: Metadata = {
   title: 'Нууцлалын бодлого | МӨР',
+  description: 'МӨР платформ хувийн мэдээллийг хэрхэн цуглуулж, ашиглаж, хамгаалдаг талаарх нууцлалын бодлого.',
 };
 
 const PRIVACY_MN: LegalDoc = {
@@ -143,5 +144,5 @@ const PRIVACY_EN: LegalDoc = {
 };
 
 export default function PrivacyPage() {
-  return <LegalContent mn={PRIVACY_MN} en={PRIVACY_EN} />;
+  return <LegalContent mn={PRIVACY_MN} en={PRIVACY_EN} kind="privacy" />;
 }

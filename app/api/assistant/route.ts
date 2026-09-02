@@ -2,7 +2,8 @@
 // AI Зөвлөхийн Groq API proxy (сонголттой — GROQ_API_KEY байхгүй бол ажиллахгүй)
 import { NextResponse } from 'next/server';
 
-const SYSTEM_PROMPT = `Та МӨР аппын гэрийн амьтны эрүүл мэндийн зөвлөх байна. Монгол хэлээр хариулна уу.
+const SYSTEM_PROMPTS = {
+  mn: `Та МӨР аппын гэрийн амьтны эрүүл мэндийн зөвлөх байна. Монгол хэлээр хариулна уу.
 
 Дүрэм:
 - Та малын эмч биш — онош тавихгүй, зөвхөн ерөнхий зөвлөгөө өгнө
@@ -11,12 +12,24 @@ const SYSTEM_PROMPT = `Та МӨР аппын гэрийн амьтны эрүү
 - Өгөгдсөн МЭДЛЭГИЙН ХЭСЭГ-т тулгуурла. Хангалтгүй бол тодорхойгүй гэдгээ хэл
 - Эмийн нэр, тун, оношийг зохиож болохгүй
 - Яаралтай шинж тэмдэг байвал хамгийн түрүүнд эмнэлэгт хандахыг зөвлө
-- Хариултын төгсгөлд '⚠️ Энэ зөвлөгөө нь малын эмчийг орлохгүй.' гэж нэмнэ
-- Товч, ойлгомжтой хариулна уу (500 тэмдэгтээс бага)`;
+- Хариултын төгсгөлд 'Энэ зөвлөгөө нь малын эмчийг орлохгүй.' гэж нэмнэ
+- Товч, ойлгомжтой хариулна уу (500 тэмдэгтээс бага)`,
+  en: `You are the pet health assistant in the MӨР app. Reply in English.
+
+Rules:
+- You are not a veterinarian. Do not diagnose; provide general guidance only.
+- Recommend contacting a veterinarian for severe or urgent symptoms.
+- Use the supplied KNOWLEDGE CONTEXT. Say when the information is insufficient.
+- Never invent medication names, dosages, or diagnoses.
+- Put urgent veterinary care first when emergency signs are described.
+- End with 'This guidance does not replace a veterinarian.'
+- Keep the response clear and under 500 characters.`,
+} as const;
 
 export async function POST(request: Request) {
   try {
     const { message, lang, context, petContext } = await request.json();
+    const locale = lang === 'en' ? 'en' : 'mn';
 
     // Валидаци
     if (!message || typeof message !== 'string' || message.trim().length === 0) {
@@ -42,8 +55,8 @@ export async function POST(request: Request) {
       body: JSON.stringify({
         model: 'llama-3.3-70b-versatile',
         messages: [
-          { role: 'system', content: SYSTEM_PROMPT },
-          { role: 'user', content: `Амьтны мэдээлэл: ${JSON.stringify(petContext || {})}\nМЭДЛЭГИЙН ХЭСЭГ:\n${Array.isArray(context) ? context.slice(0, 3).join('\n---\n') : 'Олдсонгүй'}\n\nАСУУЛТ: ${message}` },
+          { role: 'system', content: SYSTEM_PROMPTS[locale] },
+          { role: 'user', content: `${locale === 'mn' ? 'Амьтны мэдээлэл' : 'Pet context'}: ${JSON.stringify(petContext || {})}\n${locale === 'mn' ? 'МЭДЛЭГИЙН ХЭСЭГ' : 'KNOWLEDGE CONTEXT'}:\n${Array.isArray(context) ? context.slice(0, 3).join('\n---\n') : locale === 'mn' ? 'Олдсонгүй' : 'None found'}\n\n${locale === 'mn' ? 'АСУУЛТ' : 'QUESTION'}: ${message}` },
         ],
         max_tokens: 500,
         temperature: 0.2,

@@ -17,8 +17,11 @@ export async function GET() {
     } catch { database = false; }
   }
   const healthy = configured && database;
+  const version = process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7)
+    || process.env.npm_package_version
+    || 'local';
   return NextResponse.json(
-    { status: healthy ? 'ok' : 'degraded', version: 'v55', checks: { configuration: configured, database }, timestamp: new Date().toISOString() },
+    { status: healthy ? 'ok' : 'degraded', version, checks: { configuration: configured, database }, timestamp: new Date().toISOString() },
     { status: healthy ? 200 : 503, headers: { 'Cache-Control': 'no-store' } }
   );
 }

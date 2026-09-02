@@ -4,6 +4,7 @@ import type { LegalDoc } from '../../components/LegalContent';
 
 export const metadata: Metadata = {
   title: 'Үйлчилгээний нөхцөл | МӨР',
+  description: 'МӨР платформыг ашиглахад мөрдөх хэрэглэгчийн үүрэг, контент, модераци болон хариуцлагын нөхцөл.',
 };
 
 const TERMS_MN: LegalDoc = {
@@ -157,5 +158,5 @@ const TERMS_EN: LegalDoc = {
 };
 
 export default function TermsPage() {
-  return <LegalContent mn={TERMS_MN} en={TERMS_EN} />;
+  return <LegalContent mn={TERMS_MN} en={TERMS_EN} kind="terms" />;
 }

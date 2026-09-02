@@ -1,20 +1,23 @@
 'use client';
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { useLanguage } from '../lib/i18n';
 import SittingCardView from './SittingCardView';
 import type { SittingListing } from '../lib/types';
 
 export default function SittingCard({ listing }: { listing: SittingListing }) {
-  const router = useRouter();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const [revealed, setRevealed] = useState(false);
+  const typeLabel = listing.petType === 'Бүгд' ? t('sitting_pet_type_all')
+    : listing.petType === 'Нохой' ? t('type_dog')
+    : listing.petType === 'Муур' ? t('type_cat')
+    : t('type_other');
 
   return (
     <SittingCardView
       badgeLabel={t('sitting_badge')}
       petType={listing.petType}
+      petTypeLabel={typeLabel}
       description={listing.description}
       district={listing.district}
       place={listing.place}
@@ -25,16 +28,14 @@ export default function SittingCard({ listing }: { listing: SittingListing }) {
       createdAt={listing.createdAt}
       revealed={revealed}
       onRevealPhone={() => setRevealed(true)}
-      imageNode={
-        listing.photoURL ? (
-          <Image src={listing.photoURL} alt={listing.description} fill sizes="(max-width: 640px) 45vw, 220px" style={{ objectFit: 'cover' }} />
-        ) : undefined
-      }
-      onClick={() => router.push(`/sitting/${listing.id}`)}
-      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); router.push(`/sitting/${listing.id}`); } }}
-      role="link"
-      tabIndex={0}
-      aria-label={`${listing.petType} ${listing.district} — ${listing.place}`}
+      showPhoneLabel={t('detail_show_phone')}
+      callPhoneLabel={t('detail_call_phone')}
+      freeLabel={t('sitting_price_free')}
+      perDayLabel={t('sitting_price_per_day')}
+      detailHref={`/sitting/${listing.id}`}
+      detailLabel={t('listings_card_detail')}
+      language={lang}
+      imageNode={listing.photoURL ? <Image src={listing.photoURL} alt={listing.description || typeLabel} fill sizes="(max-width: 560px) 100vw, (max-width: 1000px) 50vw, 33vw" /> : undefined}
     />
   );
 }
