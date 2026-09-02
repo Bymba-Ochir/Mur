@@ -1,5 +1,6 @@
 'use client';
 import Image from 'next/image';
+import Icon from './icons';
 
 interface AvatarProps {
   src?: string | null;
@@ -15,7 +16,7 @@ export default function Avatar({ src, alt = '', size = 40, fallback, className =
       {src ? (
         <Image src={src} alt={alt} width={size} height={size} className="avatar-img" />
       ) : (
-        <span className="avatar-fallback" aria-hidden="true">{fallback ?? '🐾'}</span>
+        <span className="avatar-fallback" aria-hidden="true">{fallback ?? <Icon name="paw" size={Math.max(16, Math.round(size * 0.48))} />}</span>
       )}
       <style jsx>{`
         .avatar {
@@ -29,7 +30,7 @@ export default function Avatar({ src, alt = '', size = 40, fallback, className =
           flex-shrink: 0;
         }
         .avatar-img { width: 100%; height: 100%; object-fit: cover; }
-        .avatar-fallback { font-size: calc(var(--size, 40px) * 0.5); line-height: 1; }
+        .avatar-fallback { display:grid; place-items:center; color:var(--primary); line-height: 1; }
       `}</style>
     </span>
   );

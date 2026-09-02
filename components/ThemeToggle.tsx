@@ -42,6 +42,7 @@ export default function ThemeToggle() {
           transition: border-color 0.15s ease, background 0.15s ease;
         }
         .theme-btn:hover { background: var(--eyebrow-bg); border-color: var(--muted); }
+        .theme-btn:focus-visible { outline:2px solid var(--border-focus); outline-offset:2px; }
       `}</style>
     </button>
   );

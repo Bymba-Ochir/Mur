@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { DISTRICTS } from '../lib/districts';
 import { useLanguage } from '../lib/i18n';
 import { setLocalStorageValue, useLocalStorageValue } from '../lib/useLocalStorageState';
+import UiIcon from './ui/icons';
 
 const SEEN_KEY = 'mur-onboarding-v2-seen';
 const OPEN_EVENT = 'mur:open-onboarding';
@@ -94,7 +95,7 @@ export default function Onboarding() {
               <button key={choice.id} type="button" className={intent === choice.id ? 'selected' : ''} onClick={() => setIntent(choice.id)}>
                 <span className="choice-icon"><Icon name={choice.id} /></span>
                 <span><strong>{choice.title}</strong><small>{choice.text}</small></span>
-                <span className="choice-check">✓</span>
+                <span className="choice-check"><UiIcon name="check" size={15} /></span>
               </button>
             ))}
           </div>

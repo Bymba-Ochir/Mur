@@ -15,10 +15,9 @@ import Button from './ui/Button';
 import { subscribeToNotifications, unreadNotificationCount } from '../lib/workflowService';
 
 function truncateEmail(email: string): string {
-  const [local, domain] = email.split('@');
-  if (!domain) return email;
-  const visible = local.length > 3 ? local.slice(0, 3) + '...' : local;
-  return `${visible}@${domain}`;
+  const [local] = email.split('@');
+  if (!local) return email;
+  return local.length > 10 ? `${local.slice(0, 9)}…` : local;
 }
 
 const PawSVG = (
@@ -202,6 +201,7 @@ export default function Navbar() {
               aria-label={link.label}
             >
               {link.icon && <Icon name={link.icon} size={17} />}
+              <span className="icon-rail-label">{link.label}</span>
             </Link>
           ))}
           {admin && (
@@ -212,6 +212,7 @@ export default function Navbar() {
               aria-label={t('nav_admin')}
             >
               <Icon name="shield" size={17} />
+              <span className="icon-rail-label">{t('nav_admin')}</span>
             </Link>
           )}
         </div>
@@ -230,6 +231,7 @@ export default function Navbar() {
                 aria-haspopup="menu"
                 aria-controls="user-menu-popover"
                 aria-label={t('nav_user_menu_label')}
+                title={user.email ?? t('nav_user_menu_label')}
               >
                 <span className="user-avatar" aria-hidden="true"><Icon name="paw" size={15} /></span>
                 <span className="user-email">{user.email ? truncateEmail(user.email) : ''}</span>
@@ -237,28 +239,43 @@ export default function Navbar() {
                 <svg className={`user-chevron${showUserMenu ? ' open' : ''}`} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true" focusable="false"><path d="m6 9 6 6 6-6" /></svg>
               </button>
               {showUserMenu && (
-                <div id="user-menu-popover" className="user-dropdown" aria-label={t('nav_user_menu_label')}>
+                <div id="user-menu-popover" className="user-dropdown" role="menu" aria-label={t('nav_user_menu_label')}>
+                  <div className="dropdown-header">
+                    <span className="dropdown-avatar" aria-hidden="true"><Icon name="paw" size={17} /></span>
+                    <span className="dropdown-identity">
+                      <strong>{t('nav_profile')}</strong>
+                      <small title={user.email ?? undefined}>{user.email ?? t('nav_guest')}</small>
+                    </span>
+                  </div>
+                  <div className="dropdown-list">
                   {userMenuItems.map((item, idx) => (
                     item.isLink && item.href ? (
                       <Link
                         key={idx}
                         href={item.href}
                         className={`dropdown-item${item.accent ? ' dropdown-accent' : ''}`}
+                        role="menuitem"
                         onClick={() => setShowUserMenu(false)}
                       >
-                        {item.icon && <Icon name={item.icon} size={16} aria-hidden="true" />}
-                        {item.label}
+                        <span className="dropdown-icon" aria-hidden="true">
+                          {item.icon && <Icon name={item.icon} size={17} />}
+                        </span>
+                        <span>{item.label}</span>
                       </Link>
                     ) : (
                       <button
                         key={idx}
+                        type="button"
                         className={`dropdown-item${item.danger ? ' dropdown-danger' : ''}`}
+                        role="menuitem"
                         onClick={() => { item.onClick?.(); setShowUserMenu(false); }}
                       >
-                        {item.label}
+                        <span className="dropdown-icon" aria-hidden="true"><Icon name="arrowRight" size={17} /></span>
+                        <span>{item.label}</span>
                       </button>
                     )
                   ))}
+                  </div>
                 </div>
               )}
             </div>
@@ -388,7 +405,7 @@ export default function Navbar() {
           align-items: center;
           gap: var(--sp-3);
           width: 100%;
-          max-width: 1160px;
+          max-width: 1360px;
           height: 60px;
           padding: 0 var(--sp-4);
           background: var(--glass-bg);
@@ -510,7 +527,7 @@ export default function Navbar() {
           flex-shrink: 0;
         }
         .icon-rail-btn {
-          width: clamp(34px, 2.7vw, 38px);
+          min-width: 36px;
           height: 36px;
           flex: 0 0 auto;
           border-radius: var(--r-pill);
@@ -521,6 +538,20 @@ export default function Navbar() {
           position: relative;
           text-decoration: none;
           transition: color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
+        }
+        .icon-rail-label {
+          display: none;
+          overflow: hidden;
+          font-size: 11.5px;
+          font-weight: 650;
+          line-height: 1;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+        @media (min-width: 1281px) {
+          .icon-rail-btn { width: auto; gap: 6px; padding-inline: 10px; }
+          .icon-rail-label { display: inline; }
+          .icon-rail-btn[data-tip]::after { display: none; }
         }
         .icon-rail-btn:hover { color: var(--text-primary); background: var(--surface-3); }
         .icon-rail-btn.active { color: var(--text-primary); background: var(--surface-3); }
@@ -546,7 +577,7 @@ export default function Navbar() {
           z-index: 5;
         }
 
-        @media (max-width: 1120px) and (min-width: 1041px) { .nav-right :global(.donate-btn) { display: none; } }
+        @media (max-width: 1180px) and (min-width: 1041px) { .nav-right :global(.donate-btn) { display: none; } }
 
         /* ─── Right side actions ─── */
         .nav-right {
@@ -624,7 +655,7 @@ export default function Navbar() {
           position: absolute;
           top: calc(100% + 10px);
           right: 0;
-          min-width: 210px;
+          width: min(288px, calc(100vw - 32px));
           background: var(--surface-2);
           border: 1px solid var(--border-subtle);
           border-radius: var(--r-md);
@@ -636,14 +667,43 @@ export default function Navbar() {
           overflow-y: auto;
           animation: dropdownIn 0.2s var(--ease-out);
         }
+        .dropdown-header {
+          display: grid;
+          grid-template-columns: 38px minmax(0, 1fr);
+          align-items: center;
+          gap: 10px;
+          padding: 10px 10px 12px;
+          border-bottom: 1px solid var(--border-subtle);
+        }
+        .dropdown-avatar {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: 38px;
+          height: 38px;
+          color: var(--text-on-accent);
+          background: var(--grad-brand);
+          border-radius: 50%;
+        }
+        .dropdown-identity { display: grid; min-width: 0; gap: 2px; }
+        .dropdown-identity strong { color: var(--text-primary); font-size: var(--text-sm); }
+        .dropdown-identity small {
+          overflow: hidden;
+          color: var(--text-tertiary);
+          font-size: var(--text-xs);
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+        .dropdown-list { display: grid; gap: 2px; padding-top: 5px; }
         @keyframes dropdownIn {
           from { opacity: 0; transform: translateY(-8px) scale(0.98); }
           to { opacity: 1; transform: translateY(0) scale(1); }
         }
         .dropdown-item {
-          display: flex;
+          display: grid;
+          grid-template-columns: 30px minmax(0, 1fr);
           align-items: center;
-          gap: 10px;
+          gap: 8px;
           width: 100%;
           min-height: var(--touch-target);
           padding: 11px 12px;
@@ -659,9 +719,19 @@ export default function Navbar() {
           border-radius: var(--r-sm);
           transition: background var(--dur-fast) var(--ease-out);
         }
+        .dropdown-icon {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: 30px;
+          height: 30px;
+          color: currentColor;
+          background: var(--surface-3);
+          border-radius: var(--r-sm);
+        }
         .dropdown-item:hover { background: var(--surface-3); color: var(--text-primary); }
         .dropdown-accent { color: var(--accent); }
-        .dropdown-danger { color: var(--alert); }
+        .dropdown-danger { margin-top: 4px; color: var(--alert); border-top: 1px solid var(--border-subtle); }
 
         /* ─── Shared focus-visible ─── */
         .link-btn:focus-visible,

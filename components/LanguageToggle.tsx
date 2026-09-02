@@ -18,6 +18,7 @@ export default function LanguageToggle() {
           transition: border-color 0.15s ease, background 0.15s ease;
         }
         .lang-btn:hover { background: var(--eyebrow-bg); border-color: var(--muted); }
+        .lang-btn:focus-visible { outline:2px solid var(--border-focus); outline-offset:2px; }
       `}</style>
     </button>
   );

@@ -15,9 +15,39 @@ describe('page detail safeguards', () => {
 
   it('keeps primary navigation available at medium desktop widths', () => {
     const navbar = source('components/Navbar.tsx');
+    const globals = source('app/globals.css');
     expect(navbar).toContain('@media (min-width: 1041px) and (max-width: 1180px)');
     expect(navbar).not.toContain('@media (max-width: 1180px) {\n          .nav-links { display: none; }');
     expect(navbar).not.toContain('<header className="navbar">');
+    expect(globals).toContain('.navbar-wrap .nav-link');
+    expect(globals).not.toContain('@media (scripting: none)');
+    expect(globals).toContain('@media (max-width: 1040px)');
+  });
+
+  it('keeps account menu links styled, separated and semantically grouped', () => {
+    const navbar = source('components/Navbar.tsx');
+    const globals = source('app/globals.css');
+    expect(navbar).toContain('className="dropdown-header"');
+    expect(navbar).toContain('className="dropdown-list"');
+    expect(navbar).toContain('role="menu"');
+    expect(navbar).toContain('role="menuitem"');
+    expect(navbar).toContain('className="icon-rail-label"');
+    expect(globals).toContain('.navbar-wrap .dropdown-item');
+    expect(globals).toContain('grid-template-columns: 30px minmax(0, 1fr)');
+  });
+
+  it('stacks floating notices and uses SVG fallbacks', () => {
+    const globals = source('app/globals.css');
+    const install = source('components/InstallPrompt.tsx');
+    const analytics = source('components/AnalyticsNotice.tsx');
+    const avatar = source('components/ui/Avatar.tsx');
+    const onboarding = source('components/Onboarding.tsx');
+    expect(globals).toContain("body:has([data-floating-notice='analytics'])");
+    expect(install).toContain('data-floating-notice="install"');
+    expect(analytics).toContain('data-floating-notice="analytics"');
+    expect(avatar).toContain('<Icon name="paw"');
+    expect(onboarding).toContain('<UiIcon name="check"');
+    expect(`${install}${avatar}${onboarding}`).not.toMatch(/🐾|⬆️|✓/);
   });
 
   it('mobile navigation has modal close and focus containment', () => {

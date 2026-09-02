@@ -1,5 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
+import { useLanguage } from '../lib/i18n';
+import Icon from './ui/icons';
 
 const DISMISS_KEY = 'mur-install-dismissed';
 
@@ -10,6 +12,7 @@ interface BeforeInstallPromptEvent extends Event {
 }
 
 export default function InstallPrompt() {
+  const { t } = useLanguage();
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [visible, setVisible] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
@@ -60,43 +63,46 @@ export default function InstallPrompt() {
   if (!visible) return null;
 
   return (
-    <div className="install-banner" role="region" aria-label="Аппыг суулгах санал">
+    <div className="install-banner" data-floating-notice="install" role="region" aria-label={t('install_region_label')}>
       <div className="install-content">
-        <span className="install-icon" aria-hidden="true">🐾</span>
+        <span className="install-icon" aria-hidden="true"><Icon name="paw" size={23} /></span>
         <div>
-          <b>МӨР-ийг гэрийн дэлгэц рүү нэмэх</b>
+          <b>{t('install_title')}</b>
           {isIOS ? (
-            <p>Safari-ийн доод &quot;Share&quot; (⬆️) товч → &quot;Add to Home Screen&quot; дарна уу</p>
+            <p>{t('install_ios_hint')}</p>
           ) : (
-            <p>Апп шиг хурдан нээж ашиглаарай</p>
+            <p>{t('install_hint')}</p>
           )}
         </div>
       </div>
       <div className="install-actions">
-        {!isIOS && <button onClick={handleInstall} className="install-btn primary">Нэмэх</button>}
-        <button onClick={dismiss} className="install-btn ghost" aria-label="Аппыг суулгах саналыг хаах">Хаах</button>
+        {!isIOS && <button type="button" onClick={handleInstall} className="install-btn primary">{t('install_action')}</button>}
+        <button type="button" onClick={dismiss} className="install-btn ghost" aria-label={t('install_close_label')}>{t('install_close')}</button>
       </div>
 
       <style jsx>{`
         .install-banner {
-          position: fixed; bottom: 0; left: 0; right: 0; z-index: 140;
-          background: var(--brand); color: var(--text-on-accent); padding: 14px 18px;
+          position: fixed; bottom: calc(var(--sp-3) + var(--safe-bottom)); left: 50%; z-index: 140;
+          width: min(680px, calc(100vw - 32px)); transform: translateX(-50%);
+          background: var(--brand); color: var(--text-on-accent); padding: 12px 14px;
           display: flex; align-items: center; justify-content: space-between; gap: 12px;
-          flex-wrap: wrap; box-shadow: 0 -4px 16px rgba(0,0,0,0.15);
+          border: 1px solid color-mix(in srgb, var(--text-on-accent) 20%, transparent);
+          border-radius: var(--r-lg); box-shadow: var(--shadow-lift);
         }
         @media (max-width: 640px) {
-          .install-banner { bottom: 58px; }
+          .install-banner { bottom: calc(58px + var(--sp-2) + var(--safe-bottom)); align-items: stretch; flex-direction: column; }
         }
         .install-content { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 200px; }
-        .install-icon { font-size: 26px; }
-        .install-content p { font-size: 12.5px; color: color-mix(in srgb, var(--text-on-accent) 82%, transparent); margin-top: 2px; }
+        .install-icon { display:grid; place-items:center; width:40px; height:40px; flex:0 0 40px; background:color-mix(in srgb,var(--text-on-accent) 14%,transparent); border-radius:var(--r-md); }
+        .install-content p { font-size: 12.5px; line-height:1.45; color: color-mix(in srgb, var(--text-on-accent) 82%, transparent); margin-top: 2px; }
         .install-actions { display: flex; gap: 8px; }
-        .install-btn { padding: 8px 16px; border-radius: var(--r-pill); border: none; font-weight: 600; font-size: 13px; cursor: pointer; transition: transform .15s ease, box-shadow .2s ease, filter .2s ease; }
+        .install-btn { min-height:var(--touch-target-sm); padding: 8px 16px; border-radius: var(--r-pill); border: none; font-weight: 600; font-size: 13px; cursor: pointer; transition: transform .15s ease, box-shadow .2s ease, filter .2s ease; }
         .primary { background: var(--grad-accent); color: var(--accent-ink); }
         .primary:hover { filter: saturate(1.08); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
         .ghost { background: transparent; color: var(--text-on-accent); border: 1px solid color-mix(in srgb, var(--text-on-accent) 35%, transparent); }
         .ghost:hover { background: color-mix(in srgb, var(--text-on-accent) 12%, transparent); }
         .install-btn:focus-visible { outline: 2px solid var(--text-on-accent); outline-offset: 2px; }
+        @media (max-width: 420px) { .install-actions .install-btn { flex:1; } }
       `}</style>
     </div>
   );
