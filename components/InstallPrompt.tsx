@@ -90,7 +90,19 @@ export default function InstallPrompt() {
           border-radius: var(--r-lg); box-shadow: var(--shadow-lift);
         }
         @media (max-width: 640px) {
-          .install-banner { bottom: calc(58px + var(--sp-2) + var(--safe-bottom)); align-items: stretch; flex-direction: column; }
+          .install-banner {
+            bottom:calc(var(--sp-2) + var(--safe-bottom));
+            width:calc(100vw - 16px);
+            align-items:center;
+            padding:10px;
+            border-radius:var(--r-md);
+          }
+          .install-content{gap:8px;min-width:0}
+          .install-icon{width:34px;height:34px;flex-basis:34px}
+          .install-content b{font-size:12px}
+          .install-content p{display:-webkit-box;overflow:hidden;font-size:11px;-webkit-box-orient:vertical;-webkit-line-clamp:2}
+          .install-actions{flex:0 0 auto;gap:4px}
+          .install-btn{min-height:36px;padding:6px 9px;font-size:11px}
         }
         .install-content { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 200px; }
         .install-icon { display:grid; place-items:center; width:40px; height:40px; flex:0 0 40px; background:color-mix(in srgb,var(--text-on-accent) 14%,transparent); border-radius:var(--r-md); }
@@ -102,7 +114,10 @@ export default function InstallPrompt() {
         .ghost { background: transparent; color: var(--text-on-accent); border: 1px solid color-mix(in srgb, var(--text-on-accent) 35%, transparent); }
         .ghost:hover { background: color-mix(in srgb, var(--text-on-accent) 12%, transparent); }
         .install-btn:focus-visible { outline: 2px solid var(--text-on-accent); outline-offset: 2px; }
-        @media (max-width: 420px) { .install-actions .install-btn { flex:1; } }
+        @media (max-width: 380px) {
+          .install-banner{align-items:stretch;flex-direction:column}
+          .install-actions .install-btn{flex:1}
+        }
       `}</style>
     </div>
   );

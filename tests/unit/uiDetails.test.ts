@@ -50,6 +50,27 @@ describe('page detail safeguards', () => {
     expect(`${install}${avatar}${onboarding}`).not.toMatch(/🐾|⬆️|✓/);
   });
 
+  it('keeps the mobile viewport reachable without a phantom bottom navigation', () => {
+    const globals = source('app/globals.css');
+    const toast = source('components/Toast.tsx');
+    const install = source('components/InstallPrompt.tsx');
+    const analytics = source('components/AnalyticsNotice.tsx');
+    expect(globals).toContain('overflow-x:clip');
+    expect(globals).toContain('font-size:16px');
+    expect(globals).toContain("body:has([data-floating-notice='analytics']) main");
+    expect(`${toast}${install}${analytics}`).not.toMatch(/bottom:\s*(?:58px|76px)/);
+  });
+
+  it('mobile overlays lock background scroll and preserve safe areas', () => {
+    const onboarding = source('components/Onboarding.tsx');
+    const modal = source('components/ui/Modal.tsx');
+    expect(onboarding).toContain("document.body.style.overflow = 'hidden'");
+    expect(onboarding).toContain("event.key === 'Escape'");
+    expect(onboarding).toContain('var(--safe-bottom)');
+    expect(modal).toContain("document.body.style.overflow = 'hidden'");
+    expect(modal).toContain("e.key === 'Escape'");
+  });
+
   it('mobile navigation has modal close and focus containment', () => {
     const navbar = source('components/Navbar.tsx');
     expect(navbar).toContain('mobileCloseButtonRef');
@@ -288,6 +309,17 @@ describe('page detail safeguards', () => {
     expect(edit).toContain('aria-invalid={Boolean(nameError)}');
     expect(edit).toContain('profile_edit_load_error');
     expect(edit).not.toContain('style={{');
+  });
+
+  it('pet profile detail uses a compact mobile tab and contact layout', () => {
+    const layout = source('components/PetProfileLayout.tsx');
+    const myPet = source('app/profiles/mypet/[id]/MyPetProfileClient.tsx');
+    expect(layout).toContain('@media(max-width:640px)');
+    expect(layout).toContain('overflow-x:auto');
+    expect(layout).toContain('className="phone-row"');
+    expect(layout).not.toContain('style={{');
+    expect(myPet).toContain('className="health-stack"');
+    expect(myPet).not.toContain('style={{');
   });
 
   it('my pets uses semantic cards and persisted health details', () => {

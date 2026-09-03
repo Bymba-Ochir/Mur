@@ -43,6 +43,23 @@ export default function Onboarding() {
     return () => window.removeEventListener(OPEN_EVENT, open);
   }, []);
 
+  useEffect(() => {
+    if (!visible) return;
+    const previousOverflow = document.body.style.overflow;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setLocalStorageValue(SEEN_KEY, '1');
+        setManualOpen(false);
+      }
+    };
+    document.body.style.overflow = 'hidden';
+    document.addEventListener('keydown', closeOnEscape);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener('keydown', closeOnEscape);
+    };
+  }, [visible]);
+
   function close() {
     setLocalStorageValue(SEEN_KEY, '1');
     setManualOpen(false);
@@ -139,7 +156,7 @@ export default function Onboarding() {
         .onb-progress { display: flex; gap: 7px; flex: 1; max-width: 180px; }
         .onb-progress span { width: 100%; height: 5px; border-radius: 999px; background: var(--surface-3); }
         .onb-progress span.active { background: var(--primary); }
-        .onb-close { width: 38px; height: 38px; border: 1px solid var(--border-subtle); border-radius: 50%; color: var(--text-secondary); background: var(--surface-2); font-size: 26px; line-height: 1; cursor: pointer; }
+        .onb-close { width: var(--touch-target); height: var(--touch-target); border: 1px solid var(--border-subtle); border-radius: 50%; color: var(--text-secondary); background: var(--surface-2); font-size: 26px; line-height: 1; cursor: pointer; }
         .onb-kicker { display: block; margin-bottom: 8px; color: var(--primary); font-family: var(--font-mono); font-size: 12px; font-weight: 700; letter-spacing: .08em; }
         h2 { margin: 0; color: var(--text-primary); font-family: var(--font-display); font-size: clamp(1.45rem, 4vw, 2rem); line-height: 1.2; }
         .onb-lead { margin: 10px 0 22px; color: var(--text-secondary); font-size: 14px; line-height: 1.6; }
@@ -167,7 +184,8 @@ export default function Onboarding() {
         .onb-actions .primary { color: var(--text-on-accent); background: var(--primary); border: 0; }
         .onb-actions .primary:disabled { opacity: .45; cursor: not-allowed; }
         button:focus-visible, select:focus-visible { outline: 3px solid var(--border-focus); outline-offset: 2px; }
-        @media (max-width: 560px) { .onb-overlay { align-items: end; padding: 0; } .onb-card { max-height: 92dvh; padding: 22px 18px calc(18px + env(safe-area-inset-bottom)); border-radius: 24px 24px 0 0; } .onb-choices { grid-template-columns: 1fr; } .onb-choices button { min-height: 70px; } }
+        @media (max-width: 560px) { .onb-overlay { align-items: end; padding: 0; } .onb-card { max-height: 92dvh; padding: 18px 16px calc(16px + var(--safe-bottom)); border-radius: 24px 24px 0 0; overscroll-behavior:contain; } .onb-top{margin-bottom:14px}.onb-lead{margin:8px 0 16px;line-height:1.5}.onb-choices { grid-template-columns: 1fr; gap:8px } .onb-choices button { min-height:64px;padding:10px 12px }.onb-centered{padding:2px}.large-icon{width:54px;height:54px;margin-bottom:12px}.onb-actions{position:sticky;bottom:calc(-16px - var(--safe-bottom));margin:18px -16px 0;padding:12px 16px calc(12px + var(--safe-bottom));background:var(--card)} }
+        @media (max-width: 370px) { .choice-icon{width:40px;height:40px}.onb-choices button small{display:none}.onb-actions{grid-template-columns:1fr 1.25fr} }
         @media (prefers-reduced-motion: reduce) { .onb-card { animation: none; } }
       `}</style>
     </div>

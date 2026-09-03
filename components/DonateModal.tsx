@@ -166,15 +166,15 @@ export default function DonateModal({ onClose }: { onClose: () => void }) {
                 <circle cx="12" cy="12" r="9" /><path d="M8.5 12.5l2.5 2.5 4.5-5" />
               </svg>
             </div>
-            <p style={{ fontWeight: 700, color: 'var(--success)' }}>{t('donate_thanks')}</p>
+            <p className="paid-title">{t('donate_thanks')}</p>
             <p className="hint">{finalAmount.toLocaleString()}₮ {t('donate_paid_hint')}</p>
             <button className="submit-btn" onClick={onClose}>{t('donate_close')}</button>
           </div>
         )}
 
         {stage === 'error' && (
-          <div>
-            <p role="alert" style={{ color: 'var(--alert)' }}>{errorMsg}</p>
+          <div className="donation-error">
+            <p role="alert">{errorMsg}</p>
             <button className="submit-btn" onClick={() => setStage('form')}>{t('donate_retry')}</button>
           </div>
         )}
@@ -194,12 +194,16 @@ export default function DonateModal({ onClose }: { onClose: () => void }) {
         .submit-btn:focus-visible { outline: 2.5px solid var(--accent); outline-offset: 2px; }
         .qr-box, .paid-box { text-align: center; }
         .paid-icon { display: flex; justify-content: center; margin-bottom: 8px; color: var(--success); }
+        .paid-title { color: var(--success); font-weight: 700; }
+        .donation-error { display:grid; gap:var(--sp-2); color:var(--alert); }
         .qr-img { width: 200px; height: 200px; margin: 10px auto; border-radius: var(--r-sm); border: 1px solid var(--line); }
         .deep-links { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 10px 0; }
         .deep-link { display: flex; align-items: center; gap: 4px; font-size: 11.5px; background: var(--eyebrow-bg); color: var(--primary); padding: 5px 10px; border-radius: var(--r-sm); text-decoration: none; }
         .deep-link img { width: 16px; height: 16px; border-radius: var(--r-sm); }
         @media (max-width: 480px) {
           input, textarea { font-size: 16px; }
+          .amount-btn, .deep-link { min-height:var(--touch-target); }
+          .qr-img { width:min(200px,70vw); height:auto; }
         }
       `}</style>
     </Modal>

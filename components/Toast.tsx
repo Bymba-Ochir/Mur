@@ -62,7 +62,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 
       <style jsx>{`
         .toast-stack {
-          position: fixed; bottom: calc(76px + var(--safe-bottom)); left: 50%; transform: translateX(-50%);
+          position: fixed; bottom: calc(var(--sp-3) + var(--safe-bottom)); left: 50%; transform: translateX(-50%);
           z-index: 300; display: flex; flex-direction: column; gap: var(--sp-2);
           width: 92%; max-width: 380px; pointer-events: none;
         }
@@ -77,6 +77,10 @@ export function ToastProvider({ children }: { children: ReactNode }) {
         .toast-error { background: var(--alert); }
         .toast-success { background: var(--toast-success-bg); animation: slideUpBounce 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
         .toast-info { background: var(--brand); }
+        @media(max-width:640px){
+          .toast-stack{bottom:calc(var(--sp-2) + var(--safe-bottom));width:calc(100% - 16px)}
+          .toast{padding:10px 12px;border-radius:var(--r-md);font-size:12px}
+        }
         @keyframes slideUp {
           from { opacity: 0; transform: translateY(12px); }
           to { opacity: 1; transform: translateY(0); }

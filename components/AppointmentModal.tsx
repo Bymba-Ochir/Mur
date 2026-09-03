@@ -11,8 +11,13 @@ import Modal from './ui/Modal';
 import FieldHint from './ui/FieldHint';
 import Button from './ui/Button';
 import Icon from './ui/icons';
+import type { TranslationKey } from '../lib/i18n';
 
-const SERVICE_I18N: Record<string, 'service_exam' | 'service_vaccination' | 'service_surgery' | 'service_dental'> = { 'Үзлэг': 'service_exam', 'Вакцин': 'service_vaccination', 'Мэс засал': 'service_surgery', 'Шүд арчилгаа': 'service_dental' };
+const SERVICE_I18N: Record<VetService, TranslationKey> = {
+  'Үзлэг': 'service_exam', 'Вакцин': 'service_vaccination', 'Мэс засал': 'service_surgery', 'Шүд арчилгаа': 'service_dental',
+  'Рентген': 'service_xray', 'ЭХО': 'service_ultrasound', 'Цусны шинжилгээ': 'service_blood_test',
+  'Микрочип': 'service_microchip', 'Туулгалт': 'service_deworming', 'Арчилгаа': 'service_grooming',
+};
 
 export default function AppointmentModal({ clinic, onClose, onCreated }: { clinic: VetClinic; onClose: () => void; onCreated: () => void; }) {
   const { user } = useAuth(); const { t } = useLanguage(); const showToast = useToast();

@@ -143,7 +143,17 @@ export interface PetHealthData {
   medications: Medication[];
 }
 
-export type VetService = 'Үзлэг' | 'Вакцин' | 'Мэс засал' | 'Шүд арчилгаа';
+export type VetService =
+  | 'Үзлэг'
+  | 'Вакцин'
+  | 'Мэс засал'
+  | 'Шүд арчилгаа'
+  | 'Рентген'
+  | 'ЭХО'
+  | 'Цусны шинжилгээ'
+  | 'Микрочип'
+  | 'Туулгалт'
+  | 'Арчилгаа';
 
 export interface VetClinic {
   id: string;
@@ -151,11 +161,16 @@ export interface VetClinic {
   district: string;
   address: string;
   phone: string;
+  phones?: string[];
   hours: string;
   note?: string;
   lat: number;
   lng: number;
   services: VetService[];
+  websiteUrl?: string;
+  mapUrl: string;
+  verifiedAt: string;
+  serviceDetailsVerified: boolean;
 }
 
 export type AppointmentStatus = 'pending' | 'confirmed' | 'completed' | 'cancelled';

@@ -41,8 +41,19 @@ export default function AnalyticsNotice() {
           font-size: 13.5px;
         }
         @media (max-width: 640px) {
-          .analytics-notice { bottom: calc(58px + var(--sp-2) + var(--safe-bottom)); grid-template-columns:32px minmax(0,1fr); }
-          .analytics-actions { grid-column:1 / -1; }
+          .analytics-notice {
+            bottom: calc(var(--sp-2) + var(--safe-bottom));
+            width: calc(100vw - 16px);
+            grid-template-columns:28px minmax(0,1fr) auto;
+            gap:8px;
+            padding:9px 10px;
+            border-radius:var(--r-md);
+            font-size:11.5px;
+          }
+          .analytics-actions { gap:4px; }
+          .analytics-actions button { min-height:36px; padding:6px 9px; font-size:11px; }
+          .notice-icon { width:28px; height:28px; }
+          .analytics-notice p { line-height:1.35; }
         }
         .notice-icon{display:grid;place-items:center;width:36px;height:36px;color:var(--primary);background:var(--eyebrow-bg);border-radius:var(--r-sm)}
         .analytics-notice p { margin: 0; line-height: 1.4; }
@@ -55,7 +66,12 @@ export default function AnalyticsNotice() {
         .accept { background: var(--brand); color: var(--text-on-accent); }
         .decline { background: transparent; color: var(--muted); border: 1px solid var(--line); }
         .analytics-actions button:focus-visible,.analytics-notice a:focus-visible{outline:2px solid var(--border-focus);outline-offset:2px}
-        @media(max-width:420px){.analytics-actions button{flex:1}}
+        @media(max-width:380px){
+          .analytics-notice{grid-template-columns:26px minmax(0,1fr)}
+          .analytics-actions{grid-column:1/-1}
+          .analytics-actions button{flex:1}
+          .analytics-notice p{display:-webkit-box;overflow:hidden;-webkit-box-orient:vertical;-webkit-line-clamp:3}
+        }
       `}</style>
     </div>
   );

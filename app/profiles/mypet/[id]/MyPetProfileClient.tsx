@@ -55,10 +55,11 @@ export default function MyPetProfileClient({ id }: { id: string }) {
   };
 
   const healthSection = health ? (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-5)' }}>
+    <div className="health-stack">
       <VaccinationsSection petId={pet.id} vaccinations={health.vaccinations} onUpdate={load} />
       <ConditionsSection petId={pet.id} conditions={health.conditions} onUpdate={load} />
       <MedicationsSection petId={pet.id} medications={health.medications} onUpdate={load} />
+      <style jsx>{`.health-stack{display:flex;flex-direction:column;gap:var(--sp-5)}@media(max-width:640px){.health-stack{gap:var(--sp-3)}}`}</style>
     </div>
   ) : null;
 

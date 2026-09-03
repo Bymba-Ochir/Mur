@@ -248,7 +248,7 @@
    Reset & base
    ═══════════════════════════════════════ */
 * { box-sizing: border-box; margin: 0; padding: 0; }
-html { -webkit-text-size-adjust: 100%; }
+html { width:100%; overflow-x:clip; -webkit-text-size-adjust: 100%; scroll-padding-top:calc(var(--nav-h) + var(--sp-4)); }
 
 body {
   background:
@@ -265,7 +265,7 @@ body {
   padding-top: 88px;
 }
 @media (max-width: 640px) {
-  body { padding-top: calc(var(--nav-h) + 12px); }
+  body { width:100%; padding-top: calc(var(--nav-h) + 12px); overflow-x:clip; }
 }
 
 main {
@@ -276,7 +276,13 @@ main {
 }
 @media (min-width: 1400px) { main { max-width: 1240px; } }
 @media (max-width: 1024px) { main { padding: var(--sp-5) var(--sp-4) calc(var(--sp-7) + var(--safe-bottom)); } }
-@media (max-width: 640px) { main { padding: var(--sp-4) var(--sp-3) calc(var(--sp-6) + var(--safe-bottom)); } }
+@media (max-width: 640px) {
+  main { width:100%; min-width:0; padding:var(--sp-4) max(var(--sp-3),var(--safe-left)) calc(var(--sp-6) + var(--safe-bottom)); }
+  main > .page-transition { min-width:0; }
+  img,video,canvas { max-width:100%; }
+  input,select,textarea { font-size:16px; }
+  h1,h2,h3,p,a,button,label,legend { overflow-wrap:anywhere; }
+}
 @media (max-width: 400px) { main { padding: var(--sp-3) var(--sp-2) calc(var(--sp-5) + var(--safe-bottom)); } }
 
 /* Нэгдсэн хуудасны өргөн ба босоо хэмнэл */
@@ -601,8 +607,12 @@ body:has([data-floating-notice='analytics']) [data-floating-notice='install'] {
 }
 @media (max-width: 640px) {
   body:has([data-floating-notice='analytics']) [data-floating-notice='install'] {
-    bottom: calc(58px + var(--safe-bottom) + 172px);
+    bottom: calc(var(--safe-bottom) + 124px);
   }
+  body:has([data-floating-notice='analytics']) main { padding-bottom:calc(var(--sp-8) + 112px + var(--safe-bottom)); }
+  body:has([data-floating-notice='install']) main { padding-bottom:calc(var(--sp-8) + 104px + var(--safe-bottom)); }
+  body:has([data-floating-notice='analytics']) .toast-stack,
+  body:has([data-floating-notice='install']) .toast-stack { bottom:calc(var(--safe-bottom) + 120px); }
 }
 
 /* ═══════════════════════════════════════

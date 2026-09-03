@@ -113,6 +113,8 @@ export default function Footer() {
         @media (max-width:640px) {
           .footer-inner { flex-direction:column; }
           .footer-links { width: 100%; grid-template-columns: repeat(2, minmax(0, 1fr)); justify-content:stretch; max-width:none; gap: var(--sp-1) var(--sp-3); }
+          .footer-links :global(a) { min-height: var(--touch-target); padding: 4px 0; }
+          .footer-rights { line-height: 1.5; }
         }
       `}</style>
     </footer>

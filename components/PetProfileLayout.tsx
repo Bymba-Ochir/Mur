@@ -61,7 +61,7 @@ export default function PetProfileLayout({
               alt={data.name || typeLabel}
               fill
               sizes="128px"
-              style={{ objectFit: 'cover', borderRadius: '50%' }}
+              className="avatar-image"
             />
           ) : (
             <span className="avatar-placeholder">
@@ -76,15 +76,15 @@ export default function PetProfileLayout({
           {data.breed && <span className="chip">{data.breed}</span>}
           {data.age && <span className="chip">{data.age}</span>}
           {data.gender && data.gender !== 'Тодорхойгүй' && (
-            <span className="chip">{data.gender === 'Эрэгтэй' ? '♂' : '♀'} {data.gender}</span>
+            <span className="chip">{data.gender}</span>
           )}
           {data.weight != null && <span className="chip">{data.weight} {t('profiles_weight_chip')}</span>}
         </div>
 
         {vaxStatus && vaxLabel && (
-          <div className="vax-status" style={{ color: vaxLabel.color }}>
+          <div className={`vax-status vax-${vaxStatus}`}>
             <Icon name={vaxLabel.icon} size={15} /> {vaxLabel.text}
-            {data.nextVaccineName && <span style={{ fontWeight: 400, color: 'var(--muted)' }}> · {data.nextVaccineName}</span>}
+            {data.nextVaccineName && <span> · {data.nextVaccineName}</span>}
           </div>
         )}
       </div>
@@ -115,7 +115,7 @@ export default function PetProfileLayout({
                   alt={data.name || typeLabel}
                   fill
                   sizes="(max-width: 640px) 100vw, 520px"
-                  style={{ objectFit: 'cover' }}
+                  className="profile-photo"
                   priority
                 />
               </div>
@@ -151,11 +151,11 @@ export default function PetProfileLayout({
           {data.district && <p><strong>{t('detail_district')}</strong> {data.district}</p>}
           {data.place && <p><strong>{t('detail_place')}</strong> {data.place}</p>}
           {data.phone && (
-            <div style={{ marginTop: 'var(--sp-2)' }}>
+            <div className="phone-row">
               {phoneRevealed ? (
                 <a href={`tel:${data.phone}`} className="phone-link"><Icon name="phone" size={17} /> {formatPhone(data.phone)}</a>
               ) : (
-                <Button variant="ghost" onClick={() => setPhoneRevealed(true)} style={{ fontSize: 13, minHeight: 36 }}>
+                <Button variant="ghost" size="sm" className="reveal-phone" onClick={() => setPhoneRevealed(true)}>
                   <Icon name="phone" size={17} /> {maskPhone(data.phone)} · {t('detail_show_phone')}
                 </Button>
               )}
@@ -189,6 +189,8 @@ export default function PetProfileLayout({
           width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
           color: var(--primary); background: var(--glass-bg); border-radius: 50%;
         }
+        .avatar :global(.avatar-image),.photo-box :global(.profile-photo){object-fit:cover}
+        .avatar :global(.avatar-image){border-radius:50%}
         .profile-name {
           font-family: var(--font-display); font-size: 22px; font-weight: 700;
           color: var(--primary); margin-bottom: 4px;
@@ -201,6 +203,8 @@ export default function PetProfileLayout({
           color: var(--primary); font-weight: 600;
         }
         .vax-status { margin-top: var(--sp-2); font-size: 12px; font-family: var(--font-mono); font-weight: 600; display: inline-flex; align-items: center; gap: 5px; }
+        .vax-status span{color:var(--muted);font-weight:400}
+        .vax-overdue{color:var(--alert)}.vax-soon{color:var(--accent)}.vax-ok{color:var(--success)}.vax-none{color:var(--muted)}
 
         .tab-bar {
           display: flex; gap: 2px; margin-bottom: var(--sp-4);
@@ -238,11 +242,30 @@ export default function PetProfileLayout({
         .section-title { font-size: 14px; font-weight: 600; color: var(--primary); margin-bottom: var(--sp-2); }
         .contact-card p { font-size: 13px; margin: 4px 0; }
         .phone-link { font-size: 14px; font-weight: 600; color: var(--primary); text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
+        .phone-row{margin-top:var(--sp-2)}
 
         .share-section { text-align: center; margin: var(--sp-4) 0; }
         .share-hint { font-size: 12px; color: var(--muted); margin-top: var(--sp-2); }
 
         .owner-notice { text-align: center; font-size: 12px; color: var(--muted); margin-top: var(--sp-4); }
+        @media(max-width:640px){
+          .profile-page{width:100%}
+          .profile-header{padding:var(--sp-3) 0 var(--sp-4)}
+          .avatar{width:96px;height:96px;margin-bottom:var(--sp-2)}
+          .avatar-placeholder :global(svg){width:54px;height:54px}
+          .profile-name{font-size:20px}
+          .chips{gap:5px}
+          .chip{padding:4px 9px;font-size:11px}
+          .vax-status{max-width:100%;align-items:flex-start;flex-wrap:wrap;justify-content:center;line-height:1.45}
+          .tab-bar{position:sticky;top:calc(var(--nav-h) + 8px);z-index:8;margin-inline:calc(var(--sp-3) * -1);padding:4px var(--sp-3);overflow-x:auto;border-radius:0;background:color-mix(in srgb,var(--surface-1) 90%,transparent);backdrop-filter:blur(14px);scrollbar-width:none}
+          .tab{min-width:max-content;min-height:var(--touch-target);padding-inline:var(--sp-3)}
+          .photo-box{aspect-ratio:1;border-radius:var(--r-md)}
+          .description,.history-card,.contact-card{font-size:14px}
+          .history-card,.contact-card{padding:var(--sp-3);border-radius:var(--r-md)}
+          .phone-link,.phone-row :global(.reveal-phone){width:100%;justify-content:center;min-height:var(--touch-target)}
+          .share-section :global(.share-buttons){justify-content:center}
+        }
+        @media(max-width:380px){.tab{font-size:12px}.profile-header{padding-top:var(--sp-2)}}
       `}</style>
     </div>
   );

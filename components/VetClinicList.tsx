@@ -14,9 +14,14 @@ import EmptyState from './ui/EmptyState';
 import Button from './ui/Button';
 import Icon from './ui/icons';
 import type { VetClinic, VetService } from '../lib/types';
+import type { TranslationKey } from '../lib/i18n';
 
-const SERVICE_OPTIONS: VetService[] = ['Үзлэг', 'Вакцин', 'Мэс засал', 'Шүд арчилгаа'];
-const SERVICE_I18N: Record<VetService, 'service_exam' | 'service_vaccination' | 'service_surgery' | 'service_dental'> = { 'Үзлэг': 'service_exam', 'Вакцин': 'service_vaccination', 'Мэс засал': 'service_surgery', 'Шүд арчилгаа': 'service_dental' };
+const SERVICE_OPTIONS: VetService[] = ['Үзлэг', 'Вакцин', 'Мэс засал', 'Шүд арчилгаа', 'Рентген', 'ЭХО', 'Цусны шинжилгээ', 'Микрочип', 'Туулгалт', 'Арчилгаа'];
+const SERVICE_I18N: Record<VetService, TranslationKey> = {
+  'Үзлэг': 'service_exam', 'Вакцин': 'service_vaccination', 'Мэс засал': 'service_surgery', 'Шүд арчилгаа': 'service_dental',
+  'Рентген': 'service_xray', 'ЭХО': 'service_ultrasound', 'Цусны шинжилгээ': 'service_blood_test',
+  'Микрочип': 'service_microchip', 'Туулгалт': 'service_deworming', 'Арчилгаа': 'service_grooming',
+};
 
 export default function VetClinicList({ embedded = false }: { embedded?: boolean }) {
   const { user } = useAuth(); const { t } = useLanguage(); const showToast = useToast();
