@@ -13,6 +13,12 @@ function daysFromNow(n: number): string {
 }
 
 describe('vaccineStatus', () => {
+  it('өнөөдрийн тов хэтэрсэн гэж харагдахгүй', () => {
+    const now = new Date();
+    const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    expect(vaccineStatus(today)).toBe('soon');
+    expect(vaccineStatus('invalid')).toBe('none');
+  });
   it('огноо тохируулаагүй бол "none"', () => {
     expect(vaccineStatus(null)).toBe('none');
     expect(vaccineStatus(undefined)).toBe('none');

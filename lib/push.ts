@@ -70,3 +70,18 @@ export async function isSubscribed(): Promise<boolean> {
   const sub = await registration.pushManager.getSubscription();
   return !!sub;
 }
+
+export async function isVaccineSubscribed(): Promise<boolean> {
+  if (!isPushSupported()) return false;
+  const registration = await navigator.serviceWorker.getRegistration('/sw.js');
+  const sub = await registration?.pushManager.getSubscription();
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!sub || !session) return false;
+  const response = await fetch(`/api/push-subscriptions?endpoint=${encodeURIComponent(sub.endpoint)}`, {
+    headers: { Authorization: `Bearer ${session.access_token}` },
+    cache: 'no-store',
+  });
+  if (!response.ok) return false;
+  const data = await response.json() as { vaccine?: boolean };
+  return data.vaccine === true;
+}

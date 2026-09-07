@@ -81,7 +81,12 @@ export default function MessagesPage() {
         <p>{tab === 'messages' ? t('chat_list_desc') : t('assistant_desc')}</p>
       </header>
 
-      <nav className="hub-tabs" role="tablist" aria-label={t('messages_hub_nav')}>
+      <nav className="hub-tabs" role="tablist" aria-label={t('messages_hub_nav')} onKeyDown={(event) => {
+        if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+        event.preventDefault();
+        const next = event.key === 'Home' ? 'messages' : event.key === 'End' ? 'assistant' : tab === 'messages' ? 'assistant' : 'messages';
+        selectTab(next); document.getElementById(`${next}-tab`)?.focus();
+      }}>
         <button id="messages-tab" type="button" role="tab" aria-selected={tab === 'messages'} aria-controls="messages-panel" tabIndex={tab === 'messages' ? 0 : -1} className={tab === 'messages' ? 'active' : ''} onClick={() => selectTab('messages')}><Icon name="message" size={17} />{t('messages_tab_chat')}</button>
         <button id="assistant-tab" type="button" role="tab" aria-selected={tab === 'assistant'} aria-controls="assistant-panel" tabIndex={tab === 'assistant' ? 0 : -1} className={tab === 'assistant' ? 'active' : ''} onClick={() => selectTab('assistant')}><Icon name="bot" size={17} />{t('messages_tab_assistant')}</button>
       </nav>

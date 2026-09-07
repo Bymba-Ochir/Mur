@@ -131,8 +131,11 @@ export async function deleteMyPet(id: string): Promise<void> {
  */
 export function vaccineStatus(nextVaccineDate: string | null | undefined): VaccineStatus {
   if (!nextVaccineDate) return 'none';
-  const days = (new Date(nextVaccineDate)
-    .getTime() - Date.now()) / (1000 * 60 * 60 * 24);
+  const due = new Date(`${nextVaccineDate}T00:00:00`);
+  if (Number.isNaN(due.getTime())) return 'none';
+  const today = new Date();
+  const days = (Date.UTC(due.getFullYear(), due.getMonth(), due.getDate()) -
+    Date.UTC(today.getFullYear(), today.getMonth(), today.getDate())) / 86400000;
   if (days < 0) return 'overdue';
   if (days <= 14) return 'soon';
   return 'ok';

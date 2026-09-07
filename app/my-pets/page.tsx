@@ -2,8 +2,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
 import { useAuth } from '../../lib/useAuth';
-import { createMyPet, fetchMyPets, deleteMyPet, updateVaccineDate } from '../../lib/vaccineService';
-import { subscribeToVaccineReminders, isSubscribed } from '../../lib/push';
+import { createMyPet, fetchMyPets, deleteMyPet, updateVaccineDate, vaccineStatus } from '../../lib/vaccineService';
+import { subscribeToVaccineReminders, isVaccineSubscribed } from '../../lib/push';
 import { useToast } from '../../components/Toast';
 import { useLanguage } from '../../lib/i18n';
 import MyPetCard from '../../components/MyPetCard';
@@ -20,12 +20,14 @@ import { getErrorMessage } from '../../lib/utils';
 export default function MyPetsPage() {
   const { user, loading: authLoading } = useAuth();
   const showToast = useToast();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
+  const [showAddForm, setShowAddForm] = useState<boolean | null>(null);
+  const [notifyBusy, setNotifyBusy] = useState(false);
   const [pets, setPets] = useState<MyPet[]>([]);
   const [petsLoading, setPetsLoading] = useState(true);
   const [selectedPetId, setSelectedPetId] = useState<string | null>(null);
   const [name, setName] = useState(''); const [type, setType] = useState('Нохой'); const [age, setAge] = useState(''); const [breed, setBreed] = useState(''); const [weight, setWeight] = useState(''); const [vaxName, setVaxName] = useState(''); const [date, setDate] = useState('');
-  const [subscribed, setSubscribed] = useState(false); const [notifyError, setNotifyError] = useState(''); const [busy, setBusy] = useState(false); const [petsError, setPetsError] = useState(''); const [dateBusyId, setDateBusyId] = useState<string | null>(null); const [deleteTarget, setDeleteTarget] = useState<MyPet | null>(null); const [deleteBusy, setDeleteBusy] = useState(false); const [showLogin, setShowLogin] = useState(false);
+  const [subscribed, setSubscribed] = useState(false); const [notifyError, setNotifyError] = useState(''); const [busy, setBusy] = useState(false); const [petsError, setPetsError] = useState(''); const [deleteTarget, setDeleteTarget] = useState<MyPet | null>(null); const [deleteBusy, setDeleteBusy] = useState(false); const [showLogin, setShowLogin] = useState(false);
 
   const load = useCallback(async () => {
     setPetsLoading(true); setPetsError('');
@@ -36,7 +38,7 @@ export default function MyPetsPage() {
 
   useEffect(() => {
     if (user) void Promise.resolve().then(load);
-    void isSubscribed().then(setSubscribed).catch(() => setSubscribed(false));
+    void isVaccineSubscribed().then(setSubscribed).catch(() => setSubscribed(false));
   }, [user, load]);
 
   async function handleAdd(event: FormEvent<HTMLFormElement>) {
@@ -45,7 +47,7 @@ export default function MyPetsPage() {
     setBusy(true);
     try {
       await createMyPet({ name, type, age: age || null, breed: breed || null, weight: weight ? Number(weight) : null, nextVaccineName: vaxName || null, nextVaccineDate: date || null });
-      setName(''); setAge(''); setBreed(''); setWeight(''); setVaxName(''); setDate(''); await load(); showToast(t('mypets_registered'), 'success');
+      setShowAddForm(false); setName(''); setAge(''); setBreed(''); setWeight(''); setVaxName(''); setDate(''); await load(); showToast(t('mypets_registered'), 'success');
     } catch (reason) { showToast(getErrorMessage(reason), 'error'); }
     finally { setBusy(false); }
   }
@@ -59,18 +61,23 @@ export default function MyPetsPage() {
   }
 
   async function handleVaccineDate(petId: string, nextDate: string) {
-    setDateBusyId(petId);
-    try { await updateVaccineDate(petId, nextDate); await load(); }
-    catch (reason) { showToast(getErrorMessage(reason), 'error'); }
-    finally { setDateBusyId(null); }
+    await updateVaccineDate(petId, nextDate);
+    setPets((current) => current.map((pet) => pet.id === petId ? { ...pet, nextVaccineDate: nextDate || null } : pet));
   }
 
   async function handleSubscribe() {
+    if (notifyBusy) return;
+    setNotifyBusy(true);
     setNotifyError('');
     try { await subscribeToVaccineReminders(); setSubscribed(true); }
     catch (reason) { setNotifyError(getErrorMessage(reason)); }
+    finally { setNotifyBusy(false); }
   }
 
+  const addFormOpen = showAddForm ?? (!petsLoading && !petsError && pets.length === 0);
+  const priority = { overdue: 0, soon: 1, none: 2, ok: 3 };
+  const sortedPets = [...pets].sort((a, b) => priority[vaccineStatus(a.nextVaccineDate)] - priority[vaccineStatus(b.nextVaccineDate)]);
+  const attentionCount = pets.filter((pet) => ['overdue', 'soon'].includes(vaccineStatus(pet.nextVaccineDate))).length;
   const selectedPet = pets.find((pet) => pet.id === selectedPetId) || null;
   const typeLabels: Record<string, string> = { 'Нохой': t('type_dog'), 'Муур': t('type_cat') };
 
@@ -79,9 +86,11 @@ export default function MyPetsPage() {
 
   return <div className="my-pets-page page-shell page-shell--narrow">
     <header className="page-header"><div className="eyebrow">{t('mypets_eyebrow')}</div><h1>{t('mypets_title')}</h1><p>{t('mypets_desc')}</p></header>
-    <aside className={`notification-card${subscribed ? ' active' : ''}`}><span className="notification-icon"><Icon name={subscribed ? 'check' : 'bell'} size={22} /></span><div><strong>{t('mypets_notification_title')}</strong><p>{subscribed ? t('mypets_subscribed') : t('mypets_notification_desc')}</p>{notifyError && <p className="notify-error" role="alert">{notifyError}</p>}</div>{!subscribed && <Button variant="primary" onClick={() => void handleSubscribe()}>{t('mypets_subscribe')}</Button>}</aside>
-    <section className="add-section" aria-labelledby="add-pet-title"><div className="section-title"><span><Icon name="plus" size={20} /></span><div><h2 id="add-pet-title">{t('mypets_form_title')}</h2><p>{t('mypets_form_desc')}</p></div></div><form onSubmit={handleAdd}><FieldHint mn="Нэр, төрөл заавал. Нас, үүлдэр, жин болон вакцины мэдээллийг мэдэхгүй бол дараа нь нэмж болно." en="Name and type are required. Age, breed, weight, and vaccine details can be added later." /><div className="form-grid"><label><span>{t('mypets_name_label')} *</span><input className="field" value={name} onChange={(event) => setName(event.target.value)} placeholder={t('mypets_name_ph')} required maxLength={100} /></label><label><span>{t('mypets_type_label')} *</span><select className="field" value={type} onChange={(event) => setType(event.target.value)}><option value="Нохой">{typeLabels['Нохой']}</option><option value="Муур">{typeLabels['Муур']}</option></select></label><label><span>{t('mypets_age_label')}</span><input className="field" value={age} onChange={(event) => setAge(event.target.value)} placeholder={t('health_age_ph')} maxLength={100} /></label><label><span>{t('mypets_breed_label')}</span><input className="field" value={breed} onChange={(event) => setBreed(event.target.value)} placeholder={t('health_breed_ph')} maxLength={100} /></label><label><span>{t('mypets_weight_label')}</span><input className="field" type="number" step="0.01" min="0" max="999.99" value={weight} onChange={(event) => setWeight(event.target.value)} placeholder={t('health_weight_ph')} /></label><label><span>{t('mypets_vaccine_label')}</span><input className="field" value={vaxName} onChange={(event) => setVaxName(event.target.value)} placeholder={t('health_next_vaccine_name_ph')} maxLength={200} /></label><label><span>{t('mypets_vaccine_date_label')}</span><input className="field" type="date" value={date} onChange={(event) => setDate(event.target.value)} /></label></div><div className="form-actions"><Button type="submit" variant="accent" disabled={busy || !name.trim()} aria-busy={busy}><Icon name="plus" size={17} />{busy ? t('mypets_add_busy') : t('mypets_add')}</Button></div></form></section>
-    <section className="pets-section" aria-labelledby="pets-list-title"><div className="list-heading"><div><h2 id="pets-list-title">{t('mypets_list_title')}</h2><p>{pets.length} {t('mypets_count_suffix')}</p></div></div>{petsError ? <div className="state-panel state-panel--error" role="alert"><span className="state-panel__icon"><Icon name="alert" size={28} /></span><h2>{t('mypets_load_error')}</h2><p>{petsError}</p><Button variant="secondary" onClick={() => void load()}>{t('mypets_retry')}</Button></div> : petsLoading ? <PetsListSkeleton label={t('mypets_loading')} /> : pets.length === 0 ? <EmptyState icon={<Icon name="vaccine" size={30} />} title={t('mypets_none')} description={t('mypets_form_desc')} /> : <div className="pet-list">{pets.map((pet) => <MyPetCard key={pet.id} pet={pet} selected={selectedPetId === pet.id} onSelect={() => setSelectedPetId(selectedPetId === pet.id ? null : pet.id)} onDateChange={(nextDate) => void handleVaccineDate(pet.id, nextDate)} onDelete={() => setDeleteTarget(pet)} dateBusy={dateBusyId === pet.id} />)}</div>}</section>
+    <aside className={`notification-card${subscribed ? ' active' : ''}`}><span className="notification-icon"><Icon name={subscribed ? 'check' : 'bell'} size={22} /></span><div><strong>{t('mypets_notification_title')}</strong><p>{subscribed ? t('mypets_subscribed') : t('mypets_notification_desc')}</p>{notifyError && <p className="notify-error" role="alert">{notifyError}</p>}</div>{!subscribed && <Button variant="primary" disabled={notifyBusy} aria-busy={notifyBusy} onClick={() => void handleSubscribe()}>{t('mypets_subscribe')}</Button>}</aside>
+    <div className="quick-actions"><Button variant="secondary" onClick={() => setShowAddForm(!addFormOpen)} aria-expanded={addFormOpen} aria-controls="add-pet-section">{addFormOpen ? t('close') : t('mypets_add')}</Button><Button as="link" href="/clinics" variant="ghost">{t('clinics_title')}</Button></div>
+    {!petsLoading && !petsError && attentionCount > 0 && <p role="status">{lang === 'mn' ? `${attentionCount} амьтны вакцины хугацааг шалгаарай.` : `Check vaccine dates for ${attentionCount} pets.`}</p>}
+    <section id="add-pet-section" hidden={!addFormOpen} className="add-section" aria-labelledby="add-pet-title"><div className="section-title"><span><Icon name="plus" size={20} /></span><div><h2 id="add-pet-title">{t('mypets_form_title')}</h2><p>{t('mypets_form_desc')}</p></div></div><form onSubmit={handleAdd}><FieldHint mn="Нэр, төрөл заавал. Нас, үүлдэр, жин болон вакцины мэдээллийг мэдэхгүй бол дараа нь нэмж болно." en="Name and type are required. Age, breed, weight, and vaccine details can be added later." /><div className="form-grid"><label><span>{t('mypets_name_label')} *</span><input className="field" value={name} onChange={(event) => setName(event.target.value)} placeholder={t('mypets_name_ph')} required maxLength={100} /></label><label><span>{t('mypets_type_label')} *</span><select className="field" value={type} onChange={(event) => setType(event.target.value)}><option value="Нохой">{typeLabels['Нохой']}</option><option value="Муур">{typeLabels['Муур']}</option></select></label><label><span>{t('mypets_age_label')}</span><input className="field" value={age} onChange={(event) => setAge(event.target.value)} placeholder={t('health_age_ph')} maxLength={100} /></label><label><span>{t('mypets_breed_label')}</span><input className="field" value={breed} onChange={(event) => setBreed(event.target.value)} placeholder={t('health_breed_ph')} maxLength={100} /></label><label><span>{t('mypets_weight_label')}</span><input className="field" type="number" step="0.01" min="0" max="999.99" value={weight} onChange={(event) => setWeight(event.target.value)} placeholder={t('health_weight_ph')} /></label><label><span>{t('mypets_vaccine_label')}</span><input className="field" value={vaxName} onChange={(event) => setVaxName(event.target.value)} placeholder={t('health_next_vaccine_name_ph')} maxLength={200} /></label><label><span>{t('mypets_vaccine_date_label')}</span><input className="field" type="date" value={date} onChange={(event) => setDate(event.target.value)} /></label></div><div className="form-actions"><Button type="submit" variant="accent" disabled={busy || !name.trim()} aria-busy={busy}><Icon name="plus" size={17} />{busy ? t('mypets_add_busy') : t('mypets_add')}</Button></div></form></section>
+    <section className="pets-section" aria-labelledby="pets-list-title"><div className="list-heading"><div><h2 id="pets-list-title">{t('mypets_list_title')}</h2><p>{pets.length} {t('mypets_count_suffix')}</p></div></div>{petsError ? <div className="state-panel state-panel--error" role="alert"><span className="state-panel__icon"><Icon name="alert" size={28} /></span><h2>{t('mypets_load_error')}</h2><p>{petsError}</p><Button variant="secondary" onClick={() => void load()}>{t('mypets_retry')}</Button></div> : petsLoading ? <PetsListSkeleton label={t('mypets_loading')} /> : pets.length === 0 ? <EmptyState icon={<Icon name="vaccine" size={30} />} title={t('mypets_none')} description={t('mypets_form_desc')} /> : <div className="pet-list">{sortedPets.map((pet) => <MyPetCard key={pet.id} pet={pet} selected={selectedPetId === pet.id} onSelect={() => setSelectedPetId(selectedPetId === pet.id ? null : pet.id)} onDateChange={(nextDate) => handleVaccineDate(pet.id, nextDate)} onDelete={() => setDeleteTarget(pet)} />)}</div>}</section>
     {selectedPet && <PetHealthPanel key={selectedPet.id} pet={selectedPet} onProfileUpdated={load} onClose={() => setSelectedPetId(null)} />}
     <Modal open={Boolean(deleteTarget)} onClose={() => !deleteBusy && setDeleteTarget(null)} title={t('mypets_delete_title')} closeLabel={t('close')} width="sm"><div className="delete-confirm"><span><Icon name="alert" size={24} /></span><p><strong>{deleteTarget?.name}</strong><br />{t('mypets_delete_desc')}</p><div><Button variant="ghost" onClick={() => setDeleteTarget(null)} disabled={deleteBusy}>{t('mypets_delete_cancel')}</Button><Button variant="danger" onClick={() => void confirmDelete()} disabled={deleteBusy}>{t('mypets_delete')}</Button></div></div></Modal>
     <style jsx>{`

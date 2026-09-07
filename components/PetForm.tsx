@@ -65,6 +65,8 @@ export default function PetForm({ status }: { status: PetStatus }) {
   }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    if (!form.color.trim()) { event.preventDefault(); setStep(1); validateStep(1); return; }
+    if (!form.place.trim()) { event.preventDefault(); setStep(2); validateStep(2); return; }
     if (!validateStep(3)) {
       event.preventDefault();
       return;

@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { fetchAdoptions } from '../../lib/adoptionService';
 import AdoptionCard from '../../components/AdoptionCard';
 import SkeletonCard from '../../components/SkeletonCard';
@@ -26,15 +26,17 @@ export default function AdoptionsPage() {
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(false);
   const [loadError, setLoadError] = useState('');
+  const requestVersion = useRef(0);
   const hasFilters = Boolean(search || type || gender || district);
 
   useEffect(() => {
     const timer = setTimeout(() => void load(0), 400);
-    return () => clearTimeout(timer);
+    return () => { clearTimeout(timer); requestVersion.current += 1; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [type, gender, district, search]);
 
   async function load(pageToLoad = 0) {
+    const version = ++requestVersion.current;
     if (pageToLoad === 0) setLoading(true);
     else setLoadingMore(true);
     setLoadError('');
@@ -46,14 +48,15 @@ export default function AdoptionsPage() {
         search: search.trim() || undefined,
         page: pageToLoad,
       });
+      if (version !== requestVersion.current) return;
       setAdoptions((current) => (pageToLoad === 0 ? data : [...current, ...data]));
       setHasMore(more);
       setPage(pageToLoad);
     } catch (error) {
+      if (version !== requestVersion.current) return;
       setLoadError(getErrorMessage(error));
     } finally {
-      setLoading(false);
-      setLoadingMore(false);
+      if (version === requestVersion.current) { setLoading(false); setLoadingMore(false); }
     }
   }
 

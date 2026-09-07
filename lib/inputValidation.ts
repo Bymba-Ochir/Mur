@@ -19,7 +19,8 @@ export function cleanText(value: string | null | undefined, maxLength: number, l
 }
 
 export function requireMongolianPhone(value: string): string {
-  const digits = value.replace(/\D/g, '').replace(/^976/, '');
+  const raw = value.replace(/\D/g, '');
+  const digits = raw.length === 11 && raw.startsWith('976') ? raw.slice(3) : raw;
   if (!/^\d{8}$/.test(digits)) throw new InputValidationError('Утасны дугаар яг 8 оронтой байх ёстой.');
   return digits;
 }
@@ -43,7 +44,7 @@ export function optionalDecimal(
   if (value === '' || value == null) return null;
   const parsed = typeof value === 'number' ? value : Number(value);
   const scale = 10 ** decimals;
-  if (!Number.isFinite(parsed) || parsed < min || parsed > max || Math.round(parsed * scale) !== parsed * scale) {
+  if (!Number.isFinite(parsed) || parsed < min || parsed > max || Math.abs(Math.round(parsed * scale) - parsed * scale) > Number.EPSILON * Math.max(1, Math.abs(parsed * scale)) * 4) {
     throw new InputValidationError(`${label} ${min}–${max} хооронд, дээд тал нь ${decimals} орны нарийвчлалтай тоо байх ёстой.`);
   }
   return parsed;

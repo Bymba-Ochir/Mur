@@ -43,16 +43,18 @@ export default function ListingsPage() {
   const [loadError, setLoadError] = useState('');
   const [savingSearch, setSavingSearch] = useState(false);
   const matchAbortRef = useRef<AbortController | null>(null);
+  const requestVersion = useRef(0);
   const hasFilters = Boolean(status || type || district || search.trim());
 
   useEffect(() => {
     // Шүүлтүүр өөрчлөгдөхөд эхний хуудаснаас дахин ачаална
     const timer = setTimeout(() => load(0), 400);
-    return () => clearTimeout(timer);
+    return () => { clearTimeout(timer); requestVersion.current += 1; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status, type, district, search]);
 
   async function load(pageToLoad = 0) {
+    const version = ++requestVersion.current;
     if (pageToLoad === 0) setLoading(true);
     else setLoadingMore(true);
     setLoadError('');
@@ -64,14 +66,15 @@ export default function ListingsPage() {
         search: search || undefined,
         page: pageToLoad,
       });
+      if (version !== requestVersion.current) return;
       setPets((prev) => (pageToLoad === 0 ? data : [...prev, ...data]));
       setHasMore(more);
       setPage(pageToLoad);
     } catch (err) {
+      if (version !== requestVersion.current) return;
       setLoadError(getErrorMessage(err));
     } finally {
-      setLoading(false);
-      setLoadingMore(false);
+      if (version === requestVersion.current) { setLoading(false); setLoadingMore(false); }
     }
   }
 
@@ -148,6 +151,7 @@ export default function ListingsPage() {
         <p className="eyebrow">{t('listings_eyebrow')}</p>
         <h1>{t('listings_title')}</h1>
         <p>{t('listings_desc')}</p>
+        <div className="quick-actions"><Button as="link" href="/report-lost" variant="accent">{t('hero_btn_lost')}</Button><Button as="link" href="/report-found" variant="secondary">{t('hero_btn_found')}</Button></div>
       </div>
 
       <section className="filters-panel content-panel" aria-labelledby="listings-filters-heading">

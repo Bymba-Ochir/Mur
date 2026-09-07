@@ -132,6 +132,7 @@ export default function PetDetailClient({ id }: { id: string }) {
         </div>
       )}
 
+      <a className="contact-shortcut" href="#listing-contact">{t('detail_contact_heading')}</a>
       <div className="detail-grid">
         <figure className={`detail-media${pet.resolved ? ' is-resolved' : ''}`}>
           <div className="media-frame">
@@ -158,7 +159,7 @@ export default function PetDetailClient({ id }: { id: string }) {
                 {pet.hasReward && <div className="reward-row"><dt>{t('reward_prefix')}</dt><dd><Icon name="sparkles" size={16} aria-hidden="true" /> {t('reward_prefix')}</dd></div>}
               </dl>
 
-              <div className="contact-block">
+              <div className="contact-block" id="listing-contact" tabIndex={-1}>
                 <h3>{t('detail_contact_heading')}</h3>
                 {revealed ? (
                   <a href={`tel:${pet.phone}`} className="phone-action" aria-label={`${t('detail_call_phone')}: ${formatPhone(pet.phone)}`}>

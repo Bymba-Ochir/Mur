@@ -57,7 +57,10 @@ export function searchClinics(opts: {
     result = result.filter(
       (c) =>
         c.name.toLowerCase().includes(q) ||
-        c.address.toLowerCase().includes(q),
+        c.address.toLowerCase().includes(q) ||
+        c.district.toLowerCase().includes(q) ||
+        c.services.some((service) => service.toLowerCase().includes(q)) ||
+        (c.phones || [c.phone]).some((phone) => phone.includes(q.replace(/[\s-]/g, ''))),
     );
   }
 

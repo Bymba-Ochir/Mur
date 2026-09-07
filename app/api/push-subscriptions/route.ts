@@ -5,6 +5,23 @@ import { DISTRICTS } from '../../../lib/districts';
 
 interface SubscriptionBody { endpoint?: unknown; keys?: { p256dh?: unknown; auth?: unknown }; district?: unknown; vaccine?: unknown; }
 
+export async function GET(request: Request) {
+  const token = request.headers.get('authorization')?.replace(/^Bearer\s+/i, '');
+  if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const endpoint = new URL(request.url).searchParams.get('endpoint');
+  if (!endpoint || endpoint.length > 2000) return NextResponse.json({ error: 'Invalid endpoint' }, { status: 400 });
+  try {
+    const admin = createAdminClient();
+    const { data: { user }, error: authError } = await admin.auth.getUser(token);
+    if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const { data, error } = await admin.from('push_subscriptions').select('user_id').eq('endpoint', endpoint).eq('user_id', user.id).maybeSingle();
+    if (error) throw error;
+    return NextResponse.json({ vaccine: Boolean(data) }, { headers: { 'Cache-Control': 'no-store' } });
+  } catch {
+    return NextResponse.json({ error: 'Status unavailable' }, { status: 503 });
+  }
+}
+
 export async function POST(request: Request) {
   try {
     const limit = checkRateLimit(`push:${getClientIp(request)}`, 8, 60 * 60_000);

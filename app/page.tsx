@@ -39,6 +39,11 @@ export default function Home() {
               <Button as="link" href="/report-found" variant="secondary">{t('hero_btn_found')}</Button>
             </div>
 
+            <nav className="quick-actions" aria-label={t('listings_title')}>
+              <Button as="link" href="/listings" variant="ghost">{t('listings_title')}</Button>
+              <Button as="link" href="/my-pets" variant="ghost">{t('mypets_title')}</Button>
+              <Button as="link" href="/clinics" variant="ghost">{t('clinics_title')}</Button>
+            </nav>
             <ul className="hero-trust" aria-label={t('hero_trust_aria')}>
               <li>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">

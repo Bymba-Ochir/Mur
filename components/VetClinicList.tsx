@@ -24,7 +24,7 @@ const SERVICE_I18N: Record<VetService, TranslationKey> = {
 };
 
 export default function VetClinicList({ embedded = false }: { embedded?: boolean }) {
-  const { user } = useAuth(); const { t } = useLanguage(); const showToast = useToast();
+  const { user } = useAuth(); const { t, lang } = useLanguage(); const showToast = useToast();
   const [district, setDistrict] = useState(''); const [service, setService] = useState<VetService | ''>(''); const [query, setQuery] = useState('');
   const [userCoords, setUserCoords] = useState<[number, number] | null>(null); const [locating, setLocating] = useState(false); const [selectedId, setSelectedId] = useState<string | null>(null);
   const [bookingClinic, setBookingClinic] = useState<VetClinic | null>(null); const [showLogin, setShowLogin] = useState(false); const [apptRefreshKey, setApptRefreshKey] = useState(0);
@@ -33,7 +33,7 @@ export default function VetClinicList({ embedded = false }: { embedded?: boolean
 
   function handleLocation() {
     if (!navigator.geolocation) { showToast(t('clinics_nearby_none'), 'error'); return; }
-    setLocating(true); navigator.geolocation.getCurrentPosition((position) => { setUserCoords([position.coords.latitude, position.coords.longitude]); setLocating(false); }, () => { setLocating(false); showToast(t('clinics_nearby_none'), 'error'); });
+    setLocating(true); navigator.geolocation.getCurrentPosition((position) => { setUserCoords([position.coords.latitude, position.coords.longitude]); setLocating(false); }, () => { setLocating(false); showToast(t('clinics_nearby_none'), 'error'); }, { timeout: 10000, maximumAge: 60000 });
   }
   function resetFilters() { setDistrict(''); setService(''); setQuery(''); setUserCoords(null); setSelectedId(null); }
   function handleBook(clinic: VetClinic) { if (!user) { setShowLogin(true); return; } setBookingClinic(clinic); }
@@ -46,13 +46,14 @@ export default function VetClinicList({ embedded = false }: { embedded?: boolean
       <section className="filters-panel" aria-labelledby="clinic-filters-title">
         <div className="filters-heading"><div><p className="filter-kicker">{t('clinics_filter_kicker')}</p><h2 id="clinic-filters-title">{t('clinics_filters_title')}</h2></div>{hasFilters && <button type="button" className="reset-filters" onClick={resetFilters}>{t('clinics_clear_filters')}</button>}</div>
         <div className="filter-grid">
-          <label htmlFor="clinic-search"><span>{t('clinics_search_label')}</span><span className="input-wrap"><Icon name="search" size={18} /><input id="clinic-search" type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder={t('search_placeholder')} /></span></label>
+          <label htmlFor="clinic-search"><span>{t('clinics_search_label')}</span><span className="input-wrap"><Icon name="search" size={18} /><input id="clinic-search" type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder={lang === 'mn' ? 'Нэр, хаяг, утас, үйлчилгээ' : 'Name, address, phone, service'} /></span></label>
           <label htmlFor="clinic-district"><span>{t('clinics_district_label')}</span><select id="clinic-district" value={district} onChange={(event) => setDistrict(event.target.value)}><option value="">{t('filter_all_districts')}</option>{DISTRICTS.map((value) => <option key={value}>{value}</option>)}</select></label>
           <label htmlFor="clinic-service"><span>{t('clinics_service_label')}</span><select id="clinic-service" value={service} onChange={(event) => setService(event.target.value as VetService | '')}><option value="">{t('clinics_service_filter')}</option>{SERVICE_OPTIONS.map((value) => <option key={value} value={value}>{t(SERVICE_I18N[value])}</option>)}</select></label>
           <div className="location-action"><span>{t('clinics_map_title')}</span><Button variant="ghost" onClick={handleLocation} disabled={locating} aria-busy={locating}><Icon name="pin" size={17} />{locating ? t('clinics_locating') : t('clinics_use_location')}</Button></div>
         </div>
       </section>
 
+      <div className="quick-actions" role="group" aria-label={t('clinics_service_label')}>{(['Рентген', 'ЭХО', 'Вакцин'] as VetService[]).map((value) => <Button key={value} variant={service === value ? 'primary' : 'ghost'} aria-pressed={service === value} onClick={() => setService(service === value ? '' : value)}>{t(SERVICE_I18N[value])}</Button>)}</div>
       <div className="clinic-explorer">
         <section className="clinic-results" aria-labelledby="clinic-results-title">
           <div className="results-heading"><h2 id="clinic-results-title">{t('clinics_results_title')}</h2><p aria-live="polite">{filtered.length} {t('clinics_results_count')}</p></div>

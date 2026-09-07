@@ -102,6 +102,7 @@ export default function MessageThreadClient({ id }: { id: string }) {
   }
 
   function handleKeyDown(event: React.KeyboardEvent<HTMLTextAreaElement>) {
+    if (event.nativeEvent.isComposing || event.keyCode === 229) return;
     if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); void handleSend(); }
   }
 

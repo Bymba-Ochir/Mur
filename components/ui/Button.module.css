@@ -1,0 +1,24 @@
+.root {
+  display:inline-flex; align-items:center; justify-content:center; gap:var(--sp-2);
+  font-family:var(--font-body); font-weight:600; border-radius:var(--r-md); border:none;
+  cursor:pointer; text-decoration:none; white-space:normal; text-align:center;
+  min-height:var(--touch-target); padding:var(--sp-2) var(--sp-4); font-size:var(--text-sm);
+  transition:transform var(--dur-fast) var(--ease-out),box-shadow var(--dur-fast) var(--ease-out),background var(--dur-fast) var(--ease-out);
+}
+.root[data-variant='primary'] {background:var(--grad-brand);color:var(--text-on-accent);box-shadow:var(--shadow-sm)}
+.root[data-variant='accent'] {background:var(--grad-accent);color:var(--accent-ink);box-shadow:var(--shadow-sm)}
+.root[data-variant='secondary'] {background:linear-gradient(135deg,#7DD8F0,var(--found));color:#103B47;box-shadow:var(--shadow-sm)}
+.root[data-variant='ghost'] {background:transparent;color:var(--primary);border:1.5px solid var(--border-subtle)}
+.root[data-variant='danger'] {background:var(--alert);color:var(--text-on-accent)}
+.root[data-size='sm'] {min-height:36px;padding:var(--sp-1) var(--sp-3);font-size:var(--text-xs)}
+.root[data-size='lg'] {min-height:52px;padding:var(--sp-3) var(--sp-6);font-size:var(--text-base)}
+@media(hover:hover) and (pointer:fine) {
+ .root:not([aria-disabled='true']):hover {box-shadow:var(--shadow-md)}
+ .root[data-variant='ghost']:not([aria-disabled='true']):hover {background:var(--eyebrow-bg);border-color:var(--primary-light)}
+ .root[data-variant='danger']:not([aria-disabled='true']):hover {background:var(--alert-deep)}
+}
+.root:not([aria-disabled='true']):active {transform:translateY(1px);box-shadow:var(--shadow-xs)}
+.root:disabled,.root[aria-disabled='true'] {opacity:.55;cursor:not-allowed;transform:none;box-shadow:none}
+.root:focus-visible {outline:2.5px solid var(--border-focus);outline-offset:2px}
+@media(pointer:coarse) {.root[data-size='sm'] {min-height:44px}}
+@media(prefers-reduced-motion:reduce) {.root {transition:none}.root:not([aria-disabled='true']):active {transform:none}}

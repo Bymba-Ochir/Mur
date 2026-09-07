@@ -94,6 +94,7 @@ export default function AdoptionDetailClient({ id }: { id: string }) {
         <p className="detail-meta"><Icon name="calendar" size={14} aria-hidden="true" /> {relativeTime(adoption.createdAt, lang)}</p>
       </header>
 
+      {!editing && <a className="contact-shortcut" href="#listing-contact">{t('detail_show_phone')}</a>}
       {editing ? (
         <AdoptionEditForm
           initial={{
@@ -138,7 +139,7 @@ export default function AdoptionDetailClient({ id }: { id: string }) {
               <section className="description-block"><h3>{t('detail_description').replace(':', '')}</h3><p>{adoption.description}</p></section>
             )}
 
-            <div className="phone-section">
+            <div className="phone-section" id="listing-contact" tabIndex={-1}>
               {revealed ? (
                 <a className="phone-link" href={`tel:${adoption.phone}`}><Icon name="phone" size={15} aria-hidden="true" /> {formatPhone(adoption.phone)}</a>
               ) : adoption.phone ? (

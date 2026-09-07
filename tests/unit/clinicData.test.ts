@@ -2,12 +2,18 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { VET_CLINICS } from '../../lib/vetClinics';
+import { searchClinics } from '../../lib/clinicService';
 
 function source(path: string) {
   return readFileSync(resolve(process.cwd(), path), 'utf8');
 }
 
 describe('verified veterinary clinic data', () => {
+  it('finds services and formatted phone numbers while respecting filters', () => {
+    expect(searchClinics({ query: 'Рентген' }).map((c) => c.id)).toContain('enerekh-vet');
+    expect(searchClinics({ query: '9590-9987' }).map((c) => c.id)).toContain('enerekh-vet');
+    expect(searchClinics({ query: '95909987', district: 'Баянзүрх' })).toHaveLength(0);
+  });
   it('keeps every clinic traceable and directly contactable', () => {
     expect(VET_CLINICS.length).toBeGreaterThanOrEqual(6);
 
