@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import LoginModal from '../../components/LoginModal';
 import { useToast } from '../../components/Toast';
@@ -35,6 +35,11 @@ function SettingsSkeleton({ label }: { label: string }) {
 }
 
 export default function SettingsPage() {
+  const { user } = useAuth();
+  return <SettingsContent key={user?.id ?? 'guest'} />;
+}
+
+function SettingsContent() {
   const { user, loading: authLoading, logout } = useAuth();
   const { t } = useLanguage();
   const router = useRouter();
@@ -52,29 +57,43 @@ export default function SettingsPage() {
   const [deleteError, setDeleteError] = useState('');
   const [showLogin, setShowLogin] = useState(false);
 
+  const active = useRef(false);
+  const savingRef = useRef(false);
+  const requestVersion = useRef(0);
+
   const loadProfile = useCallback(async () => {
-    if (!user) { setProfileLoading(false); return; }
+    if (!user?.id || !active.current) return;
+    const version = ++requestVersion.current;
     setProfileLoading(true); setLoadError('');
     try {
       const loaded = await ensureMyProfile();
+      if (!active.current || version !== requestVersion.current) return;
       setProfile(loaded); setPrefs(loaded.notificationPreferences); setSavedPrefs(loaded.notificationPreferences);
-    } catch (reason) { setLoadError(getErrorMessage(reason)); }
-    finally { setProfileLoading(false); }
-  }, [user]);
+    } catch (reason) { if (active.current && version === requestVersion.current) setLoadError(getErrorMessage(reason)); }
+    finally { if (active.current && version === requestVersion.current) setProfileLoading(false); }
+  }, [user?.id]);
 
-  useEffect(() => { void Promise.resolve().then(loadProfile); }, [loadProfile]);
+  useEffect(() => {
+    active.current = true;
+    let disposed = false;
+    const requests = requestVersion;
+    void Promise.resolve().then(() => { if (!disposed) void loadProfile(); });
+    return () => { disposed = true; active.current = false; requests.current++; };
+  }, [loadProfile]);
 
   const preferencesChanged = prefs.messages !== savedPrefs.messages || prefs.matches !== savedPrefs.matches || prefs.vaccines !== savedPrefs.vaccines;
 
   async function savePreferences() {
-    if (!profile || !preferencesChanged) return;
+    if (!profile || !preferencesChanged || savingRef.current) return;
+    savingRef.current = true;
     setSaving(true);
     try {
       await updateMyProfile({ displayName: profile.displayName, district: profile.district || '', bio: profile.bio, isVolunteer: profile.isVolunteer, notificationPreferences: prefs });
+      if (!active.current) return;
       setSavedPrefs(prefs);
       showToast(t('settings_saved'), 'success');
-    } catch (reason) { showToast(getErrorMessage(reason), 'error'); }
-    finally { setSaving(false); }
+    } catch (reason) { if (active.current) showToast(getErrorMessage(reason), 'error'); }
+    finally { savingRef.current = false; if (active.current) setSaving(false); }
   }
 
   async function exportData() {
@@ -83,13 +102,14 @@ export default function SettingsPage() {
       const response = await authFetch('/api/account/export');
       if (!response.ok) throw new Error(await responseError(response, t('settings_export_error')));
       const blob = await response.blob();
+      if (!active.current) return;
       const url = URL.createObjectURL(blob);
       const anchor = document.createElement('a');
       anchor.href = url; anchor.download = `mur-data-${new Date().toISOString().slice(0, 10)}.json`;
       document.body.appendChild(anchor); anchor.click(); anchor.remove(); URL.revokeObjectURL(url);
       showToast(t('settings_exported'), 'success');
-    } catch (reason) { showToast(getErrorMessage(reason), 'error'); }
-    finally { setExporting(false); }
+    } catch (reason) { if (active.current) showToast(getErrorMessage(reason), 'error'); }
+    finally { if (active.current) setExporting(false); }
   }
 
   function openDeleteModal() {
@@ -103,8 +123,9 @@ export default function SettingsPage() {
     try {
       const response = await authFetch('/api/account/delete', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ confirmation: deleteConfirmation }) });
       if (!response.ok) throw new Error(await responseError(response, t('settings_delete_error')));
+      if (!active.current) return;
       await logout(); router.push('/'); router.refresh();
-    } catch (reason) { setDeleteError(getErrorMessage(reason)); setDeleting(false); }
+    } catch (reason) { if (active.current) { setDeleteError(getErrorMessage(reason)); setDeleting(false); } }
   }
 
   if (authLoading || (user && profileLoading)) return <SettingsSkeleton label={t('settings_loading')} />;

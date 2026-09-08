@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import LoginModal from '../../components/LoginModal';
 import PetCard from '../../components/PetCard';
 import { useToast } from '../../components/Toast';
@@ -19,6 +19,11 @@ function SavedSkeleton({ label }: { label: string }) {
 }
 
 export default function SavedClient() {
+  const { user } = useAuth();
+  return <SavedContent key={user?.id ?? 'guest'} />;
+}
+
+function SavedContent() {
   const { user, loading: authLoading } = useAuth();
   const { t, lang } = useLanguage();
   const showToast = useToast();
@@ -30,26 +35,49 @@ export default function SavedClient() {
   const [showLogin, setShowLogin] = useState(false);
   const dateFormatter = useMemo(() => new Intl.DateTimeFormat(lang === 'mn' ? 'mn-MN' : 'en-US', { dateStyle: 'medium' }), [lang]);
 
+  const active = useRef(false);
+  const requestVersion = useRef(0);
+  const deleting = useRef(false);
+
   const load = useCallback(async () => {
-    if (!user) { setLoading(false); return; }
+    if (!user?.id || !active.current) return;
+    const version = ++requestVersion.current;
     setLoading(true); setError('');
     try {
       const [savedPets, savedSearches] = await Promise.all([fetchFavorites(), fetchSavedSearches()]);
-      setFavorites(savedPets); setSearches(savedSearches);
-    } catch (reason) { setError(getErrorMessage(reason)); }
-    finally { setLoading(false); }
-  }, [user]);
+      if (active.current && version === requestVersion.current) {
+        setFavorites(savedPets); setSearches(savedSearches);
+      }
+    } catch (reason) {
+      if (active.current && version === requestVersion.current) setError(getErrorMessage(reason));
+    } finally {
+      if (active.current && version === requestVersion.current) setLoading(false);
+    }
+  }, [user?.id]);
 
-  useEffect(() => { void Promise.resolve().then(load); }, [load]);
+  useEffect(() => {
+    active.current = true;
+    let disposed = false;
+    const requests = requestVersion;
+    void Promise.resolve().then(() => { if (!disposed) void load(); });
+    return () => { disposed = true; active.current = false; requests.current++; };
+  }, [load]);
 
   async function removeSearch(id: string) {
+    if (deleting.current) return;
+    deleting.current = true;
     setDeletingId(id);
     try {
       await deleteSavedSearch(id);
+      if (!active.current) return;
       setSearches((items) => items.filter((item) => item.id !== id));
       showToast(t('saved_deleted'), 'success');
-    } catch (reason) { showToast(getErrorMessage(reason), 'error'); }
-    finally { setDeletingId(''); }
+    } catch (reason) {
+      if (active.current) showToast(getErrorMessage(reason), 'error');
+    } finally {
+      deleting.current = false;
+      if (active.current) setDeletingId('');
+    }
   }
 
   if (authLoading) return <main className="page-shell page-shell--narrow"><SavedSkeleton label={t('saved_loading')} /></main>;
@@ -62,7 +90,7 @@ export default function SavedClient() {
     </header>
 
     {error && <div className="error-state" role="alert"><span><Icon name="alert" size={22} /></span><div><strong>{t('saved_load_error')}</strong><p>{error}</p></div><Button variant="ghost" size="sm" onClick={() => void load()}>{t('saved_retry')}</Button></div>}
-    {loading ? <SavedSkeleton label={t('saved_loading')} /> : <>
+    {error ? null : loading ? <SavedSkeleton label={t('saved_loading')} /> : <>
       <section className="saved-section" aria-labelledby="favorite-title">
         <div className="section-heading"><div><h2 id="favorite-title"><Icon name="heart" size={21} />{t('saved_favorites_title')}</h2><p>{favorites.length} {t('saved_listing_count')}</p></div><Link href="/listings"><Icon name="search" size={16} />{t('saved_browse')}</Link></div>
         {favorites.length ? <div className="favorites-grid">{favorites.map((pet) => <PetCard key={pet.id} pet={pet} />)}</div> : <div className="empty-state"><span><Icon name="heart" size={28} /></span><h3>{t('saved_favorites_empty')}</h3><p>{t('saved_favorites_empty_desc')}</p><Button as="link" href="/listings" variant="secondary" size="sm">{t('saved_browse')}</Button></div>}
@@ -72,7 +100,7 @@ export default function SavedClient() {
         {searches.length ? <div className="search-list">{searches.map((item) => <article className="search-item" key={item.id}>
           <div className="search-icon"><Icon name="search" size={20} /></div>
           <div className="search-copy"><div className="search-title"><h3>{item.name}</h3><span className={item.notify ? 'notify active' : 'notify'}><Icon name="bell" size={13} />{item.notify ? t('saved_notify_on') : t('saved_notify_off')}</span></div><p>{[item.status ? (item.status === 'lost' ? t('listings_badge_lost') : t('listings_badge_found')) : '', item.petType || '', item.district || '', item.searchText || ''].filter(Boolean).join(' · ') || t('saved_searches_title')}</p><small><Icon name="calendar" size={13} />{dateFormatter.format(new Date(item.createdAt))}</small></div>
-          <Button variant="ghost" size="sm" onClick={() => void removeSearch(item.id)} disabled={deletingId === item.id} aria-busy={deletingId === item.id} aria-label={t('saved_delete_label') + ': ' + item.name}><Icon name="trash" size={16} />{t('saved_delete')}</Button>
+          <Button variant="ghost" size="sm" onClick={() => void removeSearch(item.id)} disabled={Boolean(deletingId)} aria-busy={deletingId === item.id} aria-label={t('saved_delete_label') + ': ' + item.name}><Icon name="trash" size={16} />{t('saved_delete')}</Button>
         </article>)}</div> : <div className="empty-state"><span><Icon name="search" size={28} /></span><h3>{t('saved_searches_empty')}</h3><p>{t('saved_searches_empty_desc')}</p><Button as="link" href="/listings" variant="secondary" size="sm">{t('saved_new_search')}</Button></div>}
       </section>
     </>}

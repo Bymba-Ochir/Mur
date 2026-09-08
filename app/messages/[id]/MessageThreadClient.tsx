@@ -3,7 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import Button from '../../../components/ui/Button';
-import { Icon } from '../../../components/ui';
+import Icon from '../../../components/ui/icons';
 import { useAuth } from '../../../lib/useAuth';
 import { useLanguage } from '../../../lib/i18n';
 import { fetchConversationById, fetchMessages, sendMessage, subscribeToMessages, otherParticipant, markConversationRead } from '../../../lib/chatService';
@@ -21,6 +21,11 @@ function sameCalendarDay(a: string, b: string) {
 }
 
 export default function MessageThreadClient({ id }: { id: string }) {
+  const { user } = useAuth();
+  return <MessageThreadContent key={JSON.stringify([user?.id, id])} id={id} />;
+}
+
+function MessageThreadContent({ id }: { id: string }) {
   const { user, loading: authLoading } = useAuth();
   const { t, lang } = useLanguage();
   const [conv, setConv] = useState<Conversation | null>(null);
@@ -37,6 +42,12 @@ export default function MessageThreadClient({ id }: { id: string }) {
   const messagesRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const seenIds = useRef(new Set<string>());
+  const active = useRef(false);
+  const sendPending = useRef(false);
+  useEffect(() => {
+    active.current = true;
+    return () => { active.current = false; };
+  }, []);
 
   const scrollToBottom = useCallback((behavior: ScrollBehavior = 'smooth') => {
     messagesEndRef.current?.scrollIntoView({ behavior, block: 'end' });
@@ -69,13 +80,16 @@ export default function MessageThreadClient({ id }: { id: string }) {
 
   useEffect(() => {
     if (!conv) return;
-    return subscribeToMessages(conv.id, (message) => {
+    let subscribed = true;
+    const unsubscribe = subscribeToMessages(conv.id, (message) => {
+      if (!subscribed) return;
       if (!seenIds.current.has(message.id)) {
         seenIds.current.add(message.id);
         setMessages((current) => [...current, message]);
       }
       if (user && message.senderId !== user.id) void markConversationRead(conv.id).catch(() => undefined);
     });
+    return () => { subscribed = false; unsubscribe(); };
   }, [conv, user]);
 
   useEffect(() => {
@@ -85,19 +99,22 @@ export default function MessageThreadClient({ id }: { id: string }) {
 
   async function handleSend(text?: string) {
     const trimmed = (text ?? input).trim();
-    if (!trimmed || trimmed.length > 2000 || sending || !conv) return;
+    if (!trimmed || trimmed.length > 2000 || sendPending.current || !conv || !active.current) return;
+    sendPending.current = true;
     setSending(true); setInput(''); setSendError(''); setFailedMessage('');
     try {
       const message = await sendMessage(conv.id, trimmed);
+      if (!active.current) return;
       if (!seenIds.current.has(message.id)) {
         seenIds.current.add(message.id);
         setMessages((current) => [...current, message]);
       }
       inputRef.current?.focus();
     } catch (err) {
-      setInput(trimmed); setFailedMessage(trimmed); setSendError(getErrorMessage(err) || t('thread_send_error'));
+      if (active.current) { setInput(trimmed); setFailedMessage(trimmed); setSendError(getErrorMessage(err) || t('thread_send_error')); }
     } finally {
-      setSending(false);
+      sendPending.current = false;
+      if (active.current) setSending(false);
     }
   }
 

@@ -31,6 +31,11 @@ function participantName(email: string) {
 }
 
 export default function MessagesPage() {
+  const { user } = useAuth();
+  return <MessagesContent key={user?.id ?? 'guest'} />;
+}
+
+function MessagesContent() {
   const { user, loading: authLoading } = useAuth();
   const { t, lang } = useLanguage();
   const [conversations, setConversations] = useState<ConversationPreview[]>([]);
@@ -52,23 +57,26 @@ export default function MessagesPage() {
   }
 
   useEffect(() => {
-    if (authLoading || !user) return;
+    if (authLoading || !user?.id) return;
     let cancelled = false;
+    let requestVersion = 0;
     async function load() {
+      const version = ++requestVersion;
       try {
         const data = await fetchConversationList();
-        if (!cancelled) { setConversations(data); setError(''); }
+        if (!cancelled && version === requestVersion) { setConversations(data); setError(''); }
       } catch (err) {
-        if (!cancelled) setError(getErrorMessage(err));
+        if (!cancelled && version === requestVersion) setError(getErrorMessage(err));
       } finally {
-        if (!cancelled) setLoading(false);
+        if (!cancelled && version === requestVersion) setLoading(false);
       }
     }
     void load();
     const onFocus = () => { void load(); };
     window.addEventListener('focus', onFocus);
-    return () => { cancelled = true; window.removeEventListener('focus', onFocus); };
-  }, [user, authLoading, reloadKey]);
+    window.addEventListener('online', onFocus);
+    return () => { cancelled = true; window.removeEventListener('focus', onFocus); window.removeEventListener('online', onFocus); };
+  }, [user?.id, authLoading, reloadKey]);
 
   const unreadTotal = conversations.reduce((total, conversation) => total + conversation.unreadCount, 0);
   const petTypeLabel = (type: PetType) => type === 'Нохой' ? t('type_dog') : type === 'Муур' ? t('type_cat') : t('type_other');

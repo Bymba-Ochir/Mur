@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import LoginModal from '../../components/LoginModal';
 import { useToast } from '../../components/Toast';
@@ -30,6 +30,11 @@ function NotificationSkeleton({ label }: { label: string }) {
 }
 
 export default function NotificationsClient() {
+  const { user } = useAuth();
+  return <NotificationsContent key={user?.id ?? 'guest'} />;
+}
+
+function NotificationsContent() {
   const { user, loading: authLoading } = useAuth();
   const { t, lang } = useLanguage();
   const router = useRouter();
@@ -43,39 +48,66 @@ export default function NotificationsClient() {
   const [showLogin, setShowLogin] = useState(false);
   const dateFormatter = useMemo(() => new Intl.DateTimeFormat(lang === 'mn' ? 'mn-MN' : 'en-US', { dateStyle: 'medium', timeStyle: 'short' }), [lang]);
 
+  const active = useRef(false);
+  const requestVersion = useRef(0);
+  const mutating = useRef(false);
+
   const load = useCallback(async (silent = false) => {
-    if (!user) { setLoading(false); return; }
+    if (!user?.id || !active.current) return;
+    const version = ++requestVersion.current;
     if (!silent) setLoading(true);
     setError('');
-    try { setItems(await fetchNotifications()); }
-    catch (reason) { setError(getErrorMessage(reason)); }
-    finally { if (!silent) setLoading(false); }
-  }, [user]);
+    try {
+      const rows = await fetchNotifications();
+      if (active.current && version === requestVersion.current) setItems(rows);
+    } catch (reason) {
+      if (active.current && version === requestVersion.current) setError(getErrorMessage(reason));
+    } finally {
+      if (active.current && version === requestVersion.current) setLoading(false);
+    }
+  }, [user?.id]);
 
-  useEffect(() => { void Promise.resolve().then(() => load()); }, [load]);
-  useEffect(() => user ? subscribeToNotifications(user.id, () => { void load(true); }) : undefined, [user, load]);
+  useEffect(() => {
+    active.current = true;
+    let disposed = false;
+    const requests = requestVersion;
+    void Promise.resolve().then(() => { if (!disposed) void load(); });
+    const unsubscribe = user?.id ? subscribeToNotifications(user.id, () => { void load(true); }) : undefined;
+    return () => { disposed = true; active.current = false; requests.current++; unsubscribe?.(); };
+  }, [user?.id, load]);
 
   async function openNotification(item: AppNotification) {
+    if (mutating.current) return;
+    mutating.current = true;
     setOpeningId(item.id);
-    if (!item.readAt) {
-      try {
+    try {
+      if (!item.readAt) {
         await markNotificationRead(item.id);
-        const now = new Date().toISOString();
-        setItems((current) => current.map((row) => row.id === item.id ? { ...row, readAt: now } : row));
-      } catch { showToast(t('notifications_read_error'), 'error'); }
+        if (!active.current) return;
+        await load(true);
+      }
+    } catch {
+      if (active.current) showToast(t('notifications_read_error'), 'error');
+    } finally {
+      mutating.current = false;
+      if (active.current) setOpeningId('');
     }
-    setOpeningId('');
-    if (item.href?.startsWith('/')) router.push(item.href);
+    if (active.current && item.href?.startsWith('/') && !item.href.startsWith('//') && !item.href.includes('\\')) router.push(item.href);
   }
 
   async function readAll() {
+    if (mutating.current) return;
+    mutating.current = true;
     setMarkingAll(true);
     try {
       await markAllNotificationsRead();
-      const now = new Date().toISOString();
-      setItems((current) => current.map((item) => ({ ...item, readAt: item.readAt || now })));
-    } catch (reason) { setError(getErrorMessage(reason)); }
-    finally { setMarkingAll(false); }
+      if (active.current) await load(true);
+    } catch (reason) {
+      if (active.current) showToast(getErrorMessage(reason), 'error');
+    } finally {
+      mutating.current = false;
+      if (active.current) setMarkingAll(false);
+    }
   }
 
   if (authLoading) return <main className="page-shell page-shell--narrow"><NotificationSkeleton label={t('notifications_loading')} /></main>;
@@ -94,7 +126,7 @@ export default function NotificationsClient() {
         <button type="button" className={filter === 'all' ? 'active' : ''} aria-pressed={filter === 'all'} onClick={() => setFilter('all')}>{t('notifications_filter_all')}<span>{items.length}</span></button>
         <button type="button" className={filter === 'unread' ? 'active' : ''} aria-pressed={filter === 'unread'} onClick={() => setFilter('unread')}>{t('notifications_filter_unread')}<span>{unread}</span></button>
       </div>
-      {unread > 0 && <Button variant="ghost" size="sm" onClick={() => void readAll()} disabled={markingAll} aria-busy={markingAll}><Icon name="check" size={16} />{markingAll ? t('notifications_marking_all') : t('notifications_mark_all')}</Button>}
+      {unread > 0 && <Button variant="ghost" size="sm" onClick={() => void readAll()} disabled={markingAll || Boolean(openingId)} aria-busy={markingAll}><Icon name="check" size={16} />{markingAll ? t('notifications_marking_all') : t('notifications_mark_all')}</Button>}
     </div>
 
     {error ? <div className="error-state" role="alert"><span><Icon name="alert" size={22} /></span><div><strong>{t('notifications_load_error')}</strong><p>{error}</p></div><Button variant="secondary" size="sm" onClick={() => void load()}>{t('notifications_retry')}</Button></div>
@@ -102,7 +134,7 @@ export default function NotificationsClient() {
     : visibleItems.length === 0 ? <div className="empty-state"><span><Icon name={filter === 'unread' ? 'check' : 'bell'} size={28} /></span><h2>{filter === 'unread' ? t('notifications_all_read') : t('notifications_empty_title')}</h2><p>{t('notifications_empty_desc')}</p></div>
     : <div className="notification-list" aria-label={t('notifications_title')}>{visibleItems.map((item) => {
       const read = Boolean(item.readAt);
-      return <button type="button" key={item.id} className={`notification-item${read ? '' : ' unread'}`} onClick={() => void openNotification(item)} disabled={openingId === item.id} aria-label={`${t('notifications_open_label')}: ${item.title}`}>
+      return <button type="button" key={item.id} className={`notification-item${read ? '' : ' unread'}`} onClick={() => void openNotification(item)} disabled={markingAll || Boolean(openingId)} aria-label={`${t('notifications_open_label')}: ${item.title}`}>
         <span className="notification-icon" aria-hidden="true"><Icon name={notificationIcon(item.type)} size={19} /></span>
         <span className="notification-copy"><span className="notification-title"><strong>{item.title}</strong><span className={`read-status${read ? '' : ' unread-status'}`}>{read ? t('notifications_read_label') : t('notifications_unread_label')}</span></span><span className="body">{item.body}</span><time dateTime={item.createdAt}><Icon name="calendar" size={13} />{dateFormatter.format(new Date(item.createdAt))}</time></span>
         {item.href?.startsWith('/') && <Icon name="arrowRight" size={18} className="row-arrow" />}
