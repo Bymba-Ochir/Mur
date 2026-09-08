@@ -1,6 +1,6 @@
 // lib/i18n.tsx
 'use client';
-import { createContext, useContext } from 'react';
+import { createContext, useContext, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import type { Locale } from './types';
 import { useLocalStorageValue, setLocalStorageValue } from './useLocalStorageState';
@@ -10,7 +10,7 @@ nav_lost: 'Алдсан', nav_found: 'Олдсон', nav_listings: 'Жагсаа
 nav_mypets: 'Миний амьтад', nav_admin: 'Админ', nav_login: 'Нэвтрэх',
 nav_logout_prefix: 'Гарах', nav_logout: 'Гарах', nav_user_menu_label: 'Хэрэглэгчийн цэс',
 nav_open_menu: 'Цэсийг нээх', nav_close_menu: 'Цэсийг хаах', nav_menu_title: 'Цэс', nav_guest: 'Зочин',
-nav_profile: 'Миний profile', nav_notifications: 'Мэдэгдэл', nav_saved: 'Хадгалсан',
+nav_profile: 'Миний танилцуулга', nav_notifications: 'Мэдэгдэл', nav_saved: 'Хадгалсан',
 nav_activity: 'Миний хүсэлтүүд', nav_settings: 'Тохиргоо',
 nav_primary_label: 'Үндсэн цэс', nav_mobile_label: 'Мобайл цэс', brand_home_label: 'МӨР — Нүүр хуудас',
 login_title: 'Нэвтрэх', login_email_label: 'Имэйл хаяг',
@@ -101,11 +101,11 @@ detail_show_phone: 'Дугаар харах', detail_resolved_badge: 'Энэ а�
 detail_resolve_btn: 'Амьтан олдлоо', detail_resolve_confirm: 'Амьтан олдсон гэж тэмдэглэх үү? Энэ бичлэг жагсаалтаас далд болно.',
 detail_edit_btn: 'Засах', detail_delete_btn: 'Устгах', detail_delete_confirm: 'Энэ бичлэгийг бүрмөсөн устгах уу? Энэ үйлдлийг буцаах боломжгүй.',
 detail_save: 'Хадгалах', detail_cancel: 'Цуцлах', detail_saving: 'Хадгалж байна...', detail_deleting: 'Устгаж байна...', detail_resolving: 'Тэмдэглэж байна...',
-detail_share_hint: 'Messenger, Viber зэрэгт шууд хуваалцахын тулд "Хуваалцах" товчийг ашиглана уу (гар утсан дээр систем өөрөө боломжит апп-уудыг жагсаана).',
+detail_share_hint: 'Холбоосыг хуулж хүссэн аппдаа илгээх эсвэл Facebook-т хуваалцаарай. Таны төхөөрөмж дэмжвэл “Хуваалцах” товч мөн гарна.',
 detail_last_seen_loc: 'Сүүлд харагдсан байршил', detail_loading: 'Ачааллаж байна...', detail_not_found: 'Бичлэг олдсонгүй эсвэл устсан байна.',
 detail_back_listings: 'Жагсаалт руу буцах', detail_loading_desc: 'Зарын мэдээллийг бэлтгэж байна.',
 detail_info_heading: 'Амьтны мэдээлэл', detail_contact_heading: 'Холбоо барих', detail_owner_actions: 'Зарын удирдлага',
-detail_owner_profile: 'Зарын эзний profile', detail_call_phone: 'Утсаар холбогдох', detail_no_photo: 'Зураг оруулаагүй',
+detail_owner_profile: 'Зарын эзний танилцуулга', detail_call_phone: 'Утсаар холбогдох', detail_no_photo: 'Зураг оруулаагүй',
 detail_edit_success: 'Мэдээлэл хадгалагдлаа', detail_share_heading: 'Зарыг хуваалцах', detail_map_heading: 'Байршлын зураг',
 detail_edit_heading: 'Зарын мэдээлэл засах', detail_phone_invalid: 'Утасны дугаар яг 8 оронтой байх ёстой.',
 detail_gallery_label: 'зурагтай галерей', detail_gallery_image: 'зураг', detail_gallery_previous: 'Өмнөх зураг', detail_gallery_next: 'Дараах зураг',
@@ -137,7 +137,7 @@ mypets_status_overdue: 'Хугацаа хэтэрсэн', mypets_status_soon: '�
 mypets_open_health: 'Эрүүл мэндийн мэдээлэл нээх', mypets_vaccine_date_update: 'Дараагийн вакцины огноо', mypets_add_busy: 'Бүртгэж байна...',
 
 // ─── Profile / Saved ────────────────────────────────────────────────────
-profile_title: 'Миний profile', profile_loading: 'Profile ачаалж байна', profile_login_title: 'Profile харахын тулд нэвтэрнэ үү', profile_login_desc: 'Таны profile, зарын үзүүлэлт болон тохиргоо зөвхөн нэвтэрсний дараа харагдана.',
+profile_title: 'Миний танилцуулга', profile_loading: 'Profile ачаалж байна', profile_login_title: 'Profile харахын тулд нэвтэрнэ үү', profile_login_desc: 'Таны profile, зарын үзүүлэлт болон тохиргоо зөвхөн нэвтэрсний дараа харагдана.',
 profile_load_error: 'Profile нээж чадсангүй', profile_retry: 'Дахин оролдох', profile_verified: 'Email баталгаажсан', profile_volunteer: 'Сайн дурын ажилтан',
 profile_stat_listings: 'Нийт зар', profile_stat_resolved: 'Олдсон', profile_stat_adoptions: 'Үрчлүүлэх', profile_stat_sitting: 'Асрах үйлчилгээ', profile_joined_prefix: 'МӨР-д', profile_joined_suffix: 'өдөр нэгдсэн',
 profile_edit_action: 'Profile засах', profile_settings_action: 'Тохиргоо', profile_block_action: 'Хэрэглэгч хаах', profile_unblock_action: 'Хаалтыг цуцлах', profile_report_action: 'Мэдээлэх',
@@ -275,7 +275,7 @@ adoption_phone_invalid: 'Утасны дугаар яг 8 оронтой бай�
 adoption_photo_added: 'зураг нэмэгдлээ.', adoption_photo_error: 'Зураг боловсруулахад алдаа гарлаа.',
 adoption_detail_error_title: 'Үрчлүүлэх зар нээгдсэнгүй', adoption_detail_loading_desc: 'Үрчлүүлэх зарын мэдээллийг бэлтгэж байна.',
 detail_information: 'Үндсэн мэдээлэл',
-adoption_owner_profile: 'Зарын эзний profile', adoption_view_profile: 'Амьтны дэлгэрэнгүй profile',
+adoption_owner_profile: 'Зарын эзний танилцуулга', adoption_view_profile: 'Амьтны дэлгэрэнгүй танилцуулга',
 adoption_request_title: 'Үрчлүүлэх хүсэлт', adoption_requests_received: 'Ирсэн хүсэлт',
 adoption_request_login: 'Хүсэлт илгээхийн тулд нэвтэрнэ үү.', adoption_request_prompt: 'Амьтныг хэрхэн асрах тухайгаа бичнэ үү',
 adoption_request_placeholder: 'Амьдрах орчин, өмнөх туршлага, гэр бүлийн нөхцөл...', adoption_request_send: 'Хүсэлт илгээх',
@@ -419,7 +419,7 @@ service_grooming: 'Арчилгаа',
 clinics_services: 'Үйлчилгээ:',
 clinics_phone_visible: 'Шууд холбогдох утас',
 clinics_open_maps: 'Google Maps нээх',
-clinics_open_page: 'Эмнэлгийн page',
+clinics_open_page: 'Эмнэлгийн хуудас',
 clinics_verified: 'Мэдээлэл шалгасан',
 clinics_services_verified: 'Үйлчилгээ баталгаажсан',
 clinics_services_unverified: 'Нарийн үйлчилгээг утсаар лавлана уу',
@@ -697,7 +697,7 @@ detail_show_phone: 'Show number', detail_resolved_badge: 'This pet has been mark
 detail_resolve_btn: 'Pet found', detail_resolve_confirm: 'Mark this pet as found? This post will be hidden from listings.',
 detail_edit_btn: 'Edit', detail_delete_btn: 'Delete', detail_delete_confirm: 'Permanently delete this post? This cannot be undone.',
 detail_save: 'Save', detail_cancel: 'Cancel', detail_saving: 'Saving...', detail_deleting: 'Deleting...', detail_resolving: 'Updating...',
-detail_share_hint: 'Use the "Share" button to send directly via Messenger, Viber, etc. (your device will show available apps).',
+detail_share_hint: 'Copy the link to send in any app, or share on Facebook. A Share button is also available on supported devices.',
 detail_last_seen_loc: 'Last seen location', detail_loading: 'Loading...', detail_not_found: 'Post not found or has been removed.',
 detail_back_listings: 'Back to listings', detail_loading_desc: 'Preparing the post details.',
 detail_info_heading: 'Pet information', detail_contact_heading: 'Contact', detail_owner_actions: 'Manage post',
@@ -1209,6 +1209,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 // localStorage-тэй синхрончлогдсон хэл — useSyncExternalStore (SSR-аюулгүй)
 const saved = useLocalStorageValue('mur-lang');
 const lang: Locale = saved === 'en' || saved === 'mn' ? saved : 'mn';
+useEffect(() => { document.documentElement.lang = lang; }, [lang]);
 
 function toggle() {
 setLocalStorageValue('mur-lang', lang === 'mn' ? 'en' : 'mn');

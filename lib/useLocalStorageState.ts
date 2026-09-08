@@ -13,6 +13,7 @@ import { useCallback, useSyncExternalStore } from 'react';
 //
 // Өөр tab-д localStorage өөрчлөгдөхөд (`storage` event) ч шинэчлэгдэнэ.
 
+const memoryFallback = new Map<string, string | null>();
 const listeners = new Map<string, Set<() => void>>();
 
 function subscribe(key: string, callback: () => void): () => void {
@@ -31,7 +32,7 @@ function read(key: string): string | null {
   try {
     return window.localStorage.getItem(key);
   } catch {
-    return null; // приват горим / блоклосон storage — аюулгүй буцаана
+    return memoryFallback.get(key) ?? null; // Storage хаалттай үед энэ session-д хадгална
   }
 }
 
@@ -49,6 +50,7 @@ export function useLocalStorageValue(
 }
 
 export function setLocalStorageValue(key: string, value: string | null): void {
+  memoryFallback.set(key, value);
   try {
     if (value === null) window.localStorage.removeItem(key);
     else window.localStorage.setItem(key, value);

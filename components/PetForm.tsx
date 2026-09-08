@@ -15,10 +15,27 @@ import type { PetStatus, PetType } from '../lib/types';
 import { normalizePhone, formatPhone } from '../lib/utils';
 import BreedSelect from './BreedSelect';
 import FieldHint from './ui/FieldHint';
+import { useAuth } from '../lib/useAuth';
+import LoginModal from './LoginModal';
 
 type FieldErrors = Partial<Record<'color' | 'place' | 'phone', string>>;
 
 export default function PetForm({ status }: { status: PetStatus }) {
+  const { user, loading } = useAuth();
+  const { lang, t } = useLanguage();
+  const [showLogin, setShowLogin] = useState(false);
+  if (loading) return <div className="state-panel" role="status" aria-busy="true">{t('detail_loading')}</div>;
+  if (!user) return <section className="state-panel">
+    <Icon name="lock" size={28} />
+    <h2>{lang === 'mn' ? 'Зар оруулахын тулд нэвтэрнэ үү' : 'Sign in to create a report'}</h2>
+    <p>{lang === 'mn' ? 'Нэвтэрсний дараа энэ хуудаснаас зургаа оруулж, мэдээллээ бөглөнө.' : 'After signing in, continue on this page to add photos and details.'}</p>
+    <Button onClick={() => setShowLogin(true)}>{t('nav_login')}</Button>
+    {showLogin && <LoginModal onClose={() => setShowLogin(false)} />}
+  </section>;
+  return <AuthenticatedPetForm key={user.id + status} status={status} />;
+}
+
+function AuthenticatedPetForm({ status }: { status: PetStatus }) {
   const { t } = useLanguage();
   const steps = [t('form_step_photo'), t('form_step_info'), t('form_step_location'), t('form_step_contact')];
   const typeLabels: Record<PetType, string> = { 'Нохой': t('type_dog'), 'Муур': t('type_cat'), 'Бусад': t('type_other') };

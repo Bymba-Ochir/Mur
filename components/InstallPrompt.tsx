@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useLanguage } from '../lib/i18n';
 import Icon from './ui/icons';
+import { setLocalStorageValue, useLocalStorageValue } from '../lib/useLocalStorageState';
 
 const DISMISS_KEY = 'mur-install-dismissed';
 
@@ -13,12 +14,15 @@ interface BeforeInstallPromptEvent extends Event {
 
 export default function InstallPrompt() {
   const { t } = useLanguage();
+  const dismissed = useLocalStorageValue(DISMISS_KEY, '1');
+  const [installing, setInstalling] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [visible, setVisible] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
 
   useEffect(() => {
-    if (localStorage.getItem(DISMISS_KEY)) return;
+    if (dismissed) return;
+    let active = true;
 
     // Аль хэдийн апп болгож суулгасан эсэхийг шалгах (standalone горим)
     const standalone = (window.navigator as Navigator & { standalone?: boolean }).standalone === true;
@@ -32,10 +36,11 @@ export default function InstallPrompt() {
       // iOS дээр beforeinstallprompt дэмжигддэггүй тул зааврыг шууд харуулна.
       // setState-г effect-ийн биед синхрон хийхгүй — microtask-аар (React 19 дүрэм)
       Promise.resolve().then(() => {
+        if (!active) return;
         setIsIOS(true);
         setVisible(true);
       });
-      return;
+      return () => { active = false; };
     }
 
     function handleBeforeInstallPrompt(e: Event) {
@@ -44,23 +49,26 @@ export default function InstallPrompt() {
       setVisible(true);
     }
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-  }, []);
+    return () => { active = false; window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt); };
+  }, [dismissed]);
 
   async function handleInstall() {
-    if (deferredPrompt) {
-      deferredPrompt.prompt();
+    if (!deferredPrompt || installing) return;
+    setInstalling(true);
+    try {
+      await deferredPrompt.prompt();
       await deferredPrompt.userChoice;
-    }
-    dismiss();
+      dismiss();
+    } catch { dismiss(); }
+    finally { setInstalling(false); }
   }
 
   function dismiss() {
-    localStorage.setItem(DISMISS_KEY, '1');
+    setLocalStorageValue(DISMISS_KEY, '1');
     setVisible(false);
   }
 
-  if (!visible) return null;
+  if (!visible || dismissed) return null;
 
   return (
     <div className="install-banner" data-floating-notice="install" role="region" aria-label={t('install_region_label')}>
@@ -76,7 +84,7 @@ export default function InstallPrompt() {
         </div>
       </div>
       <div className="install-actions">
-        {!isIOS && <button type="button" onClick={handleInstall} className="install-btn primary">{t('install_action')}</button>}
+        {!isIOS && <button type="button" onClick={handleInstall} disabled={installing} aria-busy={installing} className="install-btn primary">{t('install_action')}</button>}
         <button type="button" onClick={dismiss} className="install-btn ghost" aria-label={t('install_close_label')}>{t('install_close')}</button>
       </div>
 

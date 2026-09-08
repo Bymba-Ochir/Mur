@@ -247,6 +247,7 @@ export default function Navbar() {
               className={`icon-rail-btn${isActiveRoute(link.href) ? ' active' : ''}`}
               aria-current={isActiveRoute(link.href) ? 'page' : undefined}
               data-tip={link.label}
+              title={link.label}
               aria-label={link.label}
             >
               {link.icon && <Icon name={link.icon} size={17} />}
@@ -258,6 +259,7 @@ export default function Navbar() {
               href="/admin"
               className={`icon-rail-btn is-admin${pathname === '/admin' ? ' active' : ''}`}
               data-tip={t('nav_admin')}
+              title={t('nav_admin')}
               aria-label={t('nav_admin')}
             >
               <Icon name="shield" size={17} />
@@ -993,7 +995,7 @@ export default function Navbar() {
 .navbar-wrap .nav-links { min-width:0; flex:1 1 auto; }
 .navbar-wrap .nav-link { min-height:44px; flex-shrink:0; }
 .navbar-wrap .icon-rail-label { display:none; }
-.navbar-wrap .icon-rail-btn { width:36px; min-width:36px; padding-inline:0; }
+.navbar-wrap .icon-rail-btn { width:40px; min-width:40px; min-height:44px; padding-inline:0; }
 .navbar-wrap .icon-rail-btn[data-tip]:hover::after,
 .navbar-wrap .icon-rail-btn[data-tip]:focus-visible::after { display:block; }
 .navbar-wrap .dropdown-list { display:grid; }

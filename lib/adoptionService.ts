@@ -1,3 +1,4 @@
+import { validatePetAge } from './petAge';
 // lib/adoptionService.ts
 // Үрчлүүлэх амьтны мэдээллийг Supabase (Postgres + Storage)-д бичих, унших функцууд
 import { supabase } from './supabase';
@@ -39,7 +40,7 @@ export async function createAdoption(data: AdoptionInput): Promise<string> {
   const payload = {
       name: cleanText(data.name, 100, 'Нэр'),
       type: data.type,
-      age: cleanText(data.age, 100, 'Нас'),
+      age: validatePetAge(cleanText(data.age, 100, 'Нас')),
       gender: data.gender || 'Тодорхойгүй',
       breed: cleanText(data.breed, 100, 'Үүлдэр'),
       description: cleanText(data.description, 2000, 'Тайлбар', true),
@@ -122,7 +123,7 @@ export async function updateAdoption(id: string, fields: UpdateAdoptionFields): 
     .update({
       name: fields.name === undefined ? undefined : cleanText(fields.name, 100, 'Нэр'),
       type: fields.type ?? undefined,
-      age: fields.age === undefined ? undefined : cleanText(fields.age, 100, 'Нас'),
+      age: fields.age === undefined ? undefined : validatePetAge(cleanText(fields.age, 100, 'Нас')),
       gender: fields.gender ?? undefined,
       breed: fields.breed === undefined ? undefined : cleanText(fields.breed, 100, 'Үүлдэр'),
       description: fields.description === undefined ? undefined : cleanText(fields.description, 2000, 'Тайлбар', true),

@@ -1,4 +1,5 @@
 'use client';
+import { formatPetAge } from '../lib/petAge';
 import type { HTMLAttributes, ReactNode } from 'react';
 import Link from 'next/link';
 import PetIcon from './PetIcon';
@@ -56,7 +57,7 @@ export default function AdoptionCardView({
       <div className="info">
         <h3>{name || typeLabel || type}</h3>
         <p>{typeLabel || type}{breed ? `, ${breed}` : ''}</p>
-        {age && <p>{age}{gender && gender !== 'Тодорхойгүй' ? ` · ${genderLabel || gender}` : ''}</p>}
+        {age && <p>{formatPetAge(age, language)}{gender && gender !== 'Тодорхойгүй' ? ` · ${genderLabel || gender}` : ''}</p>}
         <p className="place"><Icon name="pin" size={14} aria-hidden="true" /> {district} — {place}</p>
         {createdAt && <p className="time"><Icon name="calendar" size={14} aria-hidden="true" /> {relativeTime(createdAt, language)}</p>}
         <div className="card-actions">

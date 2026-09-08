@@ -1,4 +1,5 @@
 'use client';
+import { formatPetAge } from '../../../lib/petAge';
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -130,7 +131,7 @@ export default function AdoptionDetailClient({ id }: { id: string }) {
             <dl className="adoption-facts">
               <div><dt>{t('detail_type').replace(':', '')}</dt><dd>{typeLabel}</dd></div>
               {adoption.breed && <div><dt>{t('detail_breed').replace(':', '')}</dt><dd>{getBreedLabel(adoption.breed, lang)}</dd></div>}
-              {adoption.age && <div><dt>{t('detail_age').replace(':', '')}</dt><dd>{adoption.age}</dd></div>}
+              {adoption.age && <div><dt>{t('detail_age').replace(':', '')}</dt><dd>{formatPetAge(adoption.age, lang)}</dd></div>}
               <div><dt>{t('detail_gender').replace(':', '')}</dt><dd>{genderLabel}</dd></div>
               <div><dt>{t('detail_district').replace(':', '')}</dt><dd>{adoption.district}</dd></div>
               <div><dt>{t('detail_place').replace(':', '')}</dt><dd>{adoption.place}</dd></div>

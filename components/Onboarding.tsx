@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 import { DISTRICTS } from '../lib/districts';
 import { useLanguage } from '../lib/i18n';
 import { setLocalStorageValue, useLocalStorageValue } from '../lib/useLocalStorageState';
@@ -27,29 +27,41 @@ function Icon({ name }: { name: Intent | 'location' | 'bell' }) {
 
 export default function Onboarding() {
   const router = useRouter();
+  const pathname = usePathname();
+  const dialogRef = useRef<HTMLDivElement>(null);
   const { lang } = useLanguage();
   const seen = useLocalStorageValue(SEEN_KEY, '1');
-  const [manualOpen, setManualOpen] = useState(false);
+  const [manualRoute, setManualRoute] = useState<string | null>(null);
   const [step, setStep] = useState(0);
   const [intent, setIntent] = useState<Intent | null>(null);
   const [district, setDistrict] = useState('');
   const [notifications, setNotifications] = useState(false);
-  const visible = manualOpen || seen !== '1';
+  const visible = manualRoute === pathname || (pathname === '/' && seen !== '1');
   const en = lang === 'en';
 
   useEffect(() => {
-    const open = () => { setStep(0); setManualOpen(true); };
+    const open = () => { setStep(0); setManualRoute(pathname); };
     window.addEventListener(OPEN_EVENT, open);
     return () => window.removeEventListener(OPEN_EVENT, open);
-  }, []);
+  }, [pathname]);
 
   useEffect(() => {
     if (!visible) return;
+    const previousFocus = document.activeElement as HTMLElement | null;
+    dialogRef.current?.querySelector<HTMLButtonElement>('button')?.focus();
+    const trapFocus = (event: KeyboardEvent) => {
+      if (event.key !== 'Tab') return;
+      const nodes = Array.from(dialogRef.current?.querySelectorAll<HTMLElement>('button:not(:disabled), select, input, a[href]') ?? []);
+      const first = nodes[0], last = nodes.at(-1);
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+    };
+    document.addEventListener('keydown', trapFocus);
     const previousOverflow = document.body.style.overflow;
     const closeOnEscape = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         setLocalStorageValue(SEEN_KEY, '1');
-        setManualOpen(false);
+        setManualRoute(null);
       }
     };
     document.body.style.overflow = 'hidden';
@@ -57,12 +69,14 @@ export default function Onboarding() {
     return () => {
       document.body.style.overflow = previousOverflow;
       document.removeEventListener('keydown', closeOnEscape);
+      document.removeEventListener('keydown', trapFocus);
+      previousFocus?.focus();
     };
   }, [visible]);
 
   function close() {
     setLocalStorageValue(SEEN_KEY, '1');
-    setManualOpen(false);
+    setManualRoute(null);
   }
 
   async function enableNotifications() {
@@ -95,7 +109,7 @@ export default function Onboarding() {
 
   return (
     <div className="onb-overlay" role="dialog" aria-modal="true" aria-labelledby="onb-title" onClick={close}>
-      <div className="onb-card" onClick={(event) => event.stopPropagation()}>
+      <div ref={dialogRef} className="onb-card" onClick={(event) => event.stopPropagation()}>
         <div className="onb-top">
           <div className="onb-progress" aria-label={`${step + 1} / 3`}>
             {[0, 1, 2].map((item) => <span key={item} className={item <= step ? 'active' : ''} />)}

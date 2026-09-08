@@ -18,6 +18,7 @@ import { saveSearch } from '../../lib/listingService';
 import { useAuth } from '../../lib/useAuth';
 import { useToast } from '../../components/Toast';
 import Icon from '../../components/ui/icons';
+import { useListingFilters } from '../../lib/useListingFilters';
 
 // Шүүлтүүрийн "Бүгд" сонголт (хоосон) 9 дүүргийн өмнө явна
 const DISTRICTS: (District | '')[] = ['', ...DISTRICT_VALUES];
@@ -26,10 +27,7 @@ export default function ListingsPage() {
   const { t } = useLanguage();
   const { user } = useAuth();
   const showToast = useToast();
-  const [status, setStatus] = useState<PetStatus | ''>('');
-  const [type, setType] = useState<PetType | ''>('');
-  const [district, setDistrict] = useState<District | ''>('');
-  const [search, setSearch] = useState('');
+  const { status, type, district, search, query, setStatus, setType, setDistrict, setSearch } = useListingFilters();
   const [pets, setPets] = useState<Pet[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -44,6 +42,18 @@ export default function ListingsPage() {
   const [savingSearch, setSavingSearch] = useState(false);
   const matchAbortRef = useRef<AbortController | null>(null);
   const requestVersion = useRef(0);
+  const restoredScroll = useRef(false);
+  useEffect(() => {
+    if (loading || loadError || restoredScroll.current) return;
+    restoredScroll.current = true;
+    try {
+      const saved = sessionStorage.getItem('mur-listings-scroll:' + query);
+      if (saved) requestAnimationFrame(() => window.scrollTo(0, Number(saved) || 0));
+    } catch { /* Storage can be disabled. */ }
+  }, [loading, loadError, query]);
+  function rememberScroll() {
+    try { sessionStorage.setItem('mur-listings-scroll:' + query, String(window.scrollY)); } catch { /* optional */ }
+  }
   const hasFilters = Boolean(status || type || district || search.trim());
 
   useEffect(() => {
@@ -146,7 +156,7 @@ export default function ListingsPage() {
   }
 
   return (
-    <div className="page-shell">
+    <div onClickCapture={(event) => { if ((event.target as HTMLElement).closest('a[href^="/pets/"]')) rememberScroll(); }} className="page-shell">
       <div className="page-header">
         <p className="eyebrow">{t('listings_eyebrow')}</p>
         <h1>{t('listings_title')}</h1>

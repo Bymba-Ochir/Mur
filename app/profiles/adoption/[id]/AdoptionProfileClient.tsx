@@ -1,4 +1,5 @@
 'use client';
+import { formatPetAge } from '../../../../lib/petAge';
 import { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '../../../../lib/useAuth';
 import { useLanguage } from '../../../../lib/i18n';
@@ -11,7 +12,7 @@ import type { Adoption, PetProfileData } from '../../../../lib/types';
 
 export default function AdoptionProfileClient({ id }: { id: string }) {
   const { user } = useAuth();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const [adoption, setAdoption] = useState<Adoption | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -33,7 +34,7 @@ export default function AdoptionProfileClient({ id }: { id: string }) {
     id: adoption.id,
     name: adoption.name,
     type: adoption.type,
-    age: adoption.age || null,
+    age: adoption.age ? formatPetAge(adoption.age, lang) : null,
     breed: adoption.breed || null,
     gender: adoption.gender,
     weight: null,

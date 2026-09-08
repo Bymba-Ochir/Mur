@@ -113,7 +113,7 @@ export default function AdoptionForm() {
           <input id="adopt-name" name="name" value={form.name} onChange={handleChange} placeholder={t('adoption_name_placeholder')} maxLength={100} />
           <label htmlFor="adopt-type">{t('type_label')}</label>
           <select id="adopt-type" name="type" value={form.type} onChange={(event) => setForm((current) => ({ ...current, type: event.target.value as PetType, breed: '' }))}>{TYPE_VALUES.map((value) => <option key={value} value={value}>{typeLabels[value]}</option>)}</select>
-          <label htmlFor="adopt-age">{t('adoption_age_label')}</label><FieldHint mn="Тодорхой нас мэдэхгүй бол ойролцоогоор бичиж болно." en="Enter an estimate when the exact age is unknown." />
+          <label htmlFor="adopt-age">{t('adoption_age_label')}</label><FieldHint mn="Насыг нэгжтэй бичнэ: 2 жил, 6 сар. Мэдэхгүй бол хоосон үлдээнэ." en="Include the unit: 2 years or 6 months. Leave blank if unknown." />
           <input id="adopt-age" name="age" value={form.age} onChange={handleChange} placeholder={t('adoption_age_placeholder')} maxLength={100} />
           <label htmlFor="adopt-gender">{t('adoption_gender_label')}</label>
           <select id="adopt-gender" name="gender" value={form.gender} onChange={handleChange}>{GENDER_VALUES.map((value) => <option key={value} value={value}>{value === 'Эрэгтэй' ? t('gender_male') : value === 'Эмэгтэй' ? t('gender_female') : t('gender_unknown')}</option>)}</select>

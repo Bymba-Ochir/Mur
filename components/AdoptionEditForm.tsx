@@ -9,6 +9,7 @@ import Icon from './ui/icons';
 import { TYPE_VALUES, GENDER_VALUES } from '../lib/useAdoptionForm';
 import type { AdoptionGender, PetType } from '../lib/types';
 import BreedSelect from './BreedSelect';
+import { validatePetAge } from '../lib/petAge';
 import { formatPhone, normalizePhone } from '../lib/utils';
 
 export interface AdoptionEditValues { name:string;type:PetType;age:string;gender:AdoptionGender;breed:string;description:string;district:District;place:string;phone:string; }
@@ -16,11 +17,14 @@ export interface AdoptionEditValues { name:string;type:PetType;age:string;gender
 export default function AdoptionEditForm({ initial, onSave, onCancel, saving }: { initial:AdoptionEditValues;onSave:(values:AdoptionEditValues)=>void;onCancel:()=>void;saving:boolean; }) {
   const { t } = useLanguage();
   const [form, setForm] = useState<AdoptionEditValues>(initial);
-  const [errors, setErrors] = useState<{description?:string;place?:string;phone?:string}>({});
+  const [errors, setErrors] = useState<{description?:string;place?:string;phone?:string;age?:string}>({});
 
   function submit(event:FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    let ageError = '';
+    try { validatePetAge(form.age); } catch (error) { ageError = (error as Error).message; }
     const next = {
+      ...(ageError ? {age: ageError} : {}),
       ...(!form.description.trim() ? { description:t('adoption_description_required') } : {}),
       ...(!form.place.trim() ? { place:t('adoption_place_required') } : {}),
       ...(!/^\d{8}$/.test(form.phone) ? { phone:t('adoption_phone_invalid') } : {}),
@@ -34,7 +38,7 @@ export default function AdoptionEditForm({ initial, onSave, onCancel, saving }: 
     <div className="field-grid">
       <label htmlFor="edit-name">{t('adoption_name_label')}</label><input id="edit-name" value={form.name} onChange={(event)=>setForm({...form,name:event.target.value})} maxLength={100}/>
       <label htmlFor="edit-type">{t('type_label')}</label><select id="edit-type" value={form.type} onChange={(event)=>setForm({...form,type:event.target.value as PetType,breed:''})}>{TYPE_VALUES.map((value)=><option key={value} value={value}>{t(`type_${value==='Нохой'?'dog':value==='Муур'?'cat':'other'}`)}</option>)}</select>
-      <label htmlFor="edit-age">{t('adoption_age_label')}</label><input id="edit-age" value={form.age} onChange={(event)=>setForm({...form,age:event.target.value})} maxLength={100}/>
+      <label htmlFor="edit-age">{t('adoption_age_label')}</label><input aria-describedby="edit-age-hint" aria-invalid={Boolean(errors.age)} id="edit-age" value={form.age} onChange={(event)=>setForm({...form,age:event.target.value})} maxLength={100}/><small id="edit-age-hint">{t('adoption_age_placeholder')}</small>{errors.age && <p role="alert">{errors.age}</p>}
       <label htmlFor="edit-gender">{t('adoption_gender_label')}</label><select id="edit-gender" value={form.gender} onChange={(event)=>setForm({...form,gender:event.target.value as AdoptionGender})}>{GENDER_VALUES.map((value)=><option key={value} value={value}>{value==='Эрэгтэй'?t('gender_male'):value==='Эмэгтэй'?t('gender_female'):t('gender_unknown')}</option>)}</select>
       <label htmlFor="edit-breed">{t('breed_label')}</label><BreedSelect id="edit-breed" type={form.type} value={form.breed} onChange={(breed)=>setForm({...form,breed})}/>
       <label htmlFor="edit-desc">{t('adoption_description_label')}</label><textarea id="edit-desc" value={form.description} onChange={(event)=>{setForm({...form,description:event.target.value});setErrors((current)=>({...current,description:undefined}));}} rows={5} maxLength={2000} required aria-invalid={Boolean(errors.description)} aria-describedby={errors.description?'edit-desc-error':undefined}/>
