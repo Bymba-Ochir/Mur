@@ -7,6 +7,7 @@ import InstallPrompt from '../components/InstallPrompt';
 import Onboarding from '../components/Onboarding';
 import PageTransition from '../components/PageTransition';
 import { ToastProvider } from '../components/Toast';
+import DocumentLanguage from '../components/DocumentLanguage';
 import { LanguageProvider } from '../lib/i18n';
 import { AuthProvider } from '../lib/AuthProvider';
 import AnalyticsProvider from '../components/AnalyticsProvider';
@@ -55,9 +56,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         />
       </head>
       <body className={`${inter.variable} ${montserrat.variable} ${jetBrainsMono.variable}`}>
-        <a href="#main-content" className="skip-link">Үндсэн агуулга руу шилжих</a>
         <AuthProvider>
           <LanguageProvider>
+            <DocumentLanguage />
             <ToastProvider>
               <Navbar />
               <main id="main-content"><PageTransition>{children}</PageTransition></main>

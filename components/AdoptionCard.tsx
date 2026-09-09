@@ -1,4 +1,5 @@
 'use client';
+import { useListingFilters } from '../lib/useListingFilters';
 import { useState } from 'react';
 import AdoptionCardView from './AdoptionCardView';
 import PetImageGallery from './PetImageGallery';
@@ -8,6 +9,7 @@ import { getBreedLabel } from '../lib/petBreeds';
 
 export default function AdoptionCard({ adoption }: { adoption: Adoption }) {
   const { t, lang } = useLanguage();
+  const { query } = useListingFilters();
   const [revealed, setRevealed] = useState(false);
   const images = adoption.photoURLs?.length ? adoption.photoURLs : adoption.photoURL ? [adoption.photoURL] : [];
 
@@ -31,7 +33,7 @@ export default function AdoptionCard({ adoption }: { adoption: Adoption }) {
       onRevealPhone={() => setRevealed(true)}
       showPhoneLabel={t('listings_card_show_phone')}
       callPhoneLabel={t('listings_card_call')}
-      detailHref={`/adoptions/${adoption.id}`}
+      detailHref={`/adoptions/${adoption.id}${query ? "?returnTo=" + encodeURIComponent("/adoptions" + query) : ""}`}
       detailLabel={t('listings_card_detail')}
       language={lang}
       imageNode={

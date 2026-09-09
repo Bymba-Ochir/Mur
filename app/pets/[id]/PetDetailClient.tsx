@@ -1,4 +1,5 @@
 'use client';
+import { useListingReturnPath } from '../../../lib/useListingFilters';
 import { useEffect, useState, useSyncExternalStore } from 'react';
 import { fetchPetById, markResolved, updatePet, deletePet } from '../../../lib/petService';
 import { useAuth } from '../../../lib/useAuth';
@@ -39,6 +40,7 @@ const getLocationSnapshot = (): string => window.location.href;
 const getLocationServerSnapshot = (): string => '';
 
 export default function PetDetailClient({ id }: { id: string }) {
+  const returnPath = useListingReturnPath("/listings");
   const { user } = useAuth();
   const router = useRouter();
   const showToast = useToast();
@@ -110,7 +112,7 @@ export default function PetDetailClient({ id }: { id: string }) {
     }
   }
 
-  if (error) return <div className="page-shell page-shell--narrow"><div className="state-panel state-panel--error" role="alert"><span className="state-panel__icon"><Icon name="alert" size={28} /></span><h2>{t('detail_not_found')}</h2><p>{error}</p><div className="detail-actions"><Button variant="secondary" onClick={() => void load()}>{t('err_retry')}</Button><Button as="link" href="/listings" variant="ghost">{t('detail_back_listings')}</Button></div></div></div>;
+  if (error) return <div className="page-shell page-shell--narrow"><div className="state-panel state-panel--error" role="alert"><span className="state-panel__icon"><Icon name="alert" size={28} /></span><h2>{t('detail_not_found')}</h2><p>{error}</p><div className="detail-actions"><Button variant="secondary" onClick={() => void load()}>{t('err_retry')}</Button><Button as="link" href={returnPath} variant="ghost">{t('detail_back_listings')}</Button></div></div></div>;
   if (!pet) return <div className="page-shell page-shell--detail"><div className="detail-skeleton" aria-live="polite"><span className="sr-only">{t('detail_loading')}</span><div className="skeleton-media skel-row" /><div className="skeleton-copy"><div className="skeleton-line skeleton-line--short skel-row" /><div className="skeleton-line skeleton-line--title skel-row" /><div className="skeleton-line skel-row" /><div className="skeleton-card skel-row" /></div></div></div>;
 
   const typeLabel = pet.type === 'Нохой' ? t('type_dog') : pet.type === 'Муур' ? t('type_cat') : t('type_other');
@@ -119,7 +121,7 @@ export default function PetDetailClient({ id }: { id: string }) {
 
   return (
     <div className="page-shell page-shell--detail">
-      <div className="detail-back"><Button as="link" href="/listings" variant="ghost" size="sm">← {t('detail_back_listings')}</Button></div>
+      <div className="detail-back"><Button as="link" href={returnPath} variant="ghost" size="sm">← {t('detail_back_listings')}</Button></div>
       <div className="page-header">
         <p className="eyebrow">{pet.status === 'lost' ? t('report_lost_eyebrow') : t('report_found_eyebrow')}</p>
         <h1>{title}</h1>

@@ -1,4 +1,5 @@
 'use client';
+import { useLanguage } from '../lib/i18n';
 import { createContext, useCallback, useContext, useState } from 'react';
 import type { ReactNode } from 'react';
 import type { ShowToast, ToastType } from '../lib/types';
@@ -14,6 +15,7 @@ interface ToastItem {
 }
 
 export function ToastProvider({ children }: { children: ReactNode }) {
+  const { lang } = useLanguage();
   const [toasts, setToasts] = useState<ToastItem[]>([]);
 
   const showToast = useCallback<ShowToast>((message, type = 'info') => {
@@ -38,7 +40,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
             role="button"
             tabIndex={0}
             onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') dismiss(t.id); }}
-            aria-label="Мэдэгдлийг хаах"
+            aria-label={lang === 'mn' ? 'Мэдэгдлийг хаах' : 'Dismiss notification'}
           >
             <span className="toast-icon" aria-hidden="true">
               {t.type === 'error' ? (

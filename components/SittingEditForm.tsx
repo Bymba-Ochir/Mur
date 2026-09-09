@@ -13,7 +13,7 @@ export interface SittingEditValues { petType: SittingPetType; description: strin
 type Errors = Partial<Record<'description' | 'price' | 'place' | 'phone', string>>;
 
 export default function SittingEditForm({ initial, onSave, onCancel, saving }: { initial: SittingEditValues; onSave: (values: SittingEditValues) => void; onCancel: () => void; saving: boolean; }) {
-  const { t } = useLanguage(); const [form, setForm] = useState(initial); const [errors, setErrors] = useState<Errors>({});
+  const { t, lang } = useLanguage(); const [form, setForm] = useState(initial); const [errors, setErrors] = useState<Errors>({});
   function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault(); const next: Errors = {};
     if (!form.description.trim()) next.description = t('sitting_description_required');
@@ -28,7 +28,7 @@ export default function SittingEditForm({ initial, onSave, onCancel, saving }: {
       <div className="edit-heading"><Icon name="pencil" size={19} aria-hidden="true" /><h2>{t('detail_edit_btn')}</h2></div>
       <div className="field-grid">
         <label htmlFor="edit-s-type"><span>{t('sitting_pet_type_label')}</span><select id="edit-s-type" value={form.petType} onChange={(e) => setForm({ ...form, petType: e.target.value as SittingPetType })}>{PET_TYPE_VALUES.map((value) => <option key={value} value={value}>{typeLabel(value)}</option>)}</select></label>
-        <label htmlFor="edit-s-price"><span>{t('sitting_price_label')}</span><input id="edit-s-price" type="number" min="0" max="100000000" step="1" value={form.price} onChange={(e) => { setForm({ ...form, price: e.target.value }); setErrors({ ...errors, price: undefined }); }} aria-invalid={Boolean(errors.price)} aria-describedby={errors.price ? 'edit-s-price-error' : undefined} />{errors.price && <small id="edit-s-price-error" role="alert">{errors.price}</small>}</label>
+        <label htmlFor="edit-s-price"><span>{t('sitting_price_label')}</span><small id="edit-price-hint">{lang === 'mn' ? 'Нэг өдрийн үнэ. Хоосон бол тохиролцоно, 0 бол үнэгүй.' : 'Daily price. Leave blank to negotiate, or enter 0 for free.'}</small><input id="edit-s-price" type="number" min="0" max="100000000" step="1" value={form.price} onChange={(e) => { setForm({ ...form, price: e.target.value }); setErrors({ ...errors, price: undefined }); }} aria-invalid={Boolean(errors.price)} aria-describedby={errors.price ? 'edit-price-hint edit-s-price-error' : 'edit-price-hint'} />{errors.price && <small id="edit-s-price-error" role="alert">{errors.price}</small>}</label>
       </div>
       <label htmlFor="edit-s-desc"><span>{t('sitting_description_label')}</span><textarea id="edit-s-desc" value={form.description} onChange={(e) => { setForm({ ...form, description: e.target.value }); setErrors({ ...errors, description: undefined }); }} rows={5} maxLength={2000} required aria-invalid={Boolean(errors.description)} aria-describedby={errors.description ? 'edit-s-desc-error' : undefined} />{errors.description && <small id="edit-s-desc-error" role="alert">{errors.description}</small>}</label>
       <div className="field-grid"><label htmlFor="edit-s-exp"><span>{t('sitting_experience_label')}</span><input id="edit-s-exp" value={form.experience} onChange={(e) => setForm({ ...form, experience: e.target.value })} maxLength={500} /></label><label htmlFor="edit-s-avail"><span>{t('sitting_availability_label')}</span><input id="edit-s-avail" value={form.availability} onChange={(e) => setForm({ ...form, availability: e.target.value })} maxLength={500} /></label></div>

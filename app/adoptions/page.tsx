@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
+import { useListingFilters } from '../../lib/useListingFilters';
 import { fetchAdoptions } from '../../lib/adoptionService';
 import AdoptionCard from '../../components/AdoptionCard';
 import SkeletonCard from '../../components/SkeletonCard';
@@ -16,10 +17,7 @@ const TYPE_VALUES: PetType[] = ['Нохой', 'Муур', 'Бусад'];
 
 export default function AdoptionsPage() {
   const { t } = useLanguage();
-  const [type, setType] = useState<PetType | ''>('');
-  const [gender, setGender] = useState<AdoptionGender | ''>('');
-  const [district, setDistrict] = useState<District | ''>('');
-  const [search, setSearch] = useState('');
+  const { type, setType, gender, setGender, district, setDistrict, search, setSearch, query } = useListingFilters();
   const [adoptions, setAdoptions] = useState<Adoption[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -27,6 +25,17 @@ export default function AdoptionsPage() {
   const [hasMore, setHasMore] = useState(false);
   const [loadError, setLoadError] = useState('');
   const requestVersion = useRef(0);
+  const restoreScroll = useRef<number | null>(null);
+  useEffect(() => {
+    if (loading || loadError || restoreScroll.current == null) return;
+    const y = restoreScroll.current;
+    restoreScroll.current = null;
+    const frame = requestAnimationFrame(() => window.scrollTo(0, y));
+    return () => cancelAnimationFrame(frame);
+  }, [loading, loadError]);
+  function rememberPosition() {
+    try { sessionStorage.setItem('mur-adoptions:' + query, JSON.stringify({ page, scroll: window.scrollY, time: Date.now() })); } catch { /* optional navigation memory */ }
+  }
   const hasFilters = Boolean(search || type || gender || district);
 
   useEffect(() => {
@@ -41,17 +50,33 @@ export default function AdoptionsPage() {
     else setLoadingMore(true);
     setLoadError('');
     try {
-      const { adoptions: data, hasMore: more } = await fetchAdoptions({
+      const filters = {
         type: type || undefined,
         gender: gender || undefined,
         district: district || undefined,
         search: search.trim() || undefined,
-        page: pageToLoad,
-      });
+      };
+      let lastPage = pageToLoad;
+      let savedPage = pageToLoad;
+      if (pageToLoad === 0) {
+        try {
+          const raw = sessionStorage.getItem('mur-adoptions:' + query);
+          const saved = raw ? JSON.parse(raw) : null;
+          if (saved && Date.now() - saved.time < 1800000 && Number.isInteger(saved.page) && saved.page >= 0 && saved.page <= 100 && Number.isFinite(saved.scroll) && saved.scroll >= 0) {
+            savedPage = saved.page; restoreScroll.current = saved.scroll;
+          }
+        } catch { /* ignore invalid navigation memory */ }
+      }
+      const first = await fetchAdoptions({ ...filters, page: pageToLoad });
+      const data = [...first.adoptions]; let more = first.hasMore;
+      while (lastPage < savedPage && more && version === requestVersion.current) {
+        const next = await fetchAdoptions({ ...filters, page: ++lastPage });
+        data.push(...next.adoptions); more = next.hasMore;
+      }
       if (version !== requestVersion.current) return;
       setAdoptions((current) => (pageToLoad === 0 ? data : [...current, ...data]));
       setHasMore(more);
-      setPage(pageToLoad);
+      setPage(lastPage);
     } catch (error) {
       if (version !== requestVersion.current) return;
       setLoadError(getErrorMessage(error));
@@ -107,7 +132,7 @@ export default function AdoptionsPage() {
       ) : (
         <section aria-labelledby="adoption-results-title">
           <div className="results-heading"><h2 id="adoption-results-title">{t('adoptions_results_title')}</h2><p className="result-count" aria-live="polite">{adoptions.length} {t('results_count')}</p></div>
-          <div className="adoption-grid">{adoptions.map((adoption) => <AdoptionCard key={adoption.id} adoption={adoption} />)}</div>
+          <div className="adoption-grid" onClickCapture={rememberPosition}>{adoptions.map((adoption) => <AdoptionCard key={adoption.id} adoption={adoption} />)}</div>
           {hasMore && <div className="load-more-row"><Button onClick={() => void load(page + 1)} disabled={loadingMore} variant="ghost" aria-busy={loadingMore}>{loadingMore ? t('loading_more') : t('load_more')}</Button></div>}
         </section>
       )}

@@ -14,10 +14,19 @@ import type { PetType } from '../lib/types';
 import { normalizePhone, formatPhone } from '../lib/utils';
 import BreedSelect from './BreedSelect';
 import FieldHint from './ui/FieldHint';
+import { useAuth } from '../lib/useAuth';
+import LoginModal from './LoginModal';
 
 type FieldErrors = Partial<Record<'description' | 'place' | 'phone', string>>;
 
 export default function AdoptionForm() {
+ const {user, loading} = useAuth(); const {t, lang} = useLanguage();
+ const [login, setLogin] = useState(false);
+ if (loading) return <div role="status" aria-busy="true">{t('detail_loading')}</div>;
+ if (!user) return <section className="state-panel"><h2>{lang === 'mn' ? 'Зар оруулахын тулд нэвтэрнэ үү' : 'Sign in to create a listing'}</h2><Button onClick={()=>setLogin(true)}>{t('nav_login')}</Button>{login && <LoginModal onClose={()=>setLogin(false)} />}</section>;
+ return <AuthenticatedAdoptionForm key={user.id} />;
+}
+function AuthenticatedAdoptionForm() {
   const { t } = useLanguage();
   const steps = [t('adoptions_form_step_photo'), t('adoptions_form_step_info'), t('adoptions_form_step_contact')];
   const typeLabels: Record<PetType, string> = { 'Нохой': t('type_dog'), 'Муур': t('type_cat'), 'Бусад': t('type_other') };

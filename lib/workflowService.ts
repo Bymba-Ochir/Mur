@@ -1,3 +1,4 @@
+import { ulaanbaatarDate } from './bookingDate';
 import { supabase } from './supabase';
 import { assertDateOrder, cleanText, optionalIsoDate } from './inputValidation';
 
@@ -30,7 +31,7 @@ export async function updateAdoptionApplication(id: string, status: 'accepted' |
 export async function createSittingBooking(listingId: string, start: string, end: string, note: string): Promise<void> {
   const id = await userId(); const startDate = optionalIsoDate(start, 'Эхлэх огноо'); const endDate = optionalIsoDate(end, 'Дуусах огноо');
   if (!startDate || !endDate) throw new Error('Эхлэх болон дуусах огноо оруулна уу.'); assertDateOrder(startDate, endDate);
-  if (startDate < new Date().toISOString().slice(0, 10)) throw new Error('Өнгөрсөн огноогоор захиалга үүсгэх боломжгүй.');
+  if (startDate < ulaanbaatarDate()) throw new Error('Өнгөрсөн огноогоор захиалга үүсгэх боломжгүй.');
   const { error } = await supabase.from('sitting_bookings').insert({ listing_id: listingId, customer_id: id, sitter_id: id, start_date: startDate, end_date: endDate, note: cleanText(note, 1000, 'Тайлбар') || null });
   if (error?.code === '23505') throw new Error('Ижил хугацааны идэвхтэй захиалга байна.'); if (error) throw error;
 }

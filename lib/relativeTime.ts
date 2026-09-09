@@ -13,8 +13,8 @@ export function relativeTime(dateString: string | null | undefined, lang: 'mn' |
     if (diffHour < 24) return `${diffHour} hr ago`;
     if (diffDay === 1) return 'Yesterday';
     if (diffDay < 7) return `${diffDay} days ago`;
-    if (diffDay < 30) return `${Math.floor(diffDay / 7)} weeks ago`;
-    if (diffDay < 365) return `${Math.floor(diffDay / 30)} months ago`;
+    if (diffDay < 30) return `${Math.floor(diffDay / 7)} week${Math.floor(diffDay / 7) === 1 ? '' : 's'} ago`;
+    if (diffDay < 365) return `${Math.floor(diffDay / 30)} month${Math.floor(diffDay / 30) === 1 ? '' : 's'} ago`;
     return date.toLocaleDateString('en-US');
   }
 

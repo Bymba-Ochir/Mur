@@ -1,4 +1,5 @@
 'use client';
+import { useListingReturnPath } from '../../../lib/useListingFilters';
 import { formatPetAge } from '../../../lib/petAge';
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -28,6 +29,7 @@ function subscribeLocation(cb: () => void) {
 }
 
 export default function AdoptionDetailClient({ id }: { id: string }) {
+  const returnPath = useListingReturnPath("/adoptions");
   const router = useRouter();
   const { user } = useAuth();
   const showToast = useToast();
@@ -83,12 +85,12 @@ export default function AdoptionDetailClient({ id }: { id: string }) {
     }
   }
 
-  if (error) return <div className="page-shell page-shell--narrow"><div className="state-panel state-panel--error" role="alert"><span className="state-panel__icon"><Icon name="alert" size={28} /></span><h2>{t('adoption_detail_error_title')}</h2><p>{error}</p><div className="detail-actions"><Button variant="secondary" onClick={() => void load()}>{t('err_retry')}</Button><Button as="link" href="/adoptions" variant="ghost">{t('adoptions_back_to_list')}</Button></div></div></div>;
+  if (error) return <div className="page-shell page-shell--narrow"><div className="state-panel state-panel--error" role="alert"><span className="state-panel__icon"><Icon name="alert" size={28} /></span><h2>{t('adoption_detail_error_title')}</h2><p>{error}</p><div className="detail-actions"><Button variant="secondary" onClick={() => void load()}>{t('err_retry')}</Button><Button as="link" href={returnPath} variant="ghost">{t('adoptions_back_to_list')}</Button></div></div></div>;
   if (!adoption) return <div className="page-shell page-shell--narrow"><div className="detail-skeleton" aria-busy="true" aria-label={t('detail_loading')}><span className="skeleton-media" /><div className="skeleton-lines"><span /><span /><span /><span /></div><style jsx>{`.detail-skeleton{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(18rem,.9fr);gap:var(--sp-6)}.skeleton-media,.skeleton-lines{min-height:24rem;border-radius:var(--r-xl);background:var(--surface-3);animation:pulse 1.4s ease-in-out infinite}.skeleton-lines{display:grid;align-content:start;gap:var(--sp-4);padding:var(--sp-6)}.skeleton-lines span{height:2.5rem;border-radius:var(--r-sm);background:var(--line)}.skeleton-lines span:first-child{width:62%}@keyframes pulse{50%{opacity:.58}}@media(max-width:900px){.detail-skeleton{grid-template-columns:1fr}.skeleton-media{min-height:18rem}.skeleton-lines{min-height:16rem}}@media(prefers-reduced-motion:reduce){.skeleton-media,.skeleton-lines{animation:none}}`}</style></div></div>;
 
   return (
     <div className="page-shell page-shell--detail">
-      <div className="back-row"><Button as="link" href="/adoptions" variant="ghost"><Icon name="arrowLeft" size={18} />{t('adoptions_back_to_list').replace('← ', '')}</Button></div>
+      <div className="back-row"><Button as="link" href={returnPath} variant="ghost"><Icon name="arrowLeft" size={18} />{t('adoptions_back_to_list').replace('← ', '')}</Button></div>
       <header className="page-header detail-header">
         <p className="eyebrow">{t('adoptions_eyebrow')}</p>
         <h1>{typeLabel}{adoption.name ? ` — ${adoption.name}` : ''}</h1>

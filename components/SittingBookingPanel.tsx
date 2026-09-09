@@ -1,6 +1,7 @@
 'use client';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
+import { ulaanbaatarDate, bookingEstimate } from '../lib/bookingDate';
 import { useAuth } from '../lib/useAuth';
 import { useLanguage } from '../lib/i18n';
 import { createSittingBooking, createSittingReview, fetchSittingBookings, fetchSittingReviews, updateSittingBooking } from '../lib/workflowService';
@@ -10,25 +11,36 @@ import { useToast } from './Toast';
 import Button from './ui/Button';
 import Icon from './ui/icons';
 
-export default function SittingBookingPanel({ listingId, sitterId, dailyPrice }: { listingId: string; sitterId: string; dailyPrice: number | null }) {
+type BookingPanelProps = { listingId: string; sitterId: string; dailyPrice: number | null };
+export default function SittingBookingPanel(props: BookingPanelProps) {
+  const { user } = useAuth();
+  return <BookingPanel key={`${props.listingId}:${props.sitterId}:${user?.id ?? 'guest'}`} {...props} />;
+}
+function BookingPanel({ listingId, sitterId, dailyPrice }: BookingPanelProps) {
+  const version = useRef(0);
+  const mounted = useRef(true);
+  const mutating = useRef(false);
+  useEffect(() => { const counter = version; mounted.current = true; return () => { mounted.current = false; counter.current++; }; }, []);
   const { user } = useAuth(); const { t, lang } = useLanguage(); const showToast = useToast(); const owner = user?.id === sitterId;
   const [bookings, setBookings] = useState<SittingBooking[]>([]); const [reviews, setReviews] = useState<SittingReview[]>([]);
   const [start, setStart] = useState(''); const [end, setEnd] = useState(''); const [note, setNote] = useState(''); const [busy, setBusy] = useState(false);
   const [rating, setRating] = useState(5); const [comment, setComment] = useState(''); const [loading, setLoading] = useState(true); const [loadError, setLoadError] = useState('');
-  const today = new Date().toISOString().slice(0, 10);
+  const today = ulaanbaatarDate();
   const statusLabel = (status: SittingBooking['status']) => t(status === 'pending' ? 'request_pending' : status === 'accepted' ? 'request_accepted' : status === 'rejected' ? 'request_rejected' : status === 'completed' ? 'request_completed' : 'request_cancelled');
 
   const load = useCallback(async () => {
+    if (!mounted.current) return;
+    const request = ++version.current;
     setLoading(true); setLoadError('');
-    try { const [reviewData, bookingData] = await Promise.all([fetchSittingReviews(sitterId), user ? fetchSittingBookings(listingId) : Promise.resolve([])]); setReviews(reviewData); setBookings(bookingData); }
-    catch (error) { setLoadError(getErrorMessage(error) || t('sitting_booking_load_error')); } finally { setLoading(false); }
+    try { const [reviewData, bookingData] = await Promise.all([fetchSittingReviews(sitterId), user ? fetchSittingBookings(listingId) : Promise.resolve([])]); if (mounted.current && request === version.current) { setReviews(reviewData); setBookings(bookingData); } }
+    catch (error) { if (mounted.current && request === version.current) setLoadError(getErrorMessage(error) || t('sitting_booking_load_error')); } finally { if (mounted.current && request === version.current) setLoading(false); }
   }, [listingId, sitterId, t, user]);
-  useEffect(() => { void Promise.resolve().then(load); }, [load]);
+  useEffect(() => { const counter = version; void Promise.resolve().then(load); return () => { counter.current++; }; }, [load]);
 
-  const estimate = useMemo(() => !dailyPrice || !start || !end || end < start ? null : dailyPrice * (Math.round((Date.parse(end) - Date.parse(start)) / 86400000) + 1), [dailyPrice, start, end]);
-  async function submit() { setBusy(true); try { await createSittingBooking(listingId, start, end, note.trim()); setStart(''); setEnd(''); setNote(''); showToast(t('sitting_booking_sent'), 'success'); await load(); } catch (error) { showToast(getErrorMessage(error) || t('form_generic_error'), 'error'); } finally { setBusy(false); } }
-  async function decide(id: string, status: 'accepted' | 'rejected' | 'completed' | 'cancelled') { setBusy(true); try { await updateSittingBooking(id, status); showToast(t('sitting_booking_updated'), 'success'); await load(); } catch (error) { showToast(getErrorMessage(error) || t('form_generic_error'), 'error'); } finally { setBusy(false); } }
-  async function review(booking: SittingBooking) { setBusy(true); try { await createSittingReview(booking.id, sitterId, rating, comment.trim()); setComment(''); showToast(t('sitting_review_saved'), 'success'); await load(); } catch (error) { showToast(getErrorMessage(error) || t('form_generic_error'), 'error'); } finally { setBusy(false); } }
+  const estimate = useMemo(() => bookingEstimate(dailyPrice, start, end), [dailyPrice, start, end]);
+  async function submit() { if (mutating.current) return; mutating.current = true; setBusy(true); try { await createSittingBooking(listingId, start, end, note.trim()); if (!mounted.current) return; setStart(''); setEnd(''); setNote(''); showToast(t('sitting_booking_sent'), 'success'); await load(); } catch (error) { if (!mounted.current) return; showToast(getErrorMessage(error) || t('form_generic_error'), 'error'); } finally { mutating.current = false; if (mounted.current) setBusy(false); } }
+  async function decide(id: string, status: 'accepted' | 'rejected' | 'completed' | 'cancelled') { if (mutating.current) return; mutating.current = true; setBusy(true); try { await updateSittingBooking(id, status); if (!mounted.current) return; showToast(t('sitting_booking_updated'), 'success'); await load(); } catch (error) { if (!mounted.current) return; showToast(getErrorMessage(error) || t('form_generic_error'), 'error'); } finally { mutating.current = false; if (mounted.current) setBusy(false); } }
+  async function review(booking: SittingBooking) { if (mutating.current) return; mutating.current = true; setBusy(true); try { await createSittingReview(booking.id, sitterId, rating, comment.trim()); if (!mounted.current) return; setComment(''); showToast(t('sitting_review_saved'), 'success'); await load(); } catch (error) { if (!mounted.current) return; showToast(getErrorMessage(error) || t('form_generic_error'), 'error'); } finally { mutating.current = false; if (mounted.current) setBusy(false); } }
   const reviewedIds = new Set(reviews.map((reviewItem) => reviewItem.bookingId)); const average = reviews.length ? reviews.reduce((sum, reviewItem) => sum + reviewItem.rating, 0) / reviews.length : null;
 
   return (

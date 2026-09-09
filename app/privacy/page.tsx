@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 const PRIVACY_MN: LegalDoc = {
   title: 'Нууцлалын бодлого',
-  updated: 'Сүүлд шинэчилсэн: 2026 оны 8-р сар',
+  updated: '2026 оны 9-р сарын 9',
   sections: [
     {
       heading: '1. Танилцуулга',
@@ -23,7 +23,7 @@ const PRIVACY_MN: LegalDoc = {
       paragraphs: [
         'Таны нийтэлсэн мэдээлэл: Бичлэг бүртгэхдээ та амьтны нэр, төрөл, өнгө, алдагдсан/олдсон газар, дүүрэг, зураг болон холбоо барих утасны дугаараа оруулна. Эдгээр нь олон нийтэд харагдах болно.',
         'Нэвтрэлтийн мэдээлэл: Нэвтрэхдээ имэйл хаягаа оруулна. Нууц үг бидэнд хадгалагдахгүй — зөвхөн нэг удаагийн нэвтрэх холбоос имэйлээр илгээгдэнэ.',
-        'Байршлын мэдээлэл: Хэрэв та зөвшөөрвөл байршлаа тодорхойлж, дүүргээ автоматаар бөглөх боломжтой. Байршил нь зөвхөн тэр мөчид ашиглагдаж, хадгалагдахгүй.',
+        'Байршлын мэдээлэл: Таны зөвшөөрлөөр төхөөрөмжийн байршлыг авч дүүрэг болон газрын зургийн цэгийг бөглөж болно. Зар нийтлэхэд сонгосон газрын тайлбар, дүүрэг, координат зартай хамт хадгалагдаж, олон нийтэд харагдана. Нийтлэхийн өмнө цэгээ шалгаж, гэрийнхээ нарийн байршлыг хуваалцах эсэхээ шийднэ үү.',
         'Төхөөрөмжийн мэдээлэл: Хэрэв та мэдэгдэл хүлээн авахаар бүртгүүлбэл push subscription мэдээлэл (төхөөрөмжийн түлхүүр) хадгалагдана.',
         'Үйл ажиллагааны мэдээлэл: Үрчлүүлэх хүсэлт, асрах захиалга, үйлчилгээний үнэлгээ болон тэдгээрийн төлөвийг үйлчилгээ үзүүлэх, маргаан шалгах зорилгоор хадгална.',
         'Хадгалсан мэдээлэл: Таны хадгалсан зар, хайлтын шүүлтүүр болон тохирох шинэ зарын мэдэгдлийг зөвхөн таны account-д холбоотой хадгална.',
@@ -77,7 +77,7 @@ const PRIVACY_MN: LegalDoc = {
 
 const PRIVACY_EN: LegalDoc = {
   title: 'Privacy Policy',
-  updated: 'Last updated: August 2026',
+  updated: 'September 9, 2026',
   sections: [
     {
       heading: '1. Introduction',
@@ -91,7 +91,7 @@ const PRIVACY_EN: LegalDoc = {
       paragraphs: [
         'Information you post: When creating a listing, you provide the pet\'s name, type, color, location where it was lost/found, district, a photo, and a contact phone number. This information is visible to the public.',
         'Account information: When logging in, you provide your email address. We do not store passwords — a one-time login link is sent to your email.',
-        'Location information: If you allow it, we can determine your location to auto-fill your district. The location is used only at that moment and is not stored.',
+        'Location information: With your permission, device location can fill the district and map marker. Publishing a listing stores the selected location description, district, and coordinates with the public listing. Check the marker before posting and decide whether to disclose your exact home location.',
         'Device information: If you subscribe to notifications, we store your push subscription data (device key).',
         'Activity information: We store adoption applications, sitting bookings, service reviews, and their statuses to provide the service and investigate disputes.',
         'Saved information: Saved listings, search filters, and matching-listing notifications are stored only in connection with your account.',

@@ -9,7 +9,8 @@ const emptySubscribe = (): (() => void) => () => {};
 const getServerSnapshot = (): boolean => false;
 const getClientSnapshot = (): boolean => typeof navigator !== 'undefined' && 'share' in navigator;
 
-export default function ShareButtons({ url, title }: { url: string; title: string }) {
+export default function ShareButtons({ url: inputUrl, title }: { url: string; title: string }) {
+  const url = cleanShareUrl(inputUrl);
   const { t, lang } = useLanguage();
   const [shareError, setShareError] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -84,4 +85,12 @@ export default function ShareButtons({ url, title }: { url: string; title: strin
       `}</style>
     </div>
   );
+}
+
+export function cleanShareUrl(value: string): string {
+  try {
+    const url = new URL(value);
+    url.searchParams.delete('returnTo');
+    return url.toString();
+  } catch { return value; }
 }

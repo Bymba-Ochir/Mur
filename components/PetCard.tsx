@@ -1,4 +1,5 @@
 'use client';
+import { useListingFilters } from '../lib/useListingFilters';
 import { useState } from 'react';
 import PetCardView from './PetCardView';
 import { useLanguage } from '../lib/i18n';
@@ -8,6 +9,7 @@ import PetImageGallery from './PetImageGallery';
 
 export default function PetCard({ pet }: { pet: Pet }) {
   const { t, lang } = useLanguage();
+  const { query } = useListingFilters();
   const [revealed, setRevealed] = useState(false);
 
   const typeLabel = pet.type === 'Нохой' ? t('type_dog') : pet.type === 'Муур' ? t('type_cat') : t('type_other');
@@ -32,7 +34,7 @@ export default function PetCard({ pet }: { pet: Pet }) {
       similarityLabel={t('listings_card_similarity')}
       showPhoneLabel={t('listings_card_show_phone')}
       callPhoneLabel={t('listings_card_call')}
-      detailHref={`/pets/${pet.id}`}
+      detailHref={`/pets/${pet.id}${query ? "?returnTo=" + encodeURIComponent("/listings" + query) : ""}`}
       detailLabel={t('listings_card_detail')}
       language={lang}
       revealed={revealed}

@@ -32,7 +32,7 @@ export default function SittingCardView({
         <h3>{title}</h3><p className="pet-type">{petTypeLabel || petType}</p>
         {experience && <p className="clamp-line">{experience}</p>}{availability && <p className="clamp-line">{availability}</p>}
         <p className="place"><Icon name="pin" size={14} aria-hidden="true" /><span>{district} — {place}</span></p>
-        <p className={`price${price == null ? ' free' : ''}`}>{price != null ? <>₮ {price.toLocaleString(language === 'mn' ? 'mn-MN' : 'en-US')} <span>{perDayLabel}</span></> : freeLabel}</p>
+        <p className={`price${price === 0 ? ' free' : ''}`}>{price == null ? (language === 'mn' ? 'Үнэ тохиролцоно' : 'Price negotiable') : price !== 0 ? <>₮ {price.toLocaleString(language === 'mn' ? 'mn-MN' : 'en-US')} <span>{perDayLabel}</span></> : freeLabel}</p>
         {createdAt && <p className="time"><Icon name="calendar" size={14} aria-hidden="true" />{relativeTime(createdAt, language)}</p>}
         <div className="card-actions">
           {showMasked ? <button className="phone" type="button" onClick={() => onRevealPhone?.()} aria-label={showPhoneLabel}><Icon name="phone" size={14} aria-hidden="true" />{maskPhone(phone)} · {showPhoneLabel}</button>

@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { useAuth } from '../../../lib/useAuth';
@@ -14,6 +14,11 @@ import FieldHint from '../../../components/ui/FieldHint';
 import { useLanguage } from '../../../lib/i18n';
 
 export default function ProfileEditPage() {
+  const { user } = useAuth();
+  return <ProfileEditContent key={user?.id ?? 'guest'} />;
+}
+
+function ProfileEditContent() {
   const { user, loading: authLoading } = useAuth();
   const { t } = useLanguage();
   const router = useRouter();
@@ -29,9 +34,12 @@ export default function ProfileEditPage() {
   const [saving, setSaving] = useState(false);
   const [avatarBusy, setAvatarBusy] = useState(false);
   const [nameError, setNameError] = useState('');
+  const active = useRef(false);
+  const mutation = useRef(false);
+  useEffect(() => { active.current = true; return () => { active.current = false; }; }, []);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user?.id) return;
     let cancelled = false;
     async function load() {
       try {
@@ -42,26 +50,32 @@ export default function ProfileEditPage() {
     }
     void load();
     return () => { cancelled = true; };
-  }, [user, reloadKey]);
+  }, [user?.id, reloadKey]);
 
   async function save(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (mutation.current || !active.current) return;
     const cleanedName = displayName.trim();
     if (cleanedName.length < 2) { setNameError(t('profile_name_error')); return; }
+    mutation.current = true;
     setSaving(true); setNameError('');
     try {
       await updateMyProfile({ displayName: cleanedName, district, bio, isVolunteer });
+      if (!active.current) return;
       showToast(t('profile_saved'), 'success'); router.push('/profile');
-    } catch (reason) { showToast(getErrorMessage(reason), 'error'); }
-    finally { setSaving(false); }
+    } catch (reason) { if (active.current) showToast(getErrorMessage(reason), 'error'); }
+    finally { mutation.current = false; if (active.current) setSaving(false); }
   }
 
   async function changeAvatar(file?: File) {
-    if (!file) return;
+    if (!file || mutation.current || !active.current) return;
+    mutation.current = true;
     setAvatarBusy(true);
-    try { setAvatarUrl(await uploadMyAvatar(file)); showToast(t('profile_avatar_saved'), 'success'); }
-    catch (reason) { showToast(getErrorMessage(reason), 'error'); }
-    finally { setAvatarBusy(false); }
+    try {
+      const url = await uploadMyAvatar(file);
+      if (active.current) { setAvatarUrl(url); showToast(t('profile_avatar_saved'), 'success'); }
+    } catch (reason) { if (active.current) showToast(getErrorMessage(reason), 'error'); }
+    finally { mutation.current = false; if (active.current) setAvatarBusy(false); }
   }
 
   if (authLoading || (user && loading)) return <EditSkeleton label={t('profile_loading')} />;
@@ -71,12 +85,12 @@ export default function ProfileEditPage() {
   return <div className="profile-edit-page page-shell page-shell--narrow">
     <header className="page-header"><div className="eyebrow">{t('profile_edit_eyebrow')}</div><h1>{t('profile_edit_title')}</h1><p>{t('profile_edit_desc')}</p></header>
     <form className="edit-card" onSubmit={save} noValidate>
-      <section className="avatar-section" aria-labelledby="avatar-heading"><div className="avatar-preview">{avatarUrl ? <Image src={avatarUrl} alt={t('profile_avatar_alt')} fill sizes="104px" className="avatar-photo" /> : <Icon name="paw" size={40} />}{avatarBusy && <span className="avatar-loading" aria-live="polite"><Icon name="sparkles" size={20} className="spin" /></span>}</div><div><h2 id="avatar-heading">{t('profile_avatar_alt')}</h2><p>{t('profile_avatar_hint')}</p><label className={`upload-btn${avatarBusy ? ' disabled' : ''}`}><Icon name="camera" size={17} />{t('profile_avatar_upload')}<input type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => void changeAvatar(event.target.files?.[0])} disabled={avatarBusy || saving} /></label></div></section>
+      <section className="avatar-section" aria-labelledby="avatar-heading"><div className="avatar-preview">{avatarUrl ? <Image src={avatarUrl} alt={t('profile_avatar_alt')} fill sizes="104px" className="avatar-photo" /> : <Icon name="paw" size={40} />}{avatarBusy && <span className="avatar-loading" aria-live="polite"><Icon name="sparkles" size={20} className="spin" /></span>}</div><div><h2 id="avatar-heading">{t('profile_avatar_alt')}</h2><p>{t('profile_avatar_hint')}</p><label className={`upload-btn${avatarBusy ? ' disabled' : ''}`}><Icon name="camera" size={17} />{t('profile_avatar_upload')}<input type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => { const file = event.target.files?.[0]; event.target.value = ''; void changeAvatar(file); }} disabled={avatarBusy || saving} /></label></div></section>
       <div className="form-grid">
-        <div className="form-field full"><label htmlFor="display-name">{t('profile_name_label')}</label><FieldHint mn="Бусад хэрэглэгчид харагдах нэр. Имэйл болон утасны дугаар бүү оруулаарай." en="This name is visible to other users. Do not include your email or phone number." /><input id="display-name" className="field" value={displayName} onChange={(event) => { setDisplayName(event.target.value); if (nameError) setNameError(''); }} maxLength={100} minLength={2} required aria-invalid={Boolean(nameError)} aria-describedby={nameError ? 'display-name-error' : 'display-name-hint'} /><small id="display-name-hint">{t('profile_name_hint')} · {displayName.length}/100</small>{nameError && <p id="display-name-error" className="field-error" role="alert">{nameError}</p>}</div>
-        <div className="form-field"><label htmlFor="district">{t('profile_district_label')}</label><select id="district" className="field" value={district} onChange={(event) => setDistrict(event.target.value as District | '')}><option value="">{t('profile_district_none')}</option>{DISTRICTS.map((item) => <option key={item}>{item}</option>)}</select></div>
-        <label className="volunteer-field"><input type="checkbox" checked={isVolunteer} onChange={(event) => setIsVolunteer(event.target.checked)} /><span><strong>{t('profile_volunteer_label')}</strong><small>{t('profile_volunteer')}</small></span></label>
-        <div className="form-field full"><label htmlFor="bio">{t('profile_bio_label')}</label><textarea id="bio" className="field" value={bio} onChange={(event) => setBio(event.target.value)} maxLength={500} rows={6} aria-describedby="bio-hint" /><div className="field-meta"><small id="bio-hint">{t('profile_bio_hint')}</small><small>{bio.length}/500</small></div></div>
+        <div className="form-field full"><label htmlFor="display-name">{t('profile_name_label')}</label><FieldHint mn="Бусад хэрэглэгчид харагдах нэр. Имэйл болон утасны дугаар бүү оруулаарай." en="This name is visible to other users. Do not include your email or phone number." /><input id="display-name" disabled={saving} className="field" value={displayName} onChange={(event) => { setDisplayName(event.target.value); if (nameError) setNameError(''); }} maxLength={100} minLength={2} required aria-invalid={Boolean(nameError)} aria-describedby={nameError ? 'display-name-error' : 'display-name-hint'} /><small id="display-name-hint">{t('profile_name_hint')} · {displayName.length}/100</small>{nameError && <p id="display-name-error" className="field-error" role="alert">{nameError}</p>}</div>
+        <div className="form-field"><label htmlFor="district">{t('profile_district_label')}</label><select id="district" disabled={saving} className="field" value={district} onChange={(event) => setDistrict(event.target.value as District | '')}><option value="">{t('profile_district_none')}</option>{DISTRICTS.map((item) => <option key={item}>{item}</option>)}</select></div>
+        <label className="volunteer-field"><input type="checkbox" disabled={saving} checked={isVolunteer} onChange={(event) => setIsVolunteer(event.target.checked)} /><span><strong>{t('profile_volunteer_label')}</strong><small>{t('profile_volunteer')}</small></span></label>
+        <div className="form-field full"><label htmlFor="bio">{t('profile_bio_label')}</label><textarea id="bio" disabled={saving} className="field" value={bio} onChange={(event) => setBio(event.target.value)} maxLength={500} rows={6} aria-describedby="bio-hint" /><div className="field-meta"><small id="bio-hint">{t('profile_bio_hint')}</small><small>{bio.length}/500</small></div></div>
       </div>
       <div className="actions"><Button type="button" variant="ghost" onClick={() => router.back()} disabled={saving || avatarBusy}>{t('profile_cancel')}</Button><Button type="submit" variant="primary" disabled={saving || avatarBusy || displayName.trim().length < 2} aria-busy={saving}>{saving ? t('profile_saving') : t('profile_save')}</Button></div>
     </form>

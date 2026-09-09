@@ -9,9 +9,11 @@ import { getErrorMessage } from '../lib/utils';
 import { useToast } from './Toast';
 import Button from './ui/Button';
 import Icon from './ui/icons';
+import LoginModal from './LoginModal';
 
 export default function AdoptionApplicationPanel({ adoptionId, ownerId }: { adoptionId:string;ownerId:string|null }) {
   const { user } = useAuth();
+  const [showLogin, setShowLogin] = useState(false);
   const { t, lang } = useLanguage();
   const showToast = useToast();
   const [items, setItems] = useState<AdoptionApplication[]>([]);
@@ -45,7 +47,7 @@ export default function AdoptionApplicationPanel({ adoptionId, ownerId }: { adop
   }
 
   return <section className="workflow-card" aria-labelledby="adoption-request-title">
-    <div className="workflow-heading"><span className="heading-icon" aria-hidden="true"><Icon name="heart" size={20}/></span><div><h2 id="adoption-request-title">{owner?`${t('adoption_requests_received')} (${items.length})`:t('adoption_request_title')}</h2>{!user&&<p>{t('adoption_request_login')}</p>}</div></div>
+    <div className="workflow-heading"><span className="heading-icon" aria-hidden="true"><Icon name="heart" size={20}/></span><div><h2 id="adoption-request-title">{owner?`${t('adoption_requests_received')} (${items.length})`:t('adoption_request_title')}</h2>{!user&&<><p>{t('adoption_request_login')}</p><Button onClick={() => setShowLogin(true)}>{t('nav_login')}</Button>{showLogin && <LoginModal onClose={() => setShowLogin(false)} />}</>}</div></div>
     {user&&loading&&<div className="request-loading" aria-busy="true"><span/><span/><span/></div>}
     {user&&error&&<div className="request-error" role="alert"><Icon name="alert" size={18}/><p>{error}</p><Button variant="ghost" onClick={()=>void load()}>{t('err_retry')}</Button></div>}
     {user&&!loading&&!error&&<>
