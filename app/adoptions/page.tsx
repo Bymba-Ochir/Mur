@@ -131,7 +131,7 @@ export default function AdoptionsPage() {
         </EmptyState>
       ) : (
         <section aria-labelledby="adoption-results-title">
-          <div className="results-heading"><h2 id="adoption-results-title">{t('adoptions_results_title')}</h2><p className="result-count" aria-live="polite">{adoptions.length} {t('results_count')}</p></div>
+          <div className="results-heading"><h2 id="adoption-results-title">{t('adoptions_results_title')}</h2><p className="result-count" aria-live="polite">{adoptions.length} {t(adoptions.length === 1 ? 'results_count_one' : 'results_count')}</p></div>
           <div className="adoption-grid" onClickCapture={rememberPosition}>{adoptions.map((adoption) => <AdoptionCard key={adoption.id} adoption={adoption} />)}</div>
           {hasMore && <div className="load-more-row"><Button onClick={() => void load(page + 1)} disabled={loadingMore} variant="ghost" aria-busy={loadingMore}>{loadingMore ? t('loading_more') : t('load_more')}</Button></div>}
         </section>

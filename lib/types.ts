@@ -163,6 +163,8 @@ export interface VetClinic {
   phone: string;
   phones?: string[];
   hours: string;
+  hoursEn?: string;
+  noteEn?: string;
   note?: string;
   lat: number;
   lng: number;

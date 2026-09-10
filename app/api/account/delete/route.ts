@@ -1,11 +1,7 @@
 import { NextResponse } from 'next/server';
 import { requireRequestUser } from '../../../../lib/serverAuth';
 
-function storagePath(url: string): string | null {
-  const marker = '/storage/v1/object/public/pet-photos/';
-  const index = url.indexOf(marker);
-  return index < 0 ? null : decodeURIComponent(url.slice(index + marker.length).split('?')[0]);
-}
+import { ownedPetPhotoStoragePath } from '../../../../lib/storageObjectPath';
 
 export async function DELETE(request: Request) {
   try {
@@ -17,8 +13,9 @@ export async function DELETE(request: Request) {
       admin.from('adoptions').select('photo_url,photo_urls').eq('created_by', user.id),
       admin.from('sitting_listings').select('photo_url').eq('user_id', user.id),
     ]);
+    if (pets.error || adoptions.error || sitting.error) throw new Error('CONTENT_LOOKUP_FAILED');
     const urls = [...(pets.data ?? []).flatMap((row) => [row.photo_url, ...(Array.isArray(row.photo_urls) ? row.photo_urls : [])]), ...(adoptions.data ?? []).flatMap((row) => [row.photo_url, ...(Array.isArray(row.photo_urls) ? row.photo_urls : [])]), ...(sitting.data ?? []).map((row) => row.photo_url)].filter((value): value is string => typeof value === 'string');
-    const paths = [...new Set(urls.map(storagePath).filter((value): value is string => Boolean(value)))];
+    const paths = [...new Set(urls.map(url => ownedPetPhotoStoragePath(url, user.id, process.env.NEXT_PUBLIC_SUPABASE_URL)).filter((value): value is string => Boolean(value)))];
     if (paths.length) await admin.storage.from('pet-photos').remove(paths);
     await admin.storage.from('avatars').remove(['avatar.jpg','avatar.png','avatar.webp'].map((name) => `${user.id}/${name}`));
     for (const [table, column] of [['pets','created_by'],['adoptions','created_by'],['sitting_listings','user_id']] as const) {

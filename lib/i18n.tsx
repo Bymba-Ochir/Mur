@@ -95,6 +95,7 @@ match_label: 'Өөрийн зурагтай төстэйгээр эрэмбэл�
 match_cancel: 'Цуцлах', match_results: 'тохирол', match_all_database: 'бүх зараас хайв', match_browser_fallback: 'одоогийн жагсаалтаас хайв',
 empty_no_results_title: 'Хайлтад тохирох бичлэг олдсонгүй', empty_no_results_desc: 'Шүүлтүүрээ өөрчилж эсвэл цэвэрлээд дахин үзнэ үү.',
 results_count: 'бичлэг олдлоо',
+results_count_one: 'бичлэг олдлоо',
 empty_no_posts_title: 'Одоогоор бичлэг алга', empty_no_posts_desc: 'Хамгийн эхний мэдэгдлийг та нийтэлж болно.',
 detail_type: 'Төрөл:', detail_district: 'Дүүрэг:', detail_place: 'Байршил:',
 detail_show_phone: 'Дугаар харах', detail_resolved_badge: 'Энэ амьтан олдсон гэж тэмдэглэгдсэн байна',
@@ -438,6 +439,7 @@ clinics_service_label: 'Үйлчилгээ',
 clinics_clear_filters: 'Шүүлтүүр цэвэрлэх',
 clinics_results_title: 'Мал эмнэлгүүд',
 clinics_results_count: 'эмнэлэг',
+clinics_results_count_one: 'эмнэлэг',
 clinics_map_title: 'Эмнэлгийн байршил',
 clinics_map_label: 'Мал эмнэлгийн газрын зураг',
 clinics_show_map: 'Газрын зураг дээр харах',
@@ -691,6 +693,7 @@ match_label: 'Rank by similarity to your photo (beta):',
 match_cancel: 'Cancel', match_results: 'matches', match_all_database: 'searched all listings', match_browser_fallback: 'searched current list',
 empty_no_results_title: 'No matching results', empty_no_results_desc: 'Try changing or clearing your filters.',
 results_count: 'results found',
+results_count_one: 'result found',
 empty_no_posts_title: 'No posts yet', empty_no_posts_desc: 'You could be the first to post.',
 detail_type: 'Type:', detail_district: 'District:', detail_place: 'Location:',
 detail_show_phone: 'Show number', detail_resolved_badge: 'This pet has been marked as found',
@@ -1034,6 +1037,7 @@ clinics_service_label: 'Service',
 clinics_clear_filters: 'Clear filters',
 clinics_results_title: 'Vet clinics',
 clinics_results_count: 'clinics',
+clinics_results_count_one: 'clinic',
 clinics_map_title: 'Clinic locations',
 clinics_map_label: 'Veterinary clinic map',
 clinics_show_map: 'Show on map',
@@ -1216,7 +1220,7 @@ setLocalStorageValue('mur-lang', lang === 'mn' ? 'en' : 'mn');
 }
 
 function t(key: TranslationKey): string {
-return DICT[lang][key] || DICT.mn[key] || key;
+return DICT[lang][key] ?? DICT.mn[key] ?? key;
 }
 
 return (

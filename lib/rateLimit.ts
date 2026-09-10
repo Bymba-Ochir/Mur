@@ -26,6 +26,7 @@ export function checkRateLimit(
 
   const entry = buckets.get(key);
   if (!entry || now >= entry.resetAt) {
+    if (!entry && buckets.size >= MAX_ENTRIES) return { allowed: false, retryAfterSec: Math.ceil(windowMs / 1000) };
     buckets.set(key, { count: 1, resetAt: now + windowMs });
     return { allowed: true, retryAfterSec: 0 };
   }

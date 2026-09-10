@@ -1,3 +1,4 @@
+import { isAllowedPushEndpoint } from '../../../lib/pushEndpoint';
 // app/api/vaccine-reminders/route.ts
 //
 // Vercel Cron Job-оор өдөр бүр дуудагдана (vercel.json дотор тохируулсан цагаар).
@@ -51,6 +52,7 @@ export async function GET(request: Request) {
     });
 
     for (const sub of subs || []) {
+      if (!isAllowedPushEndpoint(sub.endpoint)) continue;
       try {
         await webpush.sendNotification({ endpoint: sub.endpoint, keys: sub.keys }, payload);
         sent++;
@@ -90,6 +92,7 @@ export async function GET(request: Request) {
     });
 
     for (const sub of subs || []) {
+      if (!isAllowedPushEndpoint(sub.endpoint)) continue;
       try {
         await webpush.sendNotification({ endpoint: sub.endpoint, keys: sub.keys }, payload);
         medsSent++;

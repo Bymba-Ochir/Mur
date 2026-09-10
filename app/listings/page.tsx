@@ -288,7 +288,7 @@ export default function ListingsPage() {
         </div>
       ) : (
         <>
-          <p className="result-count" aria-live="polite">{pets.length} {t('results_count')}</p>
+          <p className="result-count" aria-live="polite">{pets.length} {t(pets.length === 1 ? 'results_count_one' : 'results_count')}</p>
           <div className="listings-grid">
             {pets.map((p) => <PetCard key={p.id} pet={p} />)}
           </div>

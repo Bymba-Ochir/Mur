@@ -6,6 +6,8 @@ import type { VetClinic } from './types';
  */
 export const VET_CLINICS: VetClinic[] = [
   {
+    hoursEn: 'Mon, Tue, Wed, Fri 09:00–16:30; Thu 10:30–16:30; Sat 09:00–17:30; Sun closed',
+    noteEn: 'Please call ahead to confirm availability of digital X-rays, ultrasound and laboratory tests.',
     id: 'enerekh-vet', name: 'Энэрэх мал эмнэлэг сургалтын төв', district: 'Хан-Уул',
     address: 'Хан-Уул дүүрэг, 20-р хороо, Чингисийн өргөн чөлөө 145/5',
     phone: '95909987', phones: ['95909987', '70114723'],
@@ -18,6 +20,8 @@ export const VET_CLINICS: VetClinic[] = [
     verifiedAt: '2026-09-03', serviceDetailsVerified: true,
   },
   {
+    hoursEn: 'Mon–Fri 09:00–18:00; Sat 09:00–17:00; Sun closed',
+    noteEn: 'Walk-ins are accepted for examinations, vaccinations and deworming; book grooming and surgery in advance.',
     id: 'ub-vet', name: 'UB Vet animal hospital', district: 'Хан-Уул',
     address: 'Хан-Уул дүүрэг, 19-р хороолол, Шаравын гудамж 22',
     phone: '75073555', phones: ['75073555', '70073555'],
@@ -30,6 +34,8 @@ export const VET_CLINICS: VetClinic[] = [
     verifiedAt: '2026-09-03', serviceDetailsVerified: true,
   },
   {
+    hoursEn: 'Hours unconfirmed — please call before visiting',
+    noteEn: 'Small-animal care and grooming services. Please call to confirm available diagnostic tests.',
     id: 'sos-pet-care', name: 'SOS Pet Care and Salon', district: 'Баянзүрх',
     address: 'Баянзүрх дүүрэг, Их Монгол хороолол, 904-р байр',
     phone: '76001950', phones: ['76001950'], hours: 'Цагийн хуваарийг утсаар лавлана уу',
@@ -40,6 +46,9 @@ export const VET_CLINICS: VetClinic[] = [
     verifiedAt: '2026-09-03', serviceDetailsVerified: false,
   },
   {
+    hoursEn: 'Hours unconfirmed — please call before visiting',
+    noteEn: 'Contact details are listed on Google Maps. Please ask the clinic about available services.',
+    websiteUrl: 'https://www.facebook.com/Mal.emneleg/',
     id: 'animals-healthy', name: 'Animals Healthy мал эмнэлэг', district: 'Баянзүрх',
     address: 'Баянзүрх дүүрэг, 7-р хороо, 115-р байр, 4-р орц',
     phone: '88044664', phones: ['88044664'], hours: 'Цагийн хуваарийг утсаар лавлана уу',
@@ -49,6 +58,8 @@ export const VET_CLINICS: VetClinic[] = [
     verifiedAt: '2026-09-03', serviceDetailsVerified: false,
   },
   {
+    hoursEn: 'Hours unconfirmed — please call before visiting',
+    noteEn: 'Contact details are listed on Google Maps. Please ask the clinic about available services.',
     id: 'jargal-vet', name: 'Жаргал мал эмнэлэг', district: 'Баянгол',
     address: 'Баянгол дүүрэг, 18-р хороо, 43-р байр орчим',
     phone: '99852575', phones: ['99852575'], hours: 'Цагийн хуваарийг утсаар лавлана уу',
@@ -58,6 +69,8 @@ export const VET_CLINICS: VetClinic[] = [
     verifiedAt: '2026-09-03', serviceDetailsVerified: false,
   },
   {
+    hoursEn: 'Hours unconfirmed — please call before visiting',
+    noteEn: 'Contact details are listed on Google Maps. Please ask the clinic about available services.',
     id: 'ochir-vet', name: 'ОЧИР мал эмнэлэг', district: 'Баянгол',
     address: 'Баянгол дүүрэг, Саппорогийн ард, Одод карготой байр',
     phone: '88624999', phones: ['88624999'], hours: 'Цагийн хуваарийг утсаар лавлана уу',

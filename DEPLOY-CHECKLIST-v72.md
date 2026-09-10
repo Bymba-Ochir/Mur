@@ -1,33 +1,5 @@
-# МӨР v72 — гол хэрэглэгчийн урсгал
+# DEPLOY-CHECKLIST-v72 — түүхэн лавлагаа
 
-- Нүүр: жагсаалт, My Pets, эмнэлэг рүү шууд холбоос.
-- Жагсаалт: алдсан/олдсон зар нэмэх товч; хуучин хүсэлтийн хариу шинэ хайлтыг дарахгүй.
-- Зарын дэлгэрэнгүй: холбоо барих хэсэгт очих холбоос, navbar-ийн доорх зөв scroll зай.
-- Алдсан/олдсон form: илгээхийн өмнө өнгө, байршлыг дахин шалгаж, алдаатай алхмыг нээнэ.
-- Үрчлүүлэх: хуучин хүсэлтийн хариунаас хамгаалсан хайлт, холбоо барих хэсгийн холбоос.
-- Эмнэлэг: үйлчилгээ/утсаар хайх, рентген/ЭХО/вакцины хурдан filter, байршлын хүсэлт 10 секундийн timeout.
-- Messages: tab-ууд сум/Home/End товчоор солигдоно; IME үсэг сонгох Enter санамсаргүй илгээхгүй.
-- My Pets: бүртгэлийн form нээх/хаах; вакцины хугацаа дөхсөн, хэтэрсэн амьтад эхэнд; эмнэлгийн холбоос.
-- Вакцины өнөөдрийн товыг хугацаа хэтэрсэн гэж тооцохгүй.
-- Вакцины push төлөвийг нэвтэрсэн хэрэглэгчийн серверийн бүртгэлээр шалгана.
+Одоогийн [deploy заавар](docs/DEPLOYMENT.md), [SQL заавар](docs/DATABASE.md), [баталгаажуулалтын төлөв](docs/STATUS.md)-ийг ашиглана.
 
-## Шалгалт
-TypeScript, ESLint, unit/component tests ажиллуулсан. Build compile болон TypeScript давж static output үүссэн боловч тасарсан session-ийн эцсийн exit code авагдаагүй. Build-д жинхэнэ backend холболт ашиглаагүй.
-Preview сервер uv_interface_addresses орчны алдаатай тул browser/mobile харагдац болон бодит push хүргэлт баталгаажаагүй.
-
-## Суулгах
-Өмнөх .env.local тохиргоогоо хадгална. Энэ хувилбарт нэмэлт SQL шаардлагагүй.
-
-```powershell
-Expand-Archive `
-  -Path "C:\Users\LENOVO\Downloads\mur-complete-upgrade-v72.zip" `
-  -DestinationPath "D:\Mur\mur-mvp" `
-  -Force
-
-cd D:\Mur\mur-mvp
-npm install
-npm run typecheck
-npm run lint
-npm test
-npm run build
-```
+[Анхны тэмдэглэлийг үзэх](docs/archive/DEPLOY-CHECKLIST-v72.md).

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { requireRequestUser } from '../../../../../lib/serverAuth';
-import { petPhotoStoragePath } from '../../../../../lib/storageObjectPath';
+import { ownedPetPhotoStoragePath } from '../../../../../lib/storageObjectPath';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 type ContentKind = 'pets' | 'adoptions' | 'sitting';
@@ -32,7 +32,7 @@ export async function DELETE(request: Request, context: { params: Promise<{ kind
     if (!row) return NextResponse.json({ error: 'Устгах мэдээлэл олдсонгүй.' }, { status: 404 });
     if (row[ownerColumn] !== user.id && !adminRow) return NextResponse.json({ error: 'Энэ мэдээллийг устгах эрхгүй байна.' }, { status: 403 });
     const urls = [row.photo_url, ...(Array.isArray(row.photo_urls) ? row.photo_urls : [])];
-    const paths = [...new Set(urls.map(petPhotoStoragePath).filter((path): path is string => Boolean(path)))];
+    const paths = [...new Set(urls.map(url => ownedPetPhotoStoragePath(url, row![ownerColumn], process.env.NEXT_PUBLIC_SUPABASE_URL)).filter((path): path is string => Boolean(path)))];
     const { error: deleteError } = await admin.from(table).delete().eq('id', id);
     if (deleteError) throw deleteError;
     let storageCleaned = true;

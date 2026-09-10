@@ -1,3 +1,4 @@
+import { isAllowedPushEndpoint } from '../../../lib/pushEndpoint';
 // app/api/notify/route.ts
 //
 // Supabase Database Webhook-оор дуудагдана (pets хүснэгтэд шинэ мөр INSERT
@@ -49,7 +50,7 @@ export async function POST(request: Request) {
   });
 
   const results = await Promise.allSettled(
-    (subs || []).map((sub) =>
+    (subs || []).filter(sub => isAllowedPushEndpoint(sub.endpoint)).map((sub) =>
       webpush.sendNotification(
         { endpoint: sub.endpoint, keys: sub.keys },
         payload

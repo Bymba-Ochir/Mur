@@ -1,6 +1,5 @@
-# МӨР v78
+# DEPLOY-CHECKLIST-v78 — түүхэн лавлагаа
 
-Navbar-ийн role болон notification хариуг тухайн хэрэглэгчтэй холбож, хэрэглэгч солих/гарах үед хуучин мэдээлэл харуулахгүй болгосон. Хоцорсон хүсэлтийг үл тооцно. Хүсэлт тасрахад алдааг барина. Browser focus буцаж ирэхэд мэдэгдлийн тоог шинэчилнэ.
+Одоогийн [deploy заавар](docs/DEPLOYMENT.md), [SQL заавар](docs/DATABASE.md), [баталгаажуулалтын төлөв](docs/STATUS.md)-ийг ашиглана.
 
-TypeScript, lint, 118 тест амжилттай. Production build/live/mobile харагдац дахин баталгаажаагүй. Өмнөх Sentry build auto-review блокийг дахин оролдоогүй.
-Өмнөх засварууд багтсан. SQL өөрчлөлтгүй. .env.local файлаа хадгална.
+[Анхны тэмдэглэлийг үзэх](docs/archive/DEPLOY-CHECKLIST-v78.md).

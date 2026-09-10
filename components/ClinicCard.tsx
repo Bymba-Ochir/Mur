@@ -19,10 +19,10 @@ export default function ClinicCard({ clinic, distanceKm, selected, onSelect, onB
       <div className="clinic-heading"><span className="clinic-icon" aria-hidden="true"><Icon name="cross" size={22} /></span><div><h3>{clinic.name}</h3><p className="district"><Icon name="pin" size={14} aria-hidden="true" />{clinic.district}</p></div>{distanceKm != null && <span className="distance">{distanceLabel(distanceKm, lang)}</span>}</div>
       <dl className="clinic-facts">
         <div><dt>{t('clinics_address').replace(':', '')}</dt><dd>{clinic.address}</dd></div>
-        <div><dt>{t('clinics_hours').replace(':', '')}</dt><dd>{clinic.hours}</dd></div>
+        <div><dt>{t('clinics_hours').replace(':', '')}</dt><dd>{lang === 'en' ? (clinic.hoursEn || 'Please call to confirm opening hours') : clinic.hours}</dd></div>
         <div className="phone-fact"><dt>{t('clinics_phone_visible')}</dt><dd className="phone-list">{(clinic.phones || [clinic.phone]).map((phone) => <a key={phone} href={`tel:${phone}`}><Icon name="phone" size={14} />{phone}</a>)}</dd></div>
       </dl>
-      {clinic.note && <p className="clinic-note"><Icon name="info" size={15} aria-hidden="true" />{clinic.note}</p>}
+      {clinic.note && <p className="clinic-note"><Icon name="info" size={15} aria-hidden="true" />{lang === 'en' ? (clinic.noteEn || 'Please call the clinic for service details.') : clinic.note}</p>}
       <div className="service-heading"><strong>{t('clinics_services')}</strong><span className={clinic.serviceDetailsVerified ? 'verified' : 'unverified'}><Icon name={clinic.serviceDetailsVerified ? 'check' : 'info'} size={13} />{clinic.serviceDetailsVerified ? t('clinics_services_verified') : t('clinics_services_unverified')}</span></div>
       <div className="services" aria-label={t('clinics_services')}>{clinic.services.map((service) => <span key={service}>{t(SERVICE_I18N[service])}</span>)}</div>
       <div className="source-row"><span><Icon name="check" size={13} />{t('clinics_verified')}: {clinic.verifiedAt}</span><a href={clinic.mapUrl} target="_blank" rel="noopener noreferrer"><Icon name="pin" size={14} />{t('clinics_open_maps')}</a>{clinic.websiteUrl && <a href={clinic.websiteUrl} target="_blank" rel="noopener noreferrer"><Icon name="share" size={14} />{t('clinics_open_page')}</a>}</div>

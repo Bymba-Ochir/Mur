@@ -1,51 +1,29 @@
-# Security — байр суурь ба хүлээн зөвшөөрсөн эрсдэл
+# Аюулгүй байдал ба нууцлал
 
-МӨР платформын аюулгүй байдлын арга хэмжээ болон одоогоор хүлээн зөвшөөрсөн
-эрсдэлүүдийн бүртгэл. Шинэчлэлт: 2026-08-05.
+Энэ баримт security certification биш. Snapshot код, production policy болон бодит эрхийн шалгалт гурвуулаа хэрэгтэй.
 
-## 1. Идэвхтэй хамгаалалт
+## Итгэлийн хил
 
-| Хамгаалалт | Тайлбар |
-|---|---|
-| **CSP + security headers** | `next.config.js`-ийн `headers()` — CSP, `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy`, `Permissions-Policy` (clickjacking, MIME sniffing, XSS-ийн гадаргууг хязгаарлана) |
-| **RLS** | Бүх 8 хүснэгт row-level security-тэй; публик унших, эзэмшигч/админ зөвхөн бичих |
-| **Rate limit** | Pet бичлэг: Postgres trigger (`check_pet_rate_limit`, 1цаг/5). Хандив: `lib/rateLimit.ts` (1мин/5/IP, `/api/donations/create`) |
-| **DB-level validation** | `validate_pet_input()` trigger — утасны дугаар формат, талбарын урт (клиентээр тойрч болохгүй) |
-| **Серверийн нууцууд** | `SUPABASE_SERVICE_ROLE_KEY`, `VAPID_PRIVATE_KEY`, `QPAY_*`, `NOTIFY_WEBHOOK_SECRET` зөвхөн сервер route-д (`NEXT_PUBLIC_` угтваргүй); webhook/cron route-ууд secret шалгалттай |
-| **Env validation** | `lib/env.ts` — заавал env алга бол fail-fast |
-| **Dead code устгал** | `app/api/embed` (хуучин серверийн HF embedding) — CLIP browser-д шилжсэн тул устгагдсан |
+Browser anon key нь нууц биш; RLS ба column/table grant өгөгдлийг хамгаална. Service-role key зөвхөн серверт байна. UI дээр товч нуух нь API authorization биш.
 
-## 2. Хүлээн зөвшөөрсөн эрсдэл (accepted risk)
+Нууц: service role, QPay password, Groq key, VAPID private key, webhook/cron secret, Sentry auth token. Git, ZIP, screenshot болон логт нийтлэхгүй. Ил гарвал эхлээд revoke/rotate, дараа нь түүхийг зохих журмаар цэвэрлэнэ.
 
-### 2.1. `npm audit` — 0 vulnerability (2026-08-05)
+## Одоогийн нээлттэй шалгалт
 
-`@sentry/nextjs@10`, `next@16.3`, `react@19`, `vitest@4` + `vite@7` upgrade хийгдсэн.
-`npm audit` одоо **0 vulnerability** — бүх known vuln арилсан.
+- Snapshot-ийн QPay callback болон vaccine cron secret байхгүй үед fail-open салбар байна; deploy өмнө засах.
+- Өмнөх v93–v95 patch-ууд бүгд энэ ZIP-д орсон гэж үзэхгүй.
+- Хэрэглэгчийн явуулсан production grant/policy-д paid donations бүх багана, profile notification_preferences public уншигдах боломж ажиглагдсан. Дараах SQL засварууд ажилласан эсэх батлагдаагүй.
+- `email_verified` өөрчлөлтийг trigger хамгаалдаг эсэхийг шалгана.
+- RLS асаалттай байх нь policy зөв гэсэн баталгаа биш. FORCE RLS false нь дангаараа алдаа биш.
+- In-memory limiter нь instance тус бүрд; distributed хамгаалалт батлагдаагүй.
+- Утас UI-д масктай байсан ч public query-д байвал нууцлал биш.
 
-### 2.2. Бусад
+## Шалгах арга
 
-- **In-memory rate limiter** нь Vercel serverless-д instance бүрд хамаарна —
-  бүрэн хатуу хязгаарлалт биш (spam-ыг мэдэгдэхүйц бууруулдаг, бүрэн зогсоодоггүй).
-  Хуулийн зөвшөөрөлт (legal) бус, техникийн түр хамгаалалт.
-- **Вакцин сануулгын cron** — Vercel Cron-д тохируулсан үед л идэвхтэй.
+Staging дээр guest, A хэрэглэгч, B хэрэглэгч, admin гэсэн эрхээр ижил үйлдлийг шалга. A нь B-ийн medical record, conversation, notification/settings-ийг унших/өөрчлөхгүй байх ёстой. Storage устгал зөвхөн эзэмшигчийн объектод үйлчлэх ёстой.
 
-## 3. Төлөвлөсөн эргэн төлөлт (remediation)
+Supabase policy, grants, trigger/function тодорхойлолтыг review хийнэ. TRUNCATE зэрэг шаардлагагүй эрхийг цуцлахдаа schema болон function dependency-г шалга. Нийтэд зориулсан donation/profile projection-ийг private багануудаас тусгаарлана.
 
-- [x] `@sentry/nextjs` → v10 шинэчилсэн (2026-08-05) — `@sentry/*`-ийн vuln арилсан.
-- [x] `next` 14 → **16.3** + `react` → **19** + ESLint 9 flat config шинэчилсэн
-      (2026-08-05) — Next.js-ийн vuln арилсан; async `params`, `eslint .` руу
-      шилжсэн.
-- [x] `vitest` 2 → **4.1** + `vite` → **7.3** upgrade (2026-08-05) — `npm audit`
-      **0 vulnerability** болсон, 37/37 тест ногоон.
-- [x] localStorage-уншилт `useSyncExternalStore` руу шилжсэн
-      (`lib/useLocalStorageState.ts` — theme, хэл, onboarding, analytics consent);
-      async-fetch/URL effect-уудыг promise/`useSyncExternalStore`-р засч,
-      `react-hooks/set-state-in-effect` дүрмийг **дахин идэвхжүүлсэн** (2026-08-05).
-- [ ] Хэрэв хандив spam-ын түвшин өсвөл: DB-суурилсан эсвэл Redis (Upstash) rate limiter.
-- [ ] Апп өсөхөд: Supabase Pro → автомат backup + PITR (`docs/BACKUP.md` §7).
+## Incident
 
-## 4. Шинэчлэх журам
-
-- Шинэ package нэмэх/шинэчлэх үед: `npm audit` ажиллуулж, шинэ өндөр/критик vuln
-  гарвал энэ файлыг шинэчилнэ.
-- Энэ файлын §3-ын checkbox-ыг хэрэгжүүлсэн үед тэмдэглэнэ.
+Нөлөөлсөн endpoint/үйлчилгээг хязгаарла; нууц түлхүүрийг rotate; нууц агуулаагүй лог, хугацаа, commit-ийг хадгал; засварыг staging-д шалгаад deploy хий. Public issue-д token эсвэл хэрэглэгчийн хувийн мэдээлэл оруулахгүй. Private мэдээлэх тусгай суваг repository-д тогтоогдоогүй тул эзэмшигчтэй хамгаалагдсан сувгаар тохирно.

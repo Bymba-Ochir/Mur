@@ -5,7 +5,8 @@ import { createAdminClient } from '../../../../lib/supabaseAdmin';
 
 export async function POST(request: Request) {
   try {
-    if (process.env.QPAY_CALLBACK_SECRET) {
+    if (!process.env.QPAY_CALLBACK_SECRET?.trim()) return NextResponse.json({ error: 'Callback unavailable' }, { status: 503 });
+    {
       const url = new URL(request.url);
       const secretParam = url.searchParams.get('secret');
       const authHeader = request.headers.get('authorization');
@@ -17,7 +18,7 @@ export async function POST(request: Request) {
 
     const body = await request.json();
     const invoiceId = body.invoice_id;
-    if (!invoiceId) return NextResponse.json({ message: 'OK' }, { status: 200 });
+    if (typeof invoiceId !== 'string' || !invoiceId || invoiceId.length > 200) return NextResponse.json({ message: 'OK' }, { status: 200 });
 
     const supabaseAdmin = createAdminClient();
 
