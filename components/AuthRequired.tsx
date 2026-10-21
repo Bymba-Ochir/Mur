@@ -1,21 +1,51 @@
 'use client';
+
+import { useState } from 'react';
 import type { ReactNode } from 'react';
 import { LogIn } from 'lucide-react';
 import { useAuth } from '../lib/useAuth';
 import { useLanguage } from '../lib/i18n';
 import Button from './ui/Button';
 import LoginModal from './LoginModal';
-import { useState } from 'react';
 
-export default function AuthRequired({ children }: { children: ReactNode }) {
+type AuthRequiredProps = {
+  children: ReactNode;
+  title?: ReactNode;
+  description?: ReactNode | null;
+  loginLabel?: ReactNode;
+  loadingLabel?: ReactNode;
+  icon?: ReactNode;
+};
+
+/**
+ * Shared authentication boundary for create/edit flows.
+ *
+ * The gate owns session/loading/login-modal behavior while callers can provide
+ * flow-specific copy. Keeping that responsibility here prevents each form from
+ * reimplementing auth state handling and accidentally mounting protected form
+ * hooks before a user is available.
+ */
+export default function AuthRequired({
+  children,
+  title,
+  description,
+  loginLabel,
+  loadingLabel,
+  icon,
+}: AuthRequiredProps) {
   const { user, loading } = useAuth();
-  const { lang } = useLanguage();
+  const { lang, t } = useLanguage();
   const [showLogin, setShowLogin] = useState(false);
+
+  const resolvedTitle = title ?? (lang === 'mn' ? 'Зар оруулахын тулд нэвтэрнэ үү' : 'Sign in to create a listing');
+  const resolvedDescription = description ?? null;
+  const resolvedLoginLabel = loginLabel ?? t('nav_login');
+  const resolvedLoadingLabel = loadingLabel ?? t('detail_loading');
 
   if (loading) {
     return (
-      <div className="content-panel flex min-h-48 items-center justify-center" role="status">
-        <span className="text-sm text-[var(--muted)]">{lang === 'mn' ? 'Нэвтрэлтийг шалгаж байна...' : 'Checking your session...'}</span>
+      <div className="state-panel" role="status" aria-busy="true">
+        <span>{resolvedLoadingLabel}</span>
       </div>
     );
   }
@@ -24,22 +54,14 @@ export default function AuthRequired({ children }: { children: ReactNode }) {
 
   return (
     <>
-      <div className="content-panel mx-auto flex max-w-2xl flex-col items-center px-6 py-12 text-center">
-        <span className="mb-4 flex size-14 items-center justify-center rounded-full bg-[var(--eyebrow-bg)] text-[var(--primary)]" aria-hidden="true">
-          <LogIn size={26} />
+      <section className="state-panel">
+        <span className="state-panel__icon" aria-hidden="true">
+          {icon ?? <LogIn size={26} />}
         </span>
-        <h2 className="mb-2 text-xl font-bold text-[var(--text)]">
-          {lang === 'mn' ? 'Зар нийтлэхийн тулд нэвтэрнэ үү' : 'Sign in to publish a listing'}
-        </h2>
-        <p className="mb-5 max-w-lg text-sm leading-6 text-[var(--muted)]">
-          {lang === 'mn'
-            ? 'Таны зар, зураг болон холбоо барих мэдээллийг аюулгүй хадгалахын тулд нэвтрэх шаардлагатай.'
-            : 'Sign-in is required to securely save your listing, photos, and contact details.'}
-        </p>
-        <Button onClick={() => setShowLogin(true)}>
-          {lang === 'mn' ? 'Нэвтрэх холбоос авах' : 'Get sign-in link'}
-        </Button>
-      </div>
+        <h2>{resolvedTitle}</h2>
+        {resolvedDescription ? <p>{resolvedDescription}</p> : null}
+        <Button onClick={() => setShowLogin(true)}>{resolvedLoginLabel}</Button>
+      </section>
       {showLogin && <LoginModal onClose={() => setShowLogin(false)} />}
     </>
   );

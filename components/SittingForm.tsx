@@ -8,8 +8,7 @@ import Button from './ui/Button';
 import Icon from './ui/icons';
 import ShareButtons from './ShareButtons';
 import FieldHint from './ui/FieldHint';
-import { useAuth } from '../lib/useAuth';
-import LoginModal from './LoginModal';
+import AuthRequired from './AuthRequired';
 import SittingCardView from './SittingCardView';
 import PawTrail from './PawTrail';
 import LocationMap from './LocationMap';
@@ -23,12 +22,13 @@ import type { District } from '../lib/districts';
 type FieldErrors = Partial<Record<'description' | 'place' | 'phone' | 'price', string>>;
 
 export default function SittingForm() {
- const {user, loading} = useAuth(); const {t, lang} = useLanguage();
- const [login, setLogin] = useState(false);
- if (loading) return <div role="status" aria-busy="true">{t('detail_loading')}</div>;
- if (!user) return <section className="state-panel"><h2>{lang === 'mn' ? 'Зар оруулахын тулд нэвтэрнэ үү' : 'Sign in to create a listing'}</h2><Button onClick={()=>setLogin(true)}>{t('nav_login')}</Button>{login && <LoginModal onClose={()=>setLogin(false)} />}</section>;
- return <AuthenticatedSittingForm key={user.id} />;
+  return (
+    <AuthRequired>
+      <AuthenticatedSittingForm />
+    </AuthRequired>
+  );
 }
+
 function AuthenticatedSittingForm() {
   const { t, lang } = useLanguage();
   const STEPS = [t('sitting_form_step_photo'), t('sitting_form_step_info'), t('sitting_form_step_contact')];
