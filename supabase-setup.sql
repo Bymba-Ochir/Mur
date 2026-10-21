@@ -60,7 +60,7 @@ drop policy if exists "Authenticated users can insert" on pets;
 create policy "Authenticated users can insert"
   on pets for insert
   to authenticated
-  with check (true);
+  with check (auth.uid() = created_by);
 
 -- 5. Зохиогч өөрийн бичлэгээ засах боломжтой (жишээ нь "Олдлоо" гэж тэмдэглэх)
 drop policy if exists "Owner can update own pet" on pets;
@@ -83,10 +83,15 @@ create policy "Public photo read"
 
 -- 7. Storage-д зөвхөн нэвтэрсэн хэрэглэгч зураг оруулж болно
 drop policy if exists "Authenticated photo upload" on storage.objects;
-create policy "Authenticated photo upload"
+drop policy if exists "Users upload own pet photos" on storage.objects;
+create policy "Users upload own pet photos"
   on storage.objects for insert
   to authenticated
-  with check (bucket_id = 'pet-photos');
+  with check (
+    bucket_id = 'pet-photos'
+    and (storage.foldername(name))[1] = auth.uid()::text
+    and lower(storage.extension(name)) in ('jpg','jpeg','png','webp')
+  );
 
 -- 8. Push мэдэгдэлд бүртгүүлсэн хэрэглэгчдийн хүснэгт (Nearby Alert)
 create table if not exists push_subscriptions (
@@ -101,9 +106,9 @@ alter table push_subscriptions enable row level security;
 
 -- Хэн ч өөрийн дугаарлалтаа бүртгүүлж болно (нэвтрэх шаардлагагүй, зөвхөн browser push endpoint)
 drop policy if exists "Anyone can subscribe" on push_subscriptions;
-create policy "Anyone can subscribe"
-  on push_subscriptions for insert
-  with check (true);
+-- Browser direct insert хийхгүй. Push subscription нь /api/push-subscriptions server route-аар
+-- service-role ашиглан хадгалагдана.
+revoke insert, update on push_subscriptions from anon, authenticated;
 
 -- 9. "Миний амьтад" — хэрэглэгчийн өөрийн бүртгэлтэй амьтад, вакцины хугацаа
 create table if not exists my_pets (
@@ -142,9 +147,8 @@ create table if not exists reports (
 alter table reports enable row level security;
 
 drop policy if exists "Anyone can report" on reports;
-create policy "Anyone can report"
-  on reports for insert
-  with check (true);
+-- Report нь /api/reports server route-аар authenticated user-аас бичигдэнэ.
+revoke insert on reports from anon, authenticated;
 
 -- 12. Admin — модератор эрхтэй хэрэглэгчид
 create table if not exists admins (
@@ -268,9 +272,8 @@ create policy "Public read sightings"
   using (true);
 
 drop policy if exists "Anyone can add sighting" on sightings;
-create policy "Anyone can add sighting"
-  on sightings for insert
-  with check (true);
+-- Sighting нь /api/sightings server route-аар бичигдэнэ.
+revoke insert on sightings from anon, authenticated;
 
 -- 15. Сайн дурын идэвхтэн — тухайн дүүрэгт идэвхтэй хайлтад туслахаар бүртгүүлсэн хэрэглэгч
 create table if not exists volunteers (
@@ -315,9 +318,8 @@ alter table donations enable row level security;
 
 -- Хэн ч хандив үүсгэж болно (нэвтрэлт шаардахгүй)
 drop policy if exists "Anyone can create donation" on donations;
-create policy "Anyone can create donation"
-  on donations for insert
-  with check (true);
+-- Donation invoice нь /api/donations/create server route-аар үүснэ.
+revoke insert on donations from anon, authenticated;
 
 -- Зөвхөн серверийн код (service role) л унших/шинэчилнэ — status_token-оор
 -- баталгаажуулалт хийдэг тул client-д нээлттэй select хэрэггүй
@@ -363,7 +365,7 @@ create policy "Public read adoptions"
 -- Зөвхөн нэвтэрсэн хэрэглэгч шинэ зар үүсгэж болно
 drop policy if exists "Authenticated users can insert adoptions" on adoptions;
 create policy "Authenticated users can insert adoptions"
-  on adoptions for insert to authenticated with check (true);
+  on adoptions for insert to authenticated with check (auth.uid() = created_by);
 
 -- Зохиогч өөрийн зарыг засах боломжтой
 drop policy if exists "Owner can update own adoption" on adoptions;
