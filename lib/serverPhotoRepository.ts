@@ -22,12 +22,15 @@ async function fetchLegacyPhotoRows(
   ownerIds: string[],
 ): Promise<Array<LegacyPhotoRow & { id: string }>> {
   if (ownerIds.length === 0) return [];
-  let result = await client.from(ownerTable).select('id,photo_url,photo_urls').in('id', ownerIds);
-  if (result.error && isMissingNormalizedTable(result.error)) {
-    result = await client.from(ownerTable).select('id,photo_url').in('id', ownerIds);
+  const fullResult = await client.from(ownerTable).select('id,photo_url,photo_urls').in('id', ownerIds);
+  if (!fullResult.error) {
+    return (fullResult.data ?? []) as Array<LegacyPhotoRow & { id: string }>;
   }
-  if (result.error) throw result.error;
-  return (result.data ?? []) as Array<LegacyPhotoRow & { id: string }>;
+  if (!isMissingNormalizedTable(fullResult.error)) throw fullResult.error;
+
+  const primaryResult = await client.from(ownerTable).select('id,photo_url').in('id', ownerIds);
+  if (primaryResult.error) throw primaryResult.error;
+  return (primaryResult.data ?? []) as Array<LegacyPhotoRow & { id: string }>;
 }
 
 /** Server-side photo lookup that remains compatible before and after v96. */
@@ -52,11 +55,13 @@ export async function fetchServerPhotoUrlsForOwners(
   ownerIds: string[],
 ): Promise<string[]> {
   if (ownerIds.length === 0) return [];
-  const { table, foreignKey, ownerTable } = PHOTO_CONFIG[kind];
-  const result = await client.from(table).select(`${foreignKey},url,position`).in(foreignKey, ownerIds);
+  const { ownerTable } = PHOTO_CONFIG[kind];
+  const result = kind === 'pet'
+    ? await client.from('pet_photos').select('pet_id,url,position').in('pet_id', ownerIds)
+    : await client.from('adoption_photos').select('adoption_id,url,position').in('adoption_id', ownerIds);
   if (!result.error) {
     return (result.data ?? [])
-      .map((row) => (row as PhotoRow).url)
+      .map((row) => (row as unknown as PhotoRow).url)
       .filter((url): url is string => typeof url === 'string' && url.length > 0);
   }
   if (!isMissingNormalizedTable(result.error)) throw result.error;
@@ -72,13 +77,19 @@ export async function fetchServerPhotoRecords(
   ownerIds: string[],
 ): Promise<Array<Record<string, unknown>>> {
   if (ownerIds.length === 0) return [];
-  const { table, foreignKey } = PHOTO_CONFIG[kind];
-  const result = await client
-    .from(table)
-    .select(`id,${foreignKey},url,position,created_at`)
-    .in(foreignKey, ownerIds)
-    .order('position', { ascending: true });
-  if (!result.error) return (result.data ?? []) as Array<Record<string, unknown>>;
+  const { foreignKey } = PHOTO_CONFIG[kind];
+  const result = kind === 'pet'
+    ? await client
+        .from('pet_photos')
+        .select('id,pet_id,url,position,created_at')
+        .in('pet_id', ownerIds)
+        .order('position', { ascending: true })
+    : await client
+        .from('adoption_photos')
+        .select('id,adoption_id,url,position,created_at')
+        .in('adoption_id', ownerIds)
+        .order('position', { ascending: true });
+  if (!result.error) return (result.data ?? []) as unknown as Array<Record<string, unknown>>;
   if (!isMissingNormalizedTable(result.error)) throw result.error;
 
   const legacyRows = await fetchLegacyPhotoRows(client, PHOTO_CONFIG[kind].ownerTable, ownerIds);

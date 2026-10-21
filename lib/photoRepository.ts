@@ -1,24 +1,67 @@
 import { supabase } from './supabase';
-import { isMissingNormalizedTable, type ListingPhotoKind } from './photoModel';
+import { isMissingNormalizedTable, legacyPhotoUrls, type ListingPhotoKind, type LegacyPhotoRow } from './photoModel';
 
 type ListingRow = {
   id: string;
-  photo_url?: string | null;
-  photo_urls?: unknown;
 };
 
-const PHOTO_CONFIG: Record<ListingPhotoKind, { table: string; foreignKey: string }> = {
-  pet: { table: 'pet_photos', foreignKey: 'pet_id' },
-  adoption: { table: 'adoption_photos', foreignKey: 'adoption_id' },
+export type HydratedListingPhotos = {
+  photo_url: string | null;
+  photo_urls: string[];
 };
+
+const PHOTO_CONFIG: Record<ListingPhotoKind, { table: string; foreignKey: string; ownerTable: string }> = {
+  pet: { table: 'pet_photos', foreignKey: 'pet_id', ownerTable: 'pets' },
+  adoption: { table: 'adoption_photos', foreignKey: 'adoption_id', ownerTable: 'adoptions' },
+};
+
+function withHydratedPhotos<T extends ListingRow>(rows: T[], byOwner: Map<string, string[]>): Array<T & HydratedListingPhotos> {
+  return rows.map((row) => {
+    const urls = (byOwner.get(row.id) ?? []).slice(0, 4);
+    return {
+      ...row,
+      photo_url: urls[0] ?? null,
+      photo_urls: urls,
+    };
+  });
+}
+
+async function fetchLegacyPhotos(
+  ownerTable: string,
+  ownerIds: string[],
+): Promise<Map<string, string[]>> {
+  let data: unknown[] | null = null;
+  const fullResult = await supabase.from(ownerTable).select('id,photo_url,photo_urls').in('id', ownerIds);
+
+  if (!fullResult.error) {
+    data = fullResult.data;
+  } else {
+    if (!isMissingNormalizedTable(fullResult.error)) throw fullResult.error;
+    const primaryResult = await supabase.from(ownerTable).select('id,photo_url').in('id', ownerIds);
+    if (primaryResult.error) throw primaryResult.error;
+    data = primaryResult.data;
+  }
+
+  const byOwner = new Map<string, string[]>();
+  for (const raw of data ?? []) {
+    const row = raw as unknown as LegacyPhotoRow & { id?: unknown };
+    if (typeof row.id !== 'string') continue;
+    byOwner.set(row.id, legacyPhotoUrls(row));
+  }
+  return byOwner;
+}
 
 /**
  * Hydrate DB rows with normalized photo children. During the rollout, a missing
- * child table falls back to the old photo_url/photo_urls columns.
+ * child table fetches the legacy photo columns separately, so callers do not
+ * have to select columns that are removed by the v96 migration.
  */
-export async function hydrateListingPhotos<T extends ListingRow>(kind: ListingPhotoKind, rows: T[]): Promise<T[]> {
-  if (rows.length === 0) return rows;
-  const { table, foreignKey } = PHOTO_CONFIG[kind];
+export async function hydrateListingPhotos<T extends ListingRow>(
+  kind: ListingPhotoKind,
+  rows: T[],
+): Promise<Array<T & HydratedListingPhotos>> {
+  if (rows.length === 0) return [];
+  const { table, foreignKey, ownerTable } = PHOTO_CONFIG[kind];
   const ids = rows.map((row) => row.id);
   const { data, error } = await supabase
     .from(table)
@@ -27,8 +70,8 @@ export async function hydrateListingPhotos<T extends ListingRow>(kind: ListingPh
     .order('position', { ascending: true });
 
   if (error) {
-    if (isMissingNormalizedTable(error)) return rows;
-    throw error;
+    if (!isMissingNormalizedTable(error)) throw error;
+    return withHydratedPhotos(rows, await fetchLegacyPhotos(ownerTable, ids));
   }
 
   const byOwner = new Map<string, string[]>();
@@ -42,14 +85,7 @@ export async function hydrateListingPhotos<T extends ListingRow>(kind: ListingPh
     byOwner.set(ownerId, urls);
   }
 
-  return rows.map((row) => {
-    const urls = (byOwner.get(row.id) ?? []).slice(0, 4);
-    return {
-      ...row,
-      photo_url: urls[0] ?? null,
-      photo_urls: urls,
-    };
-  });
+  return withHydratedPhotos(rows, byOwner);
 }
 
 /**
