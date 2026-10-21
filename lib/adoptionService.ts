@@ -6,6 +6,7 @@ import { mapAdoptionRow } from './adoptionMapping';
 import type { Adoption, AdoptionInput, AdoptionFilters, UpdateAdoptionFields } from './types';
 import { cleanText, requireMongolianPhone } from './inputValidation';
 import { apiError, authenticatedFetch } from './apiClient';
+import { createIdempotencyKey, idempotentFileName, isIdempotencyKey } from './idempotency';
 
 const TABLE = 'adoptions';
 const BUCKET = 'pet-photos';
@@ -14,10 +15,10 @@ const PAGE_SIZE = 24;
 /**
  * Зураг Storage bucket-д хуулаад, public URL буцаана
  */
-async function uploadAdoptionPhoto(file: File, userId: string): Promise<string> {
-  const path = `${userId}/adoptions/${Date.now()}_${file.name}`;
+async function uploadAdoptionPhoto(file: File, userId: string, mutationId: string, index: number): Promise<string> {
+  const path = `${userId}/adoptions/${idempotentFileName(mutationId, index, file.name)}`;
   const { error } = await supabase.storage.from(BUCKET).upload(path, file);
-  if (error) throw error;
+  if (error && !/already exists|duplicate|resource already exists/i.test(error.message)) throw error;
   const { data } = supabase.storage.from(BUCKET).getPublicUrl(path);
   return data.publicUrl;
 }
@@ -25,19 +26,30 @@ async function uploadAdoptionPhoto(file: File, userId: string): Promise<string> 
 /**
  * Шинэ үрчлүүлэх зар нэмэх
  */
-export async function createAdoption(data: AdoptionInput): Promise<string> {
+export async function createAdoption(data: AdoptionInput, mutationId = createIdempotencyKey()): Promise<string> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error('Эхлээд нэвтэрнэ үү.');
+  if (!isIdempotencyKey(mutationId)) throw new Error('Үйлдлийн дугаар буруу байна.');
+
+  const { data: existing, error: existingError } = await supabase.from(TABLE).select('id,created_by').eq('id', mutationId).maybeSingle();
+  if (existingError) throw existingError;
+  if (existing) {
+    if (existing.created_by !== user.id) throw new Error('Үйлдлийн дугаар давхардлаа. Дахин оролдоно уу.');
+    return existing.id;
+  }
+
   let photoUrl: string | null = null;
   let photoUrls: string[] = [];
 
   const files = (data.photoFiles?.length ? data.photoFiles : data.photoFile ? [data.photoFile] : []).slice(0, 4);
   if (files.length) {
-    photoUrls = await Promise.all(files.map((file) => uploadAdoptionPhoto(file, user.id)));
+    photoUrls = await Promise.all(files.map((file, index) => uploadAdoptionPhoto(file, user.id, mutationId, index)));
     photoUrl = photoUrls[0];
   }
 
   const payload = {
+      id: mutationId,
+      created_by: user.id,
       name: cleanText(data.name, 100, 'Нэр'),
       type: data.type,
       age: validatePetAge(cleanText(data.age, 100, 'Нас')),
@@ -65,6 +77,11 @@ export async function createAdoption(data: AdoptionInput): Promise<string> {
   const { data: inserted, error } = result;
 
   if (error) {
+    if (error.code === '23505') {
+      const { data: raced, error: racedError } = await supabase.from(TABLE).select('id,created_by').eq('id', mutationId).maybeSingle();
+      if (racedError) throw racedError;
+      if (raced?.created_by === user.id) return raced.id;
+    }
     if (error.message && error.message.includes('RATE_LIMIT:')) {
       throw new Error('Хэт олон удаа зар нийтлээ. 1 цагийн дараа дахин оролдоно уу.');
     }

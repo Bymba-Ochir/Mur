@@ -2,12 +2,18 @@
 import { supabase } from './supabase';
 import type { Sighting } from './types';
 import { apiError, authenticatedFetch } from './apiClient';
+import { createIdempotencyKey, idempotencyHeaders } from './idempotency';
 
 export async function createSighting(
   petId: string,
-  { message, place }: { message: string; place: string | null }
+  { message, place }: { message: string; place: string | null },
+  idempotencyKey = createIdempotencyKey(),
 ): Promise<void> {
-  const response = await authenticatedFetch('/api/sightings', { method: 'POST', body: JSON.stringify({ petId, message, place }) });
+  const response = await authenticatedFetch('/api/sightings', {
+    method: 'POST',
+    headers: idempotencyHeaders(idempotencyKey),
+    body: JSON.stringify({ petId, message, place }),
+  });
   if (!response.ok) throw await apiError(response);
 }
 

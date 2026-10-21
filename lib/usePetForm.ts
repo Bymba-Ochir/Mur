@@ -4,7 +4,7 @@
 //   usePetLocation — geolocation + дүүрэг таамаглал
 //   usePetSubmit   — submit pipeline (createPetReport + reset)
 'use client';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
 import { compressImage } from './imageCompress';
 import { checkImageContent } from './contentModeration';
@@ -16,6 +16,7 @@ import type { District } from './districts';
 import type { PetStatus, PetType } from './types';
 import { getErrorMessage } from './utils';
 import { cleanText, isInputValidationError, optionalInteger, requireMongolianPhone } from './inputValidation';
+import { fingerprintSubmission, resolveIdempotencyAttempt, type IdempotencyAttempt } from './idempotency';
 
 // Дотоод утга (DB-д хадгалагдах) үргэлж Монгол хэвээр — зөвхөн харагдац орчуулагдана
 export const TYPE_VALUES: PetType[] = ['Нохой', 'Муур', 'Бусад'];
@@ -151,12 +152,16 @@ export function usePetSubmit({
   const [done, setDone] = useState(false);
   const [newPetId, setNewPetId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const attemptRef = useRef<IdempotencyAttempt | null>(null);
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setSubmitting(true);
     setError(null);
     setStatusMsg(t('submitting'));
+    const fingerprint = fingerprintSubmission({ status, form, coords }, photoFiles);
+    const attempt = resolveIdempotencyAttempt(attemptRef.current, fingerprint);
+    attemptRef.current = attempt;
     try {
       const id = await createPetReport(
         {
@@ -174,8 +179,10 @@ export function usePetSubmit({
           lat: coords?.lat,
           lng: coords?.lng,
         },
-        setStatusMsg
+        setStatusMsg,
+        attempt.key,
       );
+      attemptRef.current = null;
       setNewPetId(id);
       setDone(true);
       onSuccess(id);
@@ -197,6 +204,7 @@ export function usePetSubmit({
     setDone(false);
     setNewPetId(null);
     setError(null);
+    attemptRef.current = null;
   }
 
   return { submitting, statusMsg, done, newPetId, error, handleSubmit, reset };

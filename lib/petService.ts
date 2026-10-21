@@ -6,6 +6,7 @@ import { mapPetRow } from './petMapping';
 import type { Pet, PetStatus, PetFilters, PetReportInput, UpdatePetFields } from './types';
 import { cleanText, optionalCoordinate, optionalInteger, requireMongolianPhone } from './inputValidation';
 import { apiError, authenticatedFetch } from './apiClient';
+import { createIdempotencyKey, idempotentFileName, isIdempotencyKey } from './idempotency';
 
 const TABLE = 'pets';
 const BUCKET = 'pet-photos';
@@ -13,10 +14,10 @@ const BUCKET = 'pet-photos';
 /**
  * Зураг Storage bucket-д хуулаад, public URL буцаана (зөвхөн дотор ашиглана)
  */
-async function uploadPetPhoto(file: File, statusFolder: PetStatus, userId: string): Promise<string> {
-  const path = `${userId}/${statusFolder}/${Date.now()}_${file.name}`;
+async function uploadPetPhoto(file: File, statusFolder: PetStatus, userId: string, mutationId: string, index: number): Promise<string> {
+  const path = `${userId}/${statusFolder}/${idempotentFileName(mutationId, index, file.name)}`;
   const { error } = await supabase.storage.from(BUCKET).upload(path, file);
-  if (error) throw error;
+  if (error && !/already exists|duplicate|resource already exists/i.test(error.message)) throw error;
   const { data } = supabase.storage.from(BUCKET).getPublicUrl(path);
   return data.publicUrl;
 }
@@ -26,9 +27,22 @@ async function uploadPetPhoto(file: File, statusFolder: PetStatus, userId: strin
  * @param data - { status, name, type, color, place, district, phone, photoFile, lat, lng }
  * @param onProgress - embedding тооцоолж байх үеийн статус мессеж дамжуулах callback
  */
-export async function createPetReport(data: PetReportInput, onProgress?: (message: string) => void): Promise<string> {
+export async function createPetReport(
+  data: PetReportInput,
+  onProgress?: (message: string) => void,
+  mutationId = createIdempotencyKey(),
+): Promise<string> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error('Эхлээд нэвтэрнэ үү.');
+  if (!isIdempotencyKey(mutationId)) throw new Error('Үйлдлийн дугаар буруу байна.');
+
+  const { data: existing, error: existingError } = await supabase.from(TABLE).select('id,created_by').eq('id', mutationId).maybeSingle();
+  if (existingError) throw existingError;
+  if (existing) {
+    if (existing.created_by !== user.id) throw new Error('Үйлдлийн дугаар давхардлаа. Дахин оролдоно уу.');
+    return existing.id;
+  }
+
   const phone = requireMongolianPhone(data.phone);
   const reward = data.hasReward
     ? optionalInteger(data.reward, { min: 0, max: 100_000_000, label: 'Шагналын дүн' })
@@ -41,7 +55,7 @@ export async function createPetReport(data: PetReportInput, onProgress?: (messag
   const files = (data.photoFiles?.length ? data.photoFiles : data.photoFile ? [data.photoFile] : []).slice(0, 4);
   if (files.length) {
     onProgress?.(`1/${files.length} зураг хадгалж байна...`);
-    photoUrls = await Promise.all(files.map((file) => uploadPetPhoto(file, data.status, user.id)));
+    photoUrls = await Promise.all(files.map((file, index) => uploadPetPhoto(file, data.status, user.id, mutationId, index)));
     photoUrl = photoUrls[0] ?? null;
     try {
       [embedding, imageHash] = await Promise.all([
@@ -56,6 +70,8 @@ export async function createPetReport(data: PetReportInput, onProgress?: (messag
   }
 
   const payload = {
+      id: mutationId,
+      created_by: user.id,
       status: data.status, // 'lost' | 'found'
       name: cleanText(data.name, 100, 'Нэр'),
       type: data.type, // 'Нохой' | 'Муур' | 'Бусад'
@@ -87,6 +103,11 @@ export async function createPetReport(data: PetReportInput, onProgress?: (messag
   const { data: inserted, error } = result;
 
   if (error) {
+    if (error.code === '23505') {
+      const { data: raced, error: racedError } = await supabase.from(TABLE).select('id,created_by').eq('id', mutationId).maybeSingle();
+      if (racedError) throw racedError;
+      if (raced?.created_by === user.id) return raced.id;
+    }
     if (error.message && error.message.includes('RATE_LIMIT:')) {
       throw new Error('Хэт олон удаа мэдээлэл илгээлээ. 1 цагийн дараа дахин оролдоно уу.');
     }

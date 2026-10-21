@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { createSighting, fetchSightings } from '../lib/sightingService';
 import { relativeTime } from '../lib/relativeTime';
 import { useToast } from './Toast';
@@ -9,6 +9,7 @@ import type { Sighting } from '../lib/types';
 import { getErrorMessage } from '../lib/utils';
 import { useAuth } from '../lib/useAuth';
 import Icon from './ui/icons';
+import { createIdempotencyKey } from '../lib/idempotency';
 
 export default function SightingsList({ petId }: { petId: string }) {
   const showToast = useToast();
@@ -20,6 +21,7 @@ export default function SightingsList({ petId }: { petId: string }) {
   const [submitting, setSubmitting] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [loadError, setLoadError] = useState('');
+  const submitKey = useRef<string | null>(null);
 
   useEffect(() => {
     void Promise.resolve().then(load);
@@ -40,7 +42,10 @@ export default function SightingsList({ petId }: { petId: string }) {
     if (!message.trim()) return;
     setSubmitting(true);
     try {
-      await createSighting(petId, { message, place });
+      const key = submitKey.current ?? createIdempotencyKey();
+      submitKey.current = key;
+      await createSighting(petId, { message, place }, key);
+      submitKey.current = null;
       setMessage('');
       setPlace('');
       setShowForm(false);
@@ -74,9 +79,9 @@ export default function SightingsList({ petId }: { petId: string }) {
       {showForm && (
         <form id="sighting-form" onSubmit={handleSubmit} className="sighting-form">
           <label htmlFor="sighting-message">{t('sightings_message_label')}</label>
-          <textarea id="sighting-message" className="field" value={message} onChange={(e) => setMessage(e.target.value)} placeholder={t('sightings_placeholder')} required maxLength={1000} rows={4} />
+          <textarea id="sighting-message" className="field" value={message} onChange={(e) => { submitKey.current = null; setMessage(e.target.value); }} placeholder={t('sightings_placeholder')} required maxLength={1000} rows={4} />
           <label htmlFor="sighting-place">{t('sightings_place_label')}</label>
-          <input id="sighting-place" className="field" value={place} onChange={(e) => setPlace(e.target.value)} placeholder={t('sightings_place_placeholder')} maxLength={300} />
+          <input id="sighting-place" className="field" value={place} onChange={(e) => { submitKey.current = null; setPlace(e.target.value); }} placeholder={t('sightings_place_placeholder')} maxLength={300} />
           <Button type="submit" disabled={submitting} aria-busy={submitting} variant="primary">
             {submitting ? t('sightings_submitting') : t('sightings_submit')}
           </Button>

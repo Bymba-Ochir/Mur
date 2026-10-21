@@ -4,6 +4,7 @@ import { supabase } from './supabase';
 import type { SittingListing, SittingListingInput, SittingListingFilters, UpdateSittingListingFields } from './types';
 import { cleanText, optionalCoordinate, optionalInteger, requireMongolianPhone } from './inputValidation';
 import { apiError, authenticatedFetch } from './apiClient';
+import { createIdempotencyKey, idempotentFileName, isIdempotencyKey } from './idempotency';
 
 const TABLE = 'sitting_listings';
 const BUCKET = 'pet-photos';
@@ -55,15 +56,24 @@ async function requireUserId(): Promise<string> {
   return user.id;
 }
 
-export async function createSittingListing(data: SittingListingInput): Promise<string> {
+export async function createSittingListing(data: SittingListingInput, mutationId = createIdempotencyKey()): Promise<string> {
   const userId = await requireUserId();
+  if (!isIdempotencyKey(mutationId)) throw new Error('Үйлдлийн дугаар буруу байна.');
+
+  const { data: existing, error: existingError } = await supabase.from(TABLE).select('id,user_id').eq('id', mutationId).maybeSingle();
+  if (existingError) throw existingError;
+  if (existing) {
+    if (existing.user_id !== userId) throw new Error('Үйлдлийн дугаар давхардлаа. Дахин оролдоно уу.');
+    return existing.id;
+  }
+
   const price = optionalInteger(data.price, { min: 0, max: 100_000_000, label: 'Үйлчилгээний үнэ' });
   let photoUrl: string | null = null;
 
   if (data.photoFile) {
-    const path = `${userId}/sitting/${Date.now()}_${data.photoFile.name}`;
+    const path = `${userId}/sitting/${idempotentFileName(mutationId, 0, data.photoFile.name)}`;
     const { error: uploadErr } = await supabase.storage.from(BUCKET).upload(path, data.photoFile);
-    if (uploadErr) throw uploadErr;
+    if (uploadErr && !/already exists|duplicate|resource already exists/i.test(uploadErr.message)) throw uploadErr;
     const { data: urlData } = supabase.storage.from(BUCKET).getPublicUrl(path);
     photoUrl = urlData.publicUrl;
   }
@@ -71,6 +81,7 @@ export async function createSittingListing(data: SittingListingInput): Promise<s
   const { data: inserted, error } = await supabase
     .from(TABLE)
     .insert({
+      id: mutationId,
       user_id: userId,
       pet_type: data.petType,
       description: cleanText(data.description, 2000, 'Тайлбар', true),
@@ -88,6 +99,11 @@ export async function createSittingListing(data: SittingListingInput): Promise<s
     .single();
 
   if (error) {
+    if (error.code === '23505') {
+      const { data: raced, error: racedError } = await supabase.from(TABLE).select('id,user_id').eq('id', mutationId).maybeSingle();
+      if (racedError) throw racedError;
+      if (raced?.user_id === userId) return raced.id;
+    }
     if (error.message?.includes('RATE_LIMIT:')) {
       throw new Error('Хэт олон зар нийтлээ. 1 цагийн дараа дахин оролдоно уу.');
     }

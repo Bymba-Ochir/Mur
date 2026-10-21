@@ -22,28 +22,41 @@ export async function createAdoptionApplication(adoptionId: string, message: str
   const id = await userId(); const cleaned = cleanText(message, 1000, 'Хүсэлтийн тайлбар', true);
   if (cleaned.length < 10) throw new Error('Хүсэлтийн тайлбар 10-аас доошгүй тэмдэгт байна.');
   const { error } = await supabase.from('adoption_applications').insert({ adoption_id: adoptionId, applicant_id: id, owner_id: id, message: cleaned });
-  if (error?.code === '23505') throw new Error('Та энэ зар дээр хүлээгдэж буй хүсэлттэй байна.'); if (error) throw error;
+  if (error?.code === '23505') {
+    const { data: existing, error: existingError } = await supabase.from('adoption_applications').select('message').eq('adoption_id', adoptionId).eq('applicant_id', id).eq('status', 'pending').maybeSingle();
+    if (existingError) throw existingError;
+    if (existing?.message === cleaned) return;
+    throw new Error('Та энэ зар дээр хүлээгдэж буй хүсэлттэй байна.');
+  }
+  if (error) throw error;
 }
 export async function fetchAdoptionApplications(adoptionId: string): Promise<AdoptionApplication[]> { const { data, error } = await supabase.from('adoption_applications').select('*').eq('adoption_id', adoptionId).order('created_at', { ascending: false }); if (error) throw error; return data.map(adoptionRow); }
 export async function fetchMyAdoptionApplications(): Promise<AdoptionApplication[]> { await userId(); const { data, error } = await supabase.from('adoption_applications').select('*').order('created_at', { ascending: false }); if (error) throw error; return data.map(adoptionRow); }
-export async function updateAdoptionApplication(id: string, status: 'accepted' | 'rejected' | 'cancelled'): Promise<void> { const { error } = await supabase.from('adoption_applications').update({ status, updated_at: new Date().toISOString() }).eq('id', id); if (error) throw error; }
+export async function updateAdoptionApplication(id: string, status: 'accepted' | 'rejected' | 'cancelled'): Promise<void> { const { error } = await supabase.from('adoption_applications').update({ status }).eq('id', id).neq('status', status); if (error) throw error; }
 
 export async function createSittingBooking(listingId: string, start: string, end: string, note: string): Promise<void> {
   const id = await userId(); const startDate = optionalIsoDate(start, 'Эхлэх огноо'); const endDate = optionalIsoDate(end, 'Дуусах огноо');
   if (!startDate || !endDate) throw new Error('Эхлэх болон дуусах огноо оруулна уу.'); assertDateOrder(startDate, endDate);
   if (startDate < ulaanbaatarDate()) throw new Error('Өнгөрсөн огноогоор захиалга үүсгэх боломжгүй.');
-  const { error } = await supabase.from('sitting_bookings').insert({ listing_id: listingId, customer_id: id, sitter_id: id, start_date: startDate, end_date: endDate, note: cleanText(note, 1000, 'Тайлбар') || null });
-  if (error?.code === '23505') throw new Error('Ижил хугацааны идэвхтэй захиалга байна.'); if (error) throw error;
+  const cleanedNote = cleanText(note, 1000, 'Тайлбар') || null;
+  const { error } = await supabase.from('sitting_bookings').insert({ listing_id: listingId, customer_id: id, sitter_id: id, start_date: startDate, end_date: endDate, note: cleanedNote });
+  if (error?.code === '23505') {
+    const { data: existing, error: existingError } = await supabase.from('sitting_bookings').select('note,status').eq('listing_id', listingId).eq('customer_id', id).eq('start_date', startDate).eq('end_date', endDate).in('status', ['pending', 'accepted']).maybeSingle();
+    if (existingError) throw existingError;
+    if (existing && (existing.note ?? null) === cleanedNote) return;
+    throw new Error('Ижил хугацааны идэвхтэй захиалга байна.');
+  }
+  if (error) throw error;
 }
 export async function fetchSittingBookings(listingId: string): Promise<SittingBooking[]> { const { data, error } = await supabase.from('sitting_bookings').select('*').eq('listing_id', listingId).order('created_at', { ascending: false }); if (error) throw error; return data.map(bookingRow); }
 export async function fetchMySittingBookings(): Promise<SittingBooking[]> { await userId(); const { data, error } = await supabase.from('sitting_bookings').select('*').order('created_at', { ascending: false }); if (error) throw error; return data.map(bookingRow); }
-export async function updateSittingBooking(id: string, status: 'accepted' | 'rejected' | 'completed' | 'cancelled'): Promise<void> { const { error } = await supabase.from('sitting_bookings').update({ status, updated_at: new Date().toISOString() }).eq('id', id); if (error) throw error; }
+export async function updateSittingBooking(id: string, status: 'accepted' | 'rejected' | 'completed' | 'cancelled'): Promise<void> { const { error } = await supabase.from('sitting_bookings').update({ status }).eq('id', id).neq('status', status); if (error) throw error; }
 export async function fetchSittingReviews(sitterId: string): Promise<SittingReview[]> { const { data, error } = await supabase.from('sitting_reviews').select('*').eq('sitter_id', sitterId).order('created_at', { ascending: false }); if (error) throw error; return data.map(reviewRow); }
-export async function createSittingReview(bookingId: string, sitterId: string, rating: number, comment: string): Promise<void> { const id = await userId(); if (!Number.isInteger(rating) || rating < 1 || rating > 5) throw new Error('1–5 од сонгоно уу.'); const { error } = await supabase.from('sitting_reviews').insert({ booking_id: bookingId, reviewer_id: id, sitter_id: sitterId, rating, comment: cleanText(comment, 1000, 'Сэтгэгдэл') || null }); if (error?.code === '23505') throw new Error('Энэ захиалгыг өмнө нь үнэлсэн байна.'); if (error) throw error; }
+export async function createSittingReview(bookingId: string, sitterId: string, rating: number, comment: string): Promise<void> { const id = await userId(); if (!Number.isInteger(rating) || rating < 1 || rating > 5) throw new Error('1–5 од сонгоно уу.'); const cleanedComment = cleanText(comment, 1000, 'Сэтгэгдэл') || null; const { error } = await supabase.from('sitting_reviews').insert({ booking_id: bookingId, reviewer_id: id, sitter_id: sitterId, rating, comment: cleanedComment }); if (error?.code === '23505') { const { data: existing, error: existingError } = await supabase.from('sitting_reviews').select('reviewer_id,sitter_id,rating,comment').eq('booking_id', bookingId).maybeSingle(); if (existingError) throw existingError; if (existing?.reviewer_id === id && existing.sitter_id === sitterId && Number(existing.rating) === rating && (existing.comment ?? null) === cleanedComment) return; throw new Error('Энэ захиалгыг өмнө нь үнэлсэн байна.'); } if (error) throw error; }
 
 export async function fetchNotifications(): Promise<AppNotification[]> { const { data, error } = await supabase.from('notifications').select('*').order('created_at', { ascending: false }).limit(100); if (error) throw error; return data.map((row) => ({ id: row.id, type: row.type, title: row.title, body: row.body, href: row.href, readAt: row.read_at, createdAt: row.created_at })); }
 export async function unreadNotificationCount(): Promise<number> { const { count, error } = await supabase.from('notifications').select('*', { count: 'exact', head: true }).is('read_at', null); if (error) return 0; return count ?? 0; }
-export async function markNotificationRead(id: string): Promise<void> { const { error } = await supabase.from('notifications').update({ read_at: new Date().toISOString() }).eq('id', id); if (error) throw error; }
+export async function markNotificationRead(id: string): Promise<void> { const { error } = await supabase.from('notifications').update({ read_at: new Date().toISOString() }).eq('id', id).is('read_at', null); if (error) throw error; }
 export async function markAllNotificationsRead(): Promise<void> { const { error } = await supabase.from('notifications').update({ read_at: new Date().toISOString() }).is('read_at', null); if (error) throw error; }
 export function subscribeToNotifications(userIdValue: string, onChange: () => void): () => void {
   const channel = supabase

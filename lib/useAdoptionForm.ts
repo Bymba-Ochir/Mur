@@ -3,7 +3,7 @@
 //   useAdoptionPhoto  — зураг шахалт (content moderationгүй)
 //   useAdoptionSubmit — submit pipeline (createAdoption + reset)
 'use client';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
 import { compressImage } from './imageCompress';
 import { createAdoption } from './adoptionService';
@@ -13,6 +13,7 @@ import type { District } from './districts';
 import type { AdoptionGender, PetType } from './types';
 import { getErrorMessage } from './utils';
 import { cleanText, isInputValidationError, requireMongolianPhone } from './inputValidation';
+import { fingerprintSubmission, resolveIdempotencyAttempt, type IdempotencyAttempt } from './idempotency';
 
 // Дотоод утга (DB-д хадгалагдах) үргэлж Монгол хэвээр
 export const TYPE_VALUES: PetType[] = ['Нохой', 'Муур', 'Бусад'];
@@ -102,12 +103,16 @@ export function useAdoptionSubmit({
   const [done, setDone] = useState(false);
   const [newAdoptionId, setNewAdoptionId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const attemptRef = useRef<IdempotencyAttempt | null>(null);
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setSubmitting(true);
     setError(null);
     setStatusMsg(t('submitting'));
+    const fingerprint = fingerprintSubmission(form, photoFiles);
+    const attempt = resolveIdempotencyAttempt(attemptRef.current, fingerprint);
+    attemptRef.current = attempt;
     try {
       const id = await createAdoption({
         ...form,
@@ -119,7 +124,8 @@ export function useAdoptionSubmit({
         phone: requireMongolianPhone(form.phone),
         gender: form.gender || 'Тодорхойгүй',
         photoFiles,
-      });
+      }, attempt.key);
+      attemptRef.current = null;
       setNewAdoptionId(id);
       setDone(true);
       onSuccess(id);
@@ -141,6 +147,7 @@ export function useAdoptionSubmit({
     setDone(false);
     setNewAdoptionId(null);
     setError(null);
+    attemptRef.current = null;
   }
 
   return { submitting, statusMsg, done, newAdoptionId, error, handleSubmit, reset };

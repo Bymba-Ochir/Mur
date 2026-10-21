@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import type { ChangeEvent, FormEvent, KeyboardEvent } from 'react';
 import { DISTRICTS } from '../lib/districts';
@@ -18,6 +18,7 @@ import { createSittingListing } from '../lib/sittingService';
 import { normalizePhone, formatPhone, getErrorMessage } from '../lib/utils';
 import type { SittingPetType } from '../lib/types';
 import type { District } from '../lib/districts';
+import { fingerprintSubmission, resolveIdempotencyAttempt, type IdempotencyAttempt } from '../lib/idempotency';
 
 type FieldErrors = Partial<Record<'description' | 'place' | 'phone' | 'price', string>>;
 
@@ -55,6 +56,7 @@ function AuthenticatedSittingForm() {
   const [newId, setNewId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+  const attemptRef = useRef<IdempotencyAttempt | null>(null);
 
   useEffect(() => () => { if (photoPreview) URL.revokeObjectURL(photoPreview); }, [photoPreview]);
 
@@ -85,6 +87,7 @@ function AuthenticatedSittingForm() {
     setStep(0); setPetType('Нохой'); setDescription(''); setExperience('');
     setAvailability(''); setPrice(''); setDistrict(DISTRICTS[0]); setPlace(''); setPhone('');
     setPhotoFile(null); setPhotoPreview(null); setError(null); setFieldErrors({});
+    attemptRef.current = null;
     location.reset();
   }
 
@@ -95,6 +98,9 @@ function AuthenticatedSittingForm() {
     setSubmitting(true);
     setError(null);
     setStatusMsg(t('submitting'));
+    const fingerprint = fingerprintSubmission({ petType, description, experience, availability, price, district, place, phone, coords: location.coords }, photoFile ? [photoFile] : []);
+    const attempt = resolveIdempotencyAttempt(attemptRef.current, fingerprint);
+    attemptRef.current = attempt;
     try {
       const id = await createSittingListing({
         petType, description, district, place, experience, availability,
@@ -103,7 +109,8 @@ function AuthenticatedSittingForm() {
         photoFile,
         lat: location.coords?.lat ?? null,
         lng: location.coords?.lng ?? null,
-      });
+      }, attempt.key);
+      attemptRef.current = null;
       resetAll(); setNewId(id); setDone(true);
     } catch (err) {
       setError(getErrorMessage(err) || t('form_generic_error'));
