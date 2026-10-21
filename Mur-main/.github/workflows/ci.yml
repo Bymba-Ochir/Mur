@@ -1,0 +1,73 @@
+name: CI — typecheck · lint · tests · build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # ---- 1. Quality gate: typecheck + lint + unit/component тест ----
+  # Гадаад холболт/env шаарддаггүй тул бүртээ ажиллана — энэ нь push/PR-ийг
+  # блоклодог гол шалгуур. Vercel deploy-оос ӨМНӨ хангагдсан байх ёстой
+  # (branch protection-д required check болгож тохируулна).
+  quality:
+    name: Typecheck · Lint · Unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm test
+
+  # ---- 2. Production build ----
+  # lib/supabase.ts нь module scope-д createClient() дууддаг тул build хийхэд
+  # хоосон биш утга хэрэгтэй (бодит хандалт browser дээр л болдог, эдгээр нь
+  # зөвхөн client-module-ийг бүтээхэд зориулсан dummy утгууд).
+  build:
+    name: Production build
+    runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: https://dummy.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-dummy-anon-key
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run build
+
+  # ---- 3. E2E smoke test (Playwright) ----
+  # Бодит NEXT_PUBLIC_SUPABASE_* env шаардлага тул зөвхөн GitHub Secrets-д
+  # утгууд тохируулсан үед л ажиллана (fork-ийн PR-д secrets байхгүй → skip,
+  # pipelines блоклогддоггүй). Тестүүд бичлэг үүсгэдэггүй (submit хийхгүй).
+  e2e:
+    name: E2E (Playwright)
+    if: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL != '' && secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY != '' }}
+    runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run build
+      - name: Start server & run e2e
+        env:
+          PLAYWRIGHT_BASE_URL: http://localhost:3000
+        run: |
+          npx next start &
+          for i in $(seq 1 60); do curl -sf http://localhost:3000 >/dev/null && break; sleep 1; done
+          npx playwright test
