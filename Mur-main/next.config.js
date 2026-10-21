@@ -1,0 +1,67 @@
+const { withSentryConfig } = require('@sentry/nextjs');
+
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  reactStrictMode: true,
+  images: {
+    remotePatterns: [
+      { protocol: 'https', hostname: '*.supabase.co', pathname: '/storage/v1/object/public/**' },
+      { protocol: 'https', hostname: 'firebasestorage.googleapis.com' },
+    ],
+  },
+  // Security headers. CSP-г аппын бодит хэрэгцээнд тааруулсан:
+  // - 'unsafe-inline' script: layout-ийн theme script (dangerouslySetInnerHTML)
+  // - 'unsafe-inline' style: styled-jsx
+  // - 'unsafe-eval' + jsdelivr/Hugging Face CDN + blob: — browser-ийн DINOv2
+  //   (transformers.js/ONNX runtime, lib/similarity.ts) заагдсан CDN-ээс ачаалагддаг
+  // - supabase storage/realtime, Sentry, fonts, unpkg (leaflet.css)
+  async headers() {
+    const csp = [
+      "default-src 'self'",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net blob:",
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com",
+      "font-src 'self' https://fonts.gstatic.com data:",
+      "img-src 'self' data: blob: https://*.supabase.co https://firebasestorage.googleapis.com https://*.tile.openstreetmap.org https://*.basemaps.cartocdn.com",
+      "connect-src 'self' blob: https://*.supabase.co wss://*.supabase.co https://cdn.jsdelivr.net https://huggingface.co https://*.huggingface.co https://*.hf.co https://*.sentry.io https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com",
+      "worker-src 'self' blob:",
+      "frame-ancestors 'none'",
+      "base-uri 'self'",
+      "form-action 'self'",
+      "object-src 'none'",
+    ].join('; ');
+
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          { key: 'Content-Security-Policy', value: csp },
+          { key: 'X-Frame-Options', value: 'DENY' },
+          { key: 'X-Content-Type-Options', value: 'nosniff' },
+          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+          { key: 'Permissions-Policy', value: 'geolocation=(self), camera=(), microphone=(), payment=(), usb=()' },
+          { key: 'X-DNS-Prefetch-Control', value: 'on' },
+        ],
+      },
+    ];
+  },
+};
+
+// Local/offline build дээр SKIP_SENTRY_BUILD=1 тохируулбал source-map upload болон
+// Sentry-ийн build plugin-ийг алгасана. Runtime error capture хэвээр ажиллана.
+const sentryBuildConfig = {
+  silent: true,
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+  webpack: {
+    treeshake: { removeDebugLogging: true },
+    automaticVercelMonitors: false,
+  },
+  sourcemaps: {
+    deleteSourcemapsAfterUpload: true,
+  },
+};
+
+module.exports = process.env.SKIP_SENTRY_BUILD === '1'
+  ? nextConfig
+  : withSentryConfig(nextConfig, sentryBuildConfig);
