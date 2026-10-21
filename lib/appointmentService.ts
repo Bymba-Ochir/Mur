@@ -2,6 +2,7 @@
 // Мал эмнэлгийн цаг захиалгын CRUD
 import { supabase } from './supabase';
 import type { Appointment, AppointmentInput, AppointmentStatus } from './types';
+import { vetServiceId, vetServiceName } from './vetServiceCatalog';
 
 const TABLE = 'appointments';
 
@@ -13,7 +14,7 @@ function mapAppointmentRow(row: Record<string, unknown>): Appointment {
     userId: row.user_id as string,
     clinicId: row.clinic_id as string,
     petId: (row.pet_id as string) ?? null,
-    service: row.service as Appointment['service'],
+    service: vetServiceName(row.service_id as string | undefined, row.service),
     date: row.date as string,
     time: row.time_slot as string,
     notes: (row.notes as string) ?? null,
@@ -36,22 +37,22 @@ async function requireUserId(): Promise<string> {
 export async function createAppointment(input: AppointmentInput): Promise<Appointment> {
   const userId = await requireUserId();
 
-  const { data, error } = await supabase
-    .from(TABLE)
-    .insert({
-      user_id: userId,
-      clinic_id: input.clinicId,
-      pet_id: input.petId || null,
-      service: input.service,
-      date: input.date,
-      time_slot: input.time,
-      notes: input.notes || null,
-    })
-    .select()
-    .single();
+  const base = {
+    user_id: userId,
+    clinic_id: input.clinicId,
+    pet_id: input.petId || null,
+    date: input.date,
+    time_slot: input.time,
+    notes: input.notes || null,
+  };
 
-  if (error) throw error;
-  return mapAppointmentRow(data);
+  let result = await supabase.from(TABLE).insert({ ...base, service_id: vetServiceId(input.service) }).select().single();
+  if (result.error && ['42703', 'PGRST204'].includes(result.error.code ?? '')) {
+    result = await supabase.from(TABLE).insert({ ...base, service: input.service }).select().single();
+  }
+
+  if (result.error) throw result.error;
+  return mapAppointmentRow(result.data);
 }
 
 /**

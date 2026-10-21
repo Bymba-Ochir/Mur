@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { requireRequestUser } from '../../../../lib/serverAuth';
+import { fetchServerPhotoRecords } from '../../../../lib/serverPhotoRepository';
 
 export async function GET(request: Request) {
   try {
@@ -23,12 +24,18 @@ export async function GET(request: Request) {
     ]);
     const failed = queries.find((result) => result.error);
     if (failed?.error) throw failed.error;
+    const petIds = (queries[1].data ?? []).map((row) => row.id);
+    const adoptionIds = (queries[2].data ?? []).map((row) => row.id);
+    const [petPhotos, adoptionPhotos] = await Promise.all([
+      fetchServerPhotoRecords(admin, 'pet', petIds),
+      fetchServerPhotoRecords(admin, 'adoption', adoptionIds),
+    ]);
     const { data: conversations, error: conversationError } = await admin.from('conversations').select('*').or(`initiator_id.eq.${user.id},owner_id.eq.${user.id}`);
     if (conversationError) throw conversationError;
     const conversationIds = (conversations ?? []).map((row) => row.id);
     const messageResult = conversationIds.length ? await admin.from('messages').select('*').in('conversation_id', conversationIds) : { data: [], error: null };
     if (messageResult.error) throw messageResult.error;
-    const payload = { exportedAt: new Date().toISOString(), account: { id: user.id, email: user.email, createdAt: user.created_at }, profile: queries[0].data, pets: queries[1].data, adoptions: queries[2].data, sittingListings: queries[3].data, myPets: queries[4].data, appointments: queries[5].data, adoptionApplications: queries[6].data, sittingBookings: queries[7].data, sittingReviews: queries[8].data, notifications: queries[9].data, sightings: queries[10].data, reports: queries[11].data, pushSubscriptions: queries[12].data, petFavorites: queries[13].data, savedSearches: queries[14].data, conversations, messages: messageResult.data };
+    const payload = { exportedAt: new Date().toISOString(), account: { id: user.id, email: user.email, createdAt: user.created_at }, profile: queries[0].data, pets: queries[1].data, petPhotos, adoptions: queries[2].data, adoptionPhotos, sittingListings: queries[3].data, myPets: queries[4].data, appointments: queries[5].data, adoptionApplications: queries[6].data, sittingBookings: queries[7].data, sittingReviews: queries[8].data, notifications: queries[9].data, sightings: queries[10].data, reports: queries[11].data, pushSubscriptions: queries[12].data, petFavorites: queries[13].data, savedSearches: queries[14].data, conversations, messages: messageResult.data };
     return new NextResponse(JSON.stringify(payload, null, 2), { headers: { 'Content-Type': 'application/json; charset=utf-8', 'Content-Disposition': `attachment; filename="mur-data-${new Date().toISOString().slice(0, 10)}.json"`, 'Cache-Control': 'no-store' } });
   } catch (error) {
     const unauthorized = error instanceof Error && error.message === 'UNAUTHORIZED';

@@ -6,6 +6,7 @@ import type { PetRow } from './petMapping';
 import type { Pet, PetStatus, PetType } from './types';
 import type { District } from './districts';
 import type { AppNotification } from './workflowService';
+import { hydrateListingPhotos } from './photoRepository';
 
 export interface SavedSearch { id: string; name: string; status: PetStatus | null; petType: PetType | null; district: District | null; searchText: string | null; notify: boolean; createdAt: string; }
 interface FavoriteRow { pet: PetRow | PetRow[] | null; }
@@ -18,7 +19,12 @@ export async function fetchFavorites(): Promise<Pet[]> {
   await requireUserId();
   const { data, error } = await supabase.from('pet_favorites').select('pet:pets(*)').order('created_at', { ascending: false });
   if (error) throw error;
-  return ((data ?? []) as FavoriteRow[]).flatMap((row) => { const pet = Array.isArray(row.pet) ? row.pet[0] : row.pet; return pet ? [mapPetRow(pet)] : []; });
+  const rows = ((data ?? []) as FavoriteRow[]).flatMap((row) => {
+    const pet = Array.isArray(row.pet) ? row.pet[0] : row.pet;
+    return pet ? [pet] : [];
+  });
+  const hydrated = await hydrateListingPhotos('pet', rows);
+  return hydrated.map(mapPetRow);
 }
 
 export async function saveSearch(input: { status?: PetStatus; petType?: PetType; district?: District; searchText?: string }): Promise<void> {

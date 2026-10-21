@@ -4,7 +4,7 @@ import type { Message } from '../../lib/types';
 const mocks=vi.hoisted(()=>({user:{id:'one'} as {id:string}|null,t:(key:string)=>key,send:vi.fn(),messages:vi.fn()}));
 vi.mock('../../lib/useAuth',()=>({useAuth:()=>({user:mocks.user,loading:false})}));
 vi.mock('../../lib/i18n',()=>({useLanguage:()=>({lang:'en',t:mocks.t})}));
-vi.mock('../../lib/chatService',()=>({fetchConversationById:async(id:string)=>({id,petId:'pet',initiatorId:'one',ownerId:'two',initiatorEmail:'one@example.com',ownerEmail:'two@example.com',createdAt:'2026-09-01'}),fetchMessages:mocks.messages,sendMessage:mocks.send,subscribeToMessages:()=>()=>{},otherParticipant:()=> 'other@example.com',markConversationRead:async()=>{}}));
+vi.mock('../../lib/chatService',()=>({fetchConversationById:async(id:string)=>({id,petId:'pet',initiatorId:'one',ownerId:'two',initiatorName:'One',ownerName:'Two',createdAt:'2026-09-01'}),fetchMessages:mocks.messages,sendMessage:mocks.send,subscribeToMessages:()=>()=>{},otherParticipant:()=> 'Other',markConversationRead:async()=>{}}));
 import MessageThreadClient from '../../app/messages/[id]/MessageThreadClient';
 const message=(content:string):Message=>({id:content,conversationId:'a',senderId:'one',content,readAt:null,createdAt:'2026-09-01T00:00:00Z'});
 beforeEach(()=>{mocks.user={id:'one'};mocks.messages.mockReset().mockResolvedValue([]);mocks.send.mockReset();Element.prototype.scrollIntoView=vi.fn();});

@@ -8,7 +8,7 @@ vi.mock('../../lib/chatService',()=>({fetchConversationList:mocks.fetch}));
 vi.mock('../../app/assistant/AssistantClient',()=>({default:()=>null}));
 vi.mock('../../components/LoginModal',()=>({default:()=>null}));
 import MessagesPage from '../../app/messages/page';
-const row=(content:string):ConversationPreview=>({id:content,petId:'pet',initiatorId:'one',ownerId:'other',initiatorEmail:'one@example.com',ownerEmail:'other@example.com',createdAt:'2026-09-01T00:00:00Z',pet:null,unreadCount:1,lastMessage:{id:content,conversationId:content,senderId:'other',content,readAt:null,createdAt:'2026-09-01T00:00:00Z'}});
+const row=(content:string):ConversationPreview=>({id:content,petId:'pet',initiatorId:'one',ownerId:'other',initiatorName:'One',ownerName:'Other',createdAt:'2026-09-01T00:00:00Z',pet:null,unreadCount:1,lastMessage:{id:content,conversationId:content,senderId:'other',content,readAt:null,createdAt:'2026-09-01T00:00:00Z'}});
 beforeEach(()=>{mocks.user={id:'one'};mocks.fetch.mockReset().mockResolvedValue([]);window.history.replaceState(null,'','/messages');});
 describe('conversation list lifecycle',()=>{
  it('removes the previous account list immediately',async()=>{

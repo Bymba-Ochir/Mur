@@ -298,8 +298,8 @@ export interface Conversation {
   petId: string;
   initiatorId: string;
   ownerId: string;
-  initiatorEmail: string;
-  ownerEmail: string;
+  initiatorName: string;
+  ownerName: string;
   createdAt: string;
   pet?: ConversationPetSummary | null;
 }

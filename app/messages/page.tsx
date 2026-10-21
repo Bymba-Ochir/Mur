@@ -25,10 +25,6 @@ function getTabFromUrl(): HubTab {
   return new URLSearchParams(window.location.search).get('tab') === 'assistant' ? 'assistant' : 'messages';
 }
 
-function participantName(email: string) {
-  const name = email.split('@')[0]?.replace(/[._-]+/g, ' ').trim();
-  return name || email;
-}
 
 export default function MessagesPage() {
   const { user } = useAuth();
@@ -116,8 +112,7 @@ function MessagesContent() {
           ) : (
             <div className="conv-list" aria-label={t('chat_list_title')}>
               {conversations.map((conv) => {
-                const otherEmail = conv.initiatorId === user.id ? conv.ownerEmail : conv.initiatorEmail;
-                const otherName = participantName(otherEmail);
+                const otherName = conv.initiatorId === user.id ? conv.ownerName : conv.initiatorName;
                 const petName = conv.pet ? `${petTypeLabel(conv.pet.type)}${conv.pet.name ? ` — ${conv.pet.name}` : ''}` : t('chat_deleted_pet');
                 return (
                   <Link key={conv.id} href={`/messages/${conv.id}`} className={`conv-item${conv.unreadCount ? ' unread' : ''}`} aria-label={`${t('messages_open_label')}: ${otherName}, ${petName}`}>

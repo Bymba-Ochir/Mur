@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { createClient } from '@supabase/supabase-js';
 import AdoptionDetailClient from './AdoptionDetailClient';
+import { fetchServerListingPhotoUrls } from '../../../lib/serverPhotoRepository';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -11,12 +12,13 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const { id } = await params;
   const { data } = await supabase
     .from('adoptions')
-    .select('type, name, age, breed, district, place, photo_url, photo_urls')
+    .select('type, name, age, breed, district, place')
     .eq('id', id)
     .single();
 
   if (!data) return { title: 'Үрчлүүлэх амьтан — МӨР' };
 
+  const photos = await fetchServerListingPhotoUrls(supabase, 'adoption', id);
   const title = `Үрчлүүлэх ${data.type}${data.name ? ' — ' + data.name : ''}`;
   const description = [
     data.type,
@@ -31,9 +33,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     openGraph: {
       title,
       description,
-      images: (Array.isArray(data.photo_urls) && data.photo_urls.length ? data.photo_urls : data.photo_url ? [data.photo_url] : [])
-        .filter((url): url is string => typeof url === 'string')
-        .map((url) => ({ url, width: 800, height: 600 })),
+      images: photos.map((url) => ({ url, width: 800, height: 600 })),
     },
   };
 }

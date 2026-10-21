@@ -7,6 +7,7 @@ import type { Pet, PetStatus, PetFilters, PetReportInput, UpdatePetFields } from
 import { cleanText, optionalCoordinate, optionalInteger, requireMongolianPhone } from './inputValidation';
 import { apiError, authenticatedFetch } from './apiClient';
 import { createIdempotencyKey, idempotentFileName, isIdempotencyKey } from './idempotency';
+import { hydrateListingPhotos, saveListingPhotos } from './photoRepository';
 
 const TABLE = 'pets';
 const BUCKET = 'pet-photos';
@@ -20,6 +21,16 @@ async function uploadPetPhoto(file: File, statusFolder: PetStatus, userId: strin
   if (error && !/already exists|duplicate|resource already exists/i.test(error.message)) throw error;
   const { data } = supabase.storage.from(BUCKET).getPublicUrl(path);
   return data.publicUrl;
+}
+
+async function persistPetPhotoUrls(petId: string, photoUrls: string[]): Promise<void> {
+  const normalized = await saveListingPhotos('pet', petId, photoUrls);
+  if (normalized) return;
+  const { error } = await supabase
+    .from(TABLE)
+    .update({ photo_url: photoUrls[0] ?? null, photo_urls: photoUrls })
+    .eq('id', petId);
+  if (error) throw error;
 }
 
 /**
@@ -36,10 +47,15 @@ export async function createPetReport(
   if (!user) throw new Error('Эхлээд нэвтэрнэ үү.');
   if (!isIdempotencyKey(mutationId)) throw new Error('Үйлдлийн дугаар буруу байна.');
 
+  const files = (data.photoFiles?.length ? data.photoFiles : data.photoFile ? [data.photoFile] : []).slice(0, 4);
   const { data: existing, error: existingError } = await supabase.from(TABLE).select('id,created_by').eq('id', mutationId).maybeSingle();
   if (existingError) throw existingError;
   if (existing) {
     if (existing.created_by !== user.id) throw new Error('Үйлдлийн дугаар давхардлаа. Дахин оролдоно уу.');
+    if (files.length) {
+      const retryUrls = await Promise.all(files.map((file, index) => uploadPetPhoto(file, data.status, user.id, mutationId, index)));
+      await persistPetPhotoUrls(existing.id, retryUrls);
+    }
     return existing.id;
   }
 
@@ -47,16 +63,13 @@ export async function createPetReport(
   const reward = data.hasReward
     ? optionalInteger(data.reward, { min: 0, max: 100_000_000, label: 'Шагналын дүн' })
     : null;
-  let photoUrl: string | null = null;
   let photoUrls: string[] = [];
   let embedding: number[] | null = null;
   let imageHash: string | null = null;
 
-  const files = (data.photoFiles?.length ? data.photoFiles : data.photoFile ? [data.photoFile] : []).slice(0, 4);
   if (files.length) {
     onProgress?.(`1/${files.length} зураг хадгалж байна...`);
     photoUrls = await Promise.all(files.map((file, index) => uploadPetPhoto(file, data.status, user.id, mutationId, index)));
-    photoUrl = photoUrls[0] ?? null;
     try {
       [embedding, imageHash] = await Promise.all([
         getImageEmbedding(files[0], onProgress),
@@ -82,8 +95,6 @@ export async function createPetReport(
       phone,
       has_reward: data.hasReward ?? false,
       reward,
-      photo_url: photoUrl,
-      photo_urls: photoUrls,
       color_signature: embedding, // browser fallback-д DINOv2 vector-ийг JSONB хэлбэрээр хадгална
       dino_embedding: embedding,
       embedding_version: embedding ? EMBEDDING_VERSION : null,
@@ -95,8 +106,8 @@ export async function createPetReport(
   let result = await supabase.from(TABLE).insert(payload).select().single();
 
   // Migration хараахан ажиллаагүй deployment дээр зар нийтлэхийг эвдэхгүй.
-  if (result.error && /image_embedding|dino_embedding|embedding_version|image_hash|photo_urls|schema cache/i.test(result.error.message)) {
-    const { dino_embedding: _dino, embedding_version: _version, image_hash: _hash, photo_urls: _photos, ...legacyPayload } = payload;
+  if (result.error && /image_embedding|dino_embedding|embedding_version|image_hash|schema cache/i.test(result.error.message)) {
+    const { dino_embedding: _dino, embedding_version: _version, image_hash: _hash, ...legacyPayload } = payload;
     result = await supabase.from(TABLE).insert(legacyPayload).select().single();
   }
 
@@ -106,13 +117,19 @@ export async function createPetReport(
     if (error.code === '23505') {
       const { data: raced, error: racedError } = await supabase.from(TABLE).select('id,created_by').eq('id', mutationId).maybeSingle();
       if (racedError) throw racedError;
-      if (raced?.created_by === user.id) return raced.id;
+      if (raced?.created_by === user.id) {
+        if (photoUrls.length) await persistPetPhotoUrls(raced.id, photoUrls);
+        return raced.id;
+      }
     }
     if (error.message && error.message.includes('RATE_LIMIT:')) {
       throw new Error('Хэт олон удаа мэдээлэл илгээлээ. 1 цагийн дараа дахин оролдоно уу.');
     }
     throw error;
   }
+
+  await persistPetPhotoUrls(inserted.id, photoUrls);
+
   return inserted.id;
 }
 
@@ -122,7 +139,8 @@ export async function createPetReport(
 export async function fetchPetById(id: string): Promise<Pet> {
   const { data, error } = await supabase.from(TABLE).select('*').eq('id', id).single();
   if (error) throw error;
-  return mapPetRow(data);
+  const [row] = await hydrateListingPhotos('pet', [data]);
+  return mapPetRow(row);
 }
 
 /**
@@ -153,9 +171,10 @@ export async function fetchPets(filters: PetFilters = {}): Promise<{ pets: Pet[]
 
   const hasMore = data.length > PAGE_SIZE;
   const pageData = hasMore ? data.slice(0, PAGE_SIZE) : data;
+  const hydrated = await hydrateListingPhotos('pet', pageData);
 
   return {
-    pets: pageData.map(mapPetRow),
+    pets: hydrated.map(mapPetRow),
     hasMore,
   };
 }
@@ -254,8 +273,11 @@ export async function fetchPetMatches({
     throw error;
   }
 
-  return (data ?? []).map((row: { pet: Record<string, unknown>; image_similarity: number; hybrid_score: number }) => ({
-    ...mapPetRow(row.pet as never),
+  const rows = (data ?? []) as Array<{ pet: Record<string, unknown> & { id: string }; image_similarity: number; hybrid_score: number }>;
+  const hydratedPets = await hydrateListingPhotos('pet', rows.map((row) => row.pet));
+  const petById = new Map(hydratedPets.map((pet) => [pet.id, pet]));
+  return rows.map((row) => ({
+    ...mapPetRow((petById.get(row.pet.id) ?? row.pet) as never),
     similarity: Math.round(Number(row.image_similarity) * 100),
     hybridScore: Math.round(Number(row.hybrid_score)),
   }));

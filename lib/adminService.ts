@@ -3,6 +3,7 @@ import { supabase } from './supabase';
 import { mapPetSummary } from './petMapping';
 import type { Report } from './types';
 import { apiError, authenticatedFetch } from './apiClient';
+import { hydrateListingPhotos } from './photoRepository';
 
 export type AdminContentType = 'pet' | 'adoption' | 'sitting';
 
@@ -74,11 +75,14 @@ export async function fetchReports(): Promise<Report[]> {
     .select('*, pets(*)')
     .order('created_at', { ascending: false });
   if (error) throw error;
+  const petRows = data.flatMap((row) => row.pets ? [row.pets] : []);
+  const hydratedPets = await hydrateListingPhotos('pet', petRows);
+  const petById = new Map(hydratedPets.map((pet) => [pet.id, pet]));
   return data.map((r): Report => ({
     id: r.id,
     reason: r.reason,
     createdAt: r.created_at,
-    pet: r.pets ? mapPetSummary(r.pets) : null,
+    pet: r.pets ? mapPetSummary(petById.get(r.pets.id) ?? r.pets) : null,
   }));
 }
 
@@ -115,22 +119,26 @@ export async function fetchAdminStats(): Promise<AdminStats> {
 
 export async function fetchAdminContent(): Promise<AdminContentItem[]> {
   const [petsResult, adoptionsResult, sittingResult] = await Promise.all([
-    supabase.from('pets').select('id,status,name,type,district,photo_url,created_at').order('created_at', { ascending: false }).limit(100),
-    supabase.from('adoptions').select('id,name,type,district,photo_url,created_at').order('created_at', { ascending: false }).limit(100),
+    supabase.from('pets').select('id,status,name,type,district,created_at').order('created_at', { ascending: false }).limit(100),
+    supabase.from('adoptions').select('id,name,type,district,created_at').order('created_at', { ascending: false }).limit(100),
     supabase.from('sitting_listings').select('id,pet_type,district,place,photo_url,created_at').order('created_at', { ascending: false }).limit(100),
   ]);
   if (petsResult.error) throw petsResult.error;
   if (adoptionsResult.error) throw adoptionsResult.error;
   if (sittingResult.error) throw sittingResult.error;
+  const [pets, adoptions] = await Promise.all([
+    hydrateListingPhotos('pet', petsResult.data),
+    hydrateListingPhotos('adoption', adoptionsResult.data),
+  ]);
 
   return [
-    ...petsResult.data.map((row) => ({
+    ...pets.map((row) => ({
       id: row.id, kind: 'pet' as const,
       title: `${row.status === 'lost' ? 'Алдсан' : 'Олдсон'} · ${row.name || row.type}`,
       subtitle: `${row.type} · ${row.district || 'Байршилгүй'}`,
       image: row.photo_url, createdAt: row.created_at, href: `/pets/${row.id}`,
     })),
-    ...adoptionsResult.data.map((row) => ({
+    ...adoptions.map((row) => ({
       id: row.id, kind: 'adoption' as const,
       title: `Үрчлүүлэх · ${row.name || row.type}`,
       subtitle: `${row.type} · ${row.district || 'Байршилгүй'}`,

@@ -10,10 +10,6 @@ import { fetchConversationById, fetchMessages, sendMessage, subscribeToMessages,
 import { getErrorMessage } from '../../../lib/utils';
 import type { Conversation, Message, PetType } from '../../../lib/types';
 
-function participantName(email: string) {
-  const name = email.split('@')[0]?.replace(/[._-]+/g, ' ').trim();
-  return name || email;
-}
 
 function sameCalendarDay(a: string, b: string) {
   const first = new Date(a); const second = new Date(b);
@@ -145,7 +141,7 @@ function MessageThreadContent({ id }: { id: string }) {
   if (!conv) return null;
 
   const petName = conv.pet ? `${petTypeLabel(conv.pet.type)}${conv.pet.name ? ` — ${conv.pet.name}` : ''}` : t('chat_deleted_pet');
-  const other = participantName(otherParticipant(conv, user.id));
+  const other = otherParticipant(conv, user.id);
   const initial = other.charAt(0).toUpperCase();
 
   return (

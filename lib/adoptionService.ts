@@ -7,6 +7,7 @@ import type { Adoption, AdoptionInput, AdoptionFilters, UpdateAdoptionFields } f
 import { cleanText, requireMongolianPhone } from './inputValidation';
 import { apiError, authenticatedFetch } from './apiClient';
 import { createIdempotencyKey, idempotentFileName, isIdempotencyKey } from './idempotency';
+import { hydrateListingPhotos, saveListingPhotos } from './photoRepository';
 
 const TABLE = 'adoptions';
 const BUCKET = 'pet-photos';
@@ -23,6 +24,16 @@ async function uploadAdoptionPhoto(file: File, userId: string, mutationId: strin
   return data.publicUrl;
 }
 
+async function persistAdoptionPhotoUrls(adoptionId: string, photoUrls: string[]): Promise<void> {
+  const normalized = await saveListingPhotos('adoption', adoptionId, photoUrls);
+  if (normalized) return;
+  const { error } = await supabase
+    .from(TABLE)
+    .update({ photo_url: photoUrls[0] ?? null, photo_urls: photoUrls })
+    .eq('id', adoptionId);
+  if (error) throw error;
+}
+
 /**
  * Шинэ үрчлүүлэх зар нэмэх
  */
@@ -31,20 +42,22 @@ export async function createAdoption(data: AdoptionInput, mutationId = createIde
   if (!user) throw new Error('Эхлээд нэвтэрнэ үү.');
   if (!isIdempotencyKey(mutationId)) throw new Error('Үйлдлийн дугаар буруу байна.');
 
+  const files = (data.photoFiles?.length ? data.photoFiles : data.photoFile ? [data.photoFile] : []).slice(0, 4);
   const { data: existing, error: existingError } = await supabase.from(TABLE).select('id,created_by').eq('id', mutationId).maybeSingle();
   if (existingError) throw existingError;
   if (existing) {
     if (existing.created_by !== user.id) throw new Error('Үйлдлийн дугаар давхардлаа. Дахин оролдоно уу.');
+    if (files.length) {
+      const retryUrls = await Promise.all(files.map((file, index) => uploadAdoptionPhoto(file, user.id, mutationId, index)));
+      await persistAdoptionPhotoUrls(existing.id, retryUrls);
+    }
     return existing.id;
   }
 
-  let photoUrl: string | null = null;
   let photoUrls: string[] = [];
 
-  const files = (data.photoFiles?.length ? data.photoFiles : data.photoFile ? [data.photoFile] : []).slice(0, 4);
   if (files.length) {
     photoUrls = await Promise.all(files.map((file, index) => uploadAdoptionPhoto(file, user.id, mutationId, index)));
-    photoUrl = photoUrls[0];
   }
 
   const payload = {
@@ -59,20 +72,12 @@ export async function createAdoption(data: AdoptionInput, mutationId = createIde
       district: data.district || '',
       place: cleanText(data.place, 300, 'Байршил', true),
       phone: requireMongolianPhone(data.phone),
-      photo_url: photoUrl,
-      photo_urls: photoUrls,
   };
-  let result = await supabase
+  const result = await supabase
     .from(TABLE)
     .insert(payload)
     .select()
     .single();
-
-  // Migration ажиллаагүй орчинд эхний зургаар зарыг нийтлэх fallback.
-  if (result.error && /photo_urls|schema cache/i.test(result.error.message)) {
-    const { photo_urls: _photoUrls, ...legacyPayload } = payload;
-    result = await supabase.from(TABLE).insert(legacyPayload).select().single();
-  }
 
   const { data: inserted, error } = result;
 
@@ -80,13 +85,19 @@ export async function createAdoption(data: AdoptionInput, mutationId = createIde
     if (error.code === '23505') {
       const { data: raced, error: racedError } = await supabase.from(TABLE).select('id,created_by').eq('id', mutationId).maybeSingle();
       if (racedError) throw racedError;
-      if (raced?.created_by === user.id) return raced.id;
+      if (raced?.created_by === user.id) {
+        if (photoUrls.length) await persistAdoptionPhotoUrls(raced.id, photoUrls);
+        return raced.id;
+      }
     }
     if (error.message && error.message.includes('RATE_LIMIT:')) {
       throw new Error('Хэт олон удаа зар нийтлээ. 1 цагийн дараа дахин оролдоно уу.');
     }
     throw error;
   }
+
+  await persistAdoptionPhotoUrls(inserted.id, photoUrls);
+
   return inserted.id;
 }
 
@@ -96,7 +107,8 @@ export async function createAdoption(data: AdoptionInput, mutationId = createIde
 export async function fetchAdoptionById(id: string): Promise<Adoption> {
   const { data, error } = await supabase.from(TABLE).select('*').eq('id', id).single();
   if (error) throw error;
-  return mapAdoptionRow(data);
+  const [row] = await hydrateListingPhotos('adoption', [data]);
+  return mapAdoptionRow(row);
 }
 
 /**
@@ -124,9 +136,10 @@ export async function fetchAdoptions(filters: AdoptionFilters = {}): Promise<{ a
 
   const hasMore = data.length > PAGE_SIZE;
   const pageData = hasMore ? data.slice(0, PAGE_SIZE) : data;
+  const hydrated = await hydrateListingPhotos('adoption', pageData);
 
   return {
-    adoptions: pageData.map(mapAdoptionRow),
+    adoptions: hydrated.map(mapAdoptionRow),
     hasMore,
   };
 }

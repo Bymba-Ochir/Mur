@@ -2,6 +2,7 @@
 // Чат харилцаа, мессежүүдийг Supabase-д бичих, унших, Realtime хүлээн авах функцууд
 import { supabase } from './supabase';
 import type { Conversation, Message, ConversationPreview, ConversationPetSummary } from './types';
+import { hydrateListingPhotos } from './photoRepository';
 
 // ─── Маппинг ────────────────────────────────────────────────────────────────
 
@@ -10,15 +11,13 @@ interface ConversationRow {
   pet_id: string;
   initiator_id: string;
   owner_id: string;
-  initiator_email: string;
-  owner_email: string;
   created_at: string;
   pets?: {
     id: string;
     name: string | null;
     type: string;
     status: string;
-    photo_url: string | null;
+    photo_url?: string | null;
     resolved: boolean;
   } | null;
 }
@@ -29,8 +28,8 @@ export function mapConversationRow(row: ConversationRow): Conversation {
     petId: row.pet_id,
     initiatorId: row.initiator_id,
     ownerId: row.owner_id,
-    initiatorEmail: row.initiator_email,
-    ownerEmail: row.owner_email,
+    initiatorName: 'МӨР хэрэглэгч',
+    ownerName: 'МӨР хэрэглэгч',
     createdAt: row.created_at,
   };
 }
@@ -41,7 +40,7 @@ function mapPetSummary(pet: NonNullable<ConversationRow['pets']>): ConversationP
     name: pet.name ?? '',
     type: pet.type as ConversationPetSummary['type'],
     status: pet.status as ConversationPetSummary['status'],
-    photoURL: pet.photo_url,
+    photoURL: pet.photo_url ?? null,
     resolved: pet.resolved ?? false,
   };
 }
@@ -68,7 +67,23 @@ export function mapMessageRow(row: MessageRow): Message {
 
 /** Хоёр оролцогчийн нэрийг буцаана (өөрийгөө биш) */
 export function otherParticipant(conv: Conversation, currentUserId: string): string {
-  return conv.initiatorId === currentUserId ? conv.ownerEmail : conv.initiatorEmail;
+  return conv.initiatorId === currentUserId ? conv.ownerName : conv.initiatorName;
+}
+
+async function fetchParticipantNames(userIds: string[]): Promise<Map<string, string>> {
+  const ids = [...new Set(userIds.filter(Boolean))];
+  if (!ids.length) return new Map();
+  const { data, error } = await supabase.from('profiles').select('id,display_name').in('id', ids);
+  if (error) throw error;
+  return new Map((data ?? []).map((row) => [row.id, row.display_name || 'МӨР хэрэглэгч']));
+}
+
+function withParticipantNames(row: ConversationRow, names: Map<string, string>): Conversation {
+  return {
+    ...mapConversationRow(row),
+    initiatorName: names.get(row.initiator_id) || 'МӨР хэрэглэгч',
+    ownerName: names.get(row.owner_id) || 'МӨР хэрэглэгч',
+  };
 }
 
 // ─── CRUD ────────────────────────────────────────────────────────────────────
@@ -102,7 +117,7 @@ export async function findOrCreateConversation(petId: string): Promise<string> {
   const { data: blocked } = await supabase.from('user_blocks').select('blocked_id').eq('blocker_id', user.id).eq('blocked_id', pet.created_by).maybeSingle();
   if (blocked) throw new Error('Та энэ хэрэглэгчийг хаасан тул чат эхлүүлэх боломжгүй.');
 
-  // Шинэ харилцаа үүсгэх (имэйл нь trigger-аар нөхөгдөнө)
+  // Шинэ харилцаа үүсгэх — participant display data нь profiles-оос уншигдана
   const { data: conv, error: convErr } = await supabase
     .from('conversations')
     .insert({
@@ -136,16 +151,18 @@ export async function findOrCreateConversation(petId: string): Promise<string> {
 export async function fetchConversationById(id: string): Promise<Conversation | null> {
   const { data, error } = await supabase
     .from('conversations')
-    .select('*, pets(id, name, type, status, photo_url, resolved)')
+    .select('*, pets(id, name, type, status, resolved)')
     .eq('id', id)
     .maybeSingle();
 
   if (error) throw error;
   if (!data) return null;
-  const conv = mapConversationRow(data);
+  const names = await fetchParticipantNames([data.initiator_id, data.owner_id]);
+  const conv = withParticipantNames(data, names);
+  const hydratedPets = data.pets ? await hydrateListingPhotos('pet', [data.pets]) : [];
   return {
     ...conv,
-    pet: data.pets ? mapPetSummary(data.pets) : null,
+    pet: hydratedPets[0] ? mapPetSummary(hydratedPets[0]) : null,
   };
 }
 
@@ -200,7 +217,7 @@ export async function fetchConversationList(): Promise<ConversationPreview[]> {
   // Харилцуудыг татах
   const { data: convs, error: convErr } = await supabase
     .from('conversations')
-    .select('*, pets(id, name, type, status, photo_url, resolved)')
+    .select('*, pets(id, name, type, status, resolved)')
     .or(`initiator_id.eq.${user.id},owner_id.eq.${user.id}`)
     .order('created_at', { ascending: false });
 
@@ -230,9 +247,13 @@ export async function fetchConversationList(): Promise<ConversationPreview[]> {
     }
   }
 
+  const names = await fetchParticipantNames(convs.flatMap((row) => [row.initiator_id, row.owner_id]));
+  const petRows = convs.flatMap((row) => row.pets ? [row.pets] : []);
+  const hydratedPets = await hydrateListingPhotos('pet', petRows);
+  const petById = new Map(hydratedPets.map((pet) => [pet.id, pet]));
   return convs.map((row) => ({
-    ...mapConversationRow(row),
-    pet: row.pets ? mapPetSummary(row.pets) : null,
+    ...withParticipantNames(row, names),
+    pet: row.pets ? mapPetSummary(petById.get(row.pets.id) ?? row.pets) : null,
     lastMessage: lastMsgMap.get(row.id) ? mapMessageRow(lastMsgMap.get(row.id)!) : null,
     unreadCount: unreadMap.get(row.id) ?? 0,
   }));
