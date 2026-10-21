@@ -8,10 +8,10 @@ import { cleanText, requireMongolianPhone } from './inputValidation';
 import { apiError, authenticatedFetch } from './apiClient';
 import { createIdempotencyKey, idempotentFileName, isIdempotencyKey } from './idempotency';
 import { hydrateListingPhotos, saveListingPhotos } from './photoRepository';
+import { DEFAULT_PAGE_SIZE, finalizePage, pageWindow } from './pagination';
 
 const TABLE = 'adoptions';
 const BUCKET = 'pet-photos';
-const PAGE_SIZE = 24;
 
 /**
  * Зураг Storage bucket-д хуулаад, public URL буцаана
@@ -127,20 +127,18 @@ export async function fetchAdoptions(filters: AdoptionFilters = {}): Promise<{ a
     q = q.or(`name.ilike.%${s}%,breed.ilike.%${s}%,description.ilike.%${s}%,place.ilike.%${s}%,type.ilike.%${s}%`);
   }
 
-  const from = page * PAGE_SIZE;
-  const to = from + PAGE_SIZE;
-  q = q.range(from, to);
+  const window = pageWindow(page, DEFAULT_PAGE_SIZE);
+  q = q.range(window.from, window.to);
 
   const { data, error } = await q;
   if (error) throw error;
 
-  const hasMore = data.length > PAGE_SIZE;
-  const pageData = hasMore ? data.slice(0, PAGE_SIZE) : data;
-  const hydrated = await hydrateListingPhotos('adoption', pageData);
+  const result = finalizePage(data, window.page, window.pageSize);
+  const hydrated = await hydrateListingPhotos('adoption', result.items);
 
   return {
     adoptions: hydrated.map(mapAdoptionRow),
-    hasMore,
+    hasMore: result.hasMore,
   };
 }
 

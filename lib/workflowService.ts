@@ -1,6 +1,7 @@
 import { ulaanbaatarDate } from './bookingDate';
 import { supabase } from './supabase';
 import { assertDateOrder, cleanText, optionalIsoDate } from './inputValidation';
+import { COMPACT_PAGE_SIZE, finalizePage, pageWindow, type PageResult } from './pagination';
 
 export type WorkflowStatus = 'pending' | 'accepted' | 'rejected' | 'completed' | 'cancelled';
 export interface AdoptionApplication { id: string; adoptionId: string; applicantId: string; ownerId: string; message: string; status: Exclude<WorkflowStatus, 'completed'>; createdAt: string; }
@@ -31,7 +32,22 @@ export async function createAdoptionApplication(adoptionId: string, message: str
   if (error) throw error;
 }
 export async function fetchAdoptionApplications(adoptionId: string): Promise<AdoptionApplication[]> { const { data, error } = await supabase.from('adoption_applications').select('*').eq('adoption_id', adoptionId).order('created_at', { ascending: false }); if (error) throw error; return data.map(adoptionRow); }
-export async function fetchMyAdoptionApplications(): Promise<AdoptionApplication[]> { await userId(); const { data, error } = await supabase.from('adoption_applications').select('*').order('created_at', { ascending: false }); if (error) throw error; return data.map(adoptionRow); }
+export async function fetchMyAdoptionApplicationsPage(page = 0): Promise<PageResult<AdoptionApplication>> {
+  await userId();
+  const window = pageWindow(page, COMPACT_PAGE_SIZE);
+  const { data, error, count } = await supabase
+    .from('adoption_applications')
+    .select('*', { count: 'exact' })
+    .order('created_at', { ascending: false })
+    .range(window.from, window.to);
+  if (error) throw error;
+  const result = finalizePage(data, window.page, window.pageSize, count);
+  return { ...result, items: result.items.map(adoptionRow) };
+}
+
+export async function fetchMyAdoptionApplications(): Promise<AdoptionApplication[]> {
+  return (await fetchMyAdoptionApplicationsPage(0)).items;
+}
 export async function updateAdoptionApplication(id: string, status: 'accepted' | 'rejected' | 'cancelled'): Promise<void> { const { error } = await supabase.from('adoption_applications').update({ status }).eq('id', id).neq('status', status); if (error) throw error; }
 
 export async function createSittingBooking(listingId: string, start: string, end: string, note: string): Promise<void> {
@@ -49,13 +65,47 @@ export async function createSittingBooking(listingId: string, start: string, end
   if (error) throw error;
 }
 export async function fetchSittingBookings(listingId: string): Promise<SittingBooking[]> { const { data, error } = await supabase.from('sitting_bookings').select('*').eq('listing_id', listingId).order('created_at', { ascending: false }); if (error) throw error; return data.map(bookingRow); }
-export async function fetchMySittingBookings(): Promise<SittingBooking[]> { await userId(); const { data, error } = await supabase.from('sitting_bookings').select('*').order('created_at', { ascending: false }); if (error) throw error; return data.map(bookingRow); }
+export async function fetchMySittingBookingsPage(page = 0): Promise<PageResult<SittingBooking>> {
+  await userId();
+  const window = pageWindow(page, COMPACT_PAGE_SIZE);
+  const { data, error, count } = await supabase
+    .from('sitting_bookings')
+    .select('*', { count: 'exact' })
+    .order('created_at', { ascending: false })
+    .range(window.from, window.to);
+  if (error) throw error;
+  const result = finalizePage(data, window.page, window.pageSize, count);
+  return { ...result, items: result.items.map(bookingRow) };
+}
+
+export async function fetchMySittingBookings(): Promise<SittingBooking[]> {
+  return (await fetchMySittingBookingsPage(0)).items;
+}
 export async function updateSittingBooking(id: string, status: 'accepted' | 'rejected' | 'completed' | 'cancelled'): Promise<void> { const { error } = await supabase.from('sitting_bookings').update({ status }).eq('id', id).neq('status', status); if (error) throw error; }
 export async function fetchSittingReviews(sitterId: string): Promise<SittingReview[]> { const { data, error } = await supabase.from('sitting_reviews').select('*').eq('sitter_id', sitterId).order('created_at', { ascending: false }); if (error) throw error; return data.map(reviewRow); }
 export async function createSittingReview(bookingId: string, sitterId: string, rating: number, comment: string): Promise<void> { const id = await userId(); if (!Number.isInteger(rating) || rating < 1 || rating > 5) throw new Error('1–5 од сонгоно уу.'); const cleanedComment = cleanText(comment, 1000, 'Сэтгэгдэл') || null; const { error } = await supabase.from('sitting_reviews').insert({ booking_id: bookingId, reviewer_id: id, sitter_id: sitterId, rating, comment: cleanedComment }); if (error?.code === '23505') { const { data: existing, error: existingError } = await supabase.from('sitting_reviews').select('reviewer_id,sitter_id,rating,comment').eq('booking_id', bookingId).maybeSingle(); if (existingError) throw existingError; if (existing?.reviewer_id === id && existing.sitter_id === sitterId && Number(existing.rating) === rating && (existing.comment ?? null) === cleanedComment) return; throw new Error('Энэ захиалгыг өмнө нь үнэлсэн байна.'); } if (error) throw error; }
 
-export async function fetchNotifications(): Promise<AppNotification[]> { const { data, error } = await supabase.from('notifications').select('*').order('created_at', { ascending: false }).limit(100); if (error) throw error; return data.map((row) => ({ id: row.id, type: row.type, title: row.title, body: row.body, href: row.href, readAt: row.read_at, createdAt: row.created_at })); }
-export async function unreadNotificationCount(): Promise<number> { const { count, error } = await supabase.from('notifications').select('*', { count: 'exact', head: true }).is('read_at', null); if (error) return 0; return count ?? 0; }
+export async function fetchNotificationsPage(page = 0, unreadOnly = false): Promise<PageResult<AppNotification>> {
+  const window = pageWindow(page, COMPACT_PAGE_SIZE);
+  let query = supabase
+    .from('notifications')
+    .select('*', { count: 'exact' })
+    .order('created_at', { ascending: false });
+  if (unreadOnly) query = query.is('read_at', null);
+  const { data, error, count } = await query.range(window.from, window.to);
+  if (error) throw error;
+  const result = finalizePage(data, window.page, window.pageSize, count);
+  return {
+    ...result,
+    items: result.items.map((row) => ({ id: row.id, type: row.type, title: row.title, body: row.body, href: row.href, readAt: row.read_at, createdAt: row.created_at })),
+  };
+}
+
+export async function fetchNotifications(): Promise<AppNotification[]> {
+  return (await fetchNotificationsPage(0)).items;
+}
+export async function notificationCount(): Promise<number> { const { count, error } = await supabase.from('notifications').select('id', { count: 'exact', head: true }); if (error) return 0; return count ?? 0; }
+export async function unreadNotificationCount(): Promise<number> { const { count, error } = await supabase.from('notifications').select('id', { count: 'exact', head: true }).is('read_at', null); if (error) return 0; return count ?? 0; }
 export async function markNotificationRead(id: string): Promise<void> { const { error } = await supabase.from('notifications').update({ read_at: new Date().toISOString() }).eq('id', id).is('read_at', null); if (error) throw error; }
 export async function markAllNotificationsRead(): Promise<void> { const { error } = await supabase.from('notifications').update({ read_at: new Date().toISOString() }).is('read_at', null); if (error) throw error; }
 export function subscribeToNotifications(userIdValue: string, onChange: () => void): () => void {

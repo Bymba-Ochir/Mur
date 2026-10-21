@@ -8,6 +8,7 @@ import { cleanText, optionalCoordinate, optionalInteger, requireMongolianPhone }
 import { apiError, authenticatedFetch } from './apiClient';
 import { createIdempotencyKey, idempotentFileName, isIdempotencyKey } from './idempotency';
 import { hydrateListingPhotos, saveListingPhotos } from './photoRepository';
+import { DEFAULT_PAGE_SIZE, finalizePage, pageWindow } from './pagination';
 
 const TABLE = 'pets';
 const BUCKET = 'pet-photos';
@@ -147,8 +148,6 @@ export async function fetchPetById(id: string): Promise<Pet> {
  * Жагсаалт татах — статус, дүүргээр шүүх, текстээр хайх боломжтой.
  * Анхдагчаар "Олдлоо" гэж хаагдсан (resolved=true) бичлэгийг харуулахгүй.
  */
-const PAGE_SIZE = 24;
-
 export async function fetchPets(filters: PetFilters = {}): Promise<{ pets: Pet[]; hasMore: boolean }> {
   const { status, district, type, search, includeResolved = false, page = 0 } = filters;
   let q = supabase.from(TABLE).select('*').order('created_at', { ascending: false });
@@ -161,21 +160,18 @@ export async function fetchPets(filters: PetFilters = {}): Promise<{ pets: Pet[]
     q = q.or(`name.ilike.%${s}%,breed.ilike.%${s}%,color.ilike.%${s}%,place.ilike.%${s}%,type.ilike.%${s}%`);
   }
 
-  // Дараагийн хуудас байгаа эсэхийг мэдэхийн тулд 1-ээр илүү бичлэг татна
-  const from = page * PAGE_SIZE;
-  const to = from + PAGE_SIZE; // PAGE_SIZE+1 ширхэг (0-based inclusive range)
-  q = q.range(from, to);
+  const window = pageWindow(page, DEFAULT_PAGE_SIZE);
+  q = q.range(window.from, window.to);
 
   const { data, error } = await q;
   if (error) throw error;
 
-  const hasMore = data.length > PAGE_SIZE;
-  const pageData = hasMore ? data.slice(0, PAGE_SIZE) : data;
-  const hydrated = await hydrateListingPhotos('pet', pageData);
+  const result = finalizePage(data, window.page, window.pageSize);
+  const hydrated = await hydrateListingPhotos('pet', result.items);
 
   return {
     pets: hydrated.map(mapPetRow),
-    hasMore,
+    hasMore: result.hasMore,
   };
 }
 

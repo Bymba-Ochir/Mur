@@ -5,10 +5,10 @@ import type { SittingListing, SittingListingInput, SittingListingFilters, Update
 import { cleanText, optionalCoordinate, optionalInteger, requireMongolianPhone } from './inputValidation';
 import { apiError, authenticatedFetch } from './apiClient';
 import { createIdempotencyKey, idempotentFileName, isIdempotencyKey } from './idempotency';
+import { DEFAULT_PAGE_SIZE, finalizePage, pageWindow } from './pagination';
 
 const TABLE = 'sitting_listings';
 const BUCKET = 'pet-photos';
-const PAGE_SIZE = 24;
 
 // ─── Маппинг ────────────────────────────────────────────────────────────────
 
@@ -129,16 +129,14 @@ export async function fetchSittingListings(filters: SittingListingFilters = {}):
     q = q.or(`description.ilike.%${s}%,place.ilike.%${s}%,experience.ilike.%${s}%,district.ilike.%${s}%`);
   }
 
-  const from = page * PAGE_SIZE;
-  const to = from + PAGE_SIZE;
-  q = q.range(from, to);
+  const window = pageWindow(page, DEFAULT_PAGE_SIZE);
+  q = q.range(window.from, window.to);
 
   const { data, error } = await q;
   if (error) throw error;
 
-  const hasMore = data.length > PAGE_SIZE;
-  const pageData = hasMore ? data.slice(0, PAGE_SIZE) : data;
-  return { listings: pageData.map(mapSittingRow), hasMore };
+  const result = finalizePage(data, window.page, window.pageSize);
+  return { listings: result.items.map(mapSittingRow), hasMore: result.hasMore };
 }
 
 export async function updateSittingListing(id: string, fields: UpdateSittingListingFields): Promise<void> {
