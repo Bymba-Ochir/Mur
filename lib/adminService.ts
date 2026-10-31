@@ -200,14 +200,8 @@ export async function fetchUserReports(): Promise<AdminUserReport[]> {
 }
 
 export async function resolveUserReport(id: string, status: 'reviewed' | 'dismissed'): Promise<void> {
-  const { data, error } = await supabase
-    .from('user_reports')
-    .update({ status })
-    .eq('id', id)
-    .eq('status', 'pending')
-    .select('id');
+  const { error } = await supabase.from('user_reports').update({ status }).eq('id', id);
   if (error) throw error;
-  if (!data?.length) throw new Error('Энэ report-ийг өөр админ аль хэдийн шийдвэрлэсэн байна.');
   await writeAudit(status === 'reviewed' ? 'review_user_report' : 'dismiss_user_report', 'user_report', id);
 }
 

@@ -53,15 +53,15 @@ async function requireUserId(): Promise<string> {
 export async function ensureMyProfile(): Promise<UserProfile> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error('Эхлээд нэвтэрнэ үү.');
-  const { error: upsertError } = await supabase.from('profiles').upsert({
+  const { data: existing, error } = await supabase.from('profiles').select('*').eq('id', user.id).maybeSingle();
+  if (error) throw error;
+  if (existing) return mapProfile(existing);
+  const { data, error: insertError } = await supabase.from('profiles').insert({
     id: user.id,
     display_name: user.user_metadata?.display_name || user.email?.split('@')[0] || 'МӨР хэрэглэгч',
     email_verified: Boolean(user.email_confirmed_at),
-  }, { onConflict: 'id', ignoreDuplicates: true });
-  if (upsertError) throw upsertError;
-
-  const { data, error } = await supabase.from('profiles').select('*').eq('id', user.id).single();
-  if (error) throw error;
+  }).select().single();
+  if (insertError) throw insertError;
   return mapProfile(data);
 }
 

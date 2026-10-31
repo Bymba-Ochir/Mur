@@ -96,21 +96,6 @@ export async function hydrateListingPhotos<T extends ListingRow>(
 export async function saveListingPhotos(kind: ListingPhotoKind, ownerId: string, urls: string[]): Promise<boolean> {
   const { table, foreignKey } = PHOTO_CONFIG[kind];
   const normalizedUrls = [...new Set(urls.filter(Boolean))].slice(0, 4);
-  const rpcName = kind === 'pet' ? 'replace_pet_photos' : 'replace_adoption_photos';
-  const rpcArgs = kind === 'pet'
-    ? { target_pet: ownerId, target_urls: normalizedUrls }
-    : { target_adoption: ownerId, target_urls: normalizedUrls };
-
-  const atomic = await supabase.rpc(rpcName, rpcArgs);
-  if (!atomic.error) return true;
-
-  // Zero-downtime rollout: before v99 exists, keep the v96 table path working.
-  // Once v99 is applied all replacements are one DB transaction under a row lock.
-  const rpcMissing = /function .* does not exist|could not find the function|schema cache/i.test(atomic.error.message ?? '');
-  if (!rpcMissing) {
-    if (isMissingNormalizedTable(atomic.error)) return false;
-    throw atomic.error;
-  }
 
   if (normalizedUrls.length) {
     const rows = normalizedUrls.map((url, position) => ({ [foreignKey]: ownerId, url, position }));

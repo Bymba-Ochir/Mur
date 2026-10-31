@@ -51,9 +51,6 @@ export async function createAppointment(input: AppointmentInput): Promise<Appoin
     result = await supabase.from(TABLE).insert({ ...base, service: input.service }).select().single();
   }
 
-  if (result.error?.code === '23505') {
-    throw new Error('Энэ цагийг өөр хүн түрүүлж захиалсан байна. Өөр цаг сонгоно уу.');
-  }
   if (result.error) throw result.error;
   return mapAppointmentRow(result.data);
 }

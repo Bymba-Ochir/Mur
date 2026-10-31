@@ -1,6 +1,6 @@
 // app/api/donations/create/route.ts
 import { NextResponse } from 'next/server';
-import { randomBytes, randomUUID } from 'crypto';
+import { randomBytes } from 'crypto';
 import { createQPayInvoice } from '../../../../lib/qpay';
 import { checkRateLimit, getClientIp } from '../../../../lib/rateLimit';
 import { createAdminClient } from '../../../../lib/supabaseAdmin';
@@ -24,8 +24,6 @@ interface DonationRow {
   qr_image: string | null;
   qr_text: string | null;
   created_at: string;
-  invoice_claim_token: string | null;
-  invoice_claimed_at: string | null;
 }
 
 function matchesInput(row: DonationRow, input: DonationInput): boolean {
@@ -81,7 +79,7 @@ export async function POST(request: Request) {
     if (process.env.QPAY_CALLBACK_SECRET) callbackUrl += `?secret=${process.env.QPAY_CALLBACK_SECRET}`;
 
     const supabaseAdmin = createAdminClient();
-    const selectFields = 'id,amount,supporter_name,message,is_anonymous,status_token,invoice_id,qr_image,qr_text,created_at,invoice_claim_token,invoice_claimed_at';
+    const selectFields = 'id,amount,supporter_name,message,is_anonymous,status_token,invoice_id,qr_image,qr_text,created_at';
     const readDonation = async (): Promise<DonationRow | null> => {
       const { data, error } = await supabaseAdmin
         .from('donations')
@@ -92,7 +90,6 @@ export async function POST(request: Request) {
       return data as DonationRow | null;
     };
 
-    const invoiceClaimToken = randomUUID();
     let existing = await readDonation();
     if (existing) {
       if (!matchesInput(existing, input)) {
@@ -102,18 +99,15 @@ export async function POST(request: Request) {
         return NextResponse.json(donationPayload(existing));
       }
 
-      const { data: claimed, error: claimError } = await supabaseAdmin.rpc('claim_donation_invoice', {
-        target_id: idempotencyKey,
-        target_claim: invoiceClaimToken,
-      });
-      if (claimError) throw claimError;
-      if (!claimed) {
+      // Ижил хүсэлт яг одоо өөр request дээр QPay invoice үүсгэж байвал давхар external side-effect бүү хий.
+      // 2 минутаас хуучин incomplete мөрийг crash recovery гэж үзэж доор resume хийнэ.
+      const ageMs = Date.now() - new Date(existing.created_at).getTime();
+      if (Number.isFinite(ageMs) && ageMs < 120_000) {
         return NextResponse.json(
-          { error: 'Нэхэмжлэл үүсэж байна эсвэл өмнөх оролдлого сэргээх шаардлагатай байна.' },
+          { error: 'Нэхэмжлэл үүсэж байна. Түр хүлээгээд дахин оролдоно уу.' },
           { status: 409, headers: { 'Retry-After': '2' } },
         );
       }
-      existing = await readDonation();
     } else {
       // Rate limit зөвхөн шинэ logical operation-д үйлчилнэ; ижил key-тэй retry-г дахин тоолохгүй.
       const rl = checkRateLimit(`donate:${getClientIp(request)}`, 5, 60_000);
@@ -133,8 +127,6 @@ export async function POST(request: Request) {
         is_anonymous: input.isAnonymous,
         status: 'pending',
         status_token: statusToken,
-        invoice_claim_token: invoiceClaimToken,
-        invoice_claimed_at: new Date().toISOString(),
       });
 
       if (reserveError) {
@@ -168,11 +160,8 @@ export async function POST(request: Request) {
         invoice_id: qpayInvoice.invoice_id,
         qr_image: qpayInvoice.qr_image,
         qr_text: qpayInvoice.qr_text,
-        invoice_claim_token: null,
-        invoice_claimed_at: null,
       })
       .eq('id', idempotencyKey)
-      .eq('invoice_claim_token', invoiceClaimToken)
       .is('invoice_id', null)
       .select(selectFields)
       .maybeSingle();
