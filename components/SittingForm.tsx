@@ -1,4 +1,6 @@
 'use client';
+import { reportError } from '../lib/errorTracking';
+
 import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import type { ChangeEvent, FormEvent, KeyboardEvent } from 'react';
@@ -113,6 +115,7 @@ function AuthenticatedSittingForm() {
       attemptRef.current = null;
       resetAll(); setNewId(id); setDone(true);
     } catch (err) {
+      reportError(err, { area: 'frontend', operation: 'create-sitting-listing' });
       setError(getErrorMessage(err) || t('form_generic_error'));
     } finally {
       setSubmitting(false); setStatusMsg('');

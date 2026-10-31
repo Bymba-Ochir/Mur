@@ -4,6 +4,7 @@
 //   usePetLocation — geolocation + дүүрэг таамаглал
 //   usePetSubmit   — submit pipeline (createPetReport + reset)
 'use client';
+import { reportError } from './errorTracking';
 import { useRef, useState } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
 import { compressImage } from './imageCompress';
@@ -187,7 +188,7 @@ export function usePetSubmit({
       setDone(true);
       onSuccess(id);
     } catch (err) {
-      console.error(err);
+      reportError(err, { area: 'frontend', operation: 'create-pet-report' });
       const msg = getErrorMessage(err);
       setError(isInputValidationError(err) || (msg && msg.includes('олон удаа'))
         ? msg

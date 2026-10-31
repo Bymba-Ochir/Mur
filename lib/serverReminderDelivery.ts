@@ -1,4 +1,5 @@
 import webpush from 'web-push';
+import { reportError } from './errorTracking';
 import { isAllowedPushEndpoint } from './pushEndpoint';
 import type { createAdminClient } from './supabaseAdmin';
 
@@ -54,7 +55,7 @@ export async function deliverReminderPages<T extends ReminderClaim>(
         .update({ last_notified_date: today })
         .in('id', completedIds)
         .eq('reminder_claim_date', today);
-      if (updateError) console.error('vaccine-reminders: batch update алдаа', config.table, updateError);
+      if (updateError) reportError(updateError, { area: 'backend', operation: `reminder-acknowledgement:${config.table}` });
     }
 
     if (claims.length < PAGE_SIZE) break;

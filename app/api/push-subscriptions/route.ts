@@ -1,3 +1,4 @@
+import { reportError } from '../../../lib/errorTracking';
 import { canUpdatePushSubscription } from '../../../lib/pushOwnership';
 import { isAllowedPushEndpoint } from '../../../lib/pushEndpoint';
 import { NextResponse } from 'next/server';
@@ -19,7 +20,8 @@ export async function GET(request: Request) {
     const { data, error } = await admin.from('push_subscriptions').select('user_id').eq('endpoint', endpoint).eq('user_id', user.id).maybeSingle();
     if (error) throw error;
     return NextResponse.json({ vaccine: Boolean(data) }, { headers: { 'Cache-Control': 'no-store' } });
-  } catch {
+  } catch (error) {
+    reportError(error, { area: 'backend', operation: 'push-subscription-status' });
     return NextResponse.json({ error: 'Status unavailable' }, { status: 503 });
   }
 }
@@ -58,7 +60,8 @@ export async function POST(request: Request) {
       if (error) throw error;
     }
     return NextResponse.json({ ok: true });
-  } catch {
+  } catch (error) {
+    reportError(error, { area: 'backend', operation: 'push-subscription-create' });
     return NextResponse.json({ error: 'Push бүртгэл хадгалахад алдаа гарлаа.' }, { status: 500 });
   }
 }

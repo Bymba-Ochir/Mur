@@ -3,6 +3,10 @@ const { withSentryConfig } = require('@sentry/nextjs');
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  env: {
+    NEXT_PUBLIC_SENTRY_ENVIRONMENT: process.env.VERCEL_ENV || process.env.NEXT_PUBLIC_SENTRY_ENVIRONMENT || process.env.NODE_ENV,
+    NEXT_PUBLIC_SENTRY_RELEASE: process.env.VERCEL_GIT_COMMIT_SHA || process.env.NEXT_PUBLIC_SENTRY_RELEASE || '',
+  },
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: '*.supabase.co', pathname: '/storage/v1/object/public/**' },

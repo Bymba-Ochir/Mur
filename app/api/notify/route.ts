@@ -1,3 +1,4 @@
+import { reportError } from '../../../lib/errorTracking';
 import { isAllowedPushEndpoint } from '../../../lib/pushEndpoint';
 // app/api/notify/route.ts
 //
@@ -38,7 +39,7 @@ export async function POST(request: Request) {
     .eq('district', pet.district);
 
   if (error) {
-    console.error('notify: subscription query алдаа', error);
+    reportError(error, { area: 'backend', operation: 'nearby-notification-subscriptions' });
     return NextResponse.json({ error: 'Мэдэгдэл илгээхэд алдаа гарлаа' }, { status: 500 });
   }
 

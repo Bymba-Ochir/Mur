@@ -1,3 +1,4 @@
+import { reportError } from '../../../../../lib/errorTracking';
 import { NextResponse } from 'next/server';
 import { requireRequestUser } from '../../../../../lib/serverAuth';
 import { ownedPetPhotoStoragePath } from '../../../../../lib/storageObjectPath';
@@ -42,6 +43,7 @@ export async function DELETE(request: Request, context: { params: Promise<{ kind
     if (paths.length) { const { error } = await admin.storage.from('pet-photos').remove(paths); storageCleaned = !error; }
     return NextResponse.json({ ok: true, storageCleaned });
   } catch (error) {
+    reportError(error, { area: 'backend', operation: 'content-delete' });
     const unauthorized = error instanceof Error && error.message === 'UNAUTHORIZED';
     return NextResponse.json({ error: unauthorized ? 'Эхлээд нэвтэрнэ үү.' : 'Устгахад алдаа гарлаа.' }, { status: unauthorized ? 401 : 500 });
   }

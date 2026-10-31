@@ -1,3 +1,4 @@
+import { reportError } from '../../../../lib/errorTracking';
 import { checkRateLimit, getClientIp } from '../../../../lib/rateLimit';
 // app/api/donations/status/route.ts
 import { NextResponse } from 'next/server';
@@ -38,14 +39,15 @@ export async function GET(request: Request) {
           if (updateError) throw updateError;
           donation.status = 'paid';
         }
-      } catch {
+      } catch (error) {
+        reportError(error, { area: 'backend', operation: 'donation-payment-check' });
         // Шалгахад алдаа гарвал pending хэвээр үлдээнэ, polling үргэлжилнэ
       }
     }
 
     return NextResponse.json({ status: donation.status, amount: donation.amount }, { headers: { 'Cache-Control': 'no-store', 'Referrer-Policy': 'no-referrer' } });
   } catch (err) {
-    console.error('Donation status error:', err);
+    reportError(err, { area: 'backend', operation: 'donation-status' });
     return NextResponse.json({ error: 'Статус шалгахад алдаа гарлаа' }, { status: 500 });
   }
 }

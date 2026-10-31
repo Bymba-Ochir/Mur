@@ -82,8 +82,7 @@ export async function createQPayInvoice(input: QPayInvoiceInput): Promise<QPayIn
   });
 
   if (!res.ok) {
-    const body = await res.text();
-    throw new Error(`QPay нэхэмжлэл үүсгэхэд алдаа гарлаа: ${res.status} ${body}`);
+    throw new Error(`QPay нэхэмжлэл үүсгэхэд алдаа гарлаа: HTTP ${res.status}`);
   }
   return res.json();
 }
@@ -108,8 +107,7 @@ export async function checkQPayPayment(invoice_id: string): Promise<{ count: num
   });
 
   if (!res.ok) {
-    const body = await res.text();
-    throw new Error(`QPay төлбөр шалгахад алдаа гарлаа: ${res.status} ${body}`);
+    throw new Error(`QPay төлбөр шалгахад алдаа гарлаа: HTTP ${res.status}`);
   }
   return res.json();
 }

@@ -1,3 +1,4 @@
+import { reportError } from '../../../lib/errorTracking';
 import { NextResponse } from 'next/server';
 import webpush from 'web-push';
 import { createAdminClient } from '../../../lib/supabaseAdmin';
@@ -9,7 +10,7 @@ interface MedicationClaim extends ReminderClaim { pet_name: string; name: string
 export async function GET(request: Request) {
   const cronSecret = process.env.CRON_SECRET;
   if (!cronSecret) {
-    console.error('vaccine-reminders: CRON_SECRET тохируулагдаагүй');
+    reportError(new Error('CRON_SECRET is not configured'), { area: 'backend', operation: 'vaccine-reminders' });
     return NextResponse.json({ error: 'Cron тохиргоо дутуу байна.' }, { status: 503 });
   }
 
@@ -20,7 +21,7 @@ export async function GET(request: Request) {
   const publicVapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
   const privateVapidKey = process.env.VAPID_PRIVATE_KEY;
   if (!publicVapidKey || !privateVapidKey) {
-    console.error('vaccine-reminders: VAPID key тохиргоо дутуу');
+    reportError(new Error('VAPID keys are not configured'), { area: 'backend', operation: 'vaccine-reminders' });
     return NextResponse.json({ error: 'Push тохиргоо дутуу байна.' }, { status: 503 });
   }
 
@@ -49,7 +50,7 @@ export async function GET(request: Request) {
     });
     return NextResponse.json({ checked: vaccines.checked, sent: vaccines.sent, medsChecked: medications.checked, medsSent: medications.sent });
   } catch (error) {
-    console.error('vaccine-reminders: claim алдаа', error);
+    reportError(error, { area: 'backend', operation: 'vaccine-reminders' });
     return NextResponse.json({ error: 'Мэдэгдэл илгээхэд алдаа гарлаа' }, { status: 500 });
   }
 }

@@ -1,4 +1,5 @@
 // instrumentation.ts
+import * as Sentry from '@sentry/nextjs';
 export async function register() {
   if (process.env.NEXT_RUNTIME === 'nodejs') {
     // Заавал env-ийн шалгалт — алга бол сервер/бүтээн байгуулалт тодорхой алдаагаар зогсоно
@@ -10,3 +11,5 @@ export async function register() {
     await import('./sentry.edge.config');
   }
 }
+
+export const onRequestError = Sentry.captureRequestError;

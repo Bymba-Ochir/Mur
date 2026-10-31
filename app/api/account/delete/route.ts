@@ -1,3 +1,4 @@
+import { reportError } from '../../../../lib/errorTracking';
 import { NextResponse } from 'next/server';
 import { requireRequestUser } from '../../../../lib/serverAuth';
 import { fetchServerPhotoUrlsForOwners } from '../../../../lib/serverPhotoRepository';
@@ -35,7 +36,7 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ success: true });
   } catch (error) {
     const unauthorized = error instanceof Error && error.message === 'UNAUTHORIZED';
-    console.error('Account delete:', error);
+    reportError(error, { area: 'backend', operation: 'account-delete' });
     return NextResponse.json({ error: unauthorized ? 'Нэвтрэх шаардлагатай.' : 'Account устгахад алдаа гарлаа.' }, { status: unauthorized ? 401 : 500 });
   }
 }

@@ -3,6 +3,7 @@
 //   useAdoptionPhoto  — зураг шахалт (content moderationгүй)
 //   useAdoptionSubmit — submit pipeline (createAdoption + reset)
 'use client';
+import { reportError } from './errorTracking';
 import { useRef, useState } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
 import { compressImage } from './imageCompress';
@@ -130,7 +131,7 @@ export function useAdoptionSubmit({
       setDone(true);
       onSuccess(id);
     } catch (err) {
-      console.error(err);
+      reportError(err, { area: 'frontend', operation: 'create-adoption' });
       const msg = getErrorMessage(err);
       setError(isInputValidationError(err) || (msg && msg.includes('олон удаа'))
         ? msg

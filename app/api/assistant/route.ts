@@ -1,3 +1,4 @@
+import { reportError } from '../../../lib/errorTracking';
 // app/api/assistant/route.ts
 // AI Зөвлөхийн Groq API proxy. Browser payload-ийг authoritative гэж үзэхгүй:
 // auth-ийг server талд verify хийж, knowledge context-ийг server талд дахин үүсгэнэ.
@@ -87,7 +88,7 @@ export async function POST(request: Request) {
     });
 
     if (!response.ok) {
-      console.error('Groq API алдаа:', response.status);
+      reportError(new Error(`Groq request failed: HTTP ${response.status}`), { area: 'backend', operation: 'assistant-provider' });
       return NextResponse.json({ text: null });
     }
 
@@ -96,7 +97,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ text });
   } catch (err) {
-    console.error('Assistant API алдаа:', err);
+    reportError(err, { area: 'backend', operation: 'assistant' });
     return NextResponse.json({ text: null }, { status: 500 });
   }
 }

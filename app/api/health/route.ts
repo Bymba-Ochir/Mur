@@ -1,3 +1,4 @@
+import { reportError } from '../../../lib/errorTracking';
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '../../../lib/supabaseAdmin';
 
@@ -14,7 +15,8 @@ export async function GET() {
     try {
       const { error } = await createAdminClient().from('profiles').select('id', { head: true, count: 'exact' }).limit(1);
       database = !error;
-    } catch { database = false; }
+      if (error) reportError(error, { area: 'backend', operation: 'health-database' });
+    } catch (error) { database = false; reportError(error, { area: 'backend', operation: 'health-database' }); }
   }
   const healthy = configured && database;
   const version = process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7)

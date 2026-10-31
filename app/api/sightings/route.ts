@@ -1,3 +1,4 @@
+import { reportError } from '../../../lib/errorTracking';
 import { NextResponse } from 'next/server';
 import { requireRequestUser } from '../../../lib/serverAuth';
 import { checkRateLimit, getClientIp } from '../../../lib/rateLimit';
@@ -98,6 +99,7 @@ export async function POST(request: Request) {
     await notifyOwnerOnce(pet);
     return NextResponse.json({ ok: true }, { status: 201 });
   } catch (error) {
+    reportError(error, { area: 'backend', operation: 'create-sighting' });
     const unauthorized = error instanceof Error && error.message === 'UNAUTHORIZED';
     return NextResponse.json({ error: unauthorized ? 'Мэдээлэл илгээхийн тулд нэвтэрнэ үү.' : 'Мэдээлэл хадгалахад алдаа гарлаа.' }, { status: unauthorized ? 401 : 500 });
   }

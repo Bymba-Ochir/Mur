@@ -1,3 +1,4 @@
+import { reportError } from '../../../../lib/errorTracking';
 // app/api/donations/create/route.ts
 import { NextResponse } from 'next/server';
 import { randomBytes, randomUUID } from 'crypto';
@@ -74,6 +75,7 @@ export async function POST(request: Request) {
 
     const appUrl = process.env.NEXT_PUBLIC_SITE_URL;
     if (!appUrl) {
+      reportError(new Error('NEXT_PUBLIC_SITE_URL is not configured'), { area: 'backend', operation: 'donation-create' });
       return NextResponse.json({ error: 'Серверийн тохиргооны алдаа (SITE_URL)' }, { status: 500 });
     }
 
@@ -183,7 +185,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json(donationPayload(finalRow, qpayInvoice.urls));
   } catch (err) {
-    console.error('Donation create error:', err);
+    reportError(err, { area: 'backend', operation: 'donation-create' });
     return NextResponse.json({ error: 'Хандив үүсгэхэд алдаа гарлаа. Дахин оролдоно уу.' }, { status: 500 });
   }
 }
