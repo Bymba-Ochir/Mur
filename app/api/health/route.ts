@@ -1,10 +1,13 @@
+import { limitIpRequest } from '../../../lib/apiRateLimit';
 import { reportError } from '../../../lib/errorTracking';
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '../../../lib/supabaseAdmin';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
+export async function GET(request: Request) {
+  const ipLimit = await limitIpRequest(request, 'health');
+  if (ipLimit) return ipLimit;
   const configured = Boolean(
     process.env.NEXT_PUBLIC_SUPABASE_URL &&
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY &&
@@ -13,7 +16,7 @@ export async function GET() {
   let database = false;
   if (configured) {
     try {
-      const { error } = await createAdminClient().from('profiles').select('id', { head: true, count: 'exact' }).limit(1);
+      const { error } = await createAdminClient().from('profiles').select('id', { head: true }).limit(1);
       database = !error;
       if (error) reportError(error, { area: 'backend', operation: 'health-database' });
     } catch (error) { database = false; reportError(error, { area: 'backend', operation: 'health-database' }); }

@@ -1,9 +1,9 @@
+import { limitIpRequest, limitUserRequest } from '../../../lib/apiRateLimit';
 import { reportError } from '../../../lib/errorTracking';
 import { canUpdatePushSubscription } from '../../../lib/pushOwnership';
 import { isAllowedPushEndpoint } from '../../../lib/pushEndpoint';
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '../../../lib/supabaseAdmin';
-import { checkRateLimit, getClientIp } from '../../../lib/rateLimit';
 import { DISTRICTS } from '../../../lib/districts';
 
 interface SubscriptionBody { endpoint?: unknown; keys?: { p256dh?: unknown; auth?: unknown }; district?: unknown; vaccine?: unknown; }
@@ -14,9 +14,13 @@ export async function GET(request: Request) {
   const endpoint = new URL(request.url).searchParams.get('endpoint');
   if (!endpoint || endpoint.length > 2000) return NextResponse.json({ error: 'Invalid endpoint' }, { status: 400 });
   try {
+    const ipLimit = await limitIpRequest(request, 'push-status');
+    if (ipLimit) return ipLimit;
     const admin = createAdminClient();
     const { data: { user }, error: authError } = await admin.auth.getUser(token);
     if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const userLimit = await limitUserRequest('push-status', user.id, admin);
+    if (userLimit) return userLimit;
     const { data, error } = await admin.from('push_subscriptions').select('user_id').eq('endpoint', endpoint).eq('user_id', user.id).maybeSingle();
     if (error) throw error;
     return NextResponse.json({ vaccine: Boolean(data) }, { headers: { 'Cache-Control': 'no-store' } });
@@ -28,8 +32,8 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const limit = checkRateLimit(`push:${getClientIp(request)}`, 8, 60 * 60_000);
-    if (!limit.allowed) return NextResponse.json({ error: 'Хэт олон хүсэлт илгээлээ. Түр хүлээнэ үү.' }, { status: 429 });
+    const ipLimit = await limitIpRequest(request, 'push-create');
+    if (ipLimit) return ipLimit;
     const body = await request.json() as SubscriptionBody;
     const keys = body.keys;
     if (!isAllowedPushEndpoint(body.endpoint)) return NextResponse.json({ error: 'Push endpoint буруу байна.' }, { status: 400 });

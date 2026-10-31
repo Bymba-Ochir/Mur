@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { createAdminClient } from '../../lib/supabaseAdmin';
 
 vi.mock('web-push', () => ({ default: { sendNotification: vi.fn(), setVapidDetails: vi.fn() } }));
+vi.mock('../../lib/apiRateLimit', () => ({ limitIpRequest: async () => null, limitUserRequest: async () => null, limitServiceRequest: async () => null }));
 vi.mock('../../lib/supabaseAdmin', () => ({ createAdminClient: vi.fn() }));
 
 import webpush from 'web-push';

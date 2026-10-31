@@ -1,3 +1,4 @@
+import { limitIpRequest, limitUserRequest } from '../../../lib/apiRateLimit';
 import { reportError } from '../../../lib/errorTracking';
 // app/api/assistant/route.ts
 // AI Зөвлөхийн Groq API proxy. Browser payload-ийг authoritative гэж үзэхгүй:
@@ -5,7 +6,6 @@ import { reportError } from '../../../lib/errorTracking';
 import { NextResponse } from 'next/server';
 import { retrieveKnowledge } from '../../../lib/assistant/matcher';
 import { parseAssistantRequest } from '../../../lib/assistant/serverInput';
-import { checkRateLimit, getClientIp } from '../../../lib/rateLimit';
 import { requireRequestUser } from '../../../lib/serverAuth';
 
 const SYSTEM_PROMPTS = {
@@ -34,6 +34,8 @@ Rules:
 
 export async function POST(request: Request) {
   try {
+    const ipLimit = await limitIpRequest(request, 'assistant');
+    if (ipLimit) return ipLimit;
     const parsed = parseAssistantRequest(await request.json().catch(() => null));
     if (!parsed.ok) return NextResponse.json({ error: parsed.error }, { status: 400 });
 
@@ -45,17 +47,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Нэвтрэх шаардлагатай.' }, { status: 401 });
     }
 
-    // Нэг account + нэг IP дээр тусдаа хязгаар тавина. Энэ нь distributed hard limit биш
-    // боловч serverless instance дээрх abuse/spam-ыг бууруулна.
-    const userLimit = checkRateLimit(`assistant:user:${userId}`, 30, 10 * 60_000);
-    const ipLimit = checkRateLimit(`assistant:ip:${getClientIp(request)}`, 60, 10 * 60_000);
-    if (!userLimit.allowed || !ipLimit.allowed) {
-      const retryAfterSec = Math.max(userLimit.retryAfterSec, ipLimit.retryAfterSec);
-      return NextResponse.json(
-        { error: 'Хэт олон хүсэлт илгээлээ. Түр хүлээгээд дахин оролдоно уу.' },
-        { status: 429, headers: { 'Retry-After': String(retryAfterSec) } },
-      );
-    }
+    const userLimit = await limitUserRequest('assistant', userId);
+    if (userLimit) return userLimit;
 
     const apiKey = process.env.GROQ_API_KEY;
     if (!apiKey) return NextResponse.json({ text: null });

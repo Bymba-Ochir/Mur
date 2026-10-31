@@ -1,3 +1,4 @@
+import { limitIpRequest, limitUserRequest } from '../../../../lib/apiRateLimit';
 import { reportError } from '../../../../lib/errorTracking';
 import { NextResponse } from 'next/server';
 import { requireRequestUser } from '../../../../lib/serverAuth';
@@ -6,9 +7,13 @@ import { ownedPetPhotoStoragePath } from '../../../../lib/storageObjectPath';
 
 export async function DELETE(request: Request) {
   try {
+    const ipLimit = await limitIpRequest(request, 'account-delete');
+    if (ipLimit) return ipLimit;
     const body = await request.json();
     if (body.confirmation !== 'УСТГАХ') return NextResponse.json({ error: 'Баталгаажуулах үг буруу байна.' }, { status: 400 });
     const { user, admin } = await requireRequestUser(request);
+    const userLimit = await limitUserRequest('account-delete', user.id, admin);
+    if (userLimit) return userLimit;
     const [pets, adoptions, sitting] = await Promise.all([
       admin.from('pets').select('id').eq('created_by', user.id),
       admin.from('adoptions').select('id').eq('created_by', user.id),

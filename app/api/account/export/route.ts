@@ -1,3 +1,4 @@
+import { limitIpRequest, limitUserRequest } from '../../../../lib/apiRateLimit';
 import { reportError } from '../../../../lib/errorTracking';
 import { NextResponse } from 'next/server';
 import { requireRequestUser } from '../../../../lib/serverAuth';
@@ -5,7 +6,11 @@ import { fetchServerPhotoRecords } from '../../../../lib/serverPhotoRepository';
 
 export async function GET(request: Request) {
   try {
+    const ipLimit = await limitIpRequest(request, 'account-export');
+    if (ipLimit) return ipLimit;
     const { user, admin } = await requireRequestUser(request);
+    const userLimit = await limitUserRequest('account-export', user.id, admin);
+    if (userLimit) return userLimit;
     const queries = await Promise.all([
       admin.from('profiles').select('*').eq('id', user.id).maybeSingle(),
       admin.from('pets').select('id,status,name,type,breed,color,place,district,resolved,created_at').eq('created_by', user.id),

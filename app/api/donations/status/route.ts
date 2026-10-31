@@ -1,5 +1,5 @@
+import { limitIpRequest, limitServiceRequest } from '../../../../lib/apiRateLimit';
 import { reportError } from '../../../../lib/errorTracking';
-import { checkRateLimit, getClientIp } from '../../../../lib/rateLimit';
 // app/api/donations/status/route.ts
 import { NextResponse } from 'next/server';
 import { checkQPayPayment } from '../../../../lib/qpay';
@@ -9,8 +9,8 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(request: Request) {
   try {
-    const limit = checkRateLimit('donation-status:' + getClientIp(request), 60, 60_000);
-    if (!limit.allowed) return NextResponse.json({ error: 'Түр хүлээнэ үү.' }, { status: 429, headers: { 'Retry-After': String(limit.retryAfterSec), 'Cache-Control': 'no-store' } });
+    const ipLimit = await limitIpRequest(request, 'donation-status');
+    if (ipLimit) return ipLimit;
     const { searchParams } = new URL(request.url);
     const donationId = searchParams.get('donationId');
     const statusToken = searchParams.get('statusToken');
@@ -32,6 +32,8 @@ export async function GET(request: Request) {
     if (!donation) return NextResponse.json({ error: 'Хандив олдсонгүй' }, { status: 404 });
 
     if (donation.status === 'pending' && donation.invoice_id) {
+      const invoiceLimit = await limitServiceRequest('qpay-invoice', donation.invoice_id, supabaseAdmin);
+      if (invoiceLimit) return invoiceLimit;
       try {
         const checkResult = await checkQPayPayment(donation.invoice_id);
         if (checkResult.count >= 1) {

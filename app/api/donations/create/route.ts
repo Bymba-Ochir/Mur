@@ -1,9 +1,9 @@
+import { limitIpRequest } from '../../../../lib/apiRateLimit';
 import { reportError } from '../../../../lib/errorTracking';
 // app/api/donations/create/route.ts
 import { NextResponse } from 'next/server';
 import { randomBytes, randomUUID } from 'crypto';
 import { createQPayInvoice } from '../../../../lib/qpay';
-import { checkRateLimit, getClientIp } from '../../../../lib/rateLimit';
 import { createAdminClient } from '../../../../lib/supabaseAdmin';
 import { readIdempotencyKey } from '../../../../lib/idempotency';
 
@@ -48,6 +48,8 @@ function donationPayload(row: DonationRow, deepLinks?: unknown[]) {
 
 export async function POST(request: Request) {
   try {
+    const ipLimit = await limitIpRequest(request, 'donation-create');
+    if (ipLimit) return ipLimit;
     const idempotencyKey = readIdempotencyKey(request);
     if (!idempotencyKey) {
       return NextResponse.json({ error: 'Idempotency-Key шаардлагатай.' }, { status: 400 });
@@ -118,13 +120,8 @@ export async function POST(request: Request) {
       existing = await readDonation();
     } else {
       // Rate limit зөвхөн шинэ logical operation-д үйлчилнэ; ижил key-тэй retry-г дахин тоолохгүй.
-      const rl = checkRateLimit(`donate:${getClientIp(request)}`, 5, 60_000);
-      if (!rl.allowed) {
-        return NextResponse.json(
-          { error: 'Хэт олон хүсэлт илгээлээ. Түр хүлээгээд дахин оролдоно уу.' },
-          { status: 429, headers: { 'Retry-After': String(rl.retryAfterSec) } },
-        );
-      }
+      const newLimit = await limitIpRequest(request, 'donation-new', supabaseAdmin);
+      if (newLimit) return newLimit;
 
       const statusToken = randomBytes(32).toString('hex');
       const { error: reserveError } = await supabaseAdmin.from('donations').insert({

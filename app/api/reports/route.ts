@@ -1,7 +1,7 @@
+import { limitIpRequest, limitUserRequest } from '../../../lib/apiRateLimit';
 import { reportError } from '../../../lib/errorTracking';
 import { NextResponse } from 'next/server';
 import { requireRequestUser } from '../../../lib/serverAuth';
-import { checkRateLimit, getClientIp } from '../../../lib/rateLimit';
 import { cleanText } from '../../../lib/inputValidation';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -9,9 +9,11 @@ const ALLOWED_REASONS = new Set(['Хуурамч мэдээлэл', 'Спам', 
 
 export async function POST(request: Request) {
   try {
+    const ipLimit = await limitIpRequest(request, 'reports');
+    if (ipLimit) return ipLimit;
     const { user, admin } = await requireRequestUser(request);
-    const limit = checkRateLimit(`report:${user.id}:${getClientIp(request)}`, 8, 60 * 60_000);
-    if (!limit.allowed) return NextResponse.json({ error: 'Хэт олон report илгээлээ. Түр хүлээнэ үү.' }, { status: 429, headers: { 'Retry-After': String(limit.retryAfterSec) } });
+    const userLimit = await limitUserRequest('reports', user.id, admin);
+    if (userLimit) return userLimit;
     const body = await request.json() as { petId?: unknown; reason?: unknown };
     if (typeof body.petId !== 'string' || !UUID.test(body.petId)) return NextResponse.json({ error: 'Зарын дугаар буруу байна.' }, { status: 400 });
     if (typeof body.reason !== 'string' || !ALLOWED_REASONS.has(body.reason)) return NextResponse.json({ error: 'Report-ийн шалтгаан буруу байна.' }, { status: 400 });

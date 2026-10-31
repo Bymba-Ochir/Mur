@@ -1,3 +1,4 @@
+import { limitServiceRequest } from '../../../lib/apiRateLimit';
 import { reportError } from '../../../lib/errorTracking';
 import { NextResponse } from 'next/server';
 import webpush from 'web-push';
@@ -30,6 +31,8 @@ export async function GET(request: Request) {
   const today = new Date().toISOString().slice(0, 10);
 
   try {
+    const serviceLimit = await limitServiceRequest('cron', 'global', admin);
+    if (serviceLimit) return serviceLimit;
     const vaccines = await deliverReminderPages<VaccineClaim>(admin, today, {
       rpc: 'claim_due_vaccine_reminders_with_subscriptions',
       table: 'my_pets',

@@ -1,3 +1,4 @@
+import { limitIpRequest, limitServiceRequest } from '../../../../lib/apiRateLimit';
 import { reportError } from '../../../../lib/errorTracking';
 // app/api/qpay/callback/route.ts
 import { NextResponse } from 'next/server';
@@ -20,9 +21,15 @@ export async function POST(request: Request) {
       }
     }
 
+    const ipLimit = await limitIpRequest(request, 'qpay-callback');
+    if (ipLimit) return ipLimit;
+    const serviceLimit = await limitServiceRequest('qpay-callback');
+    if (serviceLimit) return serviceLimit;
     const body = await request.json();
     const invoiceId = body.invoice_id;
     if (typeof invoiceId !== 'string' || !invoiceId || invoiceId.length > 200) return NextResponse.json({ message: 'OK' }, { status: 200 });
+    const invoiceLimit = await limitServiceRequest('qpay-invoice', invoiceId);
+    if (invoiceLimit) return invoiceLimit;
 
     const supabaseAdmin = createAdminClient();
 

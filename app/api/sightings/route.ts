@@ -1,7 +1,7 @@
+import { limitIpRequest, limitUserRequest } from '../../../lib/apiRateLimit';
 import { reportError } from '../../../lib/errorTracking';
 import { NextResponse } from 'next/server';
 import { requireRequestUser } from '../../../lib/serverAuth';
-import { checkRateLimit, getClientIp } from '../../../lib/rateLimit';
 import { cleanText } from '../../../lib/inputValidation';
 import { readIdempotencyKey } from '../../../lib/idempotency';
 
@@ -22,6 +22,8 @@ interface SightingPet {
 
 export async function POST(request: Request) {
   try {
+    const ipLimit = await limitIpRequest(request, 'sightings');
+    if (ipLimit) return ipLimit;
     const idempotencyKey = readIdempotencyKey(request);
     if (!idempotencyKey) return NextResponse.json({ error: 'Idempotency-Key шаардлагатай.' }, { status: 400 });
 
@@ -67,8 +69,10 @@ export async function POST(request: Request) {
     }
 
     // Rate limit зөвхөн шинэ logical operation-д үйлчилнэ; retry duplicate бол дээр шууд буцсан.
-    const limit = checkRateLimit(`sighting:${user.id}:${getClientIp(request)}`, 10, 60 * 60_000);
-    if (!limit.allowed) return NextResponse.json({ error: 'Хэт олон мэдээлэл илгээлээ. Түр хүлээнэ үү.' }, { status: 429, headers: { 'Retry-After': String(limit.retryAfterSec) } });
+    const newUserLimit = await limitUserRequest('sighting-new', user.id, admin);
+    if (newUserLimit) return newUserLimit;
+    const newIpLimit = await limitIpRequest(request, 'sighting-new', admin);
+    if (newIpLimit) return newIpLimit;
 
     const { data: claimRows, error: claimError } = await admin.rpc('create_sighting_if_active', {
       target_id: idempotencyKey,

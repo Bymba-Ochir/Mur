@@ -1,3 +1,4 @@
+import { limitIpRequest, limitUserRequest } from '../../../../../lib/apiRateLimit';
 import { reportError } from '../../../../../lib/errorTracking';
 import { NextResponse } from 'next/server';
 import { requireRequestUser } from '../../../../../lib/serverAuth';
@@ -9,10 +10,14 @@ type ContentKind = 'pets' | 'adoptions' | 'sitting';
 
 export async function DELETE(request: Request, context: { params: Promise<{ kind: string; id: string }> }) {
   try {
+    const ipLimit = await limitIpRequest(request, 'content-delete');
+    if (ipLimit) return ipLimit;
     const { kind: rawKind, id } = await context.params;
     if (!['pets', 'adoptions', 'sitting'].includes(rawKind) || !UUID.test(id)) return NextResponse.json({ error: 'Устгах хүсэлт буруу байна.' }, { status: 400 });
     const kind = rawKind as ContentKind;
     const { user, admin } = await requireRequestUser(request);
+    const userLimit = await limitUserRequest('content-delete', user.id, admin);
+    if (userLimit) return userLimit;
     const { data: adminRow } = await admin.from('admins').select('user_id').eq('user_id', user.id).maybeSingle();
     let row: Record<string, unknown> | null = null;
     let table = '';

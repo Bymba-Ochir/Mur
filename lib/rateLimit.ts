@@ -1,8 +1,6 @@
 // lib/rateLimit.ts
-// Энгийн in-memory rate limiter. Vercel serverless-д instance бүрд хамаардаг тул
-// бүрэн хатуу хязгаарлалт БИШ, харин spam-ыг мэдэгдэхүйц бууруулдаг MVP түвшний
-// хамгаалалт. Чанга хязгаарлалт хэрэгтэй бол Upstash/Redis эсвэл DB-суурилсан
-// тоолуур руу шилжинэ.
+// Instance-local burst guard only. Authoritative quotas use apiRateLimit.ts.
+import { isIP } from 'node:net';
 
 type Entry = { count: number; resetAt: number };
 
@@ -39,8 +37,27 @@ export function checkRateLimit(
 }
 
 export function getClientIp(request: Request): string {
-  // Vercel/прокси-гийн x-forwarded-for (эхнийх нь клиентийн IP)
-  const fwd = request.headers.get('x-forwarded-for');
-  if (fwd) return fwd.split(',')[0].trim();
-  return request.headers.get('x-real-ip') || 'unknown';
+  // Only trust forwarding headers on the hosting platform that overwrites them.
+  // Self-hosted/local requests share a conservative bucket instead of trusting
+  // arbitrary browser-supplied x-forwarded-for / x-real-ip values.
+  if (process.env.VERCEL !== '1') return 'unknown';
+  const raw = (request.headers.get('x-vercel-forwarded-for') ?? request.headers.get('x-forwarded-for') ?? '').trim();
+  if (isIP(raw) === 4) return raw;
+  if (isIP(raw) !== 6) return 'unknown';
+  try {
+    const canonical = new URL(`http://[${raw}]/`).hostname.slice(1, -1);
+    const [left, right = ''] = canonical.split('::');
+    const prefix = left ? left.split(':') : [];
+    const suffix = right ? right.split(':') : [];
+    const groups = canonical.includes('::')
+      ? [...prefix, ...Array<string>(8 - prefix.length - suffix.length).fill('0'), ...suffix]
+      : prefix;
+    const numbers = groups.map((group) => parseInt(group, 16));
+    // IPv4-mapped IPv6 must use the same bucket as its IPv4 spelling.
+    if (numbers.slice(0, 5).every((part) => part === 0) && numbers[5] === 0xffff) {
+      return [numbers[6] >> 8, numbers[6] & 255, numbers[7] >> 8, numbers[7] & 255].join('.');
+    }
+    // Address rotation within an IPv6 /64 cannot generate fresh IP budgets.
+    return `${numbers.slice(0, 4).map((part) => part.toString(16)).join(':')}::/64`;
+  } catch { return 'unknown'; }
 }

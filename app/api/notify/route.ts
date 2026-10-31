@@ -1,3 +1,4 @@
+import { limitServiceRequest } from '../../../lib/apiRateLimit';
 import { reportError } from '../../../lib/errorTracking';
 import { isAllowedPushEndpoint } from '../../../lib/pushEndpoint';
 // app/api/notify/route.ts
@@ -12,9 +13,16 @@ import { createAdminClient } from '../../../lib/supabaseAdmin';
 export async function POST(request: Request) {
   // 1. Webhook-ийн нууц түлхүүрээр баталгаажуулна (хэн ч дуудахаас сэргийлнэ)
   const secret = request.headers.get('x-webhook-secret');
+  if (!process.env.NOTIFY_WEBHOOK_SECRET?.trim()) {
+    reportError(new Error('NOTIFY_WEBHOOK_SECRET is not configured'), { area: 'backend', operation: 'nearby-notification-auth' });
+    return NextResponse.json({ error: 'Webhook тохиргоо дутуу байна.' }, { status: 503 });
+  }
   if (secret !== process.env.NOTIFY_WEBHOOK_SECRET) {
     return NextResponse.json({ error: 'Зөвшөөрөлгүй' }, { status: 401 });
   }
+
+  const serviceLimit = await limitServiceRequest('notify');
+  if (serviceLimit) return serviceLimit;
 
   const body = await request.json();
   const pet = body.record; // Supabase webhook payload-ийн шинэ мөр

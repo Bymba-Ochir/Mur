@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 vi.mock('../../lib/errorTracking', () => ({ reportError: vi.fn() }));
+vi.mock('../../lib/apiRateLimit', () => ({ limitIpRequest: async () => null, limitUserRequest: async () => null, limitServiceRequest: async () => null }));
 vi.mock('../../lib/supabaseAdmin', () => ({ createAdminClient: vi.fn() }));
 vi.mock('../../lib/qpay', () => ({ checkQPayPayment: vi.fn() }));
 import { reportError } from '../../lib/errorTracking';
