@@ -48,7 +48,19 @@ export async function fetchMyAdoptionApplicationsPage(page = 0): Promise<PageRes
 export async function fetchMyAdoptionApplications(): Promise<AdoptionApplication[]> {
   return (await fetchMyAdoptionApplicationsPage(0)).items;
 }
-export async function updateAdoptionApplication(id: string, status: 'accepted' | 'rejected' | 'cancelled'): Promise<void> { const { error } = await supabase.from('adoption_applications').update({ status }).eq('id', id).neq('status', status); if (error) throw error; }
+export async function updateAdoptionApplication(id: string, status: 'accepted' | 'rejected' | 'cancelled'): Promise<void> {
+  const rpc = await supabase.rpc('transition_adoption_application', {
+    target_application: id,
+    target_status: status,
+  });
+  if (!rpc.error) return;
+  if (!/could not find the function|function .* does not exist|schema cache/i.test(rpc.error.message ?? '')) throw rpc.error;
+
+  // v99 rollout compatibility only. Once the migration is applied, the RPC
+  // serializes competing transitions under the parent listing row lock.
+  const { error } = await supabase.from('adoption_applications').update({ status }).eq('id', id).neq('status', status);
+  if (error) throw error;
+}
 
 export async function createSittingBooking(listingId: string, start: string, end: string, note: string): Promise<void> {
   const id = await userId(); const startDate = optionalIsoDate(start, 'Эхлэх огноо'); const endDate = optionalIsoDate(end, 'Дуусах огноо');
@@ -81,7 +93,17 @@ export async function fetchMySittingBookingsPage(page = 0): Promise<PageResult<S
 export async function fetchMySittingBookings(): Promise<SittingBooking[]> {
   return (await fetchMySittingBookingsPage(0)).items;
 }
-export async function updateSittingBooking(id: string, status: 'accepted' | 'rejected' | 'completed' | 'cancelled'): Promise<void> { const { error } = await supabase.from('sitting_bookings').update({ status }).eq('id', id).neq('status', status); if (error) throw error; }
+export async function updateSittingBooking(id: string, status: 'accepted' | 'rejected' | 'completed' | 'cancelled'): Promise<void> {
+  const rpc = await supabase.rpc('transition_sitting_booking', {
+    target_booking: id,
+    target_status: status,
+  });
+  if (!rpc.error) return;
+  if (!/could not find the function|function .* does not exist|schema cache/i.test(rpc.error.message ?? '')) throw rpc.error;
+
+  const { error } = await supabase.from('sitting_bookings').update({ status }).eq('id', id).neq('status', status);
+  if (error) throw error;
+}
 export async function fetchSittingReviews(sitterId: string): Promise<SittingReview[]> { const { data, error } = await supabase.from('sitting_reviews').select('*').eq('sitter_id', sitterId).order('created_at', { ascending: false }); if (error) throw error; return data.map(reviewRow); }
 export async function createSittingReview(bookingId: string, sitterId: string, rating: number, comment: string): Promise<void> { const id = await userId(); if (!Number.isInteger(rating) || rating < 1 || rating > 5) throw new Error('1–5 од сонгоно уу.'); const cleanedComment = cleanText(comment, 1000, 'Сэтгэгдэл') || null; const { error } = await supabase.from('sitting_reviews').insert({ booking_id: bookingId, reviewer_id: id, sitter_id: sitterId, rating, comment: cleanedComment }); if (error?.code === '23505') { const { data: existing, error: existingError } = await supabase.from('sitting_reviews').select('reviewer_id,sitter_id,rating,comment').eq('booking_id', bookingId).maybeSingle(); if (existingError) throw existingError; if (existing?.reviewer_id === id && existing.sitter_id === sitterId && Number(existing.rating) === rating && (existing.comment ?? null) === cleanedComment) return; throw new Error('Энэ захиалгыг өмнө нь үнэлсэн байна.'); } if (error) throw error; }
 

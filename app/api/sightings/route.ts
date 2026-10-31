@@ -17,7 +17,6 @@ interface ExistingSighting {
 interface SightingPet {
   id: string;
   created_by: string | null;
-  resolved: boolean;
 }
 
 export async function POST(request: Request) {
@@ -41,11 +40,6 @@ export async function POST(request: Request) {
       if (error) throw error;
       return data as ExistingSighting | null;
     };
-    const readPet = async (petId: string): Promise<SightingPet | null> => {
-      const { data, error } = await admin.from('pets').select('id,created_by,resolved').eq('id', petId).maybeSingle();
-      if (error) throw error;
-      return data as SightingPet | null;
-    };
     const notifyOwnerOnce = async (pet: SightingPet) => {
       if (!pet.created_by || pet.created_by === user.id) return;
       const { error } = await admin.from('notifications').insert({
@@ -66,8 +60,8 @@ export async function POST(request: Request) {
         && existing.message === message
         && existing.place === place;
       if (!sameRequest) return NextResponse.json({ error: 'Idempotency-Key өөр хүсэлтэд аль хэдийн ашиглагдсан байна.' }, { status: 409 });
-      const pet = await readPet(existing.pet_id);
-      if (pet) await notifyOwnerOnce(pet);
+      const { data: pet } = await admin.from('pets').select('id,created_by').eq('id', existing.pet_id).maybeSingle();
+      if (pet) await notifyOwnerOnce(pet as SightingPet);
       return NextResponse.json({ ok: true, duplicate: true }, { status: 200 });
     }
 
@@ -75,20 +69,30 @@ export async function POST(request: Request) {
     const limit = checkRateLimit(`sighting:${user.id}:${getClientIp(request)}`, 10, 60 * 60_000);
     if (!limit.allowed) return NextResponse.json({ error: 'Хэт олон мэдээлэл илгээлээ. Түр хүлээнэ үү.' }, { status: 429, headers: { 'Retry-After': String(limit.retryAfterSec) } });
 
-    const pet = await readPet(body.petId);
-    if (!pet || pet.resolved) return NextResponse.json({ error: 'Идэвхтэй зар олдсонгүй.' }, { status: 404 });
-
-    const { error } = await admin.from('sightings').insert({ id: idempotencyKey, pet_id: pet.id, reporter_id: user.id, message, place });
-    if (error) {
-      if (error.code === '23505') {
-        const raced = await readExisting();
-        if (raced && raced.pet_id === pet.id && raced.reporter_id === user.id && raced.message === message && raced.place === place) {
-          await notifyOwnerOnce(pet);
-          return NextResponse.json({ ok: true, duplicate: true }, { status: 200 });
-        }
-        return NextResponse.json({ error: 'Idempotency-Key өөр хүсэлтэд аль хэдийн ашиглагдсан байна.' }, { status: 409 });
+    const { data: claimRows, error: claimError } = await admin.rpc('create_sighting_if_active', {
+      target_id: idempotencyKey,
+      target_pet: body.petId,
+      target_reporter: user.id,
+      target_message: message,
+      target_place: place,
+    });
+    if (claimError) {
+      if (/PET_NOT_ACTIVE/.test(claimError.message ?? '')) {
+        return NextResponse.json({ error: 'Идэвхтэй зар олдсонгүй.' }, { status: 404 });
       }
-      throw error;
+      throw claimError;
+    }
+
+    const claim = Array.isArray(claimRows) ? claimRows[0] : claimRows;
+    const pet: SightingPet = { id: body.petId, created_by: claim?.owner_id ?? null };
+
+    if (!claim?.created) {
+      const raced = await readExisting();
+      if (raced && raced.pet_id === body.petId && raced.reporter_id === user.id && raced.message === message && raced.place === place) {
+        await notifyOwnerOnce(pet);
+        return NextResponse.json({ ok: true, duplicate: true }, { status: 200 });
+      }
+      return NextResponse.json({ error: 'Idempotency-Key өөр хүсэлтэд аль хэдийн ашиглагдсан байна.' }, { status: 409 });
     }
 
     await notifyOwnerOnce(pet);
