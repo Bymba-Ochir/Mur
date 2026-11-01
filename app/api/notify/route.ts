@@ -1,17 +1,14 @@
+import { NextResponse } from 'next/server';
 import { limitServiceRequest } from '../../../lib/apiRateLimit';
 import { reportError } from '../../../lib/errorTracking';
-import { isAllowedPushEndpoint } from '../../../lib/pushEndpoint';
-// app/api/notify/route.ts
-//
-// Supabase Database Webhook-оор дуудагдана (pets хүснэгтэд шинэ мөр INSERT
-// хийгдэх бүрд). Тухайн бичлэгийн дүүрэгт бүртгэлтэй push subscription-уудад
-// "Nearby Alert" мэдэгдэл илгээнэ.
-import { NextResponse } from 'next/server';
-import webpush from 'web-push';
 import { createAdminClient } from '../../../lib/supabaseAdmin';
+import { scheduleBackgroundJobs } from '../../../lib/backgroundJobs';
 
+export const maxDuration = 60;
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+/** Supabase pets INSERT webhook: persist the job, then acknowledge immediately. */
 export async function POST(request: Request) {
-  // 1. Webhook-ийн нууц түлхүүрээр баталгаажуулна (хэн ч дуудахаас сэргийлнэ)
   const secret = request.headers.get('x-webhook-secret');
   if (!process.env.NOTIFY_WEBHOOK_SECRET?.trim()) {
     reportError(new Error('NOTIFY_WEBHOOK_SECRET is not configured'), { area: 'backend', operation: 'nearby-notification-auth' });
@@ -20,53 +17,20 @@ export async function POST(request: Request) {
   if (secret !== process.env.NOTIFY_WEBHOOK_SECRET) {
     return NextResponse.json({ error: 'Зөвшөөрөлгүй' }, { status: 401 });
   }
-
   const serviceLimit = await limitServiceRequest('notify');
   if (serviceLimit) return serviceLimit;
-
-  const body = await request.json();
-  const pet = body.record; // Supabase webhook payload-ийн шинэ мөр
-
-  if (!pet || !pet.district) {
-    return NextResponse.json({ error: 'district байхгүй бичлэг' }, { status: 400 });
+  const body = await request.json().catch(() => null);
+  const petId = body?.record?.id;
+  if (typeof petId !== 'string' || !UUID.test(petId)) {
+    return NextResponse.json({ error: 'Зарын дугаар буруу байна.' }, { status: 400 });
   }
-
-  // 2. VAPID тохиргоо
-  webpush.setVapidDetails(
-    'mailto:mur-mvp@example.com',
-    process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
-    process.env.VAPID_PRIVATE_KEY!
-  );
-
-  // 3. Service role key-ээр (RLS-г тойрсон) тухайн дүүргийн subscription-уудыг ав
-  const supabaseAdmin = createAdminClient();
-
-  const { data: subs, error } = await supabaseAdmin
-    .from('push_subscriptions')
-    .select('*')
-    .eq('district', pet.district);
-
-  if (error) {
-    reportError(error, { area: 'backend', operation: 'nearby-notification-subscriptions' });
-    return NextResponse.json({ error: 'Мэдэгдэл илгээхэд алдаа гарлаа' }, { status: 500 });
+  try {
+    const { data, error } = await createAdminClient().rpc('enqueue_nearby_notification', { target_pet: petId });
+    if (error) throw error;
+    if (data) scheduleBackgroundJobs();
+    return NextResponse.json({ accepted: Boolean(data) }, { status: 202, headers: { 'Cache-Control': 'no-store' } });
+  } catch (error) {
+    reportError(error, { area: 'backend', operation: 'nearby-notification-enqueue' });
+    return NextResponse.json({ error: 'Мэдэгдлийн ажил хадгалж чадсангүй.' }, { status: 503 });
   }
-
-  const statusLabel = pet.status === 'lost' ? 'Алдсан' : 'Олдсон';
-  const payload = JSON.stringify({
-    title: `${statusLabel} ${pet.type} — ${pet.district}`,
-    body: `${pet.place || ''} орчимд шинэ мэдэгдэл бүртгэгдлээ.`,
-    url: `/pets/${pet.id}`,
-  });
-
-  const results = await Promise.allSettled(
-    (subs || []).filter(sub => isAllowedPushEndpoint(sub.endpoint)).map((sub) =>
-      webpush.sendNotification(
-        { endpoint: sub.endpoint, keys: sub.keys },
-        payload
-      )
-    )
-  );
-
-  const sent = results.filter((r) => r.status === 'fulfilled').length;
-  return NextResponse.json({ sent, total: subs?.length || 0 });
 }

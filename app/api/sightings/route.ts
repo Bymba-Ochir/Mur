@@ -4,6 +4,9 @@ import { NextResponse } from 'next/server';
 import { requireRequestUser } from '../../../lib/serverAuth';
 import { cleanText } from '../../../lib/inputValidation';
 import { readIdempotencyKey } from '../../../lib/idempotency';
+import { scheduleBackgroundJobs } from '../../../lib/backgroundJobs';
+
+export const maxDuration = 60;
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -13,11 +16,6 @@ interface ExistingSighting {
   reporter_id: string | null;
   message: string;
   place: string | null;
-}
-
-interface SightingPet {
-  id: string;
-  created_by: string | null;
 }
 
 export async function POST(request: Request) {
@@ -43,17 +41,14 @@ export async function POST(request: Request) {
       if (error) throw error;
       return data as ExistingSighting | null;
     };
-    const notifyOwnerOnce = async (pet: SightingPet) => {
-      if (!pet.created_by || pet.created_by === user.id) return;
-      const { error } = await admin.from('notifications').insert({
-        id: idempotencyKey,
-        user_id: pet.created_by,
-        type: 'sighting',
-        title: 'Таны амьтныг харсан мэдээлэл ирлээ',
-        body: place ? `${place} орчим харсан мэдээлэл нэмэгдлээ.` : 'Шинэ харсан мэдээлэл нэмэгдлээ.',
-        href: `/pets/${pet.id}`,
-      });
-      if (error && error.code !== '23505') throw error;
+    const complete = async (duplicate: boolean) => {
+      if (duplicate) {
+        // Repair pre-v103 attempts too; the DB derives the recipient/content.
+        const { error } = await admin.rpc('enqueue_sighting_notification', { target_id: idempotencyKey });
+        if (error) throw error;
+      }
+      scheduleBackgroundJobs();
+      return NextResponse.json({ ok: true, ...(duplicate ? { duplicate: true } : {}) }, { status: duplicate ? 200 : 201 });
     };
 
     const existing = await readExisting();
@@ -63,9 +58,7 @@ export async function POST(request: Request) {
         && existing.message === message
         && existing.place === place;
       if (!sameRequest) return NextResponse.json({ error: 'Idempotency-Key өөр хүсэлтэд аль хэдийн ашиглагдсан байна.' }, { status: 409 });
-      const { data: pet } = await admin.from('pets').select('id,created_by').eq('id', existing.pet_id).maybeSingle();
-      if (pet) await notifyOwnerOnce(pet as SightingPet);
-      return NextResponse.json({ ok: true, duplicate: true }, { status: 200 });
+      return await complete(true);
     }
 
     // Rate limit зөвхөн шинэ logical operation-д үйлчилнэ; retry duplicate бол дээр шууд буцсан.
@@ -89,19 +82,16 @@ export async function POST(request: Request) {
     }
 
     const claim = Array.isArray(claimRows) ? claimRows[0] : claimRows;
-    const pet: SightingPet = { id: body.petId, created_by: claim?.owner_id ?? null };
-
     if (!claim?.created) {
       const raced = await readExisting();
       if (raced && raced.pet_id === body.petId && raced.reporter_id === user.id && raced.message === message && raced.place === place) {
-        await notifyOwnerOnce(pet);
-        return NextResponse.json({ ok: true, duplicate: true }, { status: 200 });
+        return await complete(true);
       }
       return NextResponse.json({ error: 'Idempotency-Key өөр хүсэлтэд аль хэдийн ашиглагдсан байна.' }, { status: 409 });
     }
 
-    await notifyOwnerOnce(pet);
-    return NextResponse.json({ ok: true }, { status: 201 });
+    // v103's trigger commits the job in the same transaction as the v99 RPC.
+    return await complete(false);
   } catch (error) {
     reportError(error, { area: 'backend', operation: 'create-sighting' });
     const unauthorized = error instanceof Error && error.message === 'UNAUTHORIZED';

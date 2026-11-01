@@ -4,6 +4,7 @@ vi.mock('../../lib/apiRateLimit', () => ({ limitIpRequest: vi.fn(), limitUserReq
 vi.mock('../../lib/serverAuth', () => ({ requireRequestUser: vi.fn() }));
 vi.mock('../../lib/supabaseAdmin', () => ({ createAdminClient: vi.fn() }));
 vi.mock('../../lib/errorTracking', () => ({ reportError: vi.fn() }));
+vi.mock('../../lib/backgroundJobs', () => ({ scheduleBackgroundJobs: vi.fn() }));
 vi.mock('../../lib/qpay', () => ({ checkQPayPayment: vi.fn(), createQPayInvoice: vi.fn() }));
 vi.mock('web-push', () => ({ default: { setVapidDetails: vi.fn(), sendNotification: vi.fn() } }));
 
@@ -25,6 +26,7 @@ import { POST as callback } from '../../app/api/qpay/callback/route';
 import { GET as pushStatus, POST as pushCreate } from '../../app/api/push-subscriptions/route';
 import { POST as notify } from '../../app/api/notify/route';
 import { GET as cron } from '../../app/api/vaccine-reminders/route';
+import { GET as backgroundWorker } from '../../app/api/background-jobs/route';
 
 const id = '4ae02d5a-f9a3-4bf0-b7de-059c86f85a4d';
 const petId = '7dc31e58-2087-41c3-821c-ed4515aa5d47';
@@ -55,6 +57,7 @@ const endpoints: Array<[string, () => Promise<Response>]> = [
   ['POST /push-subscriptions', () => pushCreate(request('/api/push-subscriptions'))],
   ['POST /notify', () => notify(request('/api/notify', 'POST', {}, { 'x-webhook-secret': 'private' }))],
   ['GET /vaccine-reminders', () => cron(request('/api/vaccine-reminders', 'GET'))],
+  ['GET /background-jobs', () => backgroundWorker(request('/api/background-jobs', 'GET'))],
 ];
 
 beforeEach(() => {
@@ -136,13 +139,14 @@ describe('authenticated budgets and trusted service entry points', () => {
   });
 
   it('keeps sighting idempotent retries out of the new-sighting quotas', async () => {
+    rpc.mockResolvedValue({ data: null, error: null });
     from.mockImplementation((table: string) => ({ select: () => ({ eq: () => ({ maybeSingle: async () => ({ error: null, data: table === 'sightings' ? { id, pet_id: petId, reporter_id: 'verified-user', message: 'Seen', place: 'Park' } : { id: petId, created_by: 'verified-user' } }) }) }) }));
     const response = await sightings(request('/api/sightings', 'POST', { petId, message: 'Seen', place: 'Park' }));
     expect(response.status).toBe(200);
     expect(await response.json()).toMatchObject({ duplicate: true });
     expect(limitIpRequest).toHaveBeenCalledTimes(1);
     expect(limitUserRequest).not.toHaveBeenCalled();
-    expect(rpc).not.toHaveBeenCalled();
+    expect(rpc).toHaveBeenCalledExactlyOnceWith('enqueue_sighting_notification', { target_id: id });
   });
 
   it('stops QPay polling before the provider when the invoice quota is exhausted', async () => {

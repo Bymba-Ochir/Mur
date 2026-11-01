@@ -14,6 +14,7 @@ self.addEventListener('push', (event) => {
     body: data.body || 'Танай дүүрэгт шинэ алдсан/олдсон амьтан бүртгэгдлээ.',
     icon: '/icon-192.png',
     badge: '/icon-192.png',
+    ...(typeof data.tag === 'string' ? { tag: data.tag, renotify: false } : {}),
     data: { url: data.url || '/listings' },
   };
 

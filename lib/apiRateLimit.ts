@@ -27,6 +27,7 @@ export const API_RATE_POLICIES = {
   'qpay-callback': { ip: minute(240), service: minute(300) },
   'qpay-invoice': { service: minute(30) },
   notify: { service: minute(120) },
+  'background-jobs': { service: minute(12) },
   cron: { service: minute(2) },
 } satisfies Record<string, Policy>;
 
