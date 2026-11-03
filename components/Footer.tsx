@@ -2,7 +2,6 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useLanguage } from '../lib/i18n';
-import FeedbackButton from './FeedbackButton';
 
 export default function Footer() {
   const { t } = useLanguage();
@@ -20,7 +19,6 @@ export default function Footer() {
           <div>
             <span className="footer-name">МӨР</span>
             <p className="footer-tagline">{t('footer_tagline')}</p>
-            <div className="footer-feedback"><FeedbackButton /></div>
           </div>
         </div>
         <nav className="footer-links" aria-label={t('footer_nav_label')}>
@@ -82,7 +80,6 @@ export default function Footer() {
           font-size: 13px; color: var(--text-tertiary); margin-top: 4px;
           line-height: 1.6; max-width: 340px;
         }
-        .footer-feedback { margin-top: var(--sp-2); }
         @media (min-width: 1025px) {
           .footer-tagline { font-size: 13.5px; max-width: 380px; }
         }

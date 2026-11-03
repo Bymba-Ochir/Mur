@@ -11,7 +11,8 @@ vi.mock('../../components/ThemeToggle',()=>({default:()=>null}));
 vi.mock('../../components/LanguageToggle',()=>({default:()=>null}));
 vi.mock('../../components/LoginModal',()=>({default:()=>null}));
 import Navbar from '../../components/Navbar';
-import FeedbackButton, { FeedbackProvider } from '../../components/FeedbackButton';
+import Footer from '../../components/Footer';
+import { FeedbackProvider } from '../../components/FeedbackButton';
 import { ToastProvider } from '../../components/Toast';
 import { LanguageProvider } from '../../lib/i18n';
 
@@ -68,9 +69,9 @@ describe('navbar account state',()=>{
  });
 });
 
-it('opens one feedback form from the header and preserves its draft when opened from the footer', async () => {
+it('opens feedback from the header and preserves the draft on reopen', async () => {
   mocks.user = null;
-  render(<><Navbar /><footer><FeedbackButton /></footer></>, { wrapper: Providers });
+  render(<><Navbar /><Footer /></>, { wrapper: Providers });
   const navButton = within(screen.getByRole('banner')).getByRole('button', { name: 'Санал хүсэлт' });
   navButton.focus();
   fireEvent.click(navButton);
@@ -80,8 +81,8 @@ it('opens one feedback form from the header and preserves its draft when opened 
   expect(navButton).toHaveFocus();
   expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
 
-  const footerButton = within(screen.getByRole('contentinfo')).getByRole('button', { name: 'Санал хүсэлт' });
-  fireEvent.click(footerButton);
+  expect(within(screen.getByRole('contentinfo')).queryByRole('button', { name: 'Санал хүсэлт' })).not.toBeInTheDocument();
+  fireEvent.click(navButton);
   expect(screen.getAllByRole('dialog')).toHaveLength(1);
   expect(screen.getByLabelText('Таны санал')).toHaveValue('Saved draft');
 });
