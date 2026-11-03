@@ -87,14 +87,11 @@ export async function createQPayInvoice(input: QPayInvoiceInput): Promise<QPayIn
   return res.json();
 }
 
-export async function checkQPayPayment(invoice_id: string): Promise<{ count: number }> {
+export async function checkQPayPayment(invoice_id: string, expectedAmount: number): Promise<boolean> {
   validateConfig();
   const token = await getQPayToken();
 
-  // Dev mode: return mock paid status
-  if (token === 'dev-mock-token') {
-    return { count: 1 };
-  }
+  if (token === 'dev-mock-token') return false;
 
   const res = await fetch(`${QPAY_BASE_URL}/v2/payment/check`, {
     method: 'POST',
@@ -102,12 +99,22 @@ export async function checkQPayPayment(invoice_id: string): Promise<{ count: num
     body: JSON.stringify({
       object_type: 'INVOICE',
       object_id: invoice_id,
-      offset: { page_number: 1, page_limit: 100 },
+      offset: { page_number: 1, page_limit: 10 },
     }),
   });
 
   if (!res.ok) {
     throw new Error(`QPay төлбөр шалгахад алдаа гарлаа: HTTP ${res.status}`);
   }
-  return res.json();
+  const result = await res.json();
+  if (result?.count === 0) return false;
+  if (!Number.isSafeInteger(result?.count) || result.count < 1 || !Array.isArray(result.rows)) {
+    throw new Error('Invalid QPay payment check response');
+  }
+  const paidAmount = result.paid_amount;
+  return (typeof paidAmount === 'number' || typeof paidAmount === 'string')
+    && Number.isFinite(Number(paidAmount)) && Number(paidAmount) >= expectedAmount
+    && result.rows.some((payment: { payment_status?: string; payment_currency?: string } | null) =>
+      payment?.payment_status === 'PAID' && payment.payment_currency === 'MNT',
+    );
 }

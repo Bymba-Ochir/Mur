@@ -1,8 +1,7 @@
-import { limitIpRequest, limitServiceRequest } from '../../../../lib/apiRateLimit';
+import { limitIpRequest } from '../../../../lib/apiRateLimit';
 import { reportError } from '../../../../lib/errorTracking';
 // app/api/donations/status/route.ts
 import { NextResponse } from 'next/server';
-import { checkQPayPayment } from '../../../../lib/qpay';
 import { createAdminClient } from '../../../../lib/supabaseAdmin';
 
 export const dynamic = 'force-dynamic';
@@ -23,29 +22,13 @@ export async function GET(request: Request) {
 
     const { data: donation, error } = await supabaseAdmin
       .from('donations')
-      .select('id,status,amount,invoice_id')
+      .select('status,amount')
       .eq('id', donationId)
       .eq('status_token', statusToken)
       .maybeSingle();
 
     if (error) throw error;
     if (!donation) return NextResponse.json({ error: 'Хандив олдсонгүй' }, { status: 404 });
-
-    if (donation.status === 'pending' && donation.invoice_id) {
-      const invoiceLimit = await limitServiceRequest('qpay-invoice', donation.invoice_id, supabaseAdmin);
-      if (invoiceLimit) return invoiceLimit;
-      try {
-        const checkResult = await checkQPayPayment(donation.invoice_id);
-        if (checkResult.count >= 1) {
-          const { error: updateError } = await supabaseAdmin.from('donations').update({ status: 'paid' }).eq('id', donationId).eq('status', 'pending');
-          if (updateError) throw updateError;
-          donation.status = 'paid';
-        }
-      } catch (error) {
-        reportError(error, { area: 'backend', operation: 'donation-payment-check' });
-        // Шалгахад алдаа гарвал pending хэвээр үлдээнэ, polling үргэлжилнэ
-      }
-    }
 
     return NextResponse.json({ status: donation.status, amount: donation.amount }, { headers: { 'Cache-Control': 'no-store', 'Referrer-Policy': 'no-referrer' } });
   } catch (err) {

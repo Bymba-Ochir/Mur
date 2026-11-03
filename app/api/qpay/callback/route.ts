@@ -1,58 +1,85 @@
 import { limitIpRequest, limitServiceRequest } from '../../../../lib/apiRateLimit';
 import { reportError } from '../../../../lib/errorTracking';
-// app/api/qpay/callback/route.ts
 import { NextResponse } from 'next/server';
 import { checkQPayPayment } from '../../../../lib/qpay';
+import { verifyLegacyQPayCallbackSecret, verifyQPayCallbackSignature } from '../../../../lib/qpayCallback';
 import { createAdminClient } from '../../../../lib/supabaseAdmin';
+import { isIdempotencyKey } from '../../../../lib/idempotency';
 
-export async function POST(request: Request) {
+const noStore = { 'Cache-Control': 'no-store' };
+
+async function handleCallback(request: Request) {
+  const isGet = request.method === 'GET';
+  if (!isGet && request.method !== 'POST') return new Response(null, { status: 405 });
+
+  const acknowledge = () => isGet
+    ? new Response('SUCCESS', { headers: noStore })
+    : NextResponse.json({ message: 'OK' }, { headers: noStore });
+
   try {
-    if (!process.env.QPAY_CALLBACK_SECRET?.trim()) {
+    const secret = process.env.QPAY_CALLBACK_SECRET;
+    if (!secret?.trim()) {
       reportError(new Error('QPAY_CALLBACK_SECRET is not configured'), { area: 'backend', operation: 'qpay-callback' });
       return NextResponse.json({ error: 'Callback unavailable' }, { status: 503 });
     }
-    {
-      const url = new URL(request.url);
-      const secretParam = url.searchParams.get('secret');
-      const authHeader = request.headers.get('authorization');
-      const provided = authHeader?.replace('Bearer ', '') || secretParam;
-      if (provided !== process.env.QPAY_CALLBACK_SECRET) {
-        return NextResponse.json({ message: 'OK' }, { status: 200 });
-      }
+
+    const { searchParams } = new URL(request.url);
+    const donationId = searchParams.get('donationId');
+    const signature = searchParams.get('sig');
+    const signedUrl = donationId !== null || signature !== null;
+    const legacySecret = request.headers.get('authorization')?.match(/^Bearer (.+)$/i)?.[1] ?? searchParams.get('secret');
+    const authorized = signedUrl
+      ? isIdempotencyKey(donationId) && verifyQPayCallbackSignature(donationId, signature, secret)
+      : !isGet && !!legacySecret && verifyLegacyQPayCallbackSecret(legacySecret, secret);
+    if (!authorized) {
+      return NextResponse.json({ error: 'Invalid callback authentication' }, { status: 401, headers: noStore });
     }
+    if (isGet && !searchParams.get('qpay_payment_id')) return acknowledge();
 
     const ipLimit = await limitIpRequest(request, 'qpay-callback');
     if (ipLimit) return ipLimit;
     const serviceLimit = await limitServiceRequest('qpay-callback');
     if (serviceLimit) return serviceLimit;
-    const body = await request.json();
-    const invoiceId = body.invoice_id;
-    if (typeof invoiceId !== 'string' || !invoiceId || invoiceId.length > 200) return NextResponse.json({ message: 'OK' }, { status: 200 });
-    const invoiceLimit = await limitServiceRequest('qpay-invoice', invoiceId);
-    if (invoiceLimit) return invoiceLimit;
 
-    const supabaseAdmin = createAdminClient();
+    // Existing invoices already have the legacy callback URL registered with QPay.
+    let lookupId = donationId;
+    if (!signedUrl) {
+      const body = await request.json().catch(() => null);
+      const invoiceId: unknown = body?.invoice_id;
+      if (typeof invoiceId !== 'string' || !invoiceId || invoiceId.length > 200) return acknowledge();
+      lookupId = invoiceId;
+    }
 
-    const { data: donation, error: lookupError } = await supabaseAdmin
-      .from('donations')
-      .select('*')
-      .eq('invoice_id', invoiceId)
+    const admin = createAdminClient();
+    const { data: donation, error: lookupError } = await admin.from('donations')
+      .select('id,invoice_id,status,amount')
+      .eq(signedUrl ? 'id' : 'invoice_id', lookupId)
       .maybeSingle();
     if (lookupError) throw lookupError;
 
-    if (!donation || donation.status !== 'pending') {
-      return NextResponse.json({ message: 'OK' }, { status: 200 });
+    if (!donation || donation.status !== 'pending') return acknowledge();
+    if (!donation.invoice_id) {
+      return NextResponse.json({ error: 'Invoice is not ready' }, { status: 503, headers: noStore });
     }
 
-    const checkResult = await checkQPayPayment(invoiceId);
-    if (checkResult.count >= 1) {
-      const { error: updateError } = await supabaseAdmin.from('donations').update({ status: 'paid' }).eq('id', donation.id);
+    const invoiceLimit = await limitServiceRequest('qpay-invoice', donation.invoice_id, admin);
+    if (invoiceLimit) return invoiceLimit;
+
+    if (await checkQPayPayment(donation.invoice_id, donation.amount)) {
+      const { error: updateError } = await admin.from('donations')
+        .update({ status: 'paid' })
+        .eq('id', donation.id)
+        .eq('invoice_id', donation.invoice_id)
+        .eq('status', 'pending');
       if (updateError) throw updateError;
     }
 
-    return NextResponse.json({ message: 'OK' }, { status: 200 });
+    return acknowledge();
   } catch (err) {
     reportError(err, { area: 'backend', operation: 'qpay-callback' });
-    return NextResponse.json({ message: 'OK' }, { status: 200 });
+    return NextResponse.json({ error: 'Callback unavailable' }, { status: 503, headers: noStore });
   }
 }
+
+export const GET = handleCallback;
+export const POST = handleCallback;

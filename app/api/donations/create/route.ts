@@ -4,6 +4,7 @@ import { reportError } from '../../../../lib/errorTracking';
 import { NextResponse } from 'next/server';
 import { randomBytes, randomUUID } from 'crypto';
 import { createQPayInvoice } from '../../../../lib/qpay';
+import { createQPayCallbackUrl } from '../../../../lib/qpayCallback';
 import { createAdminClient } from '../../../../lib/supabaseAdmin';
 import { readIdempotencyKey } from '../../../../lib/idempotency';
 
@@ -81,9 +82,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Серверийн тохиргооны алдаа (SITE_URL)' }, { status: 500 });
     }
 
-    let callbackUrl = `${appUrl}/api/qpay/callback`;
-    if (process.env.QPAY_CALLBACK_SECRET) callbackUrl += `?secret=${process.env.QPAY_CALLBACK_SECRET}`;
-
     const supabaseAdmin = createAdminClient();
     const selectFields = 'id,amount,supporter_name,message,is_anonymous,status_token,invoice_id,qr_image,qr_text,created_at,invoice_claim_token,invoice_claimed_at';
     const readDonation = async (): Promise<DonationRow | null> => {
@@ -105,7 +103,16 @@ export async function POST(request: Request) {
       if (existing.qr_image && existing.invoice_id) {
         return NextResponse.json(donationPayload(existing));
       }
+    }
 
+    const callbackSecret = process.env.QPAY_CALLBACK_SECRET;
+    if (!callbackSecret?.trim()) {
+      reportError(new Error('QPAY_CALLBACK_SECRET is not configured'), { area: 'backend', operation: 'donation-create' });
+      return NextResponse.json({ error: 'QPay түр боломжгүй байна.' }, { status: 503 });
+    }
+    const callbackUrl = createQPayCallbackUrl(appUrl, idempotencyKey, callbackSecret);
+
+    if (existing) {
       const { data: claimed, error: claimError } = await supabaseAdmin.rpc('claim_donation_invoice', {
         target_id: idempotencyKey,
         target_claim: invoiceClaimToken,

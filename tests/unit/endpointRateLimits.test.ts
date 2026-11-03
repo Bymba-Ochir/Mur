@@ -105,7 +105,7 @@ describe('authenticated budgets and trusted service entry points', () => {
   });
 
   it('does not spend service budgets or reach DB/payment for an invalid callback secret', async () => {
-    expect((await callback(request('/api/qpay/callback', 'POST', { invoice_id: 'invoice' }, { authorization: 'Bearer wrong' }))).status).toBe(200);
+    expect((await callback(request('/api/qpay/callback', 'POST', { invoice_id: 'invoice' }, { authorization: 'Bearer wrong' }))).status).toBe(401);
     expect(limitIpRequest).not.toHaveBeenCalled();
     expect(limitServiceRequest).not.toHaveBeenCalled();
     expect(createAdminClient).not.toHaveBeenCalled();
@@ -149,11 +149,18 @@ describe('authenticated budgets and trusted service entry points', () => {
     expect(rpc).toHaveBeenCalledExactlyOnceWith('enqueue_sighting_notification', { target_id: id });
   });
 
-  it('stops QPay polling before the provider when the invoice quota is exhausted', async () => {
-    from.mockReturnValue({ select: () => ({ eq: () => ({ eq: () => ({ maybeSingle: async () => ({ error: null, data: { id, status: 'pending', invoice_id: 'invoice' } }) }) }) }) });
+  it('polls only the stored donation status, without using the QPay invoice quota', async () => {
+    const update = vi.fn();
+    const filterToken = vi.fn(() => ({ maybeSingle: async () => ({ error: null, data: { status: 'pending', amount: 1000 } }) }));
+    from.mockReturnValue({ select: () => ({ eq: () => ({ eq: filterToken }) }), update });
     vi.mocked(limitServiceRequest).mockResolvedValue(Response.json({}, { status: 429 }) as Awaited<ReturnType<typeof limitServiceRequest>>);
-    expect((await donationStatus(request(`/api/donations/status?donationId=${id}&statusToken=${'a'.repeat(64)}`, 'GET'))).status).toBe(429);
-    expect(limitServiceRequest).toHaveBeenCalledWith('qpay-invoice', 'invoice', admin);
+    const token = 'a'.repeat(64);
+    const response = await donationStatus(request(`/api/donations/status?donationId=${id}&statusToken=${token}`, 'GET'));
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ status: 'pending', amount: 1000 });
+    expect(filterToken).toHaveBeenCalledWith('status_token', token);
+    expect(limitServiceRequest).not.toHaveBeenCalled();
     expect(checkQPayPayment).not.toHaveBeenCalled();
+    expect(update).not.toHaveBeenCalled();
   });
 });

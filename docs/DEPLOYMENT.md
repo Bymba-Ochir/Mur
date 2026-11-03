@@ -39,6 +39,10 @@ Pets INSERT webhook: `/api/notify`, header `x-webhook-secret` нь `NOTIFY_WEBHO
 
 QPay merchant тохиргоо, invoice/callback/status урсгалыг provider-ийн sandbox боломжтой бол тусгаарласан орчинд шалга. Dev mock нь бодит төлбөрийн баталгаа биш.
 
+Шинэ нэхэмжлэл бүрт Mur `QPAY_CALLBACK_SECRET`-ээр гарын үсэг зурсан callback URL-ийг QPay-д бүртгэнэ. Callback нь тухайн нэхэмжлэлийн төлбөрийг QPay API-аас баталгаажуулж байж `paid` болгоно. `GET /api/donations/status` зөвхөн хадгалсан төлөвийг уншина.
+
+Deploy-оос өмнө `NEXT_PUBLIC_SITE_URL` нь QPay-ээс хандах HTTPS хаяг мөн эсэхийг шалга. Өмнө бүртгэсэн нэхэмжлэлийн POST callback-ийг баталгаажуулахын тулд одоогийн `QPAY_CALLBACK_SECRET`-ийг хадгал. Хуучин callback URL-тэй нэхэмжлэлүүдийн төлөвийг нягтлаад, шинэ нэхэмжлэлийн callback-ийг QPay sandbox дээр шалга.
+
 ## Deploy дараах шалгалт
 
 Нүүр, жагсаалт, login/logout, зар оруулах, өөрийн зар засах, өөр хэрэглэгчийн мэдээлэлд хандахыг хориглох, messages, profile/settings, push, AI, төлбөрийг тус тус шалгана. Нэвтрэх болон төлбөрийн token логт үлдэхгүйг шалга.

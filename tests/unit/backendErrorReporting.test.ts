@@ -28,14 +28,14 @@ describe('handled backend failures', () => {
     expect(JSON.stringify(vi.mocked(reportError).mock.calls)).not.toContain('private');
   });
 
-  it('reports callback database errors without changing the QPay acknowledgement', async () => {
+  it('reports callback database errors and returns a retryable failure', async () => {
     vi.stubEnv('QPAY_CALLBACK_SECRET', 'private');
     const failure = { code: 'PGRST001', message: 'database offline' };
     const maybeSingle = vi.fn().mockResolvedValue({ data: null, error: failure });
     vi.mocked(createAdminClient).mockReturnValue({ from: () => ({ select: () => ({ eq: () => ({ maybeSingle }) }) }) } as unknown as ReturnType<typeof createAdminClient>);
     const response = await qpayCallback(new Request('https://mur.test/api/qpay/callback?secret=private', { method: 'POST', body: JSON.stringify({ invoice_id: 'invoice' }) }));
-    expect(response.status).toBe(200);
-    expect(await response.json()).toEqual({ message: 'OK' });
+    expect(response.status).toBe(503);
+    expect(await response.json()).toEqual({ error: 'Callback unavailable' });
     expect(reportError).toHaveBeenCalledExactlyOnceWith(failure, { area: 'backend', operation: 'qpay-callback' });
   });
 });
