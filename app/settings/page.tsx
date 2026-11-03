@@ -130,7 +130,7 @@ function SettingsContent() {
 
   if (authLoading || (user && profileLoading)) return <SettingsSkeleton label={t('settings_loading')} />;
   if (!user) return <main className="page-shell page-shell--narrow"><div className="state-panel"><span className="state-panel__icon"><Icon name="lock" size={28} /></span><h1>{t('settings_login_title')}</h1><p>{t('settings_login_desc')}</p><Button variant="primary" onClick={() => setShowLogin(true)}><Icon name="lock" size={17} />{t('notifications_login_action')}</Button></div>{showLogin && <LoginModal onClose={() => setShowLogin(false)} />}</main>;
-  if (loadError) return <main className="page-shell page-shell--narrow"><div className="state-panel state-panel--error" role="alert"><span className="state-panel__icon"><Icon name="alert" size={28} /></span><h1>{t('settings_load_error')}</h1><p>{loadError}</p><Button variant="secondary" onClick={() => void loadProfile()}><Icon name="arrowRight" size={17} />{t('settings_retry')}</Button></div></main>;
+  if (loadError) return <main className="page-shell page-shell--narrow"><div className="state-panel state-panel--error" role="alert"><span className="state-panel__icon"><Icon name="alert" size={28} /></span><h1>{t('settings_load_error')}</h1><p>{loadError}</p><Button variant="secondary" onClick={() => void loadProfile()}><Icon name="refresh" size={17} />{t('settings_retry')}</Button></div></main>;
 
   const preferenceRows: Array<{ key: keyof NotificationPreferences; icon: IconName; title: string; description: string }> = [
     { key: 'messages', icon: 'message', title: t('settings_messages_title'), description: t('settings_messages_desc') },
@@ -149,12 +149,12 @@ function SettingsContent() {
 
     <section className="setting-section data-section" aria-labelledby="data-settings-title">
       <header className="section-header"><span className="section-icon sky"><Icon name="shield" size={22} /></span><div><h2 id="data-settings-title">{t('settings_data_title')}</h2><p>{t('settings_data_desc')}</p></div></header>
-      <div className="section-body"><div className="data-visual" aria-hidden="true"><Icon name="share" size={26} /></div><Button variant="secondary" onClick={() => void exportData()} disabled={exporting || deleting} aria-busy={exporting}><Icon name="share" size={16} />{exporting ? t('settings_exporting') : t('settings_export')}</Button></div>
+      <div className="section-body"><div className="data-visual" aria-hidden="true"><Icon name="download" size={26} /></div><Button variant="secondary" onClick={() => void exportData()} disabled={exporting || deleting} aria-busy={exporting}><Icon name="download" size={16} />{exporting ? t('settings_exporting') : t('settings_export')}</Button></div>
     </section>
 
     <section className="setting-section danger-section" aria-labelledby="danger-settings-title">
       <header className="section-header"><span className="section-icon danger"><Icon name="trash" size={22} /></span><div><h2 id="danger-settings-title">{t('settings_danger_title')}</h2><p>{t('settings_danger_desc')}</p></div></header>
-      <div className="section-body"><span className="danger-note"><Icon name="alert" size={18} />{t('settings_delete_modal_desc')}</span><Button variant="danger" onClick={openDeleteModal} disabled={deleting || exporting}><Icon name="trash" size={16} />{t('settings_delete_action')}</Button></div>
+      <div className="section-body"><span className="danger-note"><Icon name="alert" size={18} />{t('settings_delete_warning')}</span><Button variant="danger" onClick={openDeleteModal} disabled={deleting || exporting}><Icon name="trash" size={16} />{t('settings_delete_action')}</Button></div>
     </section>
 
     <Modal open={showDelete} onClose={() => { if (!deleting) setShowDelete(false); }} title={t('settings_delete_modal_title')} closeLabel={t('close')} width="sm" panelClassName="settings-delete-modal">

@@ -16,11 +16,11 @@ export async function POST(request: Request) {
     if (userLimit) return userLimit;
     const body = await request.json() as { petId?: unknown; reason?: unknown };
     if (typeof body.petId !== 'string' || !UUID.test(body.petId)) return NextResponse.json({ error: 'Зарын дугаар буруу байна.' }, { status: 400 });
-    if (typeof body.reason !== 'string' || !ALLOWED_REASONS.has(body.reason)) return NextResponse.json({ error: 'Report-ийн шалтгаан буруу байна.' }, { status: 400 });
+    if (typeof body.reason !== 'string' || !ALLOWED_REASONS.has(body.reason)) return NextResponse.json({ error: 'Шалгуулах шалтгааныг сонгоно уу.' }, { status: 400 });
     const { data: pet, error: petError } = await admin.from('pets').select('created_by').eq('id', body.petId).maybeSingle();
     if (petError) throw petError;
     if (!pet) return NextResponse.json({ error: 'Зар олдсонгүй.' }, { status: 404 });
-    if (pet.created_by === user.id) return NextResponse.json({ error: 'Өөрийн зарыг report хийх боломжгүй.' }, { status: 400 });
+    if (pet.created_by === user.id) return NextResponse.json({ error: 'Өөрийн зарыг шалгуулахаар илгээх боломжгүй.' }, { status: 400 });
     const { error } = await admin.from('reports').insert({ pet_id: body.petId, reporter_id: user.id, reason: cleanText(body.reason, 100, 'Шалтгаан', true), status: 'pending' });
     if (error?.code === '23505') return NextResponse.json({ error: 'Энэ зарыг өмнө нь шалгуулахаар илгээсэн байна.' }, { status: 409 });
     if (error) throw error;
@@ -28,6 +28,6 @@ export async function POST(request: Request) {
   } catch (error) {
     reportError(error, { area: 'backend', operation: 'create-report' });
     const unauthorized = error instanceof Error && error.message === 'UNAUTHORIZED';
-    return NextResponse.json({ error: unauthorized ? 'Report илгээхийн тулд нэвтэрнэ үү.' : 'Report хадгалахад алдаа гарлаа.' }, { status: unauthorized ? 401 : 500 });
+    return NextResponse.json({ error: unauthorized ? 'Зарыг шалгуулахаар илгээхийн тулд нэвтэрнэ үү.' : 'Мэдээллийг илгээж чадсангүй.' }, { status: unauthorized ? 401 : 500 });
   }
 }

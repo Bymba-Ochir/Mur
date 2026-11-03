@@ -81,7 +81,7 @@ async function consumeBudget(scope: string, subject: string, rule: Rule, admin?:
   } catch (error) {
     reportError(error, { area: 'backend', operation: 'api-rate-limit-store' });
     // Never silently downgrade distributed limits to an instance-local counter.
-    return NextResponse.json({ error: 'Хүсэлтийн хамгаалалт түр боломжгүй байна. Дахин оролдоно уу.' }, {
+    return NextResponse.json({ error: 'Үйлчилгээ түр боломжгүй байна. Дахин оролдоно уу.' }, {
       status: 503, headers: { 'Retry-After': '5', 'Cache-Control': 'no-store' },
     });
   }

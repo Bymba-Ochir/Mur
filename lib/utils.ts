@@ -39,7 +39,9 @@ export function maskPhone(phone: string | null | undefined): string {
  * Strict горимд `catch (err)` нь `unknown` байдаг тул алдааны мессежийг
  * аюулгүйгээр гаргаж авах туслах функц.
  */
-export function getErrorMessage(err: unknown): string {
-  return err instanceof Error ? err.message : String(err);
+export function getErrorMessage(err: unknown, fallback = 'Үйлдлийг гүйцэтгэж чадсангүй. Дахин оролдоно уу.'): string {
+  if (typeof err === 'string' && err.trim()) return err;
+  if (err instanceof Error && err.name !== 'PostgrestError' && err.message.trim()) return err.message;
+  return fallback;
 }
 

@@ -26,13 +26,13 @@ export default function MyPetProfileClient({ id }: { id: string }) {
         return fetchPetHealth(id);
       })
       .then((h) => setHealth(h))
-      .catch((err) => setError(getErrorMessage(err) || t('profiles_not_found')));
+      .catch((err) => setError(getErrorMessage(err, t('profiles_not_found'))));
   }, [id, t]);
 
   useEffect(() => { void Promise.resolve().then(load); }, [load]);
 
-  if (error) return <div className="page-shell page-shell--narrow"><div className="state-panel state-panel--error" role="alert"><span className="state-panel__icon"><Icon name="alert" size={28} /></span><h2>{t('profiles_not_found')}</h2><p>{error}</p><div className="detail-actions"><Button variant="secondary" onClick={() => void load()}>Дахин оролдох</Button><Button as="link" href="/my-pets" variant="ghost">Миний амьтад руу буцах</Button></div></div></div>;
-  if (!pet) return <div className="page-shell page-shell--narrow"><div className="state-panel" aria-live="polite"><span className="state-panel__icon"><Icon name="vaccine" size={28} /></span><h2>{t('detail_loading')}</h2></div></div>;
+  if (error) return <div className="page-shell page-shell--narrow"><div className="state-panel state-panel--error" role="alert"><span className="state-panel__icon"><Icon name="alert" size={28} /></span><h2>{t('profiles_not_found')}</h2><p>{error}</p><div className="detail-actions"><Button variant="secondary" onClick={() => void load()}>{t('err_retry')}</Button><Button as="link" href="/my-pets" variant="ghost">{t('profiles_back_to_pets')}</Button></div></div></div>;
+  if (!pet) return <div className="page-shell page-shell--narrow"><div className="state-panel" aria-live="polite"><span className="state-panel__icon"><Icon name="paw" size={28} /></span><h2>{t('detail_loading')}</h2></div></div>;
 
   const data: PetProfileData = {
     kind: 'mypet',

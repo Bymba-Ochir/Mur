@@ -116,7 +116,7 @@ function AuthenticatedSittingForm() {
       resetAll(); setNewId(id); setDone(true);
     } catch (err) {
       reportError(err, { area: 'frontend', operation: 'create-sitting-listing' });
-      setError(getErrorMessage(err) || t('form_generic_error'));
+      setError(getErrorMessage(err, t('form_generic_error')));
     } finally {
       setSubmitting(false); setStatusMsg('');
     }

@@ -1,8 +1,10 @@
 'use client';
 import { useState, type ReactNode } from 'react';
 import Image from 'next/image';
-import { useSyncExternalStore } from 'react';
-import { useLanguage } from '../lib/i18n';
+import { useCurrentLocation } from '../lib/useCurrentLocation';
+import { useLanguage, type TranslationKey } from '../lib/i18n';
+import { formatPetAge } from '../lib/petAge';
+import { getBreedLabel } from '../lib/petBreeds';
 import { relativeTime } from '../lib/relativeTime';
 import { maskPhone, formatPhone } from '../lib/utils';
 import { vaccineStatus } from '../lib/vaccineService';
@@ -10,19 +12,13 @@ import PetIcon from './PetIcon';
 import Button from './ui/Button';
 import { Icon, type IconName } from './ui';
 import ShareButtons from './ShareButtons';
-import type { PetProfileData } from '../lib/types';
+import type { PetProfileData, VaccineStatus } from '../lib/types';
 
-function subscribeLocation(cb: () => void) {
-  window.addEventListener('popstate', cb);
-  window.addEventListener('hashchange', cb);
-  return () => { window.removeEventListener('popstate', cb); window.removeEventListener('hashchange', cb); };
-}
-
-const VAX_STATUS: Record<string, { text: string; color: string; icon: IconName }> = {
-  overdue: { text: 'Хугацаа хэтэрсэн', color: 'var(--alert)', icon: 'alert' },
-  soon: { text: 'Удахгүй болно', color: 'var(--accent)', icon: 'bell' },
-  ok: { text: 'Хэвийн', color: 'var(--success)', icon: 'check' },
-  none: { text: 'Огноо тохируулаагүй', color: 'var(--muted)', icon: 'calendar' },
+const VAX_STATUS: Record<VaccineStatus, { label: TranslationKey; icon: IconName }> = {
+  overdue: { label: 'mypets_status_overdue', icon: 'alert' },
+  soon: { label: 'mypets_status_soon', icon: 'bell' },
+  ok: { label: 'mypets_status_ok', icon: 'check' },
+  none: { label: 'mypets_status_none', icon: 'calendar' },
 };
 
 export default function PetProfileLayout({
@@ -31,14 +27,15 @@ export default function PetProfileLayout({
   data: PetProfileData;
   healthSection?: ReactNode;
 }) {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const [tab, setTab] = useState<'photo' | 'history' | 'health'>('photo');
   const [phoneRevealed, setPhoneRevealed] = useState(false);
 
-  const url = useSyncExternalStore(subscribeLocation, () => typeof window !== 'undefined' ? window.location.href : '');
+  const url = useCurrentLocation();
 
   const typeLabel = data.type === 'Муур' ? t('type_cat') : data.type === 'Нохой' ? t('type_dog') : t('type_other');
-  const shareTitle = (data.kind === 'adoption' ? 'Үрчлүүлэх ' : '') + typeLabel + (data.name ? ' — ' + data.name : '');
+  const shareTitle = (data.kind === 'adoption' ? t('adoptions_eyebrow') + ': ' : '') + typeLabel + (data.name ? ' — ' + data.name : '');
+  const genderLabel = data.gender === 'Эрэгтэй' ? t('gender_male') : data.gender === 'Эмэгтэй' ? t('gender_female') : data.gender;
   const tabs: Array<{ key: 'photo' | 'history' | 'health'; label: string }> = [
     { key: 'photo', label: t('profiles_tab_photo') },
     { key: 'history', label: t('profiles_tab_history') },
@@ -73,17 +70,17 @@ export default function PetProfileLayout({
         <p className="profile-type">{typeLabel}</p>
 
         <div className="chips">
-          {data.breed && <span className="chip">{data.breed}</span>}
-          {data.age && <span className="chip">{data.age}</span>}
+          {data.breed && <span className="chip">{getBreedLabel(data.breed, lang)}</span>}
+          {data.age && <span className="chip">{formatPetAge(data.age, lang)}</span>}
           {data.gender && data.gender !== 'Тодорхойгүй' && (
-            <span className="chip">{data.gender}</span>
+            <span className="chip">{genderLabel}</span>
           )}
           {data.weight != null && <span className="chip">{data.weight} {t('profiles_weight_chip')}</span>}
         </div>
 
         {vaxStatus && vaxLabel && (
           <div className={`vax-status vax-${vaxStatus}`}>
-            <Icon name={vaxLabel.icon} size={15} /> {vaxLabel.text}
+            <Icon name={vaxLabel.icon} size={15} /> {t(vaxLabel.label)}
             {data.nextVaccineName && <span> · {data.nextVaccineName}</span>}
           </div>
         )}
@@ -135,7 +132,7 @@ export default function PetProfileLayout({
             <p className="history-item">
               <strong>{data.kind === 'adoption' ? t('profiles_history_adoption') : t('profiles_history_registered')}</strong>
             </p>
-            <p className="history-date">{new Date(data.createdAt).toLocaleDateString('mn-MN')} · {relativeTime(data.createdAt)}</p>
+            <p className="history-date">{new Date(data.createdAt).toLocaleDateString(lang === 'mn' ? 'mn-MN' : 'en-US')} · {relativeTime(data.createdAt, lang)}</p>
           </div>
         )}
 

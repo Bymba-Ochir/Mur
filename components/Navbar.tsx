@@ -195,7 +195,7 @@ export default function Navbar() {
     { href: '/sitting', label: t('nav_sitting'), icon: 'home' },
     { href: '/clinics', label: t('health_tab_clinics'), icon: 'cross' },
     { href: '/messages', label: t('messages_hub_nav'), icon: 'message' },
-    { href: '/my-pets', label: t('nav_mypets'), icon: 'vaccine' },
+    { href: '/my-pets', label: t('nav_mypets'), icon: 'paw' },
   ];
 
   /* Desktop: primary text links (Алдсан/Олдсон/Жагсаалт/Үрчлүүлэх) + icon rail */
@@ -203,12 +203,12 @@ export default function Navbar() {
   const railLinks = allLinks.slice(4);
 
   const userMenuItems: UserMenuItem[] = [
-    { href: '/profile', label: t('nav_profile'), isLink: true, icon: 'paw' },
+    { href: '/profile', label: t('nav_profile'), isLink: true, icon: 'user' },
     { href: '/notifications', label: visibleUnreadNotifications ? `${t('nav_notifications')} (${visibleUnreadNotifications})` : t('nav_notifications'), isLink: true, icon: 'bell' },
-    { href: '/saved', label: t('nav_saved'), isLink: true, icon: 'heart' },
+    { href: '/saved', label: t('nav_saved'), isLink: true, icon: 'bookmark' },
     { href: '/activity', label: t('nav_activity'), isLink: true, icon: 'calendar' },
-    { href: '/settings', label: t('nav_settings'), isLink: true, icon: 'lock' },
-    { href: '/my-pets', label: t('nav_mypets'), isLink: true, icon: 'vaccine' },
+    { href: '/settings', label: t('nav_settings'), isLink: true, icon: 'settings' },
+    { href: '/my-pets', label: t('nav_mypets'), isLink: true, icon: 'paw' },
     { href: '/messages', label: t('messages_hub_nav'), isLink: true, icon: 'message' },
     ...(admin ? [{ href: '/admin', label: t('nav_admin'), isLink: true, accent: true, icon: 'shield' as IconName }] : []),
     { label: t('nav_logout'), isLink: false, danger: true, onClick: logout },
@@ -273,7 +273,7 @@ export default function Navbar() {
 
         {/* Right side: donate + toggles + user/account */}
         <div className="nav-right">
-          <DonateButton />
+          <DonateButton compactOnDesktop />
           <LanguageToggle />
           <ThemeToggle />
           {user ? (
@@ -332,7 +332,7 @@ export default function Navbar() {
                         role="menuitem"
                         onClick={() => { item.onClick?.(); setShowUserMenu(false); }}
                       >
-                        <span className="dropdown-icon" aria-hidden="true"><Icon name="arrowRight" size={17} /></span>
+                        <span className="dropdown-icon" aria-hidden="true"><Icon name="logout" size={17} /></span>
                         <span>{item.label}</span>
                       </button>
                     )
@@ -423,11 +423,11 @@ export default function Navbar() {
                     <span>{user.email ? truncateEmail(user.email) : t('nav_guest')}</span>
                   </div>
                   <div className="mobile-user-actions">
-                    <Link href="/profile" className="mobile-nav-link" onClick={handleMobileLinkClick}><Icon name="paw" size={18} /> {t('nav_profile')}</Link>
+                    <Link href="/profile" className="mobile-nav-link" onClick={handleMobileLinkClick}><Icon name="user" size={18} /> {t('nav_profile')}</Link>
                     <Link href="/notifications" className="mobile-nav-link" onClick={handleMobileLinkClick}><Icon name="bell" size={18} /> {t('nav_notifications')} {visibleUnreadNotifications > 0 && <span className="mobile-badge">{visibleUnreadNotifications}</span>}</Link>
-                    <Link href="/saved" className="mobile-nav-link" onClick={handleMobileLinkClick}><Icon name="heart" size={18} /> {t('nav_saved')}</Link>
+                    <Link href="/saved" className="mobile-nav-link" onClick={handleMobileLinkClick}><Icon name="bookmark" size={18} /> {t('nav_saved')}</Link>
                     <Link href="/activity" className="mobile-nav-link" onClick={handleMobileLinkClick}><Icon name="calendar" size={18} /> {t('nav_activity')}</Link>
-                    <Link href="/settings" className="mobile-nav-link" onClick={handleMobileLinkClick}><Icon name="lock" size={18} /> {t('nav_settings')}</Link>
+                    <Link href="/settings" className="mobile-nav-link" onClick={handleMobileLinkClick}><Icon name="settings" size={18} /> {t('nav_settings')}</Link>
                     <Button variant="danger" fullWidth onClick={() => { logout(); setShowMobileMenu(false); }}>
                       {t('nav_logout')}
                     </Button>
@@ -639,7 +639,6 @@ export default function Navbar() {
           z-index: 5;
         }
 
-        @media (max-width: 1180px) and (min-width: 1041px) { .navbar-wrap .nav-right .donate-btn { display: none; } }
 
         /* ─── Right side actions ─── */
         .navbar-wrap .nav-right {
@@ -985,7 +984,7 @@ export default function Navbar() {
           .navbar-wrap .nav-feedback { margin-inline-start: auto; }
           .navbar-wrap .nav-right { margin-left: 0; }
           .navbar-wrap .nav-links, .navbar-wrap .nav-divider, .navbar-wrap .icon-rail { display: none; }
-          .navbar-wrap .nav-right .donate-btn { display: none; }
+          .navbar-wrap .nav-right :global(.donate-btn) { display: none; }
         }
 
         /* ─── Responsive: ≤640px hide toggles from nav-right (use hamburger) ─── */
@@ -1015,7 +1014,6 @@ export default function Navbar() {
 .navbar-wrap .user-dropdown { width:min(300px,calc(100vw - 32px)); max-height:calc(100dvh - 100px); overflow-y:auto; }
 .navbar-wrap .user-email { max-width:100px; }
 @media (min-width:1041px) and (max-width:1280px) {
- .navbar-wrap .nav-right .donate-btn { display:none; }
  .navbar-wrap .nav-link { padding-inline:8px; font-size:12px; }
  .navbar-wrap .navbar { gap:8px; }
 }

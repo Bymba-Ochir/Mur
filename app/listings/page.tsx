@@ -143,7 +143,7 @@ export default function ListingsPage() {
       }
     } catch (err) {
       if (err instanceof DOMException && err.name === 'AbortError') return;
-      setMatchError(getErrorMessage(err) || t('listings_match_error'));
+      setMatchError(getErrorMessage(err, t('listings_match_error')));
     } finally {
       if (!controller.signal.aborted) setMatching(false);
     }

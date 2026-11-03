@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { maskPhone } from '../../lib/utils';
+import { getErrorMessage, maskPhone } from '../../lib/utils';
 
 describe('maskPhone', () => {
   it('масклаж, эхний 2 сүүлийн 2 оронг үлдээнэ', () => {
@@ -21,5 +21,16 @@ describe('maskPhone', () => {
 
   it('маскны урт нь digit тооны уртаас хамаарна', () => {
     expect(maskPhone('99112233')).toHaveLength(8);
+  });
+});
+
+describe('getErrorMessage', () => {
+  it('uses the provided UI text for database and unknown errors', () => {
+    expect(getErrorMessage({ code: 'PGRST116', message: 'Database detail' }, 'Listing unavailable')).toBe('Listing unavailable');
+    expect(getErrorMessage(null, 'Try again')).toBe('Try again');
+  });
+
+  it('keeps user-facing errors from app validation', () => {
+    expect(getErrorMessage(new Error('Утасны дугаараа оруулна уу.'))).toBe('Утасны дугаараа оруулна уу.');
   });
 });

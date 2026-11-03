@@ -44,7 +44,7 @@ export default function AssistantClient({ embedded = false }: { embedded?: boole
           const displayText = message.id === 'greeting' ? t('assistant_greeting') : message.text;
           const severityLabel = message.severity === 'emergency' ? t('assistant_emergency_badge') : message.severity === 'caution' ? t('assistant_caution_badge') : t('assistant_general_badge');
           return <article key={message.id} className={`message ${message.role === 'user' ? 'user' : 'assistant'}`} aria-label={message.role === 'user' ? t('assistant_message_label') : severityLabel}>
-            {message.role === 'assistant' && <span className="avatar" aria-hidden="true"><Icon name="paw" size={18} /></span>}
+            {message.role === 'assistant' && <span className="avatar" aria-hidden="true"><Icon name="bot" size={18} /></span>}
             <div className={`message-content ${message.severity || 'info'}`}>
               {message.role === 'assistant' && message.id !== 'greeting' && <span className="severity-label"><Icon name={message.severity === 'emergency' ? 'alert' : message.severity === 'caution' ? 'info' : 'sparkles'} size={13} />{severityLabel}</span>}
               <p className="message-text">{displayText}</p>
@@ -54,7 +54,7 @@ export default function AssistantClient({ embedded = false }: { embedded?: boole
             </div>
           </article>;
         })}
-        {thinking && <article className="message assistant" aria-label={t('assistant_typing')}><span className="avatar" aria-hidden="true"><Icon name="paw" size={18} /></span><div className="message-content info"><p className="typing"><span /><span /><span /><span className="sr-only">{t('assistant_typing')}</span></p></div></article>}
+        {thinking && <article className="message assistant" aria-label={t('assistant_typing')}><span className="avatar" aria-hidden="true"><Icon name="bot" size={18} /></span><div className="message-content info"><p className="typing"><span /><span /><span /><span className="sr-only">{t('assistant_typing')}</span></p></div></article>}
         {sendError && <div className="send-error" role="alert"><Icon name="alert" size={20} /><div><strong>{t('assistant_error_title')}</strong><p>{sendError}</p></div>{failedQuestion && <Button variant="secondary" onClick={() => void handleSend(failedQuestion)}>{t('assistant_retry')}</Button>}</div>}
         {messages.length === 1 && !thinking && <section className="suggestions" aria-labelledby="assistant-suggestions-title"><h2 id="assistant-suggestions-title">{t('assistant_suggestions_title')}</h2><div>{suggestions.map((question) => <button key={question} type="button" onClick={() => void handleSend(question)}><Icon name="sparkles" size={15} />{question}</button>)}</div></section>}
         <div ref={messagesEndRef} />

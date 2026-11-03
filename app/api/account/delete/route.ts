@@ -27,6 +27,6 @@ export async function DELETE(request: Request) {
   } catch (error) {
     const unauthorized = error instanceof Error && error.message === 'UNAUTHORIZED';
     reportError(error, { area: 'backend', operation: 'account-delete' });
-    return NextResponse.json({ error: unauthorized ? 'Нэвтрэх шаардлагатай.' : 'Account устгахад алдаа гарлаа.' }, { status: unauthorized ? 401 : 500 });
+    return NextResponse.json({ error: unauthorized ? 'Нэвтрэх шаардлагатай.' : 'Бүртгэлийг устгаж чадсангүй.' }, { status: unauthorized ? 401 : 500 });
   }
 }

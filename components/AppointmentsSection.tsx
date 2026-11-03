@@ -16,7 +16,7 @@ export default function AppointmentsSection({ refreshKey, onChange }: { refreshK
   const { user } = useAuth(); const { t } = useLanguage(); const showToast = useToast();
   const [appointments, setAppointments] = useState<Appointment[]>([]); const [loading, setLoading] = useState(true); const [error, setError] = useState(''); const [cancellingId, setCancellingId] = useState('');
   useEffect(() => { if (!user) return; let cancelled = false; fetchMyAppointments().then((data) => { if (!cancelled) { setAppointments(data); setError(''); } }).catch((reason) => { if (!cancelled) setError(getErrorMessage(reason)); }).finally(() => { if (!cancelled) setLoading(false); }); return () => { cancelled = true; }; }, [user, refreshKey]);
-  async function handleCancel(id: string) { if (!confirm(t('appts_cancel_confirm'))) return; setCancellingId(id); try { await cancelAppointment(id); showToast(t('appts_cancel'), 'success'); onChange(); } catch (reason) { showToast(getErrorMessage(reason) || t('form_generic_error'), 'error'); } finally { setCancellingId(''); } }
+  async function handleCancel(id: string) { if (!confirm(t('appts_cancel_confirm'))) return; setCancellingId(id); try { await cancelAppointment(id); showToast(t('appts_cancel'), 'success'); onChange(); } catch (reason) { showToast(getErrorMessage(reason, t('form_generic_error')), 'error'); } finally { setCancellingId(''); } }
   const statusLabel = (status: Appointment['status']) => t(status === 'pending' ? 'appts_status_pending' : status === 'confirmed' ? 'appts_status_confirmed' : status === 'completed' ? 'appts_status_completed' : 'appts_status_cancelled');
   if (!user) return null;
   return (

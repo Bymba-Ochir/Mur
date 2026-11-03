@@ -2,14 +2,18 @@
 import { useState } from 'react';
 import DonateModal from './DonateModal';
 import { useLanguage } from '../lib/i18n';
+import Icon from './ui/icons';
 
-export default function DonateButton() {
+export default function DonateButton({ compactOnDesktop = false }: { compactOnDesktop?: boolean }) {
   const { t } = useLanguage();
   const [open, setOpen] = useState(false);
+  const label = t('donate_btn');
   return (
     <>
-      <button onClick={() => setOpen(true)} className="donate-btn">
-        {t('donate_btn')}
+      <button type="button" onClick={() => setOpen(true)} className={`donate-btn${compactOnDesktop ? ' donate-compact' : ''}`}
+        aria-label={label} aria-haspopup="dialog" title={label}>
+        <span className="donate-icon"><Icon name="heart" size={17} /></span>
+        <span className="donate-label">{label}</span>
       </button>
       {open && <DonateModal onClose={() => setOpen(false)} />}
       <style jsx>{`
@@ -38,6 +42,12 @@ export default function DonateButton() {
         .donate-btn:focus-visible {
           outline: 2.5px solid var(--accent);
           outline-offset: 2px;
+        }
+        .donate-icon { display: none; }
+        @media (min-width: 1041px) and (max-width: 1280px) {
+          .donate-compact { width: 44px; min-height: 44px; padding: 0; }
+          .donate-compact .donate-label { display: none; }
+          .donate-compact .donate-icon { display: inline-flex; }
         }
       `}</style>
     </>

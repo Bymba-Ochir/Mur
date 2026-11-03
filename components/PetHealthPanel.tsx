@@ -54,7 +54,7 @@ export default function PetHealthPanel({ pet, onProfileUpdated, onClose }: { pet
   return (
     <section id={`health-panel-${pet.id}`} className="health-panel" aria-labelledby={`health-title-${pet.id}`}>
       <header className="panel-header">
-        <span className="panel-icon" aria-hidden="true"><Icon name="vaccine" size={24} /></span>
+        <span className="panel-icon" aria-hidden="true"><Icon name="cross" size={24} /></span>
         <div className="panel-heading">
           <p className="eyebrow">{t('health_panel_title')}</p>
           <h2 id={`health-title-${pet.id}`}>{pet.name}</h2>

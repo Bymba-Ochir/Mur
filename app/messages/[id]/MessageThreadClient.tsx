@@ -65,7 +65,7 @@ function MessageThreadContent({ id }: { id: string }) {
         setConv(conversation); setMessages(loadedMessages); setError(null);
         void markConversationRead(id).catch(() => undefined);
       } catch (err) {
-        if (!cancelled) setError(getErrorMessage(err) || t('thread_load_error'));
+        if (!cancelled) setError(getErrorMessage(err, t('thread_load_error')));
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -107,7 +107,7 @@ function MessageThreadContent({ id }: { id: string }) {
       }
       inputRef.current?.focus();
     } catch (err) {
-      if (active.current) { setInput(trimmed); setFailedMessage(trimmed); setSendError(getErrorMessage(err) || t('thread_send_error')); }
+      if (active.current) { setInput(trimmed); setFailedMessage(trimmed); setSendError(getErrorMessage(err, t('thread_send_error'))); }
     } finally {
       sendPending.current = false;
       if (active.current) setSending(false);

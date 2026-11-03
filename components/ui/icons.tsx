@@ -33,6 +33,15 @@ export type IconName =
   | 'close'
   | 'info'
   | 'sparkles'
+  | 'pulse'
+  | 'refresh'
+  | 'settings'
+  | 'bookmark'
+  | 'user'
+  | 'logout'
+  | 'download'
+  | 'externalLink'
+  | 'pill'
   | 'arrowLeft'
   | 'arrowRight';
 
@@ -72,8 +81,8 @@ const ICONS: Record<IconName, { viewBox: string; paths: ReactNode }> = {
     viewBox: '0 0 24 24',
     paths: (
       <>
-        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z" />
-        <path d="M8 9h8M8 13h5" />
+        <rect x="4" y="7" width="16" height="13" rx="3" />
+        <path d="M12 7V3M2 13h2m16 0h2M8 13h.01M16 13h.01M9 17h6" />
       </>
     ),
   },
@@ -83,20 +92,24 @@ const ICONS: Record<IconName, { viewBox: string; paths: ReactNode }> = {
   },
   cross: {
     viewBox: '0 0 24 24',
-    paths: <path d="M12 2v20M2 12h20" />,
+    paths: (
+      <>
+        <rect x="3" y="7" width="18" height="14" rx="2" />
+        <path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M12 11v6m-3-3h6" />
+      </>
+    ),
   },
   heart: {
     viewBox: '0 0 24 24',
     paths: (
-      <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" />
+      <path d="M12 21s-8.2-4.9-9.6-9.5A5.2 5.2 0 0 1 12 7a5.2 5.2 0 0 1 9.6 4.5C20.2 16.1 12 21 12 21Z" />
     ),
   },
   vaccine: {
     viewBox: '0 0 24 24',
     paths: (
       <>
-        <circle cx="12" cy="12" r="9" />
-        <path d="M12 8v8M8 12h8" />
+        <path d="m18 2 4 4m-2-2-3 3m2 2-4-4-9 9 4 4 9-9ZM8 16l-6 6m10-14 2 2m-5 1 2 2" />
       </>
     ),
   },
@@ -160,12 +173,7 @@ const ICONS: Record<IconName, { viewBox: string; paths: ReactNode }> = {
   },
   thumb: {
     viewBox: '0 0 24 24',
-    paths: (
-      <>
-        <path d="M7 10v12" />
-        <path d="M15 5.9 14 10h5a2 2 0 0 1 2 2 2 2 0 0 1-1 1.7A2 2 0 0 1 20 16a2 2 0 0 1-1 1.7A2 2 0 0 1 18 20H7" />
-      </>
-    ),
+    paths: <path d="M7 10v10H3V10h4Zm0 0 4-7a2 2 0 0 1 2 2v4h5a2 2 0 0 1 2 2.4l-1.4 7a2 2 0 0 1-2 1.6H7" />,
   },
   phone: {
     viewBox: '0 0 24 24',
@@ -244,6 +252,42 @@ const ICONS: Record<IconName, { viewBox: string; paths: ReactNode }> = {
   sparkles: {
     viewBox: '0 0 24 24',
     paths: <path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9Z" />,
+  },
+  pulse: {
+    viewBox: '0 0 24 24',
+    paths: <path d="M2 12h5l3-8 4 16 3-8h5" />,
+  },
+  refresh: {
+    viewBox: '0 0 24 24',
+    paths: <path d="M20 4v5h-5M4 20v-5h5M4.9 10a7.5 7.5 0 0 1 12.6-4L20 9M4 15l2.5 3a7.5 7.5 0 0 0 12.6-4" />,
+  },
+  settings: {
+    viewBox: '0 0 24 24',
+    paths: <path d="M4 6h6m4 0h6M4 12h10m4 0h2M4 18h3m4 0h9M10 4v4m4 2v4m-7 2v4" />,
+  },
+  bookmark: {
+    viewBox: '0 0 24 24',
+    paths: <path d="M6 21V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v16l-6-4-6 4Z" />,
+  },
+  user: {
+    viewBox: '0 0 24 24',
+    paths: <><circle cx="12" cy="7" r="4" /><path d="M4 21v-2a5 5 0 0 1 5-5h6a5 5 0 0 1 5 5v2" /></>,
+  },
+  logout: {
+    viewBox: '0 0 24 24',
+    paths: <path d="M10 4H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h5m4-4 4-4-4-4m4 4H8" />,
+  },
+  download: {
+    viewBox: '0 0 24 24',
+    paths: <path d="M12 3v12m-4-4 4 4 4-4M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" />,
+  },
+  externalLink: {
+    viewBox: '0 0 24 24',
+    paths: <path d="M13 4h7v7m0-7-9 9m7 0v5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h5" />,
+  },
+  pill: {
+    viewBox: '0 0 24 24',
+    paths: <path d="M5 19a5 5 0 0 1 0-7l7-7a5 5 0 0 1 7 7l-7 7a5 5 0 0 1-7 0Zm3.5-10.5 7 7" />,
   },
   arrowLeft: {
     viewBox: '0 0 24 24',

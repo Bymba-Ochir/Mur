@@ -4,7 +4,7 @@ import { formatPetAge } from '../../../lib/petAge';
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useSyncExternalStore } from 'react';
+import { useCurrentLocation } from '../../../lib/useCurrentLocation';
 import PetIcon from '../../../components/PetIcon';
 import PetImageGallery from '../../../components/PetImageGallery';
 import Button from '../../../components/ui/Button';
@@ -22,12 +22,6 @@ import { getBreedLabel } from '../../../lib/petBreeds';
 import AdoptionApplicationPanel from '../../../components/AdoptionApplicationPanel';
 import Icon from '../../../components/ui/icons';
 
-function subscribeLocation(cb: () => void) {
-  window.addEventListener('popstate', cb);
-  window.addEventListener('hashchange', cb);
-  return () => { window.removeEventListener('popstate', cb); window.removeEventListener('hashchange', cb); };
-}
-
 export default function AdoptionDetailClient({ id }: { id: string }) {
   const returnPath = useListingReturnPath("/adoptions");
   const router = useRouter();
@@ -42,12 +36,12 @@ export default function AdoptionDetailClient({ id }: { id: string }) {
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
-  const url = useSyncExternalStore(subscribeLocation, () => typeof window !== 'undefined' ? window.location.href : '');
+  const url = useCurrentLocation();
 
   const load = useCallback(async () => {
     setError(null);
     try { setAdoption(await fetchAdoptionById(id)); }
-    catch (reason) { setError(getErrorMessage(reason) || t('form_generic_error')); }
+    catch (reason) { setError(getErrorMessage(reason, t('form_generic_error'))); }
   }, [id, t]);
 
   useEffect(() => { void Promise.resolve().then(load); }, [load]);
@@ -67,7 +61,7 @@ export default function AdoptionDetailClient({ id }: { id: string }) {
       setEditing(false);
       showToast(t('detail_save'), 'success');
     } catch (err) {
-      showToast(getErrorMessage(err) || t('form_generic_error'), 'error');
+      showToast(getErrorMessage(err, t('form_generic_error')), 'error');
     } finally {
       setSaving(false);
     }
@@ -80,7 +74,7 @@ export default function AdoptionDetailClient({ id }: { id: string }) {
       await deleteAdoption(id);
       router.push('/adoptions');
     } catch (err) {
-      showToast(getErrorMessage(err) || t('form_generic_error'), 'error');
+      showToast(getErrorMessage(err, t('form_generic_error')), 'error');
       setDeleting(false);
     }
   }

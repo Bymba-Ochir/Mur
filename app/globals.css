@@ -745,7 +745,6 @@ body:has([data-floating-notice='analytics']) [data-floating-notice='install'] {
   .navbar-wrap .icon-rail { gap: 4px; padding-inline: 5px; }
   .navbar-wrap .icon-rail-btn { min-width: 32px; height: 34px; }
   .navbar-wrap .nav-right { gap: 5px; }
-  .navbar-wrap .nav-right .donate-btn { display: none; }
 }
 @media (max-width: 768px) {
   .navbar-wrap { padding: 0 var(--sp-3); }

@@ -1,5 +1,6 @@
 'use client';
-import { useCallback, useEffect, useState, useSyncExternalStore } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { useCurrentLocation } from '../../../lib/useCurrentLocation';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -19,15 +20,13 @@ import { relativeTime } from '../../../lib/relativeTime';
 import { maskPhone, formatPhone, normalizePhone, getErrorMessage } from '../../../lib/utils';
 import type { SittingListing, SittingPetType } from '../../../lib/types';
 
-function subscribeLocation(callback: () => void) { window.addEventListener('popstate', callback); window.addEventListener('hashchange', callback); return () => { window.removeEventListener('popstate', callback); window.removeEventListener('hashchange', callback); }; }
-
 export default function SittingDetailClient({ id }: { id: string }) {
   const router = useRouter(); const { user } = useAuth(); const showToast = useToast(); const { t, lang } = useLanguage();
   const [listing, setListing] = useState<SittingListing | null>(null); const [error, setError] = useState<string | null>(null);
   const [revealed, setRevealed] = useState(false); const [editing, setEditing] = useState(false); const [saving, setSaving] = useState(false); const [deleting, setDeleting] = useState(false);
-  const url = useSyncExternalStore(subscribeLocation, () => window.location.href, () => '');
+  const url = useCurrentLocation();
 
-  const load = useCallback(async () => { setError(null); try { setListing(await fetchSittingListingById(id)); } catch (reason) { setError(getErrorMessage(reason) || t('form_generic_error')); } }, [id, t]);
+  const load = useCallback(async () => { setError(null); try { setListing(await fetchSittingListingById(id)); } catch (reason) { setError(getErrorMessage(reason, t('form_generic_error'))); } }, [id, t]);
   useEffect(() => { void Promise.resolve().then(load); }, [load]);
   const isOwner = Boolean(user && listing && listing.userId === user.id);
   const typeLabel = (petType: SittingPetType) => petType === 'Бүгд' ? t('sitting_pet_type_all') : petType === 'Нохой' ? t('type_dog') : petType === 'Муур' ? t('type_cat') : t('type_other');
@@ -35,9 +34,9 @@ export default function SittingDetailClient({ id }: { id: string }) {
   async function handleSave(values: SittingEditValues) {
     setSaving(true); const fields = { ...values, price: values.price ? Number(values.price) : null, phone: normalizePhone(values.phone) };
     try { await updateSittingListing(id, fields); setListing((current) => current ? { ...current, ...fields } : current); setEditing(false); showToast(t('detail_save'), 'success'); }
-    catch (reason) { showToast(getErrorMessage(reason) || t('form_generic_error'), 'error'); } finally { setSaving(false); }
+    catch (reason) { showToast(getErrorMessage(reason, t('form_generic_error')), 'error'); } finally { setSaving(false); }
   }
-  async function handleDelete() { if (!confirm(t('detail_delete_confirm'))) return; setDeleting(true); try { await deleteSittingListing(id); router.push('/sitting'); } catch (reason) { showToast(getErrorMessage(reason) || t('form_generic_error'), 'error'); setDeleting(false); } }
+  async function handleDelete() { if (!confirm(t('detail_delete_confirm'))) return; setDeleting(true); try { await deleteSittingListing(id); router.push('/sitting'); } catch (reason) { showToast(getErrorMessage(reason, t('form_generic_error')), 'error'); setDeleting(false); } }
 
   if (error) return <div className="page-shell page-shell--narrow"><div className="state-panel state-panel--error" role="alert"><span className="state-panel__icon"><Icon name="alert" size={28} /></span><h2>{t('sitting_detail_error_title')}</h2><p>{error}</p><div className="detail-actions"><Button variant="secondary" onClick={() => void load()}>{t('err_retry')}</Button><Button as="link" href="/sitting" variant="ghost">{t('detail_back_listings')}</Button></div></div></div>;
   if (!listing) return <div className="page-shell page-shell--detail"><div className="detail-skeleton" aria-busy="true" aria-label={t('detail_loading')}><div className="skeleton media-skeleton" /><div className="skeleton info-skeleton" /><p>{t('sitting_detail_loading_desc')}</p></div><style jsx>{`.detail-skeleton{display:grid;grid-template-columns:1.1fr .9fr;gap:var(--sp-6)}.skeleton{min-height:24rem;border-radius:var(--r-xl);background:linear-gradient(90deg,var(--surface-2),var(--overcast),var(--surface-2));background-size:200% 100%;animation:shimmer 1.4s infinite}.detail-skeleton p{grid-column:1/-1;color:var(--muted);text-align:center}@keyframes shimmer{to{background-position:-200% 0}}@media(max-width:900px){.detail-skeleton{grid-template-columns:1fr}.skeleton{min-height:18rem}}@media(prefers-reduced-motion:reduce){.skeleton{animation:none}}`}</style></div>;

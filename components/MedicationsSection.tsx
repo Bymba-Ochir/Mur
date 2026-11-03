@@ -50,7 +50,7 @@ export default function MedicationsSection({ petId, medications, onUpdate }: { p
   return (
     <section className="record-section" aria-labelledby={`medications-${petId}`}>
       <header className="section-header">
-        <div><span className="section-icon"><Icon name="calendar" size={19} /></span><h3 id={`medications-${petId}`}>{t('health_section_medications')}</h3><span className="count">{medications.length}</span></div>
+        <div><span className="section-icon"><Icon name="pill" size={19} /></span><h3 id={`medications-${petId}`}>{t('health_section_medications')}</h3><span className="count">{medications.length}</span></div>
         <Button variant="ghost" size="sm" onClick={() => setShowForm((open) => !open)} aria-expanded={showForm}><Icon name={showForm ? 'close' : 'plus'} size={15} />{showForm ? t('health_cancel_add') : t('health_med_add')}</Button>
       </header>
       {showForm && <form className="record-form" onSubmit={handleAdd}>
@@ -64,7 +64,7 @@ export default function MedicationsSection({ petId, medications, onUpdate }: { p
         </div>
         <Button type="submit" variant="accent" size="sm" disabled={busy || !name.trim()} aria-busy={busy}>{busy ? t('health_saving') : t('health_add_details')}</Button>
       </form>}
-      {medications.length === 0 ? <div className="record-empty"><Icon name="calendar" size={22} /><p>{t('health_med_none')}</p></div> : <ul className="record-list">
+      {medications.length === 0 ? <div className="record-empty"><Icon name="pill" size={22} /><p>{t('health_med_none')}</p></div> : <ul className="record-list">
         {medications.map((item) => <li key={item.id}>
           <div className="record-main"><div className="record-title"><strong>{item.name}</strong><button type="button" className="delete-button" disabled={updatingId === item.id} onClick={() => void handleDelete(item.id)} aria-label={`${t('health_delete_item')}: ${item.name}`}><Icon name="trash" size={16} /></button></div>
             {(item.dosage || item.frequency || item.startDate || item.endDate) && <small>{[item.dosage, item.frequency, item.startDate, item.endDate].filter(Boolean).join(' · ')}</small>}

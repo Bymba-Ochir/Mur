@@ -38,7 +38,7 @@ function ApplicationContent({ adoptionId, ownerId }: PanelProps) {
     const request = ++sequence.current;
     setLoading(true); setError('');
     try { const data = await fetchAdoptionApplications(adoptionId); if (active.current && request === sequence.current) setItems(data); }
-    catch (reason) { if (active.current && request === sequence.current) setError(getErrorMessage(reason) || t('adoption_request_load_error')); }
+    catch (reason) { if (active.current && request === sequence.current) setError(getErrorMessage(reason, t('adoption_request_load_error'))); }
     finally { if (active.current && request === sequence.current) setLoading(false); }
   }, [adoptionId, user, t]);
   useEffect(() => { const counter = sequence; void Promise.resolve().then(load); return () => { counter.current++; }; }, [load]);
@@ -47,14 +47,14 @@ function ApplicationContent({ adoptionId, ownerId }: PanelProps) {
     if (mutating.current || !active.current) return;
     mutating.current = true; setBusy(true);
     try { await createAdoptionApplication(adoptionId,message);if (!active.current) return;setMessage('');showToast(t('adoption_request_sent'),'success');await load(); }
-    catch (reason) { if (!active.current) return; showToast(getErrorMessage(reason) || t('form_generic_error'),'error'); }
+    catch (reason) { if (!active.current) return; showToast(getErrorMessage(reason, t('form_generic_error')),'error'); }
     finally { mutating.current = false; if (active.current) setBusy(false); }
   }
   async function decide(id:string,status:'accepted'|'rejected'|'cancelled') {
     if (mutating.current || !active.current) return;
     mutating.current = true; setBusy(true);
     try { await updateAdoptionApplication(id,status);if (!active.current) return;showToast(t('adoption_request_updated'),'success');await load(); }
-    catch (reason) { if (!active.current) return; showToast(getErrorMessage(reason) || t('form_generic_error'),'error'); }
+    catch (reason) { if (!active.current) return; showToast(getErrorMessage(reason, t('form_generic_error')),'error'); }
     finally { mutating.current = false; if (active.current) setBusy(false); }
   }
 

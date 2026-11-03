@@ -139,7 +139,7 @@ describe('page detail safeguards', () => {
       const detail = source(path);
       expect(detail).toContain('state-panel--error');
       expect(detail).toMatch(/Дахин оролдох|err_retry/);
-      expect(detail).toMatch(/буцах|Буцах|detail_back_listings|adoptions_back_to_list/);
+      expect(detail).toMatch(/буцах|Буцах|detail_back_listings|adoptions_back_to_list|profiles_back_to_pets/);
     }
   });
 

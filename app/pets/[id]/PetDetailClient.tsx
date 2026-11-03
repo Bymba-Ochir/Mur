@@ -1,6 +1,7 @@
 'use client';
 import { useListingReturnPath } from '../../../lib/useListingFilters';
-import { useEffect, useState, useSyncExternalStore } from 'react';
+import { useEffect, useState } from 'react';
+import { useCurrentLocation } from '../../../lib/useCurrentLocation';
 import { fetchPetById, markResolved, updatePet, deletePet } from '../../../lib/petService';
 import { useAuth } from '../../../lib/useAuth';
 import { maskPhone, formatPhone } from '../../../lib/utils';
@@ -26,19 +27,6 @@ import PetImageGallery from '../../../components/PetImageGallery';
 import FavoriteButton from '../../../components/FavoriteButton';
 import Icon from '../../../components/ui/icons';
 
-// URL-ийн snapshot — share холбоосын зориулалттай (useSyncExternalStore;
-// effect-д setUrl хийхгүй, SSR-д хоосон string)
-function subscribeLocation(cb: () => void): () => void {
-  window.addEventListener('popstate', cb);
-  window.addEventListener('hashchange', cb);
-  return () => {
-    window.removeEventListener('popstate', cb);
-    window.removeEventListener('hashchange', cb);
-  };
-}
-const getLocationSnapshot = (): string => window.location.href;
-const getLocationServerSnapshot = (): string => '';
-
 export default function PetDetailClient({ id }: { id: string }) {
   const returnPath = useListingReturnPath("/listings");
   const { user } = useAuth();
@@ -47,13 +35,15 @@ export default function PetDetailClient({ id }: { id: string }) {
   const { t, lang } = useLanguage();
   const [pet, setPet] = useState<Pet | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const url = useSyncExternalStore(subscribeLocation, getLocationSnapshot, getLocationServerSnapshot);
+  const url = useCurrentLocation();
   const [resolving, setResolving] = useState(false);
   const [revealed, setRevealed] = useState(false);
   const [editing, setEditing] = useState(false);
   const [editForm, setEditForm] = useState<PetEditValues | null>(null);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const foundListing = pet?.status === 'found';
+  const resolvedText = t(foundListing ? 'detail_owner_found_badge' : 'detail_resolved_badge');
 
   useEffect(() => {
     load();
@@ -67,20 +57,20 @@ export default function PetDetailClient({ id }: { id: string }) {
       setPet(p);
       setEditForm({ name: p.name, color: p.color, place: p.place, district: p.district, phone: p.phone });
     } catch (e) {
-      setError(getErrorMessage(e));
+      setError(getErrorMessage(e, t('form_generic_error')));
     }
   }
 
   async function handleResolve() {
-    if (!confirm(t('detail_resolve_confirm'))) return;
+    if (!confirm(t(foundListing ? 'detail_owner_found_confirm' : 'detail_resolve_confirm'))) return;
     setResolving(true);
     try {
       await markResolved(id);
       await load();
       fireConfetti();
-      showToast(t('detail_resolved_badge').replace('✅ ', ''), 'success');
+      showToast(resolvedText, 'success');
     } catch (err) {
-      showToast(getErrorMessage(err), 'error');
+      showToast(getErrorMessage(err, t('form_generic_error')), 'error');
     } finally {
       setResolving(false);
     }
@@ -94,7 +84,7 @@ export default function PetDetailClient({ id }: { id: string }) {
       await load();
       showToast(t('detail_edit_success'), 'success');
     } catch (err) {
-      showToast(getErrorMessage(err), 'error');
+      showToast(getErrorMessage(err, t('form_generic_error')), 'error');
     } finally {
       setSaving(false);
     }
@@ -107,7 +97,7 @@ export default function PetDetailClient({ id }: { id: string }) {
       await deletePet(id);
       router.push('/listings');
     } catch (err) {
-      showToast(getErrorMessage(err), 'error');
+      showToast(getErrorMessage(err, t('form_generic_error')), 'error');
       setDeleting(false);
     }
   }
@@ -121,7 +111,7 @@ export default function PetDetailClient({ id }: { id: string }) {
 
   return (
     <div className="page-shell page-shell--detail">
-      <div className="detail-back"><Button as="link" href={returnPath} variant="ghost" size="sm">← {t('detail_back_listings')}</Button></div>
+      <div className="detail-back"><Button as="link" href={returnPath} variant="ghost" size="sm"><Icon name="arrowLeft" size={16} />{t('detail_back_listings')}</Button></div>
       <div className="page-header">
         <p className="eyebrow">{pet.status === 'lost' ? t('report_lost_eyebrow') : t('report_found_eyebrow')}</p>
         <h1>{title}</h1>
@@ -130,7 +120,7 @@ export default function PetDetailClient({ id }: { id: string }) {
 
       {pet.resolved && (
         <div className="pop-in resolved-banner" role="status">
-          <Icon name="check" size={18} aria-hidden="true" /> {t('detail_resolved_badge')}
+          <Icon name="check" size={18} aria-hidden="true" /> {resolvedText}
         </div>
       )}
 
@@ -193,7 +183,7 @@ export default function PetDetailClient({ id }: { id: string }) {
               <div className="owner-actions">
                 <Button variant="ghost" onClick={() => setEditing(true)}><Icon name="pencil" size={16} aria-hidden="true" /> {t('detail_edit_btn')}</Button>
                 <Button variant="danger" onClick={handleDelete} disabled={deleting} aria-busy={deleting}><Icon name="trash" size={16} aria-hidden="true" /> {deleting ? t('detail_deleting') : t('detail_delete_btn')}</Button>
-                {!pet.resolved && <Button onClick={handleResolve} disabled={resolving} aria-busy={resolving} variant="secondary"><Icon name="check" size={16} aria-hidden="true" /> {resolving ? t('detail_resolving') : t('detail_resolve_btn')}</Button>}
+                {!pet.resolved && <Button onClick={handleResolve} disabled={resolving} aria-busy={resolving} variant="secondary"><Icon name="check" size={16} aria-hidden="true" /> {resolving ? t('detail_resolving') : t(foundListing ? 'detail_owner_found_btn' : 'detail_resolve_btn')}</Button>}
               </div>
             </section>
           )}

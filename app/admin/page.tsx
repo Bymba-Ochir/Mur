@@ -104,7 +104,7 @@ export default function AdminPage() {
     { id: 'reports', label: t('admin_tab_reports'), count: stats.reports, icon: 'flag' },
     { id: 'user-reports', label: t('admin_tab_users'), count: userReports.length, icon: 'shield' },
     { id: 'content', label: t('admin_tab_content'), icon: 'paw' },
-    { id: 'health', label: t('admin_tab_health'), icon: 'cross' },
+    { id: 'health', label: t('admin_tab_health'), icon: 'pulse' },
     { id: 'audit', label: t('admin_tab_audit'), icon: 'calendar' },
     { id: 'feedback', label: t('feedback_title'), icon: 'message' },
   ];
@@ -180,14 +180,14 @@ export default function AdminPage() {
     <main className="page-shell admin-page">
       <header className="admin-hero">
         <div><p className="eyebrow">{t('admin_dashboard_eyebrow')}</p><h1>{t('admin_dashboard_title')}</h1><p>{t('admin_dashboard_desc')}</p><span className="admin-account"><Icon name="shield" size={16} />{user.email}</span></div>
-        <div className="hero-status"><span className={`health-badge ${health?.status === 'ok' ? 'is-ok' : 'is-warning'}`}><i />{health?.status === 'ok' ? t('admin_health_ok') : t('admin_health_degraded')}</span><Button variant="ghost" onClick={() => void load()} disabled={dataLoading} aria-busy={dataLoading}><Icon name="arrowRight" size={17} />{dataLoading ? t('admin_refreshing') : t('admin_refresh')}</Button></div>
+        <div className="hero-status"><span className={`health-badge ${health?.status === 'ok' ? 'is-ok' : 'is-warning'}`}><i />{health?.status === 'ok' ? t('admin_health_ok') : t('admin_health_degraded')}</span><Button variant="ghost" onClick={() => void load()} disabled={dataLoading} aria-busy={dataLoading}><Icon name="refresh" size={17} />{dataLoading ? t('admin_refreshing') : t('admin_refresh')}</Button></div>
       </header>
 
       <nav className="admin-tabs" role="tablist" aria-label={t('admin_tabs_label')}>
         {tabs.map(({ id, label, count, icon }) => <button key={id} id={`admin-tab-${id}`} type="button" role="tab" aria-selected={tab === id} aria-controls={`admin-panel-${id}`} tabIndex={tab === id ? 0 : -1} className={tab === id ? 'is-active' : ''} onClick={() => setTab(id)} onKeyDown={(event) => handleTabKeyDown(event, id)}><Icon name={icon} size={17} /><span>{label}</span>{count !== undefined && <strong>{count}</strong>}</button>)}
       </nav>
 
-      {dataLoading ? <AdminSkeleton /> : dataError ? <section className="state-panel state-panel--error" role="alert"><span className="state-panel__icon"><Icon name="alert" size={28} /></span><h2>{t('admin_load_error')}</h2><p>{dataError}</p><Button variant="ghost" onClick={() => void load()}><Icon name="arrowRight" size={17} />{t('admin_retry')}</Button></section> : <>
+      {dataLoading ? <AdminSkeleton /> : dataError ? <section className="state-panel state-panel--error" role="alert"><span className="state-panel__icon"><Icon name="alert" size={28} /></span><h2>{t('admin_load_error')}</h2><p>{dataError}</p><Button variant="ghost" onClick={() => void load()}><Icon name="refresh" size={17} />{t('admin_retry')}</Button></section> : <>
         <section id="admin-panel-dashboard" role="tabpanel" aria-labelledby="admin-tab-dashboard" hidden={tab !== 'dashboard'}>
           <div className="stats-grid">{statCards.map((card) => <article key={card.label} className={`stat-card tone-${card.tone}`}><span><Icon name={card.icon} size={20} /></span><p>{card.label}</p><strong>{card.value}</strong></article>)}</div>
           {(reports.length > 0 || userReports.length > 0) && <section className="attention-panel" aria-labelledby="attention-title"><div><span><Icon name="alert" size={22} /></span><div><h2 id="attention-title">{t('admin_attention_title')}</h2><p>{t('admin_reports_desc')}</p></div></div><div className="attention-actions">{reports.length > 0 && <Button variant="ghost" onClick={() => setTab('reports')}><strong>{reports.length}</strong> {t('admin_attention_reports')}<Icon name="arrowRight" size={16} /></Button>}{userReports.length > 0 && <Button variant="ghost" onClick={() => setTab('user-reports')}><strong>{userReports.length}</strong> {t('admin_attention_users')}<Icon name="arrowRight" size={16} /></Button>}</div></section>}
@@ -216,7 +216,7 @@ export default function AdminPage() {
 
         <section id="admin-panel-health" role="tabpanel" aria-labelledby="admin-tab-health" hidden={tab !== 'health'}>
           <SectionHeading title={t('admin_health_title')} description={t('admin_health_desc')} />
-          {health && <div className="health-grid"><article className={`health-summary ${health.status === 'ok' ? 'is-ok' : 'is-warning'}`}><span><Icon name={health.status === 'ok' ? 'check' : 'alert'} size={30} /></span><div><p>{health.status === 'ok' ? t('admin_health_ok') : t('admin_health_degraded')}</p><strong>{health.status.toUpperCase()}</strong></div></article><HealthCheck icon="lock" label={t('admin_health_configuration')} ok={health.checks.configuration} okText={t('admin_health_passed')} failText={t('admin_health_failed')} /><HealthCheck icon="cross" label={t('admin_health_database')} ok={health.checks.database} okText={t('admin_health_passed')} failText={t('admin_health_failed')} /><article className="health-meta"><span>{t('admin_health_version')}</span><strong>{health.version}</strong></article><article className="health-meta"><span>{t('admin_health_checked')}</span><strong>{dateFormatter.format(new Date(health.timestamp))}</strong></article></div>}
+          {health && <div className="health-grid"><article className={`health-summary ${health.status === 'ok' ? 'is-ok' : 'is-warning'}`}><span><Icon name={health.status === 'ok' ? 'check' : 'alert'} size={30} /></span><div><p>{health.status === 'ok' ? t('admin_health_ok') : t('admin_health_degraded')}</p><strong>{health.status.toUpperCase()}</strong></div></article><HealthCheck icon="lock" label={t('admin_health_configuration')} ok={health.checks.configuration} okText={t('admin_health_passed')} failText={t('admin_health_failed')} /><HealthCheck icon="pulse" label={t('admin_health_database')} ok={health.checks.database} okText={t('admin_health_passed')} failText={t('admin_health_failed')} /><article className="health-meta"><span>{t('admin_health_version')}</span><strong>{health.version}</strong></article><article className="health-meta"><span>{t('admin_health_checked')}</span><strong>{dateFormatter.format(new Date(health.timestamp))}</strong></article></div>}
         </section>
 
         <section id="admin-panel-audit" role="tabpanel" aria-labelledby="admin-tab-audit" hidden={tab !== 'audit'}>

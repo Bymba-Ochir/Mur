@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 // Onboarding модалыг хаах — localStorage-д харсан туг тавих
 test.beforeEach(async ({ page }) => {
   await page.addInitScript(() => {
-    localStorage.setItem('mur-onboarding-seen', '1');
+    localStorage.setItem('mur-onboarding-v2-seen', '1');
   });
 });
 
@@ -11,7 +11,7 @@ test.describe('Үндсэн навигаци', () => {
   test('нүүр хуудас ачаалагдаж, гарчиг харагдана', async ({ page }) => {
     await page.goto('/');
     await expect(page.locator('h1')).toBeVisible();
-    await expect(page.getByRole('link', { name: /Алдсан мэдэгдэх/ })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Алдсан амьтнаа мэдээлэх', exact: true })).toBeVisible();
   });
 
   test('Navbar-аар "Алдсан" хуудас руу шилжинэ', async ({ page, isMobile }) => {
@@ -89,7 +89,7 @@ test.describe('UI regression', () => {
     await page.goto('/');
     if (isMobile) await page.locator('.mobile-menu-btn').click();
     await page.getByRole('button', { name: /Дэмжих/ }).last().click();
-    await expect(page.getByRole('dialog', { name: /Дэмж/ })).toBeVisible();
+    await expect(page.getByRole('dialog', { name: 'МӨР-ийг дэмжих', exact: true })).toBeVisible();
   });
 
   test('home service card-ууд layout style-тай байна', async ({ page }) => {
