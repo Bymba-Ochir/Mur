@@ -31,6 +31,8 @@ local DB үүсгэж шалгана, production migration автоматаар 
 
 Санал хүсэлтийн урсгалыг deploy хийхээс өмнө [site feedback migration](../supabase/migrations/20261103141000_site_feedback.sql)-ийг Supabase SQL Editor-д ажиллуул. Deploy-ийн дараа footer-оос туршилтын санал илгээж, `/admin` дахь **Санал хүсэлт** таб дээр харагдаж байгааг шалга.
 
+Админы устгах үйлдлийг deploy хийхээс өмнө [admin delete feedback](../supabase/migrations/20261103142500_admin_delete_feedback.sql) болон [feedback audit засвар](../supabase/migrations/20261103143000_fix_feedback_delete_audit.sql)-ыг энэ дарааллаар SQL Editor-д ажиллуул.
+
 Vercel дээр deploy commit, environment, build log-ийг тулгана. Өмнөх release checklist-ууд [архивт](archive/) бий.
 
 ## Интеграц

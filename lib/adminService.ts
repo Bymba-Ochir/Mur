@@ -75,6 +75,11 @@ export async function fetchAdminFeedback(page: number) {
   return finalizePage(data as AdminFeedbackItem[], window.page, window.pageSize);
 }
 
+export async function deleteAdminFeedback(id: string): Promise<void> {
+  const { error } = await supabase.rpc('admin_delete_feedback', { target_id: id });
+  if (error) throw error;
+}
+
 export async function isAdmin(): Promise<boolean> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return false;

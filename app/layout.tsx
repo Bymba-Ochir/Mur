@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { Inter, JetBrains_Mono, Montserrat } from 'next/font/google';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import { FeedbackProvider } from '../components/FeedbackButton';
 import InstallPrompt from '../components/InstallPrompt';
 import Onboarding from '../components/Onboarding';
 import PageTransition from '../components/PageTransition';
@@ -60,9 +61,11 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           <LanguageProvider>
             <DocumentLanguage />
             <ToastProvider>
-              <Navbar />
-              <main id="main-content"><PageTransition>{children}</PageTransition></main>
-              <Footer />
+              <FeedbackProvider>
+                <Navbar />
+                <main id="main-content"><PageTransition>{children}</PageTransition></main>
+                <Footer />
+              </FeedbackProvider>
               <InstallPrompt />
               <Onboarding />
               <AnalyticsProvider />

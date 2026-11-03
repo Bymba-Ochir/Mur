@@ -163,6 +163,7 @@ export default function AdminPage() {
       : action === 'review_user_report' ? t('admin_audit_review_user') : action === 'dismiss_user_report' ? t('admin_audit_dismiss_user') : action;
   }
   function targetLabel(type: string) {
+    if (type === 'site_feedback') return t('feedback_title');
     return type === 'pet' ? t('admin_target_pet') : type === 'adoption' ? t('admin_target_adoption')
       : type === 'sitting' ? t('admin_target_sitting') : type === 'report' ? t('admin_target_report')
         : type === 'user_report' ? t('admin_target_user_report') : type;

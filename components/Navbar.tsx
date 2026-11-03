@@ -6,6 +6,7 @@ import { useAuth } from '../lib/useAuth';
 import { isAdmin } from '../lib/adminService';
 import ThemeToggle from './ThemeToggle';
 import DonateButton from './DonateButton';
+import FeedbackButton from './FeedbackButton';
 import LanguageToggle from './LanguageToggle';
 import LoginModal from './LoginModal';
 import { useLanguage } from '../lib/i18n';
@@ -267,6 +268,8 @@ export default function Navbar() {
             </Link>
           )}
         </div>
+
+        <div className="nav-feedback"><FeedbackButton /></div>
 
         {/* Right side: donate + toggles + user/account */}
         <div className="nav-right">
@@ -969,9 +972,18 @@ export default function Navbar() {
           font-size: 14px;
         }
 
+        .navbar-wrap .nav-feedback { flex: 0 0 auto; }
+        .navbar-wrap .nav-feedback :global(.btn-base) {
+          min-height: var(--touch-target);
+          background: var(--eyebrow-bg);
+          white-space: nowrap;
+        }
+
         /* ─── Responsive: ≤1040px hide desktop rails, show hamburger ─── */
         @media (max-width: 1040px) {
           .navbar-wrap .mobile-actions { display: flex; }
+          .navbar-wrap .nav-feedback { margin-inline-start: auto; }
+          .navbar-wrap .nav-right { margin-left: 0; }
           .navbar-wrap .nav-links, .navbar-wrap .nav-divider, .navbar-wrap .icon-rail { display: none; }
           .navbar-wrap .nav-right .donate-btn { display: none; }
         }

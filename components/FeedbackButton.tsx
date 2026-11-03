@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useRef, useState, type FormEvent } from 'react';
+import { createContext, useCallback, useContext, useMemo, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { usePathname } from 'next/navigation';
 import { FEEDBACK_CATEGORIES, FEEDBACK_MAX_LENGTH, FEEDBACK_MIN_LENGTH, feedbackPage, isFeedbackCategory } from '../lib/feedback';
 import { useLanguage } from '../lib/i18n';
@@ -11,7 +11,22 @@ import { Select, Textarea } from './ui/Input';
 import Modal from './ui/Modal';
 import Icon from './ui/icons';
 
+const FeedbackContext = createContext<{ open: boolean; show: () => void } | null>(null);
+
 export default function FeedbackButton() {
+  const feedback = useContext(FeedbackContext);
+  const { t } = useLanguage();
+  if (!feedback) throw new Error('FeedbackButton requires FeedbackProvider');
+
+  return (
+    <Button variant="ghost" size="sm" aria-haspopup="dialog" aria-expanded={feedback.open} onClick={feedback.show}>
+      <Icon name="message" size={16} aria-hidden="true" />
+      {t('feedback_title')}
+    </Button>
+  );
+}
+
+export function FeedbackProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const { t } = useLanguage();
   const showToast = useToast();
@@ -23,6 +38,12 @@ export default function FeedbackButton() {
   const pageAtOpen = useRef('/');
   const inFlight = useRef(false);
   const attempt = useRef<IdempotencyAttempt | null>(null);
+
+  const show = useCallback(() => {
+    pageAtOpen.current = feedbackPage(pathname);
+    setOpen(true);
+  }, [pathname]);
+  const feedback = useMemo(() => ({ open, show }), [open, show]);
 
   const close = useCallback(() => {
     if (!inFlight.current) setOpen(false);
@@ -65,14 +86,8 @@ export default function FeedbackButton() {
   }
 
   return (
-    <>
-      <Button variant="ghost" size="sm" aria-haspopup="dialog" aria-expanded={open} onClick={() => {
-        pageAtOpen.current = feedbackPage(pathname);
-        setOpen(true);
-      }}>
-        <Icon name="message" size={16} aria-hidden="true" />
-        {t('feedback_title')}
-      </Button>
+    <FeedbackContext.Provider value={feedback}>
+      {children}
       <Modal open={open} onClose={close} title={t('feedback_title')} closeLabel={t('close')} width="sm">
         <form className="feedback-form" onSubmit={submit}>
           <p>{t('feedback_intro')}</p>
@@ -95,6 +110,6 @@ export default function FeedbackButton() {
         .feedback-form p { color: var(--text-secondary); }
         .feedback-form .feedback-error { color: var(--danger); }
       `}</style>
-    </>
+    </FeedbackContext.Provider>
   );
 }

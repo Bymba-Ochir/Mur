@@ -1,5 +1,6 @@
 import { describe,it,expect,vi,beforeEach,afterEach } from 'vitest';
-import { render,screen,fireEvent,waitFor,act } from '@testing-library/react';
+import { render,screen,fireEvent,waitFor,act,within } from '@testing-library/react';
+import type { ReactNode } from 'react';
 const mocks = vi.hoisted(() => ({ user: { id: 'test', email: 'test@example.com' } as { id:string;email:string } | null, admin: vi.fn(), count: vi.fn() }));
 vi.mock('next/navigation',()=>({usePathname:()=>'/'}));
 vi.mock('../../lib/useAuth',()=>({useAuth:()=>({user:mocks.user,logout:vi.fn()})}));
@@ -10,7 +11,13 @@ vi.mock('../../components/ThemeToggle',()=>({default:()=>null}));
 vi.mock('../../components/LanguageToggle',()=>({default:()=>null}));
 vi.mock('../../components/LoginModal',()=>({default:()=>null}));
 import Navbar from '../../components/Navbar';
+import FeedbackButton, { FeedbackProvider } from '../../components/FeedbackButton';
+import { ToastProvider } from '../../components/Toast';
 import { LanguageProvider } from '../../lib/i18n';
+
+function Providers({ children }: { children: ReactNode }) {
+  return <LanguageProvider><ToastProvider><FeedbackProvider>{children}</FeedbackProvider></ToastProvider></LanguageProvider>;
+}
 beforeEach(()=>{
  mocks.user={id:'test',email:'test@example.com'}; mocks.admin.mockReset().mockResolvedValue(false); mocks.count.mockReset().mockResolvedValue(0);
  vi.stubGlobal('matchMedia',vi.fn(()=>({matches:false,addEventListener:vi.fn(),removeEventListener:vi.fn()})));
@@ -20,7 +27,7 @@ beforeEach(()=>{
 afterEach(()=>vi.unstubAllGlobals());
 describe('account menu keyboard',()=>{
  it('opens at the first item, navigates to the end, and restores focus on Escape',async()=>{
-  render(<LanguageProvider><Navbar/></LanguageProvider>);
+  render(<Navbar/>, { wrapper: Providers });
   const trigger=document.querySelector<HTMLButtonElement>('.user-pill')!;
   fireEvent.keyDown(trigger,{key:'ArrowDown'});
   await waitFor(()=>expect(screen.getAllByRole('menuitem')[0]).toHaveFocus());
@@ -37,26 +44,44 @@ describe('navbar account state',()=>{
  it('ignores a previous account response after switching accounts',async()=>{
   let resolveOld!: (value:boolean)=>void;
   mocks.admin.mockImplementationOnce(()=>new Promise<boolean>((resolve)=>{resolveOld=resolve;}));
-  const {rerender,container}=render(<LanguageProvider><Navbar/></LanguageProvider>);
+  const {rerender,container}=render(<Navbar/>, { wrapper: Providers });
   mocks.user={id:'second',email:'second@example.com'};
-  rerender(<LanguageProvider><Navbar/></LanguageProvider>);
+  rerender(<Navbar/>);
   await act(async()=>{resolveOld(true);});
   expect(container.querySelector('.icon-rail-btn.is-admin')).toBeNull();
  });
  it('removes admin UI immediately on logout',async()=>{
   mocks.admin.mockResolvedValue(true);
-  const {rerender,container}=render(<LanguageProvider><Navbar/></LanguageProvider>);
+  const {rerender,container}=render(<Navbar/>, { wrapper: Providers });
   await waitFor(()=>expect(container.querySelector('.icon-rail-btn.is-admin')).not.toBeNull());
   mocks.user=null;
-  rerender(<LanguageProvider><Navbar/></LanguageProvider>);
+  rerender(<Navbar/>);
   expect(container.querySelector('.icon-rail-btn.is-admin')).toBeNull();
  });
  it('handles failed role and notification requests',async()=>{
   mocks.admin.mockRejectedValue(new Error('offline')); mocks.count.mockRejectedValue(new Error('offline'));
-  const {container}=render(<LanguageProvider><Navbar/></LanguageProvider>);
+  const {container}=render(<Navbar/>, { wrapper: Providers });
   await act(async()=>{});
   expect(container.querySelector('.user-pill')).not.toBeNull();
   expect(container.querySelector('.icon-rail-btn.is-admin')).toBeNull();
   expect(container.querySelector('.notification-badge')).toBeNull();
  });
+});
+
+it('opens one feedback form from the header and preserves its draft when opened from the footer', async () => {
+  mocks.user = null;
+  render(<><Navbar /><footer><FeedbackButton /></footer></>, { wrapper: Providers });
+  const navButton = within(screen.getByRole('banner')).getByRole('button', { name: 'Санал хүсэлт' });
+  navButton.focus();
+  fireEvent.click(navButton);
+  const dialog = screen.getByRole('dialog', { name: 'Санал хүсэлт' });
+  fireEvent.change(within(dialog).getByLabelText('Таны санал'), { target: { value: 'Saved draft' } });
+  fireEvent.keyDown(dialog, { key: 'Escape' });
+  expect(navButton).toHaveFocus();
+  expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+
+  const footerButton = within(screen.getByRole('contentinfo')).getByRole('button', { name: 'Санал хүсэлт' });
+  fireEvent.click(footerButton);
+  expect(screen.getAllByRole('dialog')).toHaveLength(1);
+  expect(screen.getByLabelText('Таны санал')).toHaveValue('Saved draft');
 });
