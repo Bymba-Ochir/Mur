@@ -13,7 +13,7 @@ import { useLanguage } from '../lib/i18n';
 import Icon from './ui/icons';
 import type { IconName } from './ui/icons';
 import Button from './ui/Button';
-import BrandLogo from './ui/BrandLogo';
+import BrandLogo, { BrandMark } from './ui/BrandLogo';
 import { subscribeToNotifications, unreadNotificationCount } from '../lib/workflowService';
 
 function truncateEmail(email: string): string {
@@ -289,7 +289,7 @@ export default function Navbar() {
                 aria-label={t('nav_user_menu_label')}
                 title={user.email ?? t('nav_user_menu_label')}
               >
-                <span className="user-avatar" aria-hidden="true"><Icon name="paw" size={15} /></span>
+                <span className="user-avatar" aria-hidden="true"><BrandMark size={19} /></span>
                 <span className="user-email">{user.email ? truncateEmail(user.email) : ''}</span>
                 {visibleUnreadNotifications > 0 && <span className="notification-badge" aria-label={`${visibleUnreadNotifications} уншаагүй мэдэгдэл`}>{visibleUnreadNotifications > 99 ? '99+' : visibleUnreadNotifications}</span>}
                 <svg className={`user-chevron${showUserMenu ? ' open' : ''}`} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true" focusable="false"><path d="m6 9 6 6 6-6" /></svg>
@@ -297,7 +297,7 @@ export default function Navbar() {
               {showUserMenu && (
                 <div id="user-menu-popover" className="user-dropdown" onKeyDown={handleUserMenuKey} role="menu" aria-label={t('nav_user_menu_label')}>
                   <div className="dropdown-header">
-                    <span className="dropdown-avatar" aria-hidden="true"><Icon name="paw" size={17} /></span>
+                    <span className="dropdown-avatar" aria-hidden="true"><BrandMark size={24} /></span>
                     <span className="dropdown-identity">
                       <strong>{t('nav_profile')}</strong>
                       <small title={user.email ?? undefined}>{user.email ?? t('nav_guest')}</small>
@@ -413,7 +413,7 @@ export default function Navbar() {
               {user ? (
                 <div className="mobile-user-section">
                   <div className="mobile-user-info">
-                    <span className="user-avatar" aria-hidden="true"><Icon name="paw" size={15} /></span>
+                    <span className="user-avatar" aria-hidden="true"><BrandMark size={19} /></span>
                     <span>{user.email ? truncateEmail(user.email) : t('nav_guest')}</span>
                   </div>
                   <div className="mobile-user-actions">
@@ -640,14 +640,10 @@ export default function Navbar() {
           width: 26px;
           height: 26px;
           border-radius: 50%;
-          background: var(--grad-brand);
+          background: var(--surface-3);
           display: flex;
           align-items: center;
           justify-content: center;
-          color: var(--text-on-accent);
-          font-size: 11px;
-          font-weight: 700;
-          line-height: 1;
         }
         .navbar-wrap .user-email {
           max-width: 100px;
@@ -711,8 +707,7 @@ export default function Navbar() {
           justify-content: center;
           width: 38px;
           height: 38px;
-          color: var(--text-on-accent);
-          background: var(--grad-brand);
+          background: var(--surface-3);
           border-radius: 50%;
         }
         .navbar-wrap .dropdown-identity { display: grid; min-width: 0; gap: 2px; }

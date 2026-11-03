@@ -7,6 +7,7 @@ import type { ProfileStats, UserProfile } from '../lib/profileService';
 import { getErrorMessage } from '../lib/utils';
 import { useToast } from './Toast';
 import Button from './ui/Button';
+import { BrandMark } from './ui/BrandLogo';
 import Icon from './ui/icons';
 import Modal from './ui/Modal';
 import FieldHint from './ui/FieldHint';
@@ -91,7 +92,7 @@ export default function UserProfileView({ userId, own = false }: { userId?: stri
       <div className="profile-cover" aria-hidden="true"><span /><span /><span /></div>
       <div className="profile-content">
         <div className="profile-head">
-          <div className="profile-avatar">{profile.avatarUrl ? <Image src={profile.avatarUrl} alt={t('profile_avatar_alt')} fill sizes="(max-width: 560px) 84px, 112px" className="profile-photo" /> : <Icon name="paw" size={44} />}</div>
+          <div className="profile-avatar">{profile.avatarUrl ? <Image src={profile.avatarUrl} alt={t('profile_avatar_alt')} fill sizes="(max-width: 560px) 84px, 112px" className="profile-photo" /> : <BrandMark size={48} />}</div>
           <div className="profile-title"><p className="eyebrow">{own ? t('profile_title') : t('thread_participant_label')}</p><h1 id="profile-name">{profile.displayName}</h1><div className="profile-badges">{profile.emailVerified && <span><Icon name="check" size={14} />{t('profile_verified')}</span>}{profile.isVolunteer && <span className="volunteer"><Icon name="heart" size={14} />{t('profile_volunteer')}</span>}</div>{profile.district && <p className="district"><Icon name="pin" size={15} />{profile.district}</p>}</div>
         </div>
         {profile.bio ? <p className="profile-bio">{profile.bio}</p> : own && <p className="profile-bio empty-bio">{t('profile_bio_hint')}</p>}

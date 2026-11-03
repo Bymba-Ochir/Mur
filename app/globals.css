@@ -781,10 +781,8 @@ body:has([data-floating-notice='analytics']) [data-floating-notice='install'] {
   width: 28px;
   height: 28px;
   flex: 0 0 28px;
-  color: #FFFFFF;
-  background: var(--grad-brand);
+  background: var(--surface-3);
   border-radius: 50%;
-  font-size: 12px;
 }
 .navbar-wrap .user-email { max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .navbar-wrap .user-chevron { margin-right: 5px; color: var(--text-tertiary); font-size: 10px; }
@@ -807,7 +805,7 @@ body:has([data-floating-notice='analytics']) [data-floating-notice='install'] {
 }
 .navbar-wrap .dropdown-avatar {
   display: inline-flex; align-items: center; justify-content: center; width: 38px; height: 38px;
-  color: var(--text-on-accent); background: var(--grad-brand); border-radius: 50%;
+  background: var(--surface-3); border-radius: 50%;
 }
 .navbar-wrap .dropdown-identity { display: grid; min-width: 0; gap: 2px; }
 .navbar-wrap .dropdown-identity strong { color: var(--text-primary); font-size: var(--text-sm); }
