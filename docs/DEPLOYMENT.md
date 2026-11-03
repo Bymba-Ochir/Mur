@@ -13,12 +13,21 @@
 ZIP-ээс задласан хавтас Git repository биш байж болно. Existing clone-оо ашигла; origin-ийг мэдэхгүйгээр `git init`/force push хийхгүй.
 
 ```powershell
-git status
-git diff --stat
-git add README.md docs ADMIN_SETUP.md CONTRIBUTING.md
-git commit -m "Consolidate project documentation"
-git push
+npm run db:check; if ($LASTEXITCODE -ne 0) { throw 'Migration check failed' }
+npm run typecheck; if ($LASTEXITCODE -ne 0) { throw 'Typecheck failed' }
+npm run lint; if ($LASTEXITCODE -ne 0) { throw 'Lint failed' }
+npm test; if ($LASTEXITCODE -ne 0) { throw 'Tests failed' }
+npm run build; if ($LASTEXITCODE -ne 0) { throw 'Build failed' }
+git add -A; if ($LASTEXITCODE -ne 0) { throw 'Git add failed' }
+git commit -m "chore: isolate local database and version schema migrations"; if ($LASTEXITCODE -ne 0) { throw 'Commit failed' }
+git push origin main
 ```
+
+v104: Local app/CI нь production DB ашиглахгүй. Local setup болон migration
+workflow-г [LOCAL-DATABASE](LOCAL-DATABASE.md), [DATABASE](DATABASE.md)-аас хар.
+Одоогийн production DB дээр imported migration history-г бүхэлд нь ажиллуулахгүй.
+Production schema/history reconciliation нь тусдаа manual review; CI нь зөвхөн
+local DB үүсгэж шалгана, production migration автоматаар ажиллуулахгүй.
 
 `DEPLOY-CHECKLIST-v*.md` redirect-уудыг өөрчилсөн бол тэдгээрийг мөн review хийгээд stage хийнэ. Vercel дээр deploy commit, environment, build log-ийг тулгана.
 

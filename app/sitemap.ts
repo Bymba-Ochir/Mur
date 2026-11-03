@@ -3,7 +3,7 @@
 // дэлгэрэнгүй хуудсуудыг мөн оруулна — "алдсан нохой Улаанбаатар" гэх мэт
 // хайлтад тухайн бичлэгүүд шууд олдох боломжтой болгоно.
 import type { MetadataRoute } from 'next';
-import { createClient } from '@supabase/supabase-js';
+import { createPublicClient } from '../lib/supabaseClient';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = process.env.NEXT_PUBLIC_SITE_URL || 'https://mur-chi.vercel.app';
@@ -28,10 +28,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   let petRoutes: MetadataRoute.Sitemap = [];
   try {
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
+    const supabase = createPublicClient();
     const { data } = await supabase
       .from('pets')
       .select('id, created_at')

@@ -1,11 +1,8 @@
 import type { Metadata } from 'next';
-import { createClient } from '@supabase/supabase-js';
+import { createPublicClient } from '../../../lib/supabaseClient';
 import SittingDetailClient from './SittingDetailClient';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-);
+const supabase = createPublicClient();
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params;

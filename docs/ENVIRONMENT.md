@@ -2,6 +2,14 @@
 
 Кодын `process.env` хэрэглээнээс гаргасан жагсаалт. Example файлууд бүх интеграцийн утгыг заавал агуулахгүй. Бодит key-г энд хуулж болохгүй.
 
+Локал `.env.local` нь зөвхөн `http://127.0.0.1:54321` Supabase болон
+`postgresql://...@127.0.0.1:54322/postgres` ашиглана. `npm run db:start` нь
+local stack-ийн key-уудыг файлаар тохируулдаг; production env-ийг татахгүй.
+`NEXT_PUBLIC_DATABASE_MODE` / `NEXT_PUBLIC_DATABASE_HOSTS` нь build-ээс үүсэх
+public guard metadata; тэдгээрийг Vercel env-д гараар тохируулахгүй.
+Windows локал runtime нь Vercel metadata байсан ч hosted DB ашиглахгүй.
+Дэлгэрэнгүй: [LOCAL-DATABASE](LOCAL-DATABASE.md).
+
 | Нэр | Зориулалт |
 |---|---|
 | `CI` | CI runner-ийн төлөв |

@@ -1,0 +1,3 @@
+-- Local development only. No production dump, users, email, or credentials.
+-- Static clinic/service catalog data is already versioned by the migrations.
+-- Create test accounts using local Auth at http://127.0.0.1:54323.

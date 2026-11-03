@@ -2,6 +2,11 @@
 
 `scripts/backup-db.sh` нь `pg_dump --no-owner --no-acl | gzip` ашигладаг. Dump-д мэдээлэл болон schema орно, харин ACL grant-ууд `--no-acl`-аар хасагдана. Storage bucket доторх бодит зураг, Vercel env, provider тохиргоог энэ script backup хийхгүй.
 
+v104: Энэ local script нь Node target guard-аар зөвхөн `localhost:54322`
+PostgreSQL хүлээн авна. Remote/production URL-тай бол `pg_dump` эхлэхээс өмнө
+зогсоно. Production backup-ийг Supabase Dashboard-ийн managed backup/PITR
+ажлын урсгалаар тусад нь удирдана; local code production DB-д холбогдохгүй.
+
 ## Бэлтгэл
 
 PostgreSQL client, Bash (Windows дээр WSL/Git Bash), database нууц холболтыг хамгаалагдсан environment-аар өгнө. Script `.env.local` автоматаар уншихгүй. `DATABASE_URL` утгыг командын жишээ, commit-д хадгалахгүй.

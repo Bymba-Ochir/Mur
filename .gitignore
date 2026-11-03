@@ -53,3 +53,11 @@ yarn-error.log*
 # Misc
 *.pem
 *.log
+
+.vercel
+.env*
+!.env.example
+!.env.local.example
+/.local-secrets/
+/supabase/.temp/
+/supabase/.branches/

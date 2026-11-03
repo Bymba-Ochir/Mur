@@ -1,15 +1,28 @@
 const { withSentryConfig } = require('@sentry/nextjs');
+const { assertDatabaseTarget, allowsHostedDatabase } = require('./lib/databaseSafety.cjs');
+const hostedDatabase = allowsHostedDatabase();
+assertDatabaseTarget(process.env.NEXT_PUBLIC_SUPABASE_URL, hostedDatabase);
+const localHttp = 'http://127.0.0.1:54321 http://localhost:54321 http://[::1]:54321';
+const localWs = 'ws://127.0.0.1:54321 ws://localhost:54321 ws://[::1]:54321';
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
   env: {
+    NEXT_PUBLIC_DATABASE_MODE: hostedDatabase ? 'hosted' : 'local',
+    NEXT_PUBLIC_DATABASE_HOSTS: hostedDatabase ? [
+      new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://mur-chi.vercel.app').hostname,
+      process.env.VERCEL_URL, process.env.VERCEL_PROJECT_PRODUCTION_URL,
+    ].filter(Boolean).join(',') : '',
     NEXT_PUBLIC_SENTRY_ENVIRONMENT: process.env.VERCEL_ENV || process.env.NEXT_PUBLIC_SENTRY_ENVIRONMENT || process.env.NODE_ENV,
     NEXT_PUBLIC_SENTRY_RELEASE: process.env.VERCEL_GIT_COMMIT_SHA || process.env.NEXT_PUBLIC_SENTRY_RELEASE || '',
   },
   images: {
     remotePatterns: [
-      { protocol: 'https', hostname: '*.supabase.co', pathname: '/storage/v1/object/public/**' },
+      ...(hostedDatabase ? [{ protocol: 'https', hostname: '*.supabase.co', pathname: '/storage/v1/object/public/**' }] : [
+        { protocol: 'http', hostname: '127.0.0.1', port: '54321', pathname: '/storage/v1/object/public/**' },
+        { protocol: 'http', hostname: 'localhost', port: '54321', pathname: '/storage/v1/object/public/**' },
+      ]),
       { protocol: 'https', hostname: 'firebasestorage.googleapis.com' },
     ],
   },
@@ -25,8 +38,8 @@ const nextConfig = {
       "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net blob:",
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com",
       "font-src 'self' https://fonts.gstatic.com data:",
-      "img-src 'self' data: blob: https://*.supabase.co https://firebasestorage.googleapis.com https://*.tile.openstreetmap.org https://*.basemaps.cartocdn.com",
-      "connect-src 'self' blob: https://*.supabase.co wss://*.supabase.co https://cdn.jsdelivr.net https://huggingface.co https://*.huggingface.co https://*.hf.co https://*.sentry.io https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com",
+      `img-src 'self' data: blob: ${hostedDatabase ? 'https://*.supabase.co' : localHttp} https://firebasestorage.googleapis.com https://*.tile.openstreetmap.org https://*.basemaps.cartocdn.com`,
+      `connect-src 'self' blob: ${hostedDatabase ? 'https://*.supabase.co wss://*.supabase.co' : localHttp + ' ' + localWs} https://cdn.jsdelivr.net https://huggingface.co https://*.huggingface.co https://*.hf.co https://*.sentry.io https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com`,
       "worker-src 'self' blob:",
       "frame-ancestors 'none'",
       "base-uri 'self'",

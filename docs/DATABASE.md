@@ -1,63 +1,77 @@
-# Database ба migration
+# Database ба migrations
 
-Энэ repository-д нэг migration runner/ledger байхгүй; root дахь SQL файлууд нь олон үеийн өөрчлөлт. Бүгдийг alphabetical дарааллаар production-д ажиллуулж болохгүй. `IF NOT EXISTS` нь policy/trigger-ийн хуучин хувилбарыг сэргээхээс хамгаалахгүй.
+Canonical schema history нь `supabase/migrations/` доторх timestamp-тай SQL.
+Supabase CLI `2.122.0` dev dependency-д яг хувилбараар pin хийсэн. Local
+workflow: [LOCAL-DATABASE](LOCAL-DATABASE.md).
 
-## Шинэ database
+## Existing SQL-ийг migrations болгосон нь
 
-Тусгаарласан Supabase staging project дээр `supabase-setup.sql`-ийг суурь болгон review хий. Дараах dependency-уудыг хангаж файлуудын бүх агуулгыг шалга:
+Root дахь 23 SQL файлыг dependency дарааллаар бүртгэсэн:
 
-- `supabase-admin.sql` → `supabase-production-hardening.sql`.
-- `supabase-user-account-v52.sql` → `supabase-workflows-v53.sql` → `supabase-production-hardening-v54.sql` → `supabase-saved-searches-v55.sql`.
-- `supabase-workflows-v53.sql` → `supabase-booking-integrity-v89.sql`.
-- Photo, breed, listing, AI болон admin upgrade-уудыг ашиглах feature/schema-тай тулга.
+1. Base setup, photo/breed/AI/listing upgrades.
+2. Admin, production hardening, v49 → v52 → v53 → v54 → v55.
+3. v89 booking exclusion → v96 normalization → v98 browser trust.
+4. v99 pre/post → v100 joined reminders → v102 rate limits → v103 jobs.
+5. v103 scheduler-ийн opt-in migration.
 
-Энэ нь баталгаажсан автомат bootstrap дараалал биш. Бүх SQL-ийн нийлбэрийг хоосон database дээр энэ task-д ажиллуулаагүй. Амжилттай staging суулгалтын дарааллыг commit болон checksum-тай бүртгэж байж production-д хэрэглэ.
+Historical source → canonical migration mapping/checksum нь
+`supabase/legacy-sql-manifest.json`. Root SQL нь хуучин release/audit холбоосод
+зориулж хадгалагдсан, дахин засахгүй/шинээр root SQL нэмэхгүй. Imported
+migration-ууд `migration-lock.json`-д checksum-тай. Line-ending ялгааг normalize
+хийнэ. CI нь өмнөх Git commit дахь migrations-ийг давхар тулгаж edit/delete-ийг
+хориглоно; шинэ forward migration нэмэх шаардлагатай.
 
-## Existing database
+Энэ history-г хоосон локал PostgreSQL + pgvector + btree_gist дээр replay хийж
+шалгасан. Production schema-г татаж тулгаагүй; тэнд repository-д байхгүй drift
+байгаа эсэх тодорхойгүй. Docker-backed Supabase replay болон pgTAP нь restart-ийн
+дараа мөн баталгаажих ёстой. GitHub CI үүнийг шинээр үүсгэсэн local stack дээр хийнэ.
 
-1. Backup/restore боломжоо шалга.
-2. Existing schema, policy, grants, trigger/function-ийг экспортлон diff хий.
-3. Зөвхөн дутуу migration-ийг staging-д ажиллуул.
-4. Өөр өөр хэрэглэгчийн эрх болон application smoke test хий.
-5. Production-д ажиллуулсан файл, checksum, огноо, гүйцэтгэгчийг бүртгэ.
+## Шинэ өөрчлөлт
 
-v89 exclusion constraint нь хуучин accepted booking давхцал байвал transaction-ийг зогсооно. Давхардлыг таамгаар устгахгүй, эзэмшигчийн шийдвэрээр засна.
+Schema, RLS/grants, RPC, trigger, constraint, index, reference-data өөрчлөлт
+бүгд шинэ migration болно. Application-ийн ердийн хэрэглэгчийн INSERT/UPDATE нь
+schema migration биш. Нууц key, production user data нь migrations/seed-д орохгүй.
 
+```powershell
+npm run db:new -- add_example_feature
+```
 
-## v96 normalization
+Үүссэн `supabase/migrations/<timestamp>_add_example_feature.sql`-д SQL бич.
+Local Studio-оор public schema зассан бол `npm run db:diff -- describe_change`
+ашиглаад generated SQL-ээ review хийнэ. Schema diff нь өгөгдлийн INSERT/UPDATE
+эсвэл Vault зэрэг external configuration-ийг автоматаар capture хийхгүй;
+Auth/Storage custom policy/trigger болон reference-data өөрчлөлтөө SQL migration-д
+тусад нь бичиж шалгана.
 
-`supabase-normalization-v96.sql` нь application-ийн core schema-г давтагдсан болон хуулбарласан утгуудаас салгана. Энэ migration-ийг application-ийн v96-compatible код deploy хийсний **дараа** staging дээр шалгаж байж production-д ажиллуулна.
+```powershell
+npm run db:check; if ($LASTEXITCODE -ne 0) { throw 'Migration check failed' }
+npm run db:migrate; if ($LASTEXITCODE -ne 0) { throw 'Local migration failed' }
+npm run db:reset; if ($LASTEXITCODE -ne 0) { throw 'Fresh replay failed' }
+npm run db:test; if ($LASTEXITCODE -ne 0) { throw 'Database tests failed' }
+```
 
-Canonical relation-ууд:
+`db:reset` local өгөгдлийг устгана. Хэрэгтэй local data-гаа нөөцөлсний дараа
+fresh replay хийхдээ хэрэглэ. Applied migration-ийг өөрчлөхгүй; асуудлыг шинэ
+forward migration-ээр засна.
 
-- `pet_photos` → `pets`-ийн 1:N зураг. `pets.photo_url` / `pets.photo_urls` legacy багануудыг verified backfill-ийн дараа устгана.
-- `adoption_photos` → `adoptions`-ийн 1:N зураг. Legacy photo багануудыг verified backfill-ийн дараа устгана.
-- `vet_services` + `vet_clinic_services` → clinic-ийн `services text[]` repeating group-ийг service catalog болон join table болгоно.
-- `appointments.service_id` → service display text-ийг appointment бүр дээр давтаж хадгалахгүй.
-- `profiles` → conversation participant-ийн нэрийн source of truth. `conversations` дээр participant email-ийг дахин хуулж хадгалахгүй.
-- `pet_favorites` → favorite relation-ийн source of truth. `pets.favorite_count`-ийг тусдаа mutable aggregate болгон хадгалахгүй.
+## Existing production DB
 
-Migration нь photo backfill болон appointment service backfill-ийг шалгаад дараа нь legacy column-уудыг drop хийнэ. Алдагдах өгөгдөл илэрвэл `NORMALIZATION_ABORT` exception-оор transaction бүхэлдээ rollback болно. Production дээр SQL ажиллуулахаас өмнө database backup/restore боломж болон staging smoke test заавал шалгана. Migration-ийн дараа `audits/normalization-v96-readonly.sql`-ийг ажиллуулахад legacy column болон orphan relation үлдсэн эсэхийг data өөрчлөхгүйгээр шалгана.
+Энэ шинэ migration history-г existing production DB дээр шууд `db push`,
+`db reset`, эсвэл alphabetical root SQL replay хийж болохгүй. Локал код
+production DB-д холбогдохгүй учраас `db pull`/production dump ч ажиллуулахгүй.
 
-JSONB-г бүхэлд нь хориглоогүй: push subscription cryptographic keys, audit metadata, notification preference зэрэг application-д нэг document/value байдлаар хэрэглэгддэг өгөгдөл нь relation болгон задлах шаардлагагүй тул хэвээр үлдэнэ.
+Production baseline/history reconciliation нь тусдаа manual release ажил:
+Supabase Dashboard-оос owner schema/grants/RLS/functions/triggers-ийн metadata
+экспорт гаргаж, production data-гүйгээр repository history-тай review хийнэ.
+Яг аль migration аль хэдийн хэрэгжсэнийг нотолж байж ledger-ийг тусад нь
+тааруулна. Тэр хүртэл зөвхөн шинэ, review хийсэн шаардлагатай migration-ийг
+SQL Editor-д гараар ажиллуулж, version/checksum/гүйцэтгэгчийг бүртгэнэ.
+CI/Vercel нь production migration автоматаар ажиллуулахгүй.
 
-## SQL inventory
+Scheduler migration нь default/local replay үед HTTP cron нэмэхгүй. Production
+operator зориуд `SET app.mur_environment = 'production'` хийж, Vault secrets
+бэлдсэн session-д тухайн SQL-ийг ажиллуулна. Local DB production worker URL руу
+хүсэлт явуулах хуваарьгүй байна. Vault secret-ийн утгыг SQL файлд бичихгүй.
 
-- [`supabase-admin-upgrade.sql`](../supabase-admin-upgrade.sql)
-- [`supabase-admin.sql`](../supabase-admin.sql)
-- [`supabase-adoption-photos-upgrade.sql`](../supabase-adoption-photos-upgrade.sql)
-- [`supabase-ai-upgrade.sql`](../supabase-ai-upgrade.sql)
-- [`supabase-booking-integrity-v89.sql`](../supabase-booking-integrity-v89.sql)
-- [`supabase-breed-migration.sql`](../supabase-breed-migration.sql)
-- [`supabase-listing-upgrade.sql`](../supabase-listing-upgrade.sql)
-- [`supabase-normalization-v96.sql`](../supabase-normalization-v96.sql)
-- [`supabase-pet-photos-upgrade.sql`](../supabase-pet-photos-upgrade.sql)
-- [`supabase-production-hardening-v54.sql`](../supabase-production-hardening-v54.sql)
-- [`supabase-production-hardening.sql`](../supabase-production-hardening.sql)
-- [`supabase-saved-searches-v55.sql`](../supabase-saved-searches-v55.sql)
-- [`supabase-security-upgrade-v49.sql`](../supabase-security-upgrade-v49.sql)
-- [`supabase-setup.sql`](../supabase-setup.sql)
-- [`supabase-user-account-v52.sql`](../supabase-user-account-v52.sql)
-- [`supabase-workflows-v53.sql`](../supabase-workflows-v53.sql)
-
-Storage backup нь database dump-ээс тусдаа. RLS, grant, security-definer function болон trigger-ийг хамтад нь review хийнэ. [SECURITY](SECURITY.md), [BACKUP](BACKUP.md)-ийг үзнэ.
+Production migration-ийн өмнө managed backup/restore боломж болон staging
+үр дүнг шалгана. Vercel code rollback нь DB migration/data-г буцаахгүй.

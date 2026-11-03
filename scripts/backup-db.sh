@@ -3,21 +3,19 @@
 # scripts/backup-db.sh — Supabase Postgres өгөгдлийн сангийн backup
 #
 # Бүх хүснэгт, өгөгдөл, функц, RLS бодлого, sequence-ийг plain SQL-ээр
-# gzip хийж хадгална. Схем нь pgvector зэрэг тусгай extension шаарддаггүй
-# (color_signature нь jsonb) тул ямар ч Postgres/Supabase төсөлд restore
-# хийж болно. `--no-owner` тул өмчлөгчийн ролын ялгаа асуудал болохгүй.
+# gzip хийж хадгална. Restore хийх Postgres-д тухайн schema-ийн extension-үүд
+# суусан байна. `--no-owner` нь эх өгөгдлийн сангийн өмчлөгчийг сэргээхгүй.
 #
 # Шаардлага:
 #   - pg_dump (PostgreSQL client) суулгасан байх
 #   - DATABASE_URL env-д заасан байх (серверийн нууц — NEXT_PUBLIC_ БИШ!)
 #
 # Ашиглах жишээ:
-#   DATABASE_URL="postgresql://postgres.xxx:ПАСС@db.xxx.supabase.co:5432/postgres" \
+#   DATABASE_URL="postgresql://postgres:postgres@127.0.0.1:54322/postgres" \
 #     ./scripts/backup-db.sh
 #
 # Тохиргоо (env):
-#   DATABASE_URL  — заавал. Supabase Dashboard → Project Settings → Database →
-#                   "Connection string" → "Direct connection" (port 5432).
+#   DATABASE_URL  — loopback port 54322 дээрх local Postgres URI.
 #   BACKUP_DIR    — local хадгалах хавтас     (default: ./backups)
 #   BACKUP_KEEP   — хэдэн хоногийн backup хадгалах (default: 14)
 #   BACKUP_DEST   — (сонголт) зайнаас хадгалах газар:
@@ -30,7 +28,11 @@
 # =====================================================================
 set -euo pipefail
 
-: "${DATABASE_URL:?DATABASE_URL env өгнө — Supabase Database connection string}"
+: "${DATABASE_URL:?DATABASE_URL env өгнө — local Postgres URI}"
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+node "$SCRIPT_DIR/assert-local-postgres.cjs"
+# libpq can take hostaddr or a service definition independently of the URI host.
+unset PGHOST PGHOSTADDR PGPORT PGDATABASE PGSERVICE PGSERVICEFILE PGSYSCONFDIR
 BACKUP_DIR="${BACKUP_DIR:-./backups}"
 BACKUP_KEEP="${BACKUP_KEEP:-14}"
 BACKUP_DEST="${BACKUP_DEST:-}"
@@ -47,7 +49,7 @@ FILE="$BACKUP_DIR/mur-${STAMP}.sql.gz"
 
 echo "==> Backup хийж байна: $FILE"
 # --no-owner/--no-acl: өөр төсөлд restore хийхэд рол/эрхийн зөрчил үүсгэхгүй
-pg_dump "$DATABASE_URL" --no-owner --no-acl | gzip > "$FILE"
+pg_dump --dbname="$DATABASE_URL" --no-owner --no-acl | gzip > "$FILE"
 
 # Backup амжилттай болсон эсэхийг шалгах (файл хоосон биш)
 if [ ! -s "$FILE" ]; then

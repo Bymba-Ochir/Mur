@@ -1,4 +1,4 @@
-name: CI — typecheck · lint · tests · build
+name: CI — local database · typecheck · lint · tests · build
 
 on:
   push:
@@ -7,67 +7,68 @@ on:
     branches: [main]
 
 jobs:
-  # ---- 1. Quality gate: typecheck + lint + unit/component тест ----
-  # Гадаад холболт/env шаарддаггүй тул бүртээ ажиллана — энэ нь push/PR-ийг
-  # блоклодог гол шалгуур. Vercel deploy-оос ӨМНӨ хангагдсан байх ёстой
-  # (branch protection-д required check болгож тохируулна).
   quality:
-    name: Typecheck · Lint · Unit tests
+    name: Migration history · Typecheck · Lint · Unit tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
+          cache: npm
       - run: npm ci
+      - run: npm run db:check
+      - name: Enforce append-only migration history
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          if [[ "$BASE_SHA" =~ ^[0-9a-f]{40}$ && "$BASE_SHA" != "0000000000000000000000000000000000000000" ]]; then
+            npm run db:check -- --against "$BASE_SHA"
+          fi
       - run: npm run typecheck
       - run: npm run lint
       - run: npm test
 
-  # ---- 2. Production build ----
-  # lib/supabase.ts нь module scope-д createClient() дууддаг тул build хийхэд
-  # хоосон биш утга хэрэгтэй (бодит хандалт browser дээр л болдог, эдгээр нь
-  # зөвхөн client-module-ийг бүтээхэд зориулсан dummy утгууд).
   build:
-    name: Production build
+    name: Production build with local-only database target
     runs-on: ubuntu-latest
     env:
-      NEXT_PUBLIC_SUPABASE_URL: https://dummy.supabase.co
-      NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-dummy-anon-key
+      NEXT_PUBLIC_SUPABASE_URL: http://127.0.0.1:54321
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: local-ci-key
+      NEXT_PUBLIC_SITE_URL: http://localhost:3000
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
+          cache: npm
       - run: npm ci
       - run: npm run build
 
-  # ---- 3. E2E smoke test (Playwright) ----
-  # Бодит NEXT_PUBLIC_SUPABASE_* env шаардлага тул зөвхөн GitHub Secrets-д
-  # утгууд тохируулсан үед л ажиллана (fork-ийн PR-д secrets байхгүй → skip,
-  # pipelines блоклогддоггүй). Тестүүд бичлэг үүсгэдэггүй (submit хийхгүй).
-  e2e:
-    name: E2E (Playwright)
-    if: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL != '' && secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY != '' }}
+  database:
+    name: Rebuild local Supabase · DB invariants · E2E
     runs-on: ubuntu-latest
-    env:
-      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
-      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
+          cache: npm
       - run: npm ci
+      - run: npm run db:start
+      - run: npm run db:reset
+      - run: npm run db:test
       - run: npx playwright install --with-deps chromium
       - run: npm run build
-      - name: Start server & run e2e
+      - name: Start local server and run E2E
         env:
           PLAYWRIGHT_BASE_URL: http://localhost:3000
         run: |
-          npx next start &
+          npm run start &
           for i in $(seq 1 60); do curl -sf http://localhost:3000 >/dev/null && break; sleep 1; done
           npx playwright test
+      - if: always()
+        run: npm run db:stop

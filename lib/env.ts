@@ -2,12 +2,15 @@
 // Заавал байх env алга бол тодорхой алдаатай fail-fast (нууц үг/түлхүүрийг
 // дүгнэж гаргахгүй, зөвхөн нэрийг нь жагсаана). instrumentation.ts-д дуудагдана.
 
+import { assertDatabaseTarget } from './databaseSafety.cjs';
+
 const REQUIRED_VARS = [
   'NEXT_PUBLIC_SUPABASE_URL',
   'NEXT_PUBLIC_SUPABASE_ANON_KEY',
 ] as const;
 
 export function assertRequiredEnv(): void {
+  assertDatabaseTarget(process.env.NEXT_PUBLIC_SUPABASE_URL);
   const missing = REQUIRED_VARS.filter((key) => !process.env[key]);
   if (missing.length > 0) {
     throw new Error(
