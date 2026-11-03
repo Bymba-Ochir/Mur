@@ -92,7 +92,7 @@ Browser-ийн Supabase руу шууд явдаг PostgREST/Storage/Auth reques
 
 ## Нэвтрүүлэх
 
-1. `supabase-api-rate-limits-v102.sql`-ийг Supabase SQL Editor-д **гараар Run**.
+1. [v102 SQL](../supabase/legacy/supabase-api-rate-limits-v102.sql)-ийг Supabase SQL Editor-д **гараар Run**.
 2. `audits/api-rate-limits-v102-readonly.sql`: бүх `passed = true` эсэхийг шалгана.
 3. Дөрвөн code check тэнцсэний дараа commit/push/deploy.
 

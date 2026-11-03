@@ -4,6 +4,8 @@ import { mapPetSummary } from './petMapping';
 import type { Report } from './types';
 import { apiError, authenticatedFetch } from './apiClient';
 import { hydrateListingPhotos } from './photoRepository';
+import type { FeedbackCategory } from './feedback';
+import { COMPACT_PAGE_SIZE, finalizePage, pageWindow } from './pagination';
 
 export type AdminContentType = 'pet' | 'adoption' | 'sitting';
 
@@ -52,6 +54,25 @@ export interface AdminSystemHealth {
     database: boolean;
   };
   timestamp: string;
+}
+
+export interface AdminFeedbackItem {
+  id: string;
+  category: FeedbackCategory;
+  message: string;
+  page: string;
+  created_at: string;
+}
+
+export async function fetchAdminFeedback(page: number) {
+  const window = pageWindow(page, COMPACT_PAGE_SIZE);
+  const { data, error } = await supabase.from('site_feedback')
+    .select('id,category,message,page,created_at')
+    .order('created_at', { ascending: false })
+    .order('id', { ascending: false })
+    .range(window.from, window.to);
+  if (error) throw error;
+  return finalizePage(data as AdminFeedbackItem[], window.page, window.pageSize);
 }
 
 export async function isAdmin(): Promise<boolean> {

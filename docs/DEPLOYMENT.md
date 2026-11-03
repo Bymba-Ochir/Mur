@@ -2,8 +2,8 @@
 
 ## Deploy-оос өмнө
 
-- [STATUS](STATUS.md)-ийн security зөрүүг шийдсэн эсэхийг шалга.
-- Database backup болон staging migration үр дүнг хадгал.
+- [Аюулгүй байдлын шалгалт](SECURITY.md) болон [release тестүүдийг](TESTING.md) хий.
+- [Database backup](BACKUP.md) болон staging migration үр дүнг хадгал.
 - [ENVIRONMENT](ENVIRONMENT.md)-ийн шаардлагатай утгыг Vercel дээр тохируул.
 - Supabase Auth redirect URL бодит домэйнтэй нийцсэн эсэхийг шалга.
 - `npm ci`, `npm run typecheck`, `npm run lint`, `npm test`, `npm run build` амжилттай байх.
@@ -19,7 +19,7 @@ npm run lint; if ($LASTEXITCODE -ne 0) { throw 'Lint failed' }
 npm test; if ($LASTEXITCODE -ne 0) { throw 'Tests failed' }
 npm run build; if ($LASTEXITCODE -ne 0) { throw 'Build failed' }
 git add -A; if ($LASTEXITCODE -ne 0) { throw 'Git add failed' }
-git commit -m "chore: isolate local database and version schema migrations"; if ($LASTEXITCODE -ne 0) { throw 'Commit failed' }
+git commit -m "chore: describe this release"; if ($LASTEXITCODE -ne 0) { throw 'Commit failed' }
 git push origin main
 ```
 
@@ -29,13 +29,15 @@ workflow-г [LOCAL-DATABASE](LOCAL-DATABASE.md), [DATABASE](DATABASE.md)-аас 
 Production schema/history reconciliation нь тусдаа manual review; CI нь зөвхөн
 local DB үүсгэж шалгана, production migration автоматаар ажиллуулахгүй.
 
-`DEPLOY-CHECKLIST-v*.md` redirect-уудыг өөрчилсөн бол тэдгээрийг мөн review хийгээд stage хийнэ. Vercel дээр deploy commit, environment, build log-ийг тулгана.
+Санал хүсэлтийн урсгалыг deploy хийхээс өмнө [site feedback migration](../supabase/migrations/20261103141000_site_feedback.sql)-ийг Supabase SQL Editor-д ажиллуул. Deploy-ийн дараа footer-оос туршилтын санал илгээж, `/admin` дахь **Санал хүсэлт** таб дээр харагдаж байгааг шалга.
+
+Vercel дээр deploy commit, environment, build log-ийг тулгана. Өмнөх release checklist-ууд [архивт](archive/) бий.
 
 ## Интеграц
 
-`vercel.json`: `/api/vaccine-reminders`, `0 2 * * *` — 02:00 UTC буюу Улаанбаатарын 10:00 цагийн хуваарь. Энэ нь хүргэлтийн баталгаа биш.
+`vercel.json` дахь өдөр тутмын cron нь `/api/vaccine-reminders`-ийг 02:00 UTC, `/api/background-jobs`-ийг 03:00 UTC-д дуудна. Cron-д `Authorization: Bearer ...` шаардлагатай.
 
-Pets INSERT webhook: `/api/notify`, header `x-webhook-secret` нь `NOTIFY_WEBHOOK_SECRET`-тэй таарна. Cron-д `Authorization: Bearer ...` шаардлагатай. Хүсэлт хаах логикийн ZIP дэх зөрүүг STATUS-д тэмдэглэсэн.
+Pets INSERT webhook ашиглаж байгаа бол `/api/notify`-ийн `x-webhook-secret` header нь `NOTIFY_WEBHOOK_SECRET`-тэй таарна. Queue, scheduler болон rollback дарааллыг [background jobs тайлангаас](../audits/BACKGROUND-JOBS-v103.md) үзнэ.
 
 QPay merchant тохиргоо, invoice/callback/status урсгалыг provider-ийн sandbox боломжтой бол тусгаарласан орчинд шалга. Dev mock нь бодит төлбөрийн баталгаа биш.
 

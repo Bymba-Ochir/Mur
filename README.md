@@ -2,21 +2,17 @@
 
 Алдсан/олдсон амьтны зар, үрчлүүлэлт, асрах үйлчилгээ, мессеж, өөрийн амьтны эрүүл мэндийн бүртгэлийг нэгтгэсэн Next.js вэб төсөл.
 
-Энэ баримт нь хэрэглэгчийн өгсөн `Mur-main.zip` (Git snapshot `c7c34163debabc0b9aa98c9b277e7721fc9134ca`)-ийн кодод тулгуурлав. Код байгаа нь production урсгал баталгаажсан гэсэн үг биш. Security болон интеграцийн үлдсэн ажлыг [төлөвийн тайлангаас](docs/STATUS.md) үзнэ.
-
 ## Шууд эхлэх — Windows PowerShell
 
 ```powershell
-cd D:\Mur\mur-mvp
-npm ci
-if (-not (Test-Path .env.local)) {
-  Copy-Item .env.local.example .env.local
-}
-notepad .env.local
+Set-Location 'D:\Mur\mur-mvp'
+npm ci; if ($LASTEXITCODE -ne 0) { throw 'Dependency installation failed' }
+& 'D:\Mur\mur-local-runtime\Start-MurRuntime.ps1'
+npm run db:start; if ($LASTEXITCODE -ne 0) { throw 'Local database start failed' }
 npm run dev
 ```
 
-Supabase URL болон anon key-г бөглөсний дараа серверийг ажиллуулна. `http://localhost:3000` дээр нээнэ. Одоо байгаа `.env.local`-ийг жишээгээр дарж болохгүй. Database шинээр бэлдэх бол [DATABASE](docs/DATABASE.md)-ийг эхэлж уншина.
+`http://localhost:3000` дээр нээнэ. `db:start` нь зөвхөн локал Supabase тохиргоог `.env.local`-д бичнэ. Өөр компьютерийн Docker тохиргоог [локал DB заавраас](docs/LOCAL-DATABASE.md) үзнэ.
 
 ## Баримт бичгийн үндсэн холбоос
 
@@ -32,8 +28,7 @@ Supabase URL болон anon key-г бөглөсний дараа сервери
 | Архитектур, route | [ARCHITECTURE](docs/ARCHITECTURE.md) |
 | Хэрэглэгчийн урсгал | [UX-FLOWS](docs/UX-FLOWS.md) |
 | Алдаа оношлох | [TROUBLESHOOTING](docs/TROUBLESHOOTING.md) |
-| Admin | [ADMIN_SETUP](ADMIN_SETUP.md) |
-| Баталгаажуулалтын төлөв | [STATUS](docs/STATUS.md) |
+| Admin | [ADMIN_SETUP](docs/ADMIN_SETUP.md) |
 | Хувь нэмэр оруулах | [CONTRIBUTING](CONTRIBUTING.md) |
 
 ## Технологи
@@ -55,4 +50,4 @@ Build амжилттай болсон ч бодит төлбөр, push, database
 
 ## Баримт бичгийн хувилбар
 
-`DEPLOY-CHECKLIST-v*.md` нь тухайн үеийн өөрчлөлтийн түүх. Шинэ суулгалтын нэгтгэсэн заавар нь `docs/` дотор байна. Үйлчилгээний үнэ, үнэгүй quota-г энэ төсөл баталгаажуулахгүй; provider-ийн dashboard-оос шалгана.
+[Баримт бичгийн индекс](docs/README.md) нь идэвхтэй заавар, архив, SQL migration болон audit-ын байршлыг харуулна.

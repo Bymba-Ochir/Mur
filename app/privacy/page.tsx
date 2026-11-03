@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 const PRIVACY_MN: LegalDoc = {
   title: 'Нууцлалын бодлого',
-  updated: '2026 оны 9-р сарын 9',
+  updated: '2026 оны 11-р сарын 3',
   sections: [
     {
       heading: '1. Танилцуулга',
@@ -27,6 +27,7 @@ const PRIVACY_MN: LegalDoc = {
         'Төхөөрөмжийн мэдээлэл: Хэрэв та мэдэгдэл хүлээн авахаар бүртгүүлбэл push subscription мэдээлэл (төхөөрөмжийн түлхүүр) хадгалагдана.',
         'Үйл ажиллагааны мэдээлэл: Үрчлүүлэх хүсэлт, асрах захиалга, үйлчилгээний үнэлгээ болон тэдгээрийн төлөвийг үйлчилгээ үзүүлэх, маргаан шалгах зорилгоор хадгална.',
         'Хадгалсан мэдээлэл: Таны хадгалсан зар, хайлтын шүүлтүүр болон тохирох шинэ зарын мэдэгдлийг зөвхөн таны account-д холбоотой хадгална.',
+        'Санал хүсэлт: МӨР-ийг сайжруулахад ашиглахын тулд таны бичсэн санал, сонгосон төрөл, хуудасны ерөнхий хэсэг болон илгээсэн хугацааг хадгална. Саналыг бүртгэлтэй тань холбохгүй. Саналуудыг МӨР-ийн админууд уншина.',
       ],
     },
     {
@@ -77,7 +78,7 @@ const PRIVACY_MN: LegalDoc = {
 
 const PRIVACY_EN: LegalDoc = {
   title: 'Privacy Policy',
-  updated: 'September 9, 2026',
+  updated: 'November 3, 2026',
   sections: [
     {
       heading: '1. Introduction',
@@ -95,6 +96,7 @@ const PRIVACY_EN: LegalDoc = {
         'Device information: If you subscribe to notifications, we store your push subscription data (device key).',
         'Activity information: We store adoption applications, sitting bookings, service reviews, and their statuses to provide the service and investigate disputes.',
         'Saved information: Saved listings, search filters, and matching-listing notifications are stored only in connection with your account.',
+        'Feedback: To improve Mur, we store your message, selected category, general page area, and submission time. Feedback is stored without a link to your account. Mur administrators can read submissions.',
       ],
     },
     {

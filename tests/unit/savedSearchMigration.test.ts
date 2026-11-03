@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
-const sql = readFileSync(join(process.cwd(), 'supabase-saved-searches-v55.sql'), 'utf8');
+const sql = readFileSync(join(process.cwd(), 'supabase/migrations/20261102000014_saved_searches_v55.sql'), 'utf8');
 
 describe('saved search v55 migration', () => {
   it('matches the selected status instead of the opposite status', () => {

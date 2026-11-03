@@ -6,7 +6,7 @@ workflow: [LOCAL-DATABASE](LOCAL-DATABASE.md).
 
 ## Existing SQL-ийг migrations болгосон нь
 
-Root дахь 23 SQL файлыг dependency дарааллаар бүртгэсэн:
+Өмнөх 23 SQL эх файлыг `supabase/legacy/`-д хадгалж, migration-д дараах дарааллаар бүртгэсэн.
 
 1. Base setup, photo/breed/AI/listing upgrades.
 2. Admin, production hardening, v49 → v52 → v53 → v54 → v55.
@@ -15,16 +15,15 @@ Root дахь 23 SQL файлыг dependency дарааллаар бүртгэс
 5. v103 scheduler-ийн opt-in migration.
 
 Historical source → canonical migration mapping/checksum нь
-`supabase/legacy-sql-manifest.json`. Root SQL нь хуучин release/audit холбоосод
-зориулж хадгалагдсан, дахин засахгүй/шинээр root SQL нэмэхгүй. Imported
+`supabase/legacy-sql-manifest.json`. [Архивын SQL](../supabase/legacy/) нь
+өмнөх release болон audit-ын лавлагаа. Эх SQL-ийг өөрчлөхгүй. Imported
 migration-ууд `migration-lock.json`-д checksum-тай. Line-ending ялгааг normalize
 хийнэ. CI нь өмнөх Git commit дахь migrations-ийг давхар тулгаж edit/delete-ийг
 хориглоно; шинэ forward migration нэмэх шаардлагатай.
 
-Энэ history-г хоосон локал PostgreSQL + pgvector + btree_gist дээр replay хийж
-шалгасан. Production schema-г татаж тулгаагүй; тэнд repository-д байхгүй drift
-байгаа эсэх тодорхойгүй. Docker-backed Supabase replay болон pgTAP нь restart-ийн
-дараа мөн баталгаажих ёстой. GitHub CI үүнийг шинээр үүсгэсэн local stack дээр хийнэ.
+Migration түүхийг хоосон локал Supabase PostgreSQL 17 дээр replay хийж,
+pgTAP шалгалтаар баталгаажуулсан. GitHub CI шинээр үүсгэсэн локал stack дээр
+үүнийг давтана. Production schema-тай тулгах ажлыг тусад нь хийнэ.
 
 ## Шинэ өөрчлөлт
 
@@ -57,7 +56,7 @@ forward migration-ээр засна.
 ## Existing production DB
 
 Энэ шинэ migration history-г existing production DB дээр шууд `db push`,
-`db reset`, эсвэл alphabetical root SQL replay хийж болохгүй. Локал код
+`db reset`, эсвэл архивын SQL-ийг цувуулан ажиллуулж болохгүй. Локал код
 production DB-д холбогдохгүй учраас `db pull`/production dump ч ажиллуулахгүй.
 
 Production baseline/history reconciliation нь тусдаа manual release ажил:
@@ -75,3 +74,11 @@ operator зориуд `SET app.mur_environment = 'production'` хийж, Vault s
 
 Production migration-ийн өмнө managed backup/restore боломж болон staging
 үр дүнг шалгана. Vercel code rollback нь DB migration/data-г буцаахгүй.
+
+### v99 release-ийн дараалал
+
+1. Код deploy хийхээс өмнө [v99 pre-deploy SQL](../supabase/legacy/supabase-race-condition-hardening-v99.sql)-ийг Supabase SQL Editor-д ажиллуулна.
+2. Vercel deploy амжилттай болсны дараа [v99 post-deploy SQL](../supabase/legacy/supabase-race-condition-hardening-v99-postdeploy.sql)-ийг ажиллуулна.
+3. [Read-only audit](../audits/race-condition-v99-readonly.sql)-аар давхардсан идэвхтэй цаг, давхар зөвшөөрсөн үрчлэлт, давхцсан асаргааны захиалга тус бүр 0 байгааг шалгана.
+
+`Get-Content ... | Set-Clipboard` нь SQL текстийг хуулна. Ажиллуулахдаа Supabase Dashboard → SQL Editor → Run ашиглана.

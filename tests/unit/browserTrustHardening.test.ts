@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 describe('browser trust hardening migration', () => {
-  const sql = readFileSync(resolve(process.cwd(), 'supabase-browser-trust-hardening-v98.sql'), 'utf8');
+  const sql = readFileSync(resolve(process.cwd(), 'supabase/migrations/20261102000017_browser_trust_hardening_v98.sql'), 'utf8');
 
   it('binds listing ownership to auth.uid()', () => {
     expect(sql).toContain('with check (auth.uid() = created_by)');

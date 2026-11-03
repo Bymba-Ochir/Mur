@@ -1,116 +1,116 @@
 [
   {
-    "source": "supabase-setup.sql",
+    "source": "supabase/legacy/supabase-setup.sql",
     "migration": "supabase/migrations/20261102000001_setup.sql",
     "sourceSha256": "79890053d52293eedfd20bc70a8de49a45274193787938635da57030f62c8e79"
   },
   {
-    "source": "supabase-adoption-photos-upgrade.sql",
+    "source": "supabase/legacy/supabase-adoption-photos-upgrade.sql",
     "migration": "supabase/migrations/20261102000002_adoption_photos_upgrade.sql",
     "sourceSha256": "03925fd7fd56132d915199fd0c5beb829b67a1db20e7c5c0f342b5672d9a6216"
   },
   {
-    "source": "supabase-pet-photos-upgrade.sql",
+    "source": "supabase/legacy/supabase-pet-photos-upgrade.sql",
     "migration": "supabase/migrations/20261102000003_pet_photos_upgrade.sql",
     "sourceSha256": "fe65291eeef4f27101345ed603d223f9ca17c7b614b6ed5776fc027923c2c188"
   },
   {
-    "source": "supabase-breed-migration.sql",
+    "source": "supabase/legacy/supabase-breed-migration.sql",
     "migration": "supabase/migrations/20261102000004_breed_migration.sql",
     "sourceSha256": "a1749f0890190cd67f76be02ffe16c0044ac1e301c89c80e618b318f5024414b"
   },
   {
-    "source": "supabase-ai-upgrade.sql",
+    "source": "supabase/legacy/supabase-ai-upgrade.sql",
     "migration": "supabase/migrations/20261102000005_ai_upgrade.sql",
     "sourceSha256": "0a079a2c2d74d22e6b13b87308897ddb4d3d932af1bac058b5529f17cdfc14fa"
   },
   {
-    "source": "supabase-listing-upgrade.sql",
+    "source": "supabase/legacy/supabase-listing-upgrade.sql",
     "migration": "supabase/migrations/20261102000006_listing_upgrade.sql",
     "sourceSha256": "860275f3aa6761e755d7ea2b8c02788e8875fc2d351a3e4fbe7f845d2bf6fbb1"
   },
   {
-    "source": "supabase-admin.sql",
+    "source": "supabase/legacy/supabase-admin.sql",
     "migration": "supabase/migrations/20261102000007_admin.sql",
     "sourceSha256": "b8abaf73973e0b7863e587686fc66cf762aa4f17c07c0124f3db16acdab62c0e"
   },
   {
-    "source": "supabase-admin-upgrade.sql",
+    "source": "supabase/legacy/supabase-admin-upgrade.sql",
     "migration": "supabase/migrations/20261102000008_admin_upgrade.sql",
     "sourceSha256": "353650bba34215c6f6c350e58b49d649abef470036ad6dd623f81bea1ad51ef3"
   },
   {
-    "source": "supabase-production-hardening.sql",
+    "source": "supabase/legacy/supabase-production-hardening.sql",
     "migration": "supabase/migrations/20261102000009_production_hardening.sql",
     "sourceSha256": "1790db450a803673d7803363e897e924b7a53ed422215ac736ca0d5d85ba2827"
   },
   {
-    "source": "supabase-security-upgrade-v49.sql",
+    "source": "supabase/legacy/supabase-security-upgrade-v49.sql",
     "migration": "supabase/migrations/20261102000010_security_upgrade_v49.sql",
     "sourceSha256": "06a94b060cb1f168a930d49212486e71f6eeb815c5047c9571dd2a8c1d71c408"
   },
   {
-    "source": "supabase-user-account-v52.sql",
+    "source": "supabase/legacy/supabase-user-account-v52.sql",
     "migration": "supabase/migrations/20261102000011_user_account_v52.sql",
     "sourceSha256": "46a2bbd73f68126681a43efe05603c51fbce1daf84f4e6e45cd3c51cedb72af9"
   },
   {
-    "source": "supabase-workflows-v53.sql",
+    "source": "supabase/legacy/supabase-workflows-v53.sql",
     "migration": "supabase/migrations/20261102000012_workflows_v53.sql",
     "sourceSha256": "9bc1c74fbff315e05ac98d22c8401cf42a7146fc614cfd2514b1b813ec7325be"
   },
   {
-    "source": "supabase-production-hardening-v54.sql",
+    "source": "supabase/legacy/supabase-production-hardening-v54.sql",
     "migration": "supabase/migrations/20261102000013_production_hardening_v54.sql",
     "sourceSha256": "d3c6684cd057e2f2785ead885d057b32c32d8ad56f2cba5f2e76f4346c7be9c7"
   },
   {
-    "source": "supabase-saved-searches-v55.sql",
+    "source": "supabase/legacy/supabase-saved-searches-v55.sql",
     "migration": "supabase/migrations/20261102000014_saved_searches_v55.sql",
     "sourceSha256": "99ecb805b11ff9100926c15844892caeabc5b4bc7b145887d1eb4f97f08ef4c2"
   },
   {
-    "source": "supabase-booking-integrity-v89.sql",
+    "source": "supabase/legacy/supabase-booking-integrity-v89.sql",
     "migration": "supabase/migrations/20261102000015_booking_integrity_v89.sql",
     "sourceSha256": "82df3eb1769fc6e3a8974e0e30910cbf0cdc93d0ce44db0ca1de93846db68ab5"
   },
   {
-    "source": "supabase-normalization-v96.sql",
+    "source": "supabase/legacy/supabase-normalization-v96.sql",
     "migration": "supabase/migrations/20261102000016_normalization_v96.sql",
     "sourceSha256": "1a94bc30c190a13e9074f92df510c31632ad18e0c05e200258893effb71f0455"
   },
   {
-    "source": "supabase-browser-trust-hardening-v98.sql",
+    "source": "supabase/legacy/supabase-browser-trust-hardening-v98.sql",
     "migration": "supabase/migrations/20261102000017_browser_trust_hardening_v98.sql",
     "sourceSha256": "507dd96934813828afa77fa9dfaab71a84300b0ac7235884118c44c615c93c3a"
   },
   {
-    "source": "supabase-race-condition-hardening-v99.sql",
+    "source": "supabase/legacy/supabase-race-condition-hardening-v99.sql",
     "migration": "supabase/migrations/20261102000018_race_condition_hardening_v99.sql",
     "sourceSha256": "b8f61014f17118d0184e40e7c12efdf05e2ebf2c8726b08e5f4248fc5bf2cc5a"
   },
   {
-    "source": "supabase-race-condition-hardening-v99-postdeploy.sql",
+    "source": "supabase/legacy/supabase-race-condition-hardening-v99-postdeploy.sql",
     "migration": "supabase/migrations/20261102000019_race_condition_hardening_v99_postdeploy.sql",
     "sourceSha256": "fc4a1d49a15375a847d6937a51c75bc0e60299e74ca9e7a6b355ca3843e2878e"
   },
   {
-    "source": "supabase-n-plus-one-v100.sql",
+    "source": "supabase/legacy/supabase-n-plus-one-v100.sql",
     "migration": "supabase/migrations/20261102000020_n_plus_one_v100.sql",
     "sourceSha256": "4ddd7f57583f3b4cb3dbac778e670f4de56acbf9a788a875cb22a579958949f0"
   },
   {
-    "source": "supabase-api-rate-limits-v102.sql",
+    "source": "supabase/legacy/supabase-api-rate-limits-v102.sql",
     "migration": "supabase/migrations/20261102000021_api_rate_limits_v102.sql",
     "sourceSha256": "dcdc60faf11ff5c5c0808063ae5ab2dda5043fceafc189abfb53d431f329f019"
   },
   {
-    "source": "supabase-background-jobs-v103.sql",
+    "source": "supabase/legacy/supabase-background-jobs-v103.sql",
     "migration": "supabase/migrations/20261102000022_background_jobs_v103.sql",
     "sourceSha256": "f98416ace797e8d5cd36654f7334bf91fd0dcdd95eaa6b92d2f2976f5e46997c"
   },
   {
-    "source": "supabase-background-jobs-v103-scheduler.sql",
+    "source": "supabase/legacy/supabase-background-jobs-v103-scheduler.sql",
     "migration": "supabase/migrations/20261102000023_background_scheduler_opt_in.sql",
     "sourceSha256": "740587df011732a7dbf12fa97b8897ec663d15809feab78f85543fdb30884e1d",
     "note": "Opt-in variant: local replay must never schedule production HTTP requests"

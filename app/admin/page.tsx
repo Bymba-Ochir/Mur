@@ -20,15 +20,16 @@ import Button from '../../components/ui/Button';
 import EmptyState from '../../components/ui/EmptyState';
 import Icon, { type IconName } from '../../components/ui/icons';
 import Modal from '../../components/ui/Modal';
+import FeedbackPanel from './FeedbackPanel';
 
-type Tab = 'dashboard' | 'reports' | 'user-reports' | 'content' | 'health' | 'audit';
+type Tab = 'dashboard' | 'reports' | 'user-reports' | 'content' | 'health' | 'audit' | 'feedback';
 type ContentFilter = 'all' | AdminContentType;
 type DeleteTarget =
   | { type: 'reported-pet'; reportId: string; petId: string; title: string }
   | { type: 'content'; item: AdminContentItem };
 
 const EMPTY_STATS: AdminStats = { pets: 0, activePets: 0, resolvedPets: 0, adoptions: 0, sitting: 0, reports: 0 };
-const TAB_ORDER: Tab[] = ['dashboard', 'reports', 'user-reports', 'content', 'health', 'audit'];
+const TAB_ORDER: Tab[] = ['dashboard', 'reports', 'user-reports', 'content', 'health', 'audit', 'feedback'];
 
 export default function AdminPage() {
   const { user, loading } = useAuth();
@@ -105,6 +106,7 @@ export default function AdminPage() {
     { id: 'content', label: t('admin_tab_content'), icon: 'paw' },
     { id: 'health', label: t('admin_tab_health'), icon: 'cross' },
     { id: 'audit', label: t('admin_tab_audit'), icon: 'calendar' },
+    { id: 'feedback', label: t('feedback_title'), icon: 'message' },
   ];
 
   const statCards: Array<{ label: string; value: number; tone: string; icon: IconName }> = [
@@ -219,6 +221,10 @@ export default function AdminPage() {
         <section id="admin-panel-audit" role="tabpanel" aria-labelledby="admin-tab-audit" hidden={tab !== 'audit'}>
           <SectionHeading title={t('admin_audit_title')} description={t('admin_audit_desc')} count={audit.length} />
           {audit.length === 0 ? <EmptyState icon={<Icon name="calendar" size={30} />} title={t('admin_audit_empty_title')} description={t('admin_audit_empty_desc')}><p className="setup-note"><Icon name="info" size={16} />{t('admin_audit_setup')}</p></EmptyState> : <div className="audit-table" role="table" aria-label={t('admin_audit_title')}><div className="audit-head" role="row"><span role="columnheader">{t('admin_audit_action')}</span><span role="columnheader">{t('admin_audit_target')}</span><span role="columnheader">{t('admin_audit_time')}</span></div>{audit.map((item) => <div className="audit-row" role="row" key={item.id}><strong role="cell">{auditLabel(item.action)}</strong><span role="cell">{targetLabel(item.targetType)}</span><time role="cell" dateTime={item.createdAt}>{relativeTime(item.createdAt, lang)}</time></div>)}</div>}
+        </section>
+        <section id="admin-panel-feedback" role="tabpanel" aria-labelledby="admin-tab-feedback" hidden={tab !== 'feedback'}>
+          <SectionHeading title={t('feedback_title')} description={t('feedback_admin_intro')} />
+          {tab === 'feedback' && <FeedbackPanel />}
         </section>
       </>}
 

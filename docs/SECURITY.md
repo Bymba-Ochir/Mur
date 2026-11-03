@@ -1,6 +1,6 @@
 # Аюулгүй байдал ба нууцлал
 
-Энэ баримт security certification биш. Snapshot код, production policy болон бодит эрхийн шалгалт гурвуулаа хэрэгтэй.
+Release бүрт кодын хамгаалалт, production policy болон хэрэглэгчийн бодит эрхийг тусад нь шалгана.
 
 ## Итгэлийн хил
 
@@ -8,15 +8,12 @@ Browser anon key нь нууц биш; RLS ба column/table grant өгөгдл�
 
 Нууц: service role, QPay password, Groq key, VAPID private key, webhook/cron secret, Sentry auth token. Git, ZIP, screenshot болон логт нийтлэхгүй. Ил гарвал эхлээд revoke/rotate, дараа нь түүхийг зохих журмаар цэвэрлэнэ.
 
-## Одоогийн нээлттэй шалгалт
+## Код дахь хамгаалалт
 
-- Snapshot-ийн QPay callback болон vaccine cron secret байхгүй үед fail-open салбар байна; deploy өмнө засах.
-- Өмнөх v93–v95 patch-ууд бүгд энэ ZIP-д орсон гэж үзэхгүй.
-- Хэрэглэгчийн явуулсан production grant/policy-д paid donations бүх багана, profile notification_preferences public уншигдах боломж ажиглагдсан. Дараах SQL засварууд ажилласан эсэх батлагдаагүй.
-- `email_verified` өөрчлөлтийг trigger хамгаалдаг эсэхийг шалгана.
-- RLS асаалттай байх нь policy зөв гэсэн баталгаа биш. FORCE RLS false нь дангаараа алдаа биш.
-- In-memory limiter нь instance тус бүрд; distributed хамгаалалт батлагдаагүй.
-- Утас UI-д масктай байсан ч public query-д байвал нууцлал биш.
+- QPay callback болон vaccine cron нь серверийн нууц утгыг шалгана. [Төлбөрийн callback](DEPLOYMENT.md#интеграц) нь төлбөрийн төлөвийг QPay API-аар баталгаажуулна.
+- API хүсэлтийн хязгаар нь [PostgreSQL counter](../audits/API-RATE-LIMITS-v102.md)-т тулгуурлана. Counter ажиллахгүй үед хамгаалагдсан хүсэлт 503 авна.
+- [Локал DB guard](LOCAL-DATABASE.md) нь хөгжүүлэлт болон тестийн процессыг production Supabase-ээс тусгаарлана.
+- Production grant, RLS болон public projection-ийг [read-only audit](../audits/security-readonly-v95.sql)-аар шалгана.
 
 ## Шалгах арга
 

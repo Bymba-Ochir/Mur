@@ -1,6 +1,6 @@
 # Хөгжүүлэлтийн журам
 
-1. Existing branch ба local өөрчлөлтийг `git status`-аар шалга.
+1. Салбарын commit-ийг `git log -1 --oneline`-аар шалга. Өөрчилсөн файлыг `git ls-files -m`, шинэ файлыг `git ls-files --others --exclude-standard`-аар жагсаа.
 2. Шинэ task branch үүсгэж тухайн урсгалын service/component-ийг эхэлж унш.
 3. Одоо байгаа `components/ui/` болон validation/helper-ийг дахин ашигла.
 4. Монгол/англи текст, dark/light, responsive, focus/disabled/error төлөвийг хамтад нь тооц.
@@ -8,4 +8,4 @@
 6. SQL өөрчлөлтөд dependency, rollback/compatibility, staging үр дүнг баримтжуул.
 7. PR-д шалтгаан, өөрчлөлт, шалгалт, үлдсэн хязгаарлалтыг бич.
 
-`AGENTS.md` дахь Next.js хувилбарын зааврыг дагана. Нууц env, backup, build cache-ийг commit хийхгүй. Шинэ feature нь deploy болсон гэсэн утгатай биш; [STATUS](docs/STATUS.md)-д нотолгоотой шинэчилнэ.
+[`AGENTS.md`](AGENTS.md) дахь Next.js болон migration зааврыг дагана. Нууц env, backup, build cache-ийг commit хийхгүй. Deploy-ийн үр дүнг [release шалгалтаар](docs/DEPLOYMENT.md) баталгаажуулна.

@@ -32,12 +32,12 @@ QPay invoice/QR үүсгэх, payment verification, authorization, rate limit, �
 
 Production DB/cron/Vault-д агент автоматаар өөрчлөлт оруулаагүй.
 
-1. **Deploy-ээс өмнө** `supabase-background-jobs-v103.sql`-ийг Supabase SQL Editor-д ажиллуул. v96/v99/v100/v102 өмнөх migrations ажилласан байх ёстой. Энэ нь шинэ хүснэгт/RPC/trigger нэмнэ; хуучин application code-той нийцтэй. Missing migration-тай deploy хийхгүй.
+1. **Deploy-ээс өмнө** [v103 SQL](../supabase/legacy/supabase-background-jobs-v103.sql)-ийг Supabase SQL Editor-д ажиллуул. v96/v99/v100/v102 өмнөх migrations ажилласан байх ёстой. Энэ нь шинэ хүснэгт/RPC/trigger нэмнэ; хуучин application code-той нийцтэй. Missing migration-тай deploy хийхгүй.
 2. Дөрвөн локал шалгалт тэнцсэний дараа commit/push, Vercel deploy.
 3. **Deploy амжилттай болсны дараа** Supabase Dashboard → Vault-д дараах нэрээр secrets үүсгэ:
    - `mur_background_worker_url`: `https://mur-chi.vercel.app/api/background-jobs`
    - `mur_background_worker_cron_secret`: Vercel Production дахь **яг ижил** `CRON_SECRET` (16-аас доошгүй тэмдэгт). Нууцыг файл/Git/chat-д хуулж болохгүй.
-4. `supabase-background-jobs-v103-scheduler.sql`-ийг SQL Editor-д ажиллуул. Энэ нь `pg_cron` + `pg_net`-ээр минут тутам private worker endpoint-ийг сэрээнэ; secret нь Vault-оос уншигдана. [Supabase scheduling + Vault](https://supabase.com/docs/guides/functions/schedule-functions), [Cron install](https://supabase.com/docs/guides/cron/install).
+4. [v103 scheduler SQL](../supabase/legacy/supabase-background-jobs-v103-scheduler.sql)-ийг SQL Editor-д ажиллуул. Энэ нь `pg_cron` + `pg_net`-ээр минут тутам private worker endpoint-ийг сэрээнэ; secret нь Vault-оос уншигдана. [Supabase scheduling + Vault](https://supabase.com/docs/guides/functions/schedule-functions), [Cron install](https://supabase.com/docs/guides/cron/install).
 5. `audits/background-jobs-v103-readonly.sql`-ийг ажиллуул. Эхний 4 invariant `true`, scheduler тохируулсан үед overdue/expired/failed job өсөхгүй байх ёстой. Supabase Cron history болон `pg_net` HTTP response-ийг шалга: `202` нь worker сэрэх хүсэлт хүлээн авсныг илэрхийлнэ; delivery дууссаны баталгаа нь queue status юм.
 
 Vercel Hobby нь өдөрт нэгээс олон ажиллах cron expression-ийг deploy дээр хориглодог. Тиймээс `vercel.json` дахь шинэ worker cron **өдөрт нэг удаагийн recovery**, минутын scheduler нь Supabase талд байна. Supabase scheduler тохируулаагүй бол queued job-ууд request wake-up эсвэл өдөр тутмын recovery хүртэл хүлээж болно. [Vercel cron limits](https://vercel.com/docs/cron-jobs/usage-and-pricing).
@@ -46,7 +46,7 @@ Clipboard команд нь SQL-ийг **зөвхөн хуулна**. Supabase S
 
 ```powershell
 Set-Location 'D:\Mur\mur-mvp'
-Get-Content .\supabase-background-jobs-v103.sql -Raw | Set-Clipboard
+Get-Content .\supabase\legacy\supabase-background-jobs-v103.sql -Raw | Set-Clipboard
 ```
 
 Pre-deploy SQL амжилттай болсны дараа:
@@ -64,7 +64,7 @@ git push origin main
 Deploy-ийн дараах scheduler SQL:
 
 ```powershell
-Get-Content .\supabase-background-jobs-v103-scheduler.sql -Raw | Set-Clipboard
+Get-Content .\supabase\legacy\supabase-background-jobs-v103-scheduler.sql -Raw | Set-Clipboard
 ```
 
 ## Локал шалгалт

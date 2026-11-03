@@ -1,6 +1,6 @@
 # Admin тохируулах
 
-Database-ийн [migration зааврыг](docs/DATABASE.md) эхэлж уншина. `supabase-admin.sql` нь helper/RPC болон admin schema, `supabase-admin-upgrade.sql` нь нэмэлт audit боломжуудтай. Нэрээр нь автоматаар бүгдийг дахин ажиллуулахгүй.
+Database-ийн [migration зааврыг](DATABASE.md) эхэлж уншина. [Admin schema ба RPC](../supabase/migrations/20261102000007_admin.sql), [admin audit нэмэлт](../supabase/migrations/20261102000008_admin_upgrade.sql) нь migration түүхэнд бий.
 
 Supabase Authentication хэсгээс эрх олгох хэрэглэгчийн UUID-г баталгаажуулж SQL Editor-т:
 

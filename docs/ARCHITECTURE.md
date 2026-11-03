@@ -42,9 +42,11 @@ Browser service-үүд Supabase Auth session ба RLS-ээр ажиллана. P
 - `/api/account/delete`
 - `/api/account/export`
 - `/api/assistant`
+- `/api/background-jobs`
 - `/api/content/[kind]/[id]`
 - `/api/donations/create`
 - `/api/donations/status`
+- `/api/feedback`
 - `/api/health`
 - `/api/notify`
 - `/api/push-subscriptions`

@@ -17,7 +17,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   direct SDK constructors or bypass their target/fetch guards.
 - Every schema, RLS, RPC, trigger, constraint, index and reference-data change
   must be a new `supabase/migrations/<timestamp>_<name>.sql` migration.
-- Applied migrations and the historical root SQL are immutable. Use a new
+- Applied migrations and historical SQL under `supabase/legacy/` are immutable. Use a new
   forward migration to change or repair them. Run `npm run db:check`.
 - Local DB commands go through `npm run db:*`. Never add `--linked`, remote
   connection URLs, production project refs or automatic production DB deploys.

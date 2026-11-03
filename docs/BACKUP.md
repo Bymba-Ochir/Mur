@@ -30,4 +30,38 @@ Storage объектууд, table/column grants, role тохиргоо, extensio
 5. Мөрийн тоо, login, private record access, sample зураг, application smoke test хий.
 6. Сэргээхэд зарцуулсан хугацаа, сүүлийн backup-аас алдагдах боломжтой хугацааг тэмдэглэ.
 
-Файл үүссэн нь сэргээх боломж батлагдсан гэсэн үг биш. Энэ шинэчлэлд backup/restore ажиллуулаагүй.
+## Windows VM дээрх тусгаарласан restore
+
+[Локал Supabase](LOCAL-DATABASE.md) ажиллаж байхад PowerShell-оос VM рүү орно.
+
+```powershell
+ssh.exe -F 'D:\Mur\mur-local-runtime\mur-ssh.conf' mur-local
+```
+
+VM-ийн терминалд backup үүсгээд ижил PostgreSQL image ашигласан, сүлжээгүй түр container-д сэргээнэ.
+
+```bash
+set -euo pipefail
+umask 077
+mkdir -p "$HOME/mur-backups"
+stamp=$(date +%Y%m%d-%H%M%S)
+backup="$HOME/mur-backups/mur-$stamp.sql.gz"
+source_db=supabase_db_mur-local
+test_db="mur-restore-$stamp"
+
+docker exec "$source_db" pg_dump -U postgres -d postgres --no-owner --no-acl | gzip > "$backup.part"
+gzip -t "$backup.part"
+mv "$backup.part" "$backup"
+image=$(docker inspect --format '{{.Config.Image}}' "$source_db")
+docker run --pull=never --rm -d --network none --name "$test_db" \
+  -e POSTGRES_PASSWORD="$(cat /proc/sys/kernel/random/uuid)" "$image" >/dev/null
+timeout 240s bash -c 'until docker exec "$1" pg_isready -h 127.0.0.1 -U supabase_admin -d postgres >/dev/null 2>&1; do sleep 2; done' _ "$test_db"
+docker exec "$test_db" createdb -U supabase_admin -T template0 mur_restore_test
+gzip -dc "$backup" | docker exec -i "$test_db" \
+  psql -X -U supabase_admin -d mur_restore_test -v ON_ERROR_STOP=1 --single-transaction -q
+docker exec "$test_db" psql -X -U supabase_admin -d mur_restore_test -Atc \
+  "select current_database(); select count(*) from supabase_migrations.schema_migrations; select count(*) from pg_tables where schemaname='public' and rowsecurity;"
+printf 'Backup: %s\nTest container: %s\n' "$backup" "$test_db"
+```
+
+2026-11-03-ны локал туршилтаар `mur_restore_test`, 23 migration бүртгэл, RLS идэвхтэй 37 хүснэгт гарсан. Шалгалтын дараа `docker stop "$test_db"` ажиллуулбал container устаж, dump VM-д үлдэнэ.

@@ -19,6 +19,7 @@ export const API_RATE_POLICIES = {
   'push-create': { ip: hour(8) },
   assistant: { ip: { limit: 60, windowSeconds: 600 }, user: { limit: 30, windowSeconds: 600 }, requiresUser: true },
   reports: { ip: minute(30), user: hour(8), requiresUser: true },
+  'feedback-create': { ip: hour(10) },
   sightings: { ip: minute(30), requiresUser: true },
   'sighting-new': { ip: hour(20), user: hour(10) },
   'donation-create': { ip: minute(30) },

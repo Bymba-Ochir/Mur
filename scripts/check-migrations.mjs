@@ -18,8 +18,15 @@ try {
     versions.add(version);
     if (!read('supabase/migrations/' + name).trim()) throw new Error('Empty migration: ' + name);
   }
-  const rootSql = readdirSync(root).filter(name => /^supabase.*\.sql$/.test(name)).sort();
-  if (JSON.stringify(rootSql) !== JSON.stringify(legacy.map(row => row.source).sort())) throw new Error('New root SQL is forbidden. Use npm run db:new -- descriptive_name');
+  if (readdirSync(root, { withFileTypes: true }).some(entry => !entry.isDirectory() && /\.sql$/i.test(entry.name))) {
+    throw new Error('Root SQL is forbidden. Use npm run db:new -- descriptive_name');
+  }
+  const archivedSql = readdirSync(resolve(root, 'supabase/legacy'))
+    .filter(name => /\.sql$/i.test(name)).map(name => 'supabase/legacy/' + name).sort();
+  const recordedSources = legacy.map(row => row.source).sort();
+  if (JSON.stringify(archivedSql) !== JSON.stringify(recordedSources)) {
+    throw new Error('Historical SQL archive does not match the manifest.');
+  }
   for (const row of legacy) {
     if (hash(read(row.source)) !== row.sourceSha256) throw new Error('Historical SQL is immutable: ' + row.source);
     if (!existsSync(resolve(root,row.migration))) throw new Error('Historical SQL has no migration: ' + row.source);

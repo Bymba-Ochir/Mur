@@ -33,4 +33,4 @@ Emulation нь бодит Android/iOS төхөөрөмжийн push, keyboard, S
 | Responsive | 360, 768, 1280px; overflow, modal close, navbar overlap |
 | Интеграц | AI, QPay, push, cron-ийг тусдаа үр дүнгээр батлах |
 
-Run бүрийн commit, орчин, команд, exit code, тестийн тоо болон батлагдаагүй хэсгийг release тэмдэглэлд бич. Энэ docs шинэчлэлд application тест/build ажиллуулаагүй.
+Run бүрийн commit, орчин, команд, exit code, тестийн тоо болон батлагдаагүй хэсгийг release тэмдэглэлд бич.

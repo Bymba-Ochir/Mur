@@ -58,7 +58,7 @@ normalization rollout compatibility-г шаардлагагүй өөрчлөх �
 ## Нэвтрүүлэх дараалал
 
 1. v99 pre-deploy migration суусан эсэхийг баталгаажуулна.
-2. `supabase-n-plus-one-v100.sql`-ийг Supabase SQL Editor-д **гараар Run** хийнэ.
+2. [v100 SQL](../supabase/legacy/supabase-n-plus-one-v100.sql)-ийг Supabase SQL Editor-д **гараар Run** хийнэ.
 3. `audits/n-plus-one-v100-readonly.sql` ажиллуулахад бүх `passed` нь `true` байна.
 4. Кодыг deploy хийнэ. Шинэ RPC байхгүй бол cron 500 буцаана;
    хуучин claim RPC рүү fallback хийж claim давхардуулдаггүй.

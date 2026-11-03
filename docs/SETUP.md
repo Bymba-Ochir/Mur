@@ -4,10 +4,9 @@ CI нь Node.js 20 ашигладаг. Node/npm хувилбарыг CI боло
 
 1. Repository-г clone хийх эсвэл ZIP задлах. ZIP-д Git history байхгүй.
 2. Төслийн `package.json` байгаа хавтас руу орно.
-3. README-ийн командуудаар dependency, `.env.local` бэлдэнэ.
-4. Supabase Auth-ийн Site URL болон зөвшөөрөгдсөн redirect URL-д локал болон deploy домэйноо тохируулна.
-5. Email magic link-ээр нэвтрэх, гарах, дахин нэвтрэхийг шалгана.
-6. Database schema нь кодтой нийцсэн байх ёстой; [DATABASE](DATABASE.md)-ийг ашиглана.
+3. `npm ci` ажиллуулаад [локал Supabase](LOCAL-DATABASE.md)-ийг асаана. `db:start` нь `.env.local`-г локал DB-д тохируулна.
+4. Локал test account-аар нэвтэрч, email шалгах бол Mailpit ашиглана.
+5. Schema өөрчлөлтийг [migration заавраар](DATABASE.md) хийнэ.
 
 ```powershell
 node --version
