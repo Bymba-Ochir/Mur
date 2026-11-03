@@ -2,6 +2,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useLanguage } from '../lib/i18n';
+import BrandLogo from './ui/BrandLogo';
 
 export default function Footer() {
   const { t } = useLanguage();
@@ -11,15 +12,8 @@ export default function Footer() {
     <footer className="footer">
       <div className="footer-inner">
         <div className="footer-brand">
-          <span className="footer-mark" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" width="16" height="16" aria-hidden="true" focusable="false">
-              <path d="M12 21c-3.5-3-8-6.2-8-10.4C4 7.2 6.4 5 9.2 5c1.2 0 2.3.5 3 1.3.7-.8 1.8-1.3 3-1.3 2.8 0 5.2 2.2 5.2 5.6 0 4.2-4.5 7.4-8 10.4z" fill="#FFFFFF" />
-            </svg>
-          </span>
-          <div>
-            <span className="footer-name">МӨР</span>
-            <p className="footer-tagline">{t('footer_tagline')}</p>
-          </div>
+          <BrandLogo />
+          <p className="footer-tagline">{t('footer_tagline')}</p>
         </div>
         <nav className="footer-links" aria-label={t('footer_nav_label')}>
           <Link href="/listings" aria-current={isActive('/listings') ? 'page' : undefined}>{t('nav_listings')}</Link>
@@ -54,28 +48,7 @@ export default function Footer() {
         @media (min-width: 1025px) {
           .footer-inner { max-width: 1040px; gap: var(--sp-6); }
         }
-        .footer-brand {
-          display: flex; gap: var(--sp-3); max-width: 340px;
-        }
-        @media (min-width: 1025px) {
-          .footer-brand { gap: 14px; }
-        }
-        .footer-mark {
-          width: 34px; height: 34px; border-radius: 9px;
-          background: var(--grad-brand);
-          display: flex; align-items: center; justify-content: center;
-          flex-shrink: 0;
-        }
-        @media (min-width: 1025px) {
-          .footer-mark { width: 36px; height: 36px; }
-        }
-        .footer-name {
-          font-family: var(--font-display); font-weight: 700;
-          font-size: 16px; letter-spacing: -0.01em; color: var(--text-primary);
-        }
-        @media (min-width: 1025px) {
-          .footer-name { font-size: 20px; }
-        }
+        .footer-brand { --brand-logo-size: 36px; max-width: 340px; }
         .footer-tagline {
           font-size: 13px; color: var(--text-tertiary); margin-top: 4px;
           line-height: 1.6; max-width: 340px;

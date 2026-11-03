@@ -41,6 +41,7 @@
    ═══════════════════════════════════════════════════════ */
 :root {
   --brand-primary: #625BF6;
+  --brand-wordmark: #342C68;
   --brand-action: #FF6B6B;
   --brand-secondary: #56C7E8;
   --clinic: #3BA7C4;
@@ -155,6 +156,7 @@
    Dark Theme Override
    ═══════════════════════════════════════ */
 [data-theme="dark"] {
+  --brand-wordmark: #F0ECFF;
   --primary: #8178F7;
   --primary-light: #A49EFC;
   --primary-dark: #625BF6;
@@ -654,23 +656,22 @@ body:has([data-floating-notice='analytics']) [data-floating-notice='install'] {
   flex: 0 0 auto;
   text-decoration: none;
 }
-.navbar-wrap .brand-mark {
-  width: 32px;
-  height: 32px;
+.mur-logo {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  flex: 0 0 32px;
-  border-radius: 9px;
-  background: var(--grad-brand);
-}
-.navbar-wrap .brand-name {
-  display: inline-block;
-  font-family: var(--font-display);
-  font-size: var(--text-base);
-  font-weight: 700;
+  gap: 4px;
+  color: var(--brand-wordmark);
   line-height: 1;
-  white-space: nowrap;
+}
+.mur-logo > img {
+  display: block;
+  width: var(--brand-logo-size, 32px);
+  height: var(--brand-logo-size, 32px);
+}
+.mur-logo > svg {
+  display: block;
+  width: auto;
+  height: calc(var(--brand-logo-size, 32px) * 0.54);
 }
 .navbar-wrap .nav-links {
   display: flex;
@@ -756,7 +757,7 @@ body:has([data-floating-notice='analytics']) [data-floating-notice='install'] {
 @media (max-width: 480px) {
   .navbar-wrap { padding: 0 var(--sp-2); }
   .navbar-wrap > .navbar { height: 48px; padding: 0 var(--sp-2); }
-  .navbar-wrap .brand-mark { width: 28px; height: 28px; flex-basis: 28px; }
+  .navbar-wrap .brand { --brand-logo-size: 28px; }
 }
 
 /* Navbar dropdowns and mobile panel contain Next Link/Button components. */

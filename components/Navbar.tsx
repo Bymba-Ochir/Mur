@@ -13,6 +13,7 @@ import { useLanguage } from '../lib/i18n';
 import Icon from './ui/icons';
 import type { IconName } from './ui/icons';
 import Button from './ui/Button';
+import BrandLogo from './ui/BrandLogo';
 import { subscribeToNotifications, unreadNotificationCount } from '../lib/workflowService';
 
 function truncateEmail(email: string): string {
@@ -20,12 +21,6 @@ function truncateEmail(email: string): string {
   if (!local) return email;
   return local.length > 10 ? `${local.slice(0, 9)}…` : local;
 }
-
-const PawSVG = (
-  <svg viewBox="0 0 24 24" fill="none" width="17" height="17" aria-hidden="true" focusable="false">
-    <path d="M12 21c-3.5-3-8-6.2-8-10.4C4 7.2 6.4 5 9.2 5c1.2 0 2.3.5 3 1.3.7-.8 1.8-1.3 3-1.3 2.8 0 5.2 2.2 5.2 5.6 0 4.2-4.5 7.4-8 10.4z" fill="#FFFFFF" />
-  </svg>
-);
 
 export default function Navbar() {
   const { user, logout } = useAuth();
@@ -219,8 +214,7 @@ export default function Navbar() {
       <div className="navbar">
         {/* Brand */}
         <Link href="/" className="brand" aria-label={t('brand_home_label')}>
-          <span className="brand-mark">{PawSVG}</span>
-          <span className="brand-name">МӨР</span>
+          <BrandLogo />
         </Link>
 
         {/* Desktop: text nav links */}
@@ -508,31 +502,6 @@ export default function Navbar() {
           transition: transform 0.2s var(--ease-out);
         }
         .navbar-wrap .brand:hover { transform: scale(1.02); }
-        .navbar-wrap .brand-name {
-          font-family: var(--font-display);
-          font-weight: 700;
-          font-size: var(--text-base);
-          letter-spacing: 0.01em;
-        }
-        @media (min-width: 1025px) {
-          .navbar-wrap .brand-name { font-size: var(--text-lg); }
-        }
-        .navbar-wrap .brand-mark {
-          width: 32px;
-          height: 32px;
-          border-radius: 9px;
-          background: var(--grad-brand);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          box-shadow: var(--shadow-xs);
-          transition: transform 0.2s var(--ease-out);
-        }
-        .navbar-wrap .brand:hover .brand-mark { transform: rotate(-8deg) scale(1.06); }
-        @media (max-width: 480px) {
-          .navbar-wrap .brand-mark { width: 28px; height: 28px; }
-          .navbar-wrap .brand-name { font-size: var(--text-sm); }
-        }
 
         /* ─── Desktop text nav links ─── */
         .navbar-wrap .nav-links {
@@ -998,7 +967,7 @@ export default function Navbar() {
           .navbar-wrap .mobile-menu-heading { min-height: 52px; padding-left: var(--sp-3); }
         }
         @media (prefers-reduced-motion: reduce) {
-          .navbar-wrap .brand, .navbar-wrap .brand-mark, .navbar-wrap .mobile-menu-btn, .navbar-wrap .menu-line, .navbar-wrap .mobile-dropdown, .navbar-wrap .mobile-backdrop, .navbar-wrap .user-dropdown { animation: none; transition: none; }
+          .navbar-wrap .brand, .navbar-wrap .mobile-menu-btn, .navbar-wrap .menu-line, .navbar-wrap .mobile-dropdown, .navbar-wrap .mobile-backdrop, .navbar-wrap .user-dropdown { animation: none; transition: none; }
         }
 
 /* Keep all navigation within the floating bar, including long translations. */
