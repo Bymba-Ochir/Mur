@@ -7,6 +7,8 @@ import Image from 'next/image';
 import PetIcon from '../../../components/PetIcon';
 import Button from '../../../components/ui/Button';
 import Icon from '../../../components/ui/icons';
+import ListingContact from '../../../components/ListingContact';
+import { getOwnListingPhone } from '../../../lib/listingContact';
 import LocationMap from '../../../components/LocationMap';
 import SittingEditForm from '../../../components/SittingEditForm';
 import type { SittingEditValues } from '../../../components/SittingEditForm';
@@ -17,19 +19,33 @@ import { useToast } from '../../../components/Toast';
 import { useLanguage } from '../../../lib/i18n';
 import { fetchSittingListingById, updateSittingListing, deleteSittingListing } from '../../../lib/sittingService';
 import { relativeTime } from '../../../lib/relativeTime';
-import { maskPhone, formatPhone, normalizePhone, getErrorMessage } from '../../../lib/utils';
+import { normalizePhone, getErrorMessage } from '../../../lib/utils';
 import type { SittingListing, SittingPetType } from '../../../lib/types';
 
 export default function SittingDetailClient({ id }: { id: string }) {
+  const { user } = useAuth();
+  return <SittingDetailClientContent key={`${id}:${user?.id ?? 'guest'}`} id={id} />;
+}
+
+function SittingDetailClientContent({ id }: { id: string }) {
   const router = useRouter(); const { user } = useAuth(); const showToast = useToast(); const { t, lang } = useLanguage();
   const [listing, setListing] = useState<SittingListing | null>(null); const [error, setError] = useState<string | null>(null);
-  const [revealed, setRevealed] = useState(false); const [editing, setEditing] = useState(false); const [saving, setSaving] = useState(false); const [deleting, setDeleting] = useState(false);
+  const [editing, setEditing] = useState(false); const [saving, setSaving] = useState(false); const [deleting, setDeleting] = useState(false);
   const url = useCurrentLocation();
 
   const load = useCallback(async () => { setError(null); try { setListing(await fetchSittingListingById(id)); } catch (reason) { setError(getErrorMessage(reason, t('form_generic_error'))); } }, [id, t]);
   useEffect(() => { void Promise.resolve().then(load); }, [load]);
   const isOwner = Boolean(user && listing && listing.userId === user.id);
   const typeLabel = (petType: SittingPetType) => petType === 'Бүгд' ? t('sitting_pet_type_all') : petType === 'Нохой' ? t('type_dog') : petType === 'Муур' ? t('type_cat') : t('type_other');
+
+  const [editPhone, setEditPhone] = useState('');
+  async function startEditing() {
+    if (!listing) return;
+    try {
+      setEditPhone(listing.phoneHidden ? await getOwnListingPhone('sitting', id) : listing.phone);
+      setEditing(true);
+    } catch (reason) { showToast(getErrorMessage(reason, t('form_generic_error')), 'error'); }
+  }
 
   async function handleSave(values: SittingEditValues) {
     setSaving(true); const fields = { ...values, price: values.price ? Number(values.price) : null, phone: normalizePhone(values.phone) };
@@ -46,15 +62,15 @@ export default function SittingDetailClient({ id }: { id: string }) {
     <div className="page-shell page-shell--detail">
       <div className="back-row"><Button as="link" href="/sitting" variant="ghost"><Icon name="arrowLeft" size={17} />{t('detail_back_listings')}</Button></div>
       <header className="page-header detail-header"><p className="eyebrow">{t('sitting_eyebrow')}</p><h1>{label}</h1><p className="detail-meta"><Icon name="calendar" size={14} aria-hidden="true" />{relativeTime(listing.createdAt, lang)}</p></header>
-      {editing ? <SittingEditForm initial={{ petType: listing.petType, description: listing.description, experience: listing.experience, availability: listing.availability, price: listing.price == null ? '' : String(listing.price), district: listing.district, place: listing.place, phone: listing.phone }} onSave={handleSave} onCancel={() => setEditing(false)} saving={saving} /> : (
+      {editing ? <SittingEditForm initial={{ petType: listing.petType, description: listing.description, experience: listing.experience, availability: listing.availability, price: listing.price == null ? '' : String(listing.price), district: listing.district, place: listing.place, phone: editPhone, phoneHidden: listing.phoneHidden }} onSave={handleSave} onCancel={() => setEditing(false)} saving={saving} /> : (
         <div className="detail-grid">
           <div className="media-box">{listing.photoURL ? <Image src={listing.photoURL} alt={listing.description || label} fill sizes="(max-width: 900px) 100vw, 56vw" priority /> : <span className="pet-placeholder"><PetIcon type={listing.petType === 'Бүгд' ? 'Бусад' : listing.petType} size={72} /></span>}</div>
           <section className="info-card" aria-labelledby="sitting-facts-title"><h2 id="sitting-facts-title">{t('sitting_detail_information')}</h2>
             <dl className="facts"><div><dt>{t('sitting_pet_type_label')}</dt><dd>{label}</dd></div>{listing.experience && <div><dt>{t('sitting_detail_experience').replace(':', '')}</dt><dd>{listing.experience}</dd></div>}{listing.availability && <div><dt>{t('sitting_detail_availability').replace(':', '')}</dt><dd>{listing.availability}</dd></div>}<div><dt>{t('detail_district').replace(':', '')}</dt><dd>{listing.district}</dd></div><div><dt>{t('detail_place').replace(':', '')}</dt><dd>{listing.place}</dd></div><div><dt>{t('sitting_detail_price').replace(':', '')}</dt><dd>{listing.price == null ? (lang === 'mn' ? 'Үнэ тохиролцоно' : 'Price negotiable') : listing.price === 0 ? t('sitting_price_free') : `₮ ${listing.price.toLocaleString(lang === 'mn' ? 'mn-MN' : 'en-US')} ${t('sitting_price_per_day')}`}</dd></div></dl>
             {listing.description && <section className="description-block"><h3>{t('detail_description').replace(':', '')}</h3><p>{listing.description}</p></section>}
-            <div className="phone-section">{revealed ? <a className="phone-link" href={`tel:${listing.phone}`}><Icon name="phone" size={15} aria-hidden="true" />{formatPhone(listing.phone)}</a> : listing.phone ? <Button variant="ghost" onClick={() => setRevealed(true)}><Icon name="phone" size={15} aria-hidden="true" />{maskPhone(listing.phone)} · {t('detail_show_phone')}</Button> : null}</div>
+            <div className="phone-section" id="listing-contact" tabIndex={-1}><ListingContact listing={{ kind: 'sitting', id: listing.id, ownerId: listing.userId }} phone={listing.phone} hidden={listing.phoneHidden} /></div>
             <Link href={`/users/${listing.userId}`} className="profile-owner-link">{t('sitting_provider_profile')}<span aria-hidden="true">→</span></Link>
-            {isOwner && <div className="owner-actions"><Button variant="ghost" onClick={() => setEditing(true)}>{t('detail_edit_btn')}</Button><Button variant="danger" onClick={handleDelete} disabled={deleting}>{deleting ? t('detail_deleting') : t('detail_delete_btn')}</Button></div>}
+            {isOwner && <div className="owner-actions"><Button variant="ghost" onClick={() => void startEditing()}>{t('detail_edit_btn')}</Button><Button variant="danger" onClick={handleDelete} disabled={deleting}>{deleting ? t('detail_deleting') : t('detail_delete_btn')}</Button></div>}
           </section>
         </div>
       )}

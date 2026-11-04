@@ -4,14 +4,12 @@ import { useEffect, useState } from 'react';
 import { useCurrentLocation } from '../../../lib/useCurrentLocation';
 import { fetchPetById, markResolved, updatePet, deletePet } from '../../../lib/petService';
 import { useAuth } from '../../../lib/useAuth';
-import { maskPhone, formatPhone } from '../../../lib/utils';
 import { relativeTime } from '../../../lib/relativeTime';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import ShareButtons from '../../../components/ShareButtons';
 import LocationMap from '../../../components/LocationMap';
 import ReportButton from '../../../components/ReportButton';
-import MessageButton from '../../../components/MessageButton';
 import SightingsList from '../../../components/SightingsList';
 import PetIcon from '../../../components/PetIcon';
 import Button from '../../../components/ui/Button';
@@ -26,8 +24,15 @@ import { getBreedLabel } from '../../../lib/petBreeds';
 import PetImageGallery from '../../../components/PetImageGallery';
 import FavoriteButton from '../../../components/FavoriteButton';
 import Icon from '../../../components/ui/icons';
+import ListingContact from '../../../components/ListingContact';
+import { getOwnListingPhone } from '../../../lib/listingContact';
 
 export default function PetDetailClient({ id }: { id: string }) {
+  const { user } = useAuth();
+  return <PetDetailClientContent key={`${id}:${user?.id ?? 'guest'}`} id={id} />;
+}
+
+function PetDetailClientContent({ id }: { id: string }) {
   const returnPath = useListingReturnPath("/listings");
   const { user } = useAuth();
   const router = useRouter();
@@ -37,7 +42,6 @@ export default function PetDetailClient({ id }: { id: string }) {
   const [error, setError] = useState<string | null>(null);
   const url = useCurrentLocation();
   const [resolving, setResolving] = useState(false);
-  const [revealed, setRevealed] = useState(false);
   const [editing, setEditing] = useState(false);
   const [editForm, setEditForm] = useState<PetEditValues | null>(null);
   const [saving, setSaving] = useState(false);
@@ -55,10 +59,19 @@ export default function PetDetailClient({ id }: { id: string }) {
     try {
       const p = await fetchPetById(id);
       setPet(p);
-      setEditForm({ name: p.name, color: p.color, place: p.place, district: p.district, phone: p.phone });
+      setEditForm({ name: p.name, color: p.color, place: p.place, district: p.district, phone: p.phone, phoneHidden: p.phoneHidden });
     } catch (e) {
       setError(getErrorMessage(e, t('form_generic_error')));
     }
+  }
+
+  async function startEditing() {
+    if (!pet) return;
+    try {
+      const phone = pet.phoneHidden ? await getOwnListingPhone('pet', id) : pet.phone;
+      setEditForm({ name: pet.name, color: pet.color, place: pet.place, district: pet.district, phone, phoneHidden: pet.phoneHidden });
+      setEditing(true);
+    } catch (reason) { showToast(getErrorMessage(reason, t('form_generic_error')), 'error'); }
   }
 
   async function handleResolve() {
@@ -153,16 +166,8 @@ export default function PetDetailClient({ id }: { id: string }) {
 
               <div className="contact-block" id="listing-contact" tabIndex={-1}>
                 <h3>{t('detail_contact_heading')}</h3>
-                {revealed ? (
-                  <a href={`tel:${pet.phone}`} className="phone-action" aria-label={`${t('detail_call_phone')}: ${formatPhone(pet.phone)}`}>
-                    <Icon name="phone" size={17} aria-hidden="true" /> {formatPhone(pet.phone)}
-                  </a>
-                ) : (
-                  <button onClick={() => setRevealed(true)} className="phone-action">
-                    <Icon name="phone" size={17} aria-hidden="true" /> {maskPhone(pet.phone)} · {t('detail_show_phone')}
-                  </button>
-                )}
-                <div className="contact-actions"><MessageButton pet={pet} /><FavoriteButton petId={pet.id} /></div>
+                <ListingContact listing={{ kind: 'pet', id: pet.id, ownerId: pet.createdBy }} phone={pet.phone} hidden={pet.phoneHidden} />
+                <div className="contact-actions"><FavoriteButton petId={pet.id} /></div>
                 {pet.createdBy && <Link href={`/users/${pet.createdBy}`} className="owner-link">{t('detail_owner_profile')} <span aria-hidden="true">→</span></Link>}
               </div>
             </section>
@@ -181,7 +186,7 @@ export default function PetDetailClient({ id }: { id: string }) {
             <section className="owner-panel" aria-labelledby="owner-actions-heading">
               <h2 id="owner-actions-heading">{t('detail_owner_actions')}</h2>
               <div className="owner-actions">
-                <Button variant="ghost" onClick={() => setEditing(true)}><Icon name="pencil" size={16} aria-hidden="true" /> {t('detail_edit_btn')}</Button>
+                <Button variant="ghost" onClick={() => void startEditing()}><Icon name="pencil" size={16} aria-hidden="true" /> {t('detail_edit_btn')}</Button>
                 <Button variant="danger" onClick={handleDelete} disabled={deleting} aria-busy={deleting}><Icon name="trash" size={16} aria-hidden="true" /> {deleting ? t('detail_deleting') : t('detail_delete_btn')}</Button>
                 {!pet.resolved && <Button onClick={handleResolve} disabled={resolving} aria-busy={resolving} variant="secondary"><Icon name="check" size={16} aria-hidden="true" /> {resolving ? t('detail_resolving') : t(foundListing ? 'detail_owner_found_btn' : 'detail_resolve_btn')}</Button>}
               </div>

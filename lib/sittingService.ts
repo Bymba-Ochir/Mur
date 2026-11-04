@@ -1,8 +1,9 @@
 // lib/sittingService.ts
 // Асрах үйлчилгээний CRUD
 import { supabase } from './supabase';
+import { listingPhone } from './listingContact';
 import type { SittingListing, SittingListingInput, SittingListingFilters, UpdateSittingListingFields } from './types';
-import { cleanText, optionalCoordinate, optionalInteger, requireMongolianPhone } from './inputValidation';
+import { cleanText, optionalCoordinate, optionalInteger } from './inputValidation';
 import { apiError, authenticatedFetch } from './apiClient';
 import { createIdempotencyKey, idempotentFileName, isIdempotencyKey } from './idempotency';
 import { DEFAULT_PAGE_SIZE, finalizePage, pageWindow } from './pagination';
@@ -22,6 +23,7 @@ interface SittingRow {
   experience: string | null;
   availability: string | null;
   phone: string | null;
+  phone_hidden?: boolean;
   price: number | null;
   photo_url: string | null;
   lat: number | null;
@@ -39,7 +41,8 @@ function mapSittingRow(row: SittingRow): SittingListing {
     place: row.place ?? '',
     experience: row.experience ?? '',
     availability: row.availability ?? '',
-    phone: row.phone ?? '',
+    phone: row.phone_hidden ? '' : row.phone ?? '',
+    phoneHidden: row.phone_hidden ?? false,
     price: row.price ?? null,
     photoURL: row.photo_url,
     lat: row.lat ?? null,
@@ -89,7 +92,8 @@ export async function createSittingListing(data: SittingListingInput, mutationId
       place: cleanText(data.place, 300, 'Байршил', true),
       experience: cleanText(data.experience, 500, 'Туршлага'),
       availability: cleanText(data.availability, 500, 'Боломжит цаг'),
-      phone: requireMongolianPhone(data.phone),
+      phone: listingPhone(data.phone, data.phoneHidden),
+      phone_hidden: data.phoneHidden ?? false,
       price,
       photo_url: photoUrl,
       lat: optionalCoordinate(data.lat, 'lat'),
@@ -148,7 +152,8 @@ export async function updateSittingListing(id: string, fields: UpdateSittingList
   if (fields.place !== undefined) updateData.place = cleanText(fields.place, 300, 'Байршил', true);
   if (fields.experience !== undefined) updateData.experience = cleanText(fields.experience, 500, 'Туршлага');
   if (fields.availability !== undefined) updateData.availability = cleanText(fields.availability, 500, 'Боломжит цаг');
-  if (fields.phone !== undefined) updateData.phone = requireMongolianPhone(fields.phone);
+  if (fields.phone !== undefined) updateData.phone = listingPhone(fields.phone, fields.phoneHidden);
+  if (fields.phoneHidden !== undefined) updateData.phone_hidden = fields.phoneHidden;
   if (fields.price !== undefined) updateData.price = optionalInteger(fields.price, { min: 0, max: 100_000_000, label: 'Үйлчилгээний үнэ' });
   if (fields.lat !== undefined) updateData.lat = optionalCoordinate(fields.lat, 'lat');
   if (fields.lng !== undefined) updateData.lng = optionalCoordinate(fields.lng, 'lng');

@@ -16,13 +16,20 @@ import { useToast } from '../../../components/Toast';
 import { useLanguage } from '../../../lib/i18n';
 import { fetchAdoptionById, updateAdoption, deleteAdoption } from '../../../lib/adoptionService';
 import { relativeTime } from '../../../lib/relativeTime';
-import { maskPhone, formatPhone, getErrorMessage } from '../../../lib/utils';
+import { getErrorMessage } from '../../../lib/utils';
 import type { Adoption } from '../../../lib/types';
 import { getBreedLabel } from '../../../lib/petBreeds';
 import AdoptionApplicationPanel from '../../../components/AdoptionApplicationPanel';
 import Icon from '../../../components/ui/icons';
+import ListingContact from '../../../components/ListingContact';
+import { getOwnListingPhone } from '../../../lib/listingContact';
 
 export default function AdoptionDetailClient({ id }: { id: string }) {
+  const { user } = useAuth();
+  return <AdoptionDetailClientContent key={`${id}:${user?.id ?? 'guest'}`} id={id} />;
+}
+
+function AdoptionDetailClientContent({ id }: { id: string }) {
   const returnPath = useListingReturnPath("/adoptions");
   const router = useRouter();
   const { user } = useAuth();
@@ -31,7 +38,6 @@ export default function AdoptionDetailClient({ id }: { id: string }) {
 
   const [adoption, setAdoption] = useState<Adoption | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [revealed, setRevealed] = useState(false);
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -52,6 +58,15 @@ export default function AdoptionDetailClient({ id }: { id: string }) {
     : adoption?.gender === 'Эмэгтэй' ? t('gender_female')
     : t('gender_unknown');
   const typeLabel = adoption?.type === 'Муур' ? t('type_cat') : adoption?.type === 'Нохой' ? t('type_dog') : t('type_other');
+
+  const [editPhone, setEditPhone] = useState('');
+  async function startEditing() {
+    if (!adoption) return;
+    try {
+      setEditPhone(adoption.phoneHidden ? await getOwnListingPhone('adoption', id) : adoption.phone);
+      setEditing(true);
+    } catch (reason) { showToast(getErrorMessage(reason, t('form_generic_error')), 'error'); }
+  }
 
   async function handleSave(values: AdoptionEditValues) {
     setSaving(true);
@@ -103,7 +118,7 @@ export default function AdoptionDetailClient({ id }: { id: string }) {
             description: adoption.description,
             district: adoption.district,
             place: adoption.place,
-            phone: adoption.phone,
+            phone: editPhone, phoneHidden: adoption.phoneHidden,
           }}
           onSave={handleSave}
           onCancel={() => setEditing(false)}
@@ -136,18 +151,12 @@ export default function AdoptionDetailClient({ id }: { id: string }) {
               <section className="description-block"><h3>{t('detail_description').replace(':', '')}</h3><p>{adoption.description}</p></section>
             )}
 
-            <div className="phone-section" id="listing-contact" tabIndex={-1}>
-              {revealed ? (
-                <a className="phone-link" href={`tel:${adoption.phone}`}><Icon name="phone" size={15} aria-hidden="true" /> {formatPhone(adoption.phone)}</a>
-              ) : adoption.phone ? (
-                <Button variant="ghost" onClick={() => setRevealed(true)}><Icon name="phone" size={15} aria-hidden="true" /> {maskPhone(adoption.phone)} · {t('detail_show_phone')}</Button>
-              ) : null}
-            </div>
+            <div className="phone-section" id="listing-contact" tabIndex={-1}><ListingContact listing={{ kind: 'adoption', id: adoption.id, ownerId: adoption.createdBy }} phone={adoption.phone} hidden={adoption.phoneHidden} /></div>
             {adoption.createdBy && <Link href={`/users/${adoption.createdBy}`} className="profile-owner-link">{t('adoption_owner_profile')}<span aria-hidden="true">→</span></Link>}
 
             {isOwner && (
               <div className="owner-actions">
-                <Button variant="ghost" onClick={() => setEditing(true)}>{t('detail_edit_btn')}</Button>
+                <Button variant="ghost" onClick={() => void startEditing()}>{t('detail_edit_btn')}</Button>
                 <Button variant="danger" onClick={handleDelete} disabled={deleting}>
                   {deleting ? t('detail_deleting') : t('detail_delete_btn')}
                 </Button>

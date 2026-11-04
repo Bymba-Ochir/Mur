@@ -49,6 +49,7 @@ export function isPetDraft(value: unknown, userId: string, status: PetStatus): v
     })
     && ['Нохой', 'Муур', 'Бусад'].includes(form.type)
     && DISTRICTS.includes(form.district) && typeof form.hasReward === 'boolean'
+    && (form.phoneHidden === undefined || typeof form.phoneHidden === 'boolean')
     && (draft.coords === null || Boolean(draft.coords
       && Number.isFinite(draft.coords.lat) && Math.abs(draft.coords.lat) <= 90
       && Number.isFinite(draft.coords.lng) && Math.abs(draft.coords.lng) <= 180))

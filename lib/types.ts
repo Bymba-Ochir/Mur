@@ -20,6 +20,7 @@ export interface Pet {
   place: string;
   district: District;
   phone: string;
+  phoneHidden?: boolean;
   /** "Шагналтай" тэмдэг — нийтэд харагдана */
   hasReward: boolean;
   /** Шагналын дүн (₮) — НУУЦ: нийтэд харуулахгүй, зөвхөн хадгалагдана */
@@ -48,6 +49,7 @@ export interface PetReportInput {
   place: string;
   district: District;
   phone: string;
+  phoneHidden?: boolean;
   hasReward?: boolean;
   reward?: number | null;
   photoFile?: File | null;
@@ -71,6 +73,7 @@ export interface UpdatePetFields {
   place?: string;
   district?: District;
   phone?: string;
+  phoneHidden?: boolean;
 }
 
 export interface Sighting {
@@ -250,6 +253,7 @@ export interface Adoption {
   district: District;
   place: string;
   phone: string;
+  phoneHidden?: boolean;
   photoURL: string | null;
   photoURLs?: string[];
   createdBy: string | null;
@@ -267,6 +271,7 @@ export interface AdoptionInput {
   place: string;
   district: District;
   phone: string;
+  phoneHidden?: boolean;
   photoFile?: File | null;
   photoFiles?: File[];
 }
@@ -289,13 +294,16 @@ export interface UpdateAdoptionFields {
   district?: District;
   place?: string;
   phone?: string;
+  phoneHidden?: boolean;
 }
 
 // ─── Чат (Real-time messaging) ──────────────────────────────────────────────
 
 export interface Conversation {
   id: string;
-  petId: string;
+  petId: string | null;
+  adoptionId?: string | null;
+  sittingId?: string | null;
   initiatorId: string;
   ownerId: string;
   initiatorName: string;
@@ -333,6 +341,8 @@ export interface ConversationPreview extends Conversation {
 export type PetProfileKind = 'adoption' | 'mypet';
 
 export interface PetProfileData {
+  ownerId?: string | null;
+  phoneHidden?: boolean;
   kind: PetProfileKind;
   id: string;
   name: string;
@@ -366,6 +376,7 @@ export interface SittingListing {
   experience: string;
   availability: string;
   phone: string;
+  phoneHidden?: boolean;
   price: number | null;
   photoURL: string | null;
   lat: number | null;
@@ -381,6 +392,7 @@ export interface SittingListingInput {
   experience: string;
   availability: string;
   phone: string;
+  phoneHidden?: boolean;
   price?: number | null;
   photoFile?: File | null;
   lat?: number | null;
@@ -402,6 +414,7 @@ export interface UpdateSittingListingFields {
   experience?: string;
   availability?: string;
   phone?: string;
+  phoneHidden?: boolean;
   price?: number | null;
   lat?: number | null;
   lng?: number | null;

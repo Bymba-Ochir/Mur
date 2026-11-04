@@ -11,7 +11,9 @@ import Icon from './ui/icons';
 import ShareButtons from './ShareButtons';
 import FieldHint from './ui/FieldHint';
 import AuthRequired from './AuthRequired';
+import { useAuth } from '../lib/useAuth';
 import SittingCardView from './SittingCardView';
+import PhonePrivacyField from './PhonePrivacyField';
 import PawTrail from './PawTrail';
 import LocationMap from './LocationMap';
 import { usePetLocation } from '../lib/usePetForm';
@@ -25,9 +27,10 @@ import { fingerprintSubmission, resolveIdempotencyAttempt, type IdempotencyAttem
 type FieldErrors = Partial<Record<'description' | 'place' | 'phone' | 'price', string>>;
 
 export default function SittingForm() {
+  const { user } = useAuth();
   return (
     <AuthRequired>
-      <AuthenticatedSittingForm />
+      <AuthenticatedSittingForm key={user?.id ?? 'guest'} />
     </AuthRequired>
   );
 }
@@ -45,6 +48,7 @@ function AuthenticatedSittingForm() {
   const [district, setDistrict] = useState<District>(DISTRICTS[0]);
   const [place, setPlace] = useState('');
   const [phone, setPhone] = useState('');
+  const [phoneHidden, setPhoneHidden] = useState(false);
 
   // Газрын зураг дээр байршил тэмдэглэх + geolocation товч (дүүрэг автоматаар таамаглана)
   const location = usePetLocation((d) => setDistrict(d));
@@ -87,7 +91,7 @@ function AuthenticatedSittingForm() {
 
   function resetAll() {
     setStep(0); setPetType('Нохой'); setDescription(''); setExperience('');
-    setAvailability(''); setPrice(''); setDistrict(DISTRICTS[0]); setPlace(''); setPhone('');
+    setAvailability(''); setPrice(''); setDistrict(DISTRICTS[0]); setPlace(''); setPhone(''); setPhoneHidden(false);
     setPhotoFile(null); setPhotoPreview(null); setError(null); setFieldErrors({});
     attemptRef.current = null;
     location.reset();
@@ -100,13 +104,13 @@ function AuthenticatedSittingForm() {
     setSubmitting(true);
     setError(null);
     setStatusMsg(t('submitting'));
-    const fingerprint = fingerprintSubmission({ petType, description, experience, availability, price, district, place, phone, coords: location.coords }, photoFile ? [photoFile] : []);
+    const fingerprint = fingerprintSubmission({ petType, description, experience, availability, price, district, place, phone, phoneHidden, coords: location.coords }, photoFile ? [photoFile] : []);
     const attempt = resolveIdempotencyAttempt(attemptRef.current, fingerprint);
     attemptRef.current = attempt;
     try {
       const id = await createSittingListing({
         petType, description, district, place, experience, availability,
-        phone: normalizePhone(phone),
+        phone: normalizePhone(phone), phoneHidden,
         price: price ? Number(price) : null,
         photoFile,
         lat: location.coords?.lat ?? null,
@@ -130,7 +134,7 @@ function AuthenticatedSittingForm() {
     }
     if (index === 2) {
       if (!place.trim()) next.place = t('sitting_place_required');
-      if (normalizePhone(phone).length !== 8) next.phone = t('sitting_phone_invalid');
+      if (!phoneHidden && normalizePhone(phone).length !== 8) next.phone = t('sitting_phone_invalid');
     }
     return next;
   }
@@ -225,10 +229,7 @@ function AuthenticatedSittingForm() {
               </p>
             )}
 
-            <label htmlFor="s-phone">{t('phone_label')}</label>
-            <FieldHint mn="Хэрэглэгч холбогдох боломжтой 8 оронтой утасны дугаар оруулна." en="Enter a reachable 8-digit Mongolian phone number." />
-            <input id="s-phone" value={formatPhone(phone)} onChange={(e) => { setPhone(normalizePhone(e.target.value)); setFieldErrors((current) => ({ ...current, phone: undefined })); }} placeholder={t('phone_placeholder')} required inputMode="tel" autoComplete="tel" maxLength={14} aria-invalid={Boolean(fieldErrors.phone)} aria-describedby={fieldErrors.phone ? 's-phone-error' : undefined} />
-            {fieldErrors.phone && <p className="field-error" id="s-phone-error" role="alert">{fieldErrors.phone}</p>}
+            <PhonePrivacyField id="s-phone" phone={phone} hidden={phoneHidden} onPhoneChange={value => { setPhone(value); setFieldErrors(current => ({ ...current, phone: undefined })); }} onHiddenChange={value => { setPhoneHidden(value); setFieldErrors(current => ({ ...current, phone: undefined })); }} error={fieldErrors.phone} />
             {error && <p className="error" role="alert">{error}</p>}
             <Button type="submit" disabled={submitting} variant="primary" fullWidth className="form-submit">
               {submitting ? statusMsg || t('submitting') : t('sitting_submit')}
@@ -255,7 +256,7 @@ function AuthenticatedSittingForm() {
           experience={experience}
           availability={availability}
           price={price ? Number(price) : null}
-          phone={formatPhone(phone)}
+          phone={phoneHidden ? '' : formatPhone(phone)}
           interactive={false}
           freeLabel={t('sitting_price_free')}
           perDayLabel={t('sitting_price_per_day')}

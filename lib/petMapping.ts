@@ -15,6 +15,7 @@ export interface PetRow {
   place: string | null;
   district: string | null;
   phone: string | null;
+  phone_hidden?: boolean;
   has_reward: boolean | null;
   reward: number | null;
   photo_url: string | null;
@@ -38,7 +39,8 @@ export function mapPetRow(row: PetRow): Pet {
     color: row.color ?? '',
     place: row.place ?? '',
     district: (row.district ?? '') as Pet['district'],
-    phone: row.phone ?? '',
+    phone: row.phone_hidden ? '' : row.phone ?? '',
+    phoneHidden: row.phone_hidden ?? false,
     hasReward: row.has_reward ?? false,
     reward: row.reward ?? null,
     photoURL: row.photo_url,

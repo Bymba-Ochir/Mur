@@ -11,17 +11,19 @@ import PawTrail from './PawTrail';
 import { useAdoptionPhoto, useAdoptionSubmit, TYPE_VALUES, GENDER_VALUES } from '../lib/useAdoptionForm';
 import type { AdoptionFormData } from '../lib/useAdoptionForm';
 import type { PetType } from '../lib/types';
-import { normalizePhone, formatPhone } from '../lib/utils';
 import BreedSelect from './BreedSelect';
 import FieldHint from './ui/FieldHint';
 import AuthRequired from './AuthRequired';
+import { useAuth } from '../lib/useAuth';
+import PhonePrivacyField from './PhonePrivacyField';
 
 type FieldErrors = Partial<Record<'description' | 'place' | 'phone', string>>;
 
 export default function AdoptionForm() {
+  const { user } = useAuth();
   return (
     <AuthRequired>
-      <AuthenticatedAdoptionForm />
+      <AuthenticatedAdoptionForm key={user?.id ?? 'guest'} />
     </AuthRequired>
   );
 }
@@ -32,11 +34,11 @@ function AuthenticatedAdoptionForm() {
   const typeLabels: Record<PetType, string> = { 'Нохой': t('type_dog'), 'Муур': t('type_cat'), 'Бусад': t('type_other') };
   const [step, setStep] = useState(0);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
-  const [form, setForm] = useState<AdoptionFormData>({ name: '', type: 'Нохой', age: '', gender: 'Тодорхойгүй', breed: '', description: '', place: '', district: DISTRICTS[0], phone: '' });
+  const [form, setForm] = useState<AdoptionFormData>({ name: '', type: 'Нохой', age: '', gender: 'Тодорхойгүй', breed: '', description: '', place: '', district: DISTRICTS[0], phone: '', phoneHidden: false });
   const photo = useAdoptionPhoto();
 
   function resetAll() {
-    setForm({ name: '', type: 'Нохой', age: '', gender: 'Тодорхойгүй', breed: '', description: '', place: '', district: DISTRICTS[0], phone: '' });
+    setForm({ name: '', type: 'Нохой', age: '', gender: 'Тодорхойгүй', breed: '', description: '', place: '', district: DISTRICTS[0], phone: '', phoneHidden: false });
     setStep(0);
     setFieldErrors({});
     photo.reset();
@@ -58,7 +60,7 @@ function AuthenticatedAdoptionForm() {
     const errors: FieldErrors = {};
     if (targetStep === 1 && !form.description.trim()) errors.description = t('adoption_description_required');
     if (targetStep === 2 && !form.place.trim()) errors.place = t('adoption_place_required');
-    if (targetStep === 2 && !/^\d{8}$/.test(form.phone)) errors.phone = t('adoption_phone_invalid');
+    if (targetStep === 2 && !form.phoneHidden && !/^\d{8}$/.test(form.phone)) errors.phone = t('adoption_phone_invalid');
     setFieldErrors(errors);
     return Object.keys(errors).length === 0;
   }
@@ -141,9 +143,7 @@ function AuthenticatedAdoptionForm() {
           <label htmlFor="adopt-place">{t('adoption_place_label')}</label><FieldHint mn="Гэрийн нарийн хаяг биш, уулзаж болох хороо эсвэл танигдах газрын нэр бичнэ." en="Enter a khoroo or public landmark, not a precise home address." />
           <input id="adopt-place" name="place" value={form.place} onChange={handleChange} placeholder={t('adoption_place_placeholder')} required maxLength={300} aria-invalid={Boolean(fieldErrors.place)} aria-describedby={fieldErrors.place ? 'adopt-place-error' : undefined} />
           {fieldErrors.place && <p id="adopt-place-error" className="field-error" role="alert"><Icon name="alert" size={16} />{fieldErrors.place}</p>}
-          <label htmlFor="adopt-phone">{t('phone_label')}</label><FieldHint mn="Холбогдох боломжтой 8 оронтой Монгол утасны дугаар оруулна." en="Enter a reachable 8-digit Mongolian phone number." />
-          <input id="adopt-phone" name="phone" value={formatPhone(form.phone)} onChange={(event) => { setForm((current) => ({ ...current, phone: normalizePhone(event.target.value) })); clearError('phone'); }} placeholder={t('phone_placeholder')} required inputMode="tel" autoComplete="tel" maxLength={14} aria-invalid={Boolean(fieldErrors.phone)} aria-describedby={fieldErrors.phone ? 'adopt-phone-error' : undefined} />
-          {fieldErrors.phone && <p id="adopt-phone-error" className="field-error" role="alert"><Icon name="alert" size={16} />{fieldErrors.phone}</p>}
+          <PhonePrivacyField id="adopt-phone" phone={form.phone} hidden={Boolean(form.phoneHidden)} onPhoneChange={phone => { setForm(current => ({ ...current, phone })); clearError('phone'); }} onHiddenChange={phoneHidden => { setForm(current => ({ ...current, phoneHidden })); clearError('phone'); }} error={fieldErrors.phone} />
           {submit.error && <p className="field-error submit-error" role="alert"><Icon name="alert" size={17} />{submit.error}</p>}
           <Button type="submit" disabled={submit.submitting} variant="primary" fullWidth className="form-submit" aria-busy={submit.submitting}>{submit.submitting ? submit.statusMsg || t('submitting') : t('adoption_submit')}</Button>
         </fieldset>}
@@ -154,7 +154,7 @@ function AuthenticatedAdoptionForm() {
         </div>
       </form>
 
-      <aside className="preview-col" aria-label={t('preview_label')}><AdoptionPreviewCard name={form.name} type={form.type} age={form.age} gender={form.gender} breed={form.breed} district={form.district} place={form.place} phone={form.phone} photoPreview={photo.previews[0] ?? null} /></aside>
+      <aside className="preview-col" aria-label={t('preview_label')}><AdoptionPreviewCard name={form.name} type={form.type} age={form.age} gender={form.gender} breed={form.breed} district={form.district} place={form.place} phone={form.phoneHidden ? '' : form.phone} photoPreview={photo.previews[0] ?? null} /></aside>
 
       <style jsx>{`
         .form-layout{display:grid;grid-template-columns:minmax(0,35rem) minmax(17rem,20rem);justify-content:center;align-items:start;gap:var(--sp-8);width:100%}.adoption-form{display:flex;flex-direction:column;min-width:0;padding:var(--sp-7);background:var(--card);border:1px solid var(--line);border-radius:var(--r-xl);box-shadow:var(--shadow-md)}.preview-col{position:sticky;top:6.5rem;width:100%;min-width:0}.form-step{display:flex;flex-direction:column;min-width:0;margin:0;padding:0;border:0}.progress-text{margin:var(--sp-3) 0 var(--sp-6);color:var(--muted);font-family:var(--font-mono);font-size:var(--text-xs);text-align:center}label{display:block;margin-top:var(--sp-5);color:var(--primary);font-size:var(--text-sm);font-weight:700}.form-step>label:first-of-type{margin-top:0}.photo-help{margin:var(--sp-1) 0 var(--sp-3);color:var(--muted);font-size:var(--text-xs)}input,select,textarea{width:100%;min-height:var(--touch-target);padding:var(--sp-3) var(--sp-4);color:var(--ink);background:var(--card);border:1.5px solid var(--line);border-radius:var(--r-sm);font:inherit}textarea{min-height:8rem;resize:vertical}input:hover,select:hover,textarea:hover{border-color:var(--muted)}input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 18%,transparent)}[aria-invalid='true']{border-color:var(--alert)}.upload-zone{display:flex;align-items:center;justify-content:center;gap:var(--sp-2);min-height:9rem;padding:var(--sp-4);color:var(--primary);background:var(--overcast);border:1.5px dashed var(--line);border-radius:var(--r-md);font-weight:700;text-align:center;cursor:pointer}.upload-zone:hover{border-color:var(--accent);background:var(--eyebrow-bg)}.upload-zone:focus-visible{outline:2px solid var(--accent);outline-offset:3px}.photo-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--sp-2);margin-top:var(--sp-3)}.photo-item{position:relative;aspect-ratio:1;overflow:hidden;background:var(--surface-3);border:1px solid var(--line);border-radius:var(--r-sm)}.photo-item img{display:block;width:100%;height:100%;object-fit:cover}.photo-item button{position:absolute;top:var(--sp-1);right:var(--sp-1);display:grid;place-items:center;width:var(--touch-target);height:var(--touch-target);padding:0;color:var(--text-on-accent);background:color-mix(in srgb,var(--ink) 78%,transparent);border:0;border-radius:50%;cursor:pointer}.photo-item button:hover{background:var(--alert)}.cover-badge{position:absolute;left:var(--sp-1);bottom:var(--sp-1);padding:var(--sp-1) var(--sp-2);color:var(--text-on-accent);background:var(--primary);border-radius:var(--r-pill);font-size:.68rem;font-weight:800}.char-count{align-self:flex-end;margin-top:var(--sp-1);color:var(--muted);font-size:var(--text-xs)}.field-error{display:flex;align-items:flex-start;gap:var(--sp-2);margin:var(--sp-2) 0 0;color:var(--alert);font-size:var(--text-sm);font-weight:600}.submit-error{margin-top:var(--sp-4)}.form-submit{margin-top:var(--sp-6)}.nav-row{display:flex;gap:var(--sp-3);margin-top:var(--sp-6)}.nav-row :global(.btn-base){flex:1}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}@media(max-width:900px){.form-layout{grid-template-columns:minmax(0,38rem);gap:0}.preview-col{display:none}}@media(max-width:640px){.adoption-form{padding:var(--sp-5);border-radius:var(--r-lg)}input,select,textarea{font-size:1rem}.photo-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:420px){.adoption-form{padding:var(--sp-4);border-radius:var(--r-md)}.nav-row{gap:var(--sp-2)}}

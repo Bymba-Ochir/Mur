@@ -4,7 +4,7 @@ import { DISTRICTS } from '../lib/districts';
 import type { District } from '../lib/districts';
 import { useLanguage } from '../lib/i18n';
 import Button from './ui/Button';
-import { formatPhone, normalizePhone } from '../lib/utils';
+import PhonePrivacyField from './PhonePrivacyField';
 
 export interface PetEditValues {
   name: string;
@@ -12,6 +12,7 @@ export interface PetEditValues {
   place: string;
   district: District;
   phone: string;
+  phoneHidden?: boolean;
 }
 
 /** Пет бичлэгийг засах форм — PetDetailClient-аас салгагдсан. */
@@ -29,7 +30,7 @@ export default function PetEditForm({
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!/^\d{8}$/.test(form.phone)) {
+    if (!form.phoneHidden && !/^\d{8}$/.test(form.phone)) {
       setPhoneError(t('detail_phone_invalid'));
       return;
     }
@@ -54,9 +55,7 @@ export default function PetEditForm({
       <label htmlFor="edit-place">{t('detail_place').replace(':', '')}</label>
       <input id="edit-place" className="field" value={form.place} onChange={(e) => setForm({ ...form, place: e.target.value })} maxLength={300} required />
 
-      <label htmlFor="edit-phone">{t('phone_label').replace(' *', '')}</label>
-      <input id="edit-phone" className="field" inputMode="numeric" autoComplete="tel" maxLength={11} value={formatPhone(form.phone)} aria-invalid={Boolean(phoneError)} aria-describedby={phoneError ? 'edit-phone-error' : undefined} onChange={(e) => { setForm({ ...form, phone: normalizePhone(e.target.value) }); setPhoneError(''); }} />
-      {phoneError && <p id="edit-phone-error" className="field-error" role="alert">{phoneError}</p>}
+      <PhonePrivacyField id="edit-phone" phone={form.phone} hidden={Boolean(form.phoneHidden)} onPhoneChange={phone => setForm(current => ({ ...current, phone }))} onHiddenChange={phoneHidden => setForm(current => ({ ...current, phoneHidden }))} error={phoneError} />
 
       <div className="edit-actions">
         <Button type="submit" disabled={saving} aria-busy={saving} variant="primary">

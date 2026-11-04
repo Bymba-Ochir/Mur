@@ -4,6 +4,7 @@
 //   useAdoptionSubmit — submit pipeline (createAdoption + reset)
 'use client';
 import { reportError } from './errorTracking';
+import { listingPhone } from './listingContact';
 import { useRef, useState } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
 import { compressImage } from './imageCompress';
@@ -13,7 +14,7 @@ import { useLanguage } from './i18n';
 import type { District } from './districts';
 import type { AdoptionGender, PetType } from './types';
 import { getErrorMessage } from './utils';
-import { cleanText, isInputValidationError, requireMongolianPhone } from './inputValidation';
+import { cleanText, isInputValidationError } from './inputValidation';
 import { fingerprintSubmission, resolveIdempotencyAttempt, type IdempotencyAttempt } from './idempotency';
 
 // Дотоод утга (DB-д хадгалагдах) үргэлж Монгол хэвээр
@@ -30,6 +31,7 @@ export interface AdoptionFormData {
   place: string;
   district: District;
   phone: string;
+  phoneHidden?: boolean;
 }
 
 // ---------- Зураг: шахалт (content moderationгүй) ----------
@@ -122,7 +124,7 @@ export function useAdoptionSubmit({
         breed: cleanText(form.breed, 100, 'Үүлдэр'),
         description: cleanText(form.description, 2000, 'Тайлбар', true),
         place: cleanText(form.place, 300, 'Байршил', true),
-        phone: requireMongolianPhone(form.phone),
+        phone: listingPhone(form.phone, form.phoneHidden),
         gender: form.gender || 'Тодорхойгүй',
         photoFiles,
       }, attempt.key);

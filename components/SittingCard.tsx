@@ -24,7 +24,7 @@ export default function SittingCard({ listing }: { listing: SittingListing }) {
       experience={listing.experience}
       availability={listing.availability}
       price={listing.price}
-      phone={listing.phone}
+      phone={listing.phoneHidden ? '' : listing.phone}
       createdAt={listing.createdAt}
       revealed={revealed}
       onRevealPhone={() => setRevealed(true)}

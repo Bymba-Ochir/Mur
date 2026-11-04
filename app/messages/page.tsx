@@ -1,10 +1,10 @@
 'use client';
-import { useEffect, useState, useSyncExternalStore } from 'react';
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useAuth } from '../../lib/useAuth';
 import { useLanguage } from '../../lib/i18n';
-import { fetchConversationList } from '../../lib/chatService';
+import { fetchConversationPage } from '../../lib/chatService';
 import { relativeTime } from '../../lib/relativeTime';
 import type { ConversationPreview, PetType } from '../../lib/types';
 import AssistantClient from '../assistant/AssistantClient';
@@ -36,6 +36,10 @@ function MessagesContent() {
   const { t, lang } = useLanguage();
   const [conversations, setConversations] = useState<ConversationPreview[]>([]);
   const [loading, setLoading] = useState(true);
+  const [hasMore, setHasMore] = useState(false);
+  const [moreBusy, setMoreBusy] = useState(false);
+  const requestVersion = useRef(0);
+  const morePending = useRef(false);
   const [error, setError] = useState('');
   const [reloadKey, setReloadKey] = useState(0);
   const [showLogin, setShowLogin] = useState(false);
@@ -55,24 +59,37 @@ function MessagesContent() {
   useEffect(() => {
     if (authLoading || !user?.id) return;
     let cancelled = false;
-    let requestVersion = 0;
     async function load() {
-      const version = ++requestVersion;
+      const version = ++requestVersion.current;
       try {
-        const data = await fetchConversationList();
-        if (!cancelled && version === requestVersion) { setConversations(data); setError(''); }
+        const data = await fetchConversationPage();
+        if (!cancelled && version === requestVersion.current) { setConversations(data.items); setHasMore(data.hasMore); setError(''); }
       } catch (err) {
-        if (!cancelled && version === requestVersion) setError(getErrorMessage(err));
+        if (!cancelled && version === requestVersion.current) setError(getErrorMessage(err));
       } finally {
-        if (!cancelled && version === requestVersion) setLoading(false);
+        if (!cancelled && version === requestVersion.current) setLoading(false);
       }
     }
     void load();
     const onFocus = () => { void load(); };
     window.addEventListener('focus', onFocus);
     window.addEventListener('online', onFocus);
-    return () => { cancelled = true; window.removeEventListener('focus', onFocus); window.removeEventListener('online', onFocus); };
+    return () => { cancelled = true; requestVersion.current += 1; window.removeEventListener('focus', onFocus); window.removeEventListener('online', onFocus); };
   }, [user?.id, authLoading, reloadKey]);
+
+  async function loadMore() {
+    if (morePending.current || !conversations.length) return;
+    morePending.current = true;
+    const version = requestVersion.current;
+    setMoreBusy(true);
+    try {
+      const page = await fetchConversationPage(conversations.at(-1));
+      if (version !== requestVersion.current) return;
+      setConversations(current => [...new Map([...current, ...page.items].map(row => [row.id, row])).values()]);
+      setHasMore(page.hasMore);
+    } catch (reason) { if (version === requestVersion.current) setError(getErrorMessage(reason)); }
+    finally { morePending.current = false; setMoreBusy(false); }
+  }
 
   const unreadTotal = conversations.reduce((total, conversation) => total + conversation.unreadCount, 0);
   const petTypeLabel = (type: PetType) => type === 'Нохой' ? t('type_dog') : type === 'Муур' ? t('type_cat') : t('type_other');
@@ -113,7 +130,7 @@ function MessagesContent() {
             <div className="conv-list" aria-label={t('chat_list_title')}>
               {conversations.map((conv) => {
                 const otherName = conv.initiatorId === user.id ? conv.ownerName : conv.initiatorName;
-                const petName = conv.pet ? `${petTypeLabel(conv.pet.type)}${conv.pet.name ? ` — ${conv.pet.name}` : ''}` : t('chat_deleted_pet');
+                const petName = conv.pet ? `${petTypeLabel(conv.pet.type)}${conv.pet.name ? ` — ${conv.pet.name}` : ''}` : conv.adoptionId ? t('nav_adoptions') : conv.sittingId ? t('sitting_badge') : t('chat_deleted_pet');
                 return (
                   <Link key={conv.id} href={`/messages/${conv.id}`} className={`conv-item${conv.unreadCount ? ' unread' : ''}`} aria-label={`${t('messages_open_label')}: ${otherName}, ${petName}`}>
                     <span className="conv-thumb" aria-hidden="true">{conv.pet?.photoURL ? <Image src={conv.pet.photoURL} alt="" fill sizes="(max-width: 480px) 52px, 60px" className="conv-photo" /> : <span className="conv-thumb-placeholder"><Icon name="paw" size={24} /></span>}</span>
@@ -129,6 +146,7 @@ function MessagesContent() {
             </div>
           )}
 
+          {hasMore && !loading && !error && <Button variant="ghost" onClick={() => void loadMore()} disabled={moreBusy}>{t('chat_load_more')}</Button>}
           {!authLoading && user && <aside className="privacy-note"><Icon name="shield" size={18} /><div><strong>{t('messages_private_title')}</strong><p>{t('messages_private_desc')}</p></div></aside>}
         </section>
       )}

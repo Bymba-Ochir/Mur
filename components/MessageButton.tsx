@@ -3,7 +3,8 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../lib/useAuth';
 import { useLanguage } from '../lib/i18n';
-import { findOrCreateConversation } from '../lib/chatService';
+import { findOrCreateListingConversation } from '../lib/chatService';
+import type { ContactListing } from '../lib/listingContact';
 import LoginModal from './LoginModal';
 import { useToast } from './Toast';
 import { getErrorMessage } from '../lib/utils';
@@ -14,7 +15,8 @@ import Icon from './ui/icons';
  * Амьтны дэлгэрэнгүй хуудаснаас эзэнтэй холбогдох товч.
  * Зөвхөн бусад хэрэглэгчдэд харагдана (эзэн болон нэвтэрээгүй бол нуугдана).
  */
-export default function MessageButton({ pet }: { pet: Pet }) {
+export default function MessageButton(props: { pet: Pick<Pet, 'id' | 'createdBy'> } | { listing: ContactListing }) {
+  const listing: ContactListing = 'listing' in props ? props.listing : { kind: 'pet', id: props.pet.id, ownerId: props.pet.createdBy };
   const router = useRouter();
   const { user } = useAuth();
   const { t } = useLanguage();
@@ -23,9 +25,9 @@ export default function MessageButton({ pet }: { pet: Pet }) {
   const [showLogin, setShowLogin] = useState(false);
 
   // Эзэн өөрийнхөө амьтанд — нуух
-  if (user && pet.createdBy && user.id === pet.createdBy) return null;
+  if (user && listing.ownerId && user.id === listing.ownerId) return null;
   // Амьтны эзэн байхгүй бол — нуух
-  if (!pet.createdBy) return null;
+  if (!listing.ownerId) return null;
 
   async function handleClick() {
     if (!user) {
@@ -34,7 +36,7 @@ export default function MessageButton({ pet }: { pet: Pet }) {
     }
     setBusy(true);
     try {
-      const convId = await findOrCreateConversation(pet.id);
+      const convId = await findOrCreateListingConversation(listing.kind, listing.id);
       router.push(`/messages/${convId}`);
     } catch (err) {
       const msg = getErrorMessage(err);

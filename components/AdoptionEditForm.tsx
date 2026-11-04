@@ -5,14 +5,14 @@ import { DISTRICTS } from '../lib/districts';
 import type { District } from '../lib/districts';
 import { useLanguage } from '../lib/i18n';
 import Button from './ui/Button';
+import PhonePrivacyField from './PhonePrivacyField';
 import Icon from './ui/icons';
 import { TYPE_VALUES, GENDER_VALUES } from '../lib/useAdoptionForm';
 import type { AdoptionGender, PetType } from '../lib/types';
 import BreedSelect from './BreedSelect';
 import { validatePetAge } from '../lib/petAge';
-import { formatPhone, normalizePhone } from '../lib/utils';
 
-export interface AdoptionEditValues { name:string;type:PetType;age:string;gender:AdoptionGender;breed:string;description:string;district:District;place:string;phone:string; }
+export interface AdoptionEditValues { name:string;type:PetType;age:string;gender:AdoptionGender;breed:string;description:string;district:District;place:string;phone:string;phoneHidden?:boolean; }
 
 export default function AdoptionEditForm({ initial, onSave, onCancel, saving }: { initial:AdoptionEditValues;onSave:(values:AdoptionEditValues)=>void;onCancel:()=>void;saving:boolean; }) {
   const { t } = useLanguage();
@@ -27,7 +27,7 @@ export default function AdoptionEditForm({ initial, onSave, onCancel, saving }: 
       ...(ageError ? {age: ageError} : {}),
       ...(!form.description.trim() ? { description:t('adoption_description_required') } : {}),
       ...(!form.place.trim() ? { place:t('adoption_place_required') } : {}),
-      ...(!/^\d{8}$/.test(form.phone) ? { phone:t('adoption_phone_invalid') } : {}),
+      ...(!form.phoneHidden && !/^\d{8}$/.test(form.phone) ? { phone:t('adoption_phone_invalid') } : {}),
     };
     setErrors(next);
     if (!Object.keys(next).length) onSave(form);
@@ -46,8 +46,7 @@ export default function AdoptionEditForm({ initial, onSave, onCancel, saving }: 
       <label htmlFor="edit-district">{t('district_label')}</label><select id="edit-district" value={form.district} onChange={(event)=>setForm({...form,district:event.target.value as District})}>{DISTRICTS.map((district)=><option key={district}>{district}</option>)}</select>
       <label htmlFor="edit-place">{t('detail_place').replace(':','')}</label><input id="edit-place" value={form.place} onChange={(event)=>{setForm({...form,place:event.target.value});setErrors((current)=>({...current,place:undefined}));}} maxLength={300} required aria-invalid={Boolean(errors.place)} aria-describedby={errors.place?'edit-place-error':undefined}/>
       {errors.place&&<p id="edit-place-error" className="field-error" role="alert"><Icon name="alert" size={16}/>{errors.place}</p>}
-      <label htmlFor="edit-phone">{t('phone_label').replace(' *','')}</label><input id="edit-phone" inputMode="tel" autoComplete="tel" maxLength={14} value={formatPhone(form.phone)} onChange={(event)=>{setForm({...form,phone:normalizePhone(event.target.value)});setErrors((current)=>({...current,phone:undefined}));}} aria-invalid={Boolean(errors.phone)} aria-describedby={errors.phone?'edit-phone-error':undefined}/>
-      {errors.phone&&<p id="edit-phone-error" className="field-error" role="alert"><Icon name="alert" size={16}/>{errors.phone}</p>}
+      <PhonePrivacyField id="edit-phone" phone={form.phone} hidden={Boolean(form.phoneHidden)} onPhoneChange={phone => setForm(current => ({ ...current, phone }))} onHiddenChange={phoneHidden => setForm(current => ({ ...current, phoneHidden }))} error={errors.phone} />
     </div>
     <div className="edit-actions"><Button type="submit" disabled={saving} variant="primary">{saving?t('detail_saving'):t('detail_save')}</Button><Button type="button" onClick={onCancel} variant="ghost">{t('detail_cancel')}</Button></div>
     <style jsx>{`.edit-form{max-width:46rem;margin-inline:auto;padding:var(--sp-6);background:var(--card);border:1px solid var(--line);border-radius:var(--r-xl);box-shadow:var(--shadow-sm)}h2{margin:0 0 var(--sp-5);font-family:var(--font-heading)}.field-grid{display:flex;flex-direction:column}.field-grid label{margin:var(--sp-4) 0 var(--sp-2);color:var(--primary);font-size:var(--text-sm);font-weight:700}.field-grid label:first-child{margin-top:0}input,select,textarea{width:100%;min-height:var(--touch-target);padding:var(--sp-3) var(--sp-4);color:var(--ink);background:var(--surface-2);border:1.5px solid var(--line);border-radius:var(--r-sm);font:inherit}textarea{resize:vertical}input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 18%,transparent)}[aria-invalid='true']{border-color:var(--alert)}.field-error{display:flex;gap:var(--sp-2);margin:var(--sp-2) 0 0;color:var(--alert);font-size:var(--text-sm);font-weight:600}.edit-actions{display:flex;gap:var(--sp-3);margin-top:var(--sp-6)}.edit-actions :global(.btn-base){flex:1}@media(max-width:640px){.edit-form{padding:var(--sp-4);border-radius:var(--r-lg)}input,select,textarea{font-size:1rem}.edit-actions{flex-direction:column}}`}</style>

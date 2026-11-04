@@ -27,7 +27,7 @@ export default function AdoptionCard({ adoption }: { adoption: Adoption }) {
       breed={adoption.breed ? getBreedLabel(adoption.breed, lang) : ''}
       district={adoption.district}
       place={adoption.place}
-      phone={adoption.phone}
+      phone={adoption.phoneHidden ? '' : adoption.phone}
       createdAt={adoption.createdAt || undefined}
       revealed={revealed}
       onRevealPhone={() => setRevealed(true)}

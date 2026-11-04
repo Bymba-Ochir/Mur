@@ -25,7 +25,7 @@ export default function PetCard({ pet }: { pet: Pet }) {
       color={pet.color}
       district={pet.district}
       place={pet.place}
-      phone={pet.phone}
+      phone={pet.phoneHidden ? '' : pet.phone}
       createdAt={pet.createdAt || undefined}
       similarity={pet.similarity}
       hybridScore={pet.hybridScore}

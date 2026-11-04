@@ -1,4 +1,5 @@
 'use client';
+import ListingContact from './ListingContact';
 import { useState, type ReactNode } from 'react';
 import Image from 'next/image';
 import { useCurrentLocation } from '../lib/useCurrentLocation';
@@ -6,7 +7,6 @@ import { useLanguage, type TranslationKey } from '../lib/i18n';
 import { formatPetAge } from '../lib/petAge';
 import { getBreedLabel } from '../lib/petBreeds';
 import { relativeTime } from '../lib/relativeTime';
-import { maskPhone, formatPhone } from '../lib/utils';
 import { vaccineStatus } from '../lib/vaccineService';
 import PetIcon from './PetIcon';
 import Button from './ui/Button';
@@ -29,7 +29,6 @@ export default function PetProfileLayout({
 }) {
   const { t, lang } = useLanguage();
   const [tab, setTab] = useState<'photo' | 'history' | 'health'>('photo');
-  const [phoneRevealed, setPhoneRevealed] = useState(false);
 
   const url = useCurrentLocation();
 
@@ -142,22 +141,12 @@ export default function PetProfileLayout({
       </div>
 
       {/* Contact (adoption only) */}
-      {data.kind === 'adoption' && (data.phone || data.district || data.place) && (
+      {data.kind === 'adoption' && (data.ownerId || data.phone || data.district || data.place) && (
         <div className="contact-card">
           <h3 className="section-title">{t('profiles_contact_title')}</h3>
           {data.district && <p><strong>{t('detail_district')}</strong> {data.district}</p>}
           {data.place && <p><strong>{t('detail_place')}</strong> {data.place}</p>}
-          {data.phone && (
-            <div className="phone-row">
-              {phoneRevealed ? (
-                <a href={`tel:${data.phone}`} className="phone-link"><Icon name="phone" size={17} /> {formatPhone(data.phone)}</a>
-              ) : (
-                <Button variant="ghost" size="sm" className="reveal-phone" onClick={() => setPhoneRevealed(true)}>
-                  <Icon name="phone" size={17} /> {maskPhone(data.phone)} · {t('detail_show_phone')}
-                </Button>
-              )}
-            </div>
-          )}
+          <div className="phone-row"><ListingContact listing={{ kind: 'adoption', id: data.id, ownerId: data.ownerId ?? null }} phone={data.phone ?? ''} hidden={data.phoneHidden} /></div>
         </div>
       )}
 

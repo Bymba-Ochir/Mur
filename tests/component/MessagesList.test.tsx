@@ -4,7 +4,7 @@ import type { ConversationPreview } from '../../lib/types';
 const mocks=vi.hoisted(()=>({user:{id:'one'} as {id:string}|null,fetch:vi.fn()}));
 vi.mock('../../lib/useAuth',()=>({useAuth:()=>({user:mocks.user,loading:false})}));
 vi.mock('../../lib/i18n',()=>({useLanguage:()=>({lang:'en',t:(key:string)=>key})}));
-vi.mock('../../lib/chatService',()=>({fetchConversationList:mocks.fetch}));
+vi.mock('../../lib/chatService',()=>({fetchConversationPage:async(...args: unknown[])=>({items:await mocks.fetch(...args),hasMore:false})}));
 vi.mock('../../app/assistant/AssistantClient',()=>({default:()=>null}));
 vi.mock('../../components/LoginModal',()=>({default:()=>null}));
 import MessagesPage from '../../app/messages/page';

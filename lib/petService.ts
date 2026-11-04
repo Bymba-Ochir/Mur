@@ -1,10 +1,11 @@
 // lib/petService.ts
 // Алдсан/олдсон амьтны мэдээллийг Supabase (Postgres + Storage)-д бичих, унших функцууд
 import { supabase } from './supabase';
+import { listingPhone } from './listingContact';
 import { cosineSimilarityScore } from './similarity';
 import { mapPetRow } from './petMapping';
 import type { Pet, PetStatus, PetFilters, PetReportInput, UpdatePetFields } from './types';
-import { cleanText, optionalCoordinate, optionalInteger, requireMongolianPhone } from './inputValidation';
+import { cleanText, optionalCoordinate, optionalInteger } from './inputValidation';
 import { apiError, authenticatedFetch } from './apiClient';
 import { createIdempotencyKey, idempotentFileName, isIdempotencyKey } from './idempotency';
 import { hydrateListingPhotos, saveListingPhotos } from './photoRepository';
@@ -60,7 +61,7 @@ export async function createPetReport(
     return existing.id;
   }
 
-  const phone = requireMongolianPhone(data.phone);
+  const phone = listingPhone(data.phone, data.phoneHidden);
   const reward = data.hasReward
     ? optionalInteger(data.reward, { min: 0, max: 100_000_000, label: 'Шагналын дүн' })
     : null;
@@ -82,6 +83,7 @@ export async function createPetReport(
       place: cleanText(data.place, 300, 'Байршил', true),
       district: data.district || '',
       phone,
+      phone_hidden: data.phoneHidden ?? false,
       has_reward: data.hasReward ?? false,
       reward,
       lat: optionalCoordinate(data.lat, 'lat'),
@@ -165,7 +167,8 @@ export async function updatePet(id: string, fields: UpdatePetFields): Promise<vo
       color: fields.color === undefined ? undefined : cleanText(fields.color, 100, 'Өнгө', true),
       place: fields.place === undefined ? undefined : cleanText(fields.place, 300, 'Байршил', true),
       district: fields.district ?? undefined,
-      phone: fields.phone === undefined ? undefined : requireMongolianPhone(fields.phone),
+      phone: fields.phone === undefined ? undefined : listingPhone(fields.phone, fields.phoneHidden),
+      phone_hidden: fields.phoneHidden,
     })
     .eq('id', id);
   if (error) throw error;

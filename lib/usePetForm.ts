@@ -5,6 +5,7 @@
 //   usePetSubmit   — submit pipeline (createPetReport + reset)
 'use client';
 import { reportError } from './errorTracking';
+import { listingPhone } from './listingContact';
 import { useEffect, useRef, useState } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
 import { compressImage } from './imageCompress';
@@ -16,7 +17,7 @@ import { useLanguage } from './i18n';
 import type { District } from './districts';
 import type { PetStatus, PetType } from './types';
 import { getErrorMessage } from './utils';
-import { cleanText, isInputValidationError, optionalInteger, requireMongolianPhone } from './inputValidation';
+import { cleanText, isInputValidationError, optionalInteger } from './inputValidation';
 import { fingerprintSubmission, resolveIdempotencyAttempt, type IdempotencyAttempt } from './idempotency';
 
 // Дотоод утга (DB-д хадгалагдах) үргэлж Монгол хэвээр — зөвхөн харагдац орчуулагдана
@@ -30,6 +31,7 @@ export interface PetFormData {
   place: string;
   district: District;
   phone: string;
+  phoneHidden?: boolean;
   /** "Шагналтай" гэж тэмдэглэх эсэх */
   hasReward: boolean;
   /** Шагналын дүн (raw текст инпут) — НУУЦ, хоосон бол null-ээр хадгална */
@@ -188,7 +190,7 @@ export function usePetSubmit({
           breed: cleanText(form.breed, 100, 'Үүлдэр'),
           color: cleanText(form.color, 100, 'Өнгө', true),
           place: cleanText(form.place, 300, 'Байршил', true),
-          phone: requireMongolianPhone(form.phone),
+          phone: listingPhone(form.phone, form.phoneHidden),
           status,
           hasReward: form.hasReward,
           reward: form.hasReward ? optionalInteger(form.reward, { min: 0, max: 100_000_000, label: 'Шагналын дүн' }) : null,

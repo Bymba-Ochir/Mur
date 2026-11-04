@@ -12,10 +12,10 @@ import PawTrail from './PawTrail';
 import { usePhotoUpload, usePetLocation, usePetSubmit, TYPE_VALUES } from '../lib/usePetForm';
 import type { PetFormData } from '../lib/usePetForm';
 import type { PetStatus, PetType } from '../lib/types';
-import { normalizePhone, formatPhone } from '../lib/utils';
 import BreedSelect from './BreedSelect';
 import FieldHint from './ui/FieldHint';
 import AuthRequired from './AuthRequired';
+import PhonePrivacyField from './PhonePrivacyField';
 import { useAuth } from '../lib/useAuth';
 import { usePetDraft } from '../lib/usePetDraft';
 
@@ -42,14 +42,14 @@ function AuthenticatedPetForm({ status, userId }: { status: PetStatus; userId: s
   const [step, setStep] = useState(0);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [form, setForm] = useState<PetFormData>({
-    name: '', type: 'Нохой', breed: '', color: '', place: '', district: DISTRICTS[0], phone: '', hasReward: false, reward: '',
+    name: '', type: 'Нохой', breed: '', color: '', place: '', district: DISTRICTS[0], phone: '', phoneHidden: false, hasReward: false, reward: '',
   });
 
   const photo = usePhotoUpload();
   const location = usePetLocation((district) => setForm((current) => ({ ...current, district })));
 
   function resetAll() {
-    setForm({ name: '', type: 'Нохой', breed: '', color: '', place: '', district: DISTRICTS[0], phone: '', hasReward: false, reward: '' });
+    setForm({ name: '', type: 'Нохой', breed: '', color: '', place: '', district: DISTRICTS[0], phone: '', phoneHidden: false, hasReward: false, reward: '' });
     setStep(0);
     setFieldErrors({});
     photo.reset();
@@ -88,7 +88,7 @@ function AuthenticatedPetForm({ status, userId }: { status: PetStatus; userId: s
     const errors: FieldErrors = {};
     if (targetStep === 1 && !form.color.trim()) errors.color = t('form_color_required');
     if (targetStep === 2 && !form.place.trim()) errors.place = t('form_place_required');
-    if (targetStep === 3 && !/^\d{8}$/.test(form.phone)) errors.phone = t('form_phone_invalid');
+    if (targetStep === 3 && !form.phoneHidden && !/^\d{8}$/.test(form.phone)) errors.phone = t('form_phone_invalid');
     setFieldErrors(errors);
     return Object.keys(errors).length === 0;
   }
@@ -266,10 +266,7 @@ function AuthenticatedPetForm({ status, userId }: { status: PetStatus; userId: s
               </>
             )}
 
-            <label htmlFor="pet-phone">{t('phone_label')}</label>
-            <FieldHint mn="Зарын эзэнтэй шууд холбогдох 8 оронтой дугаар. Нийтэд бүтнээр нь шууд харуулахгүй." en="An 8-digit contact number. It is masked until a viewer chooses to reveal it." />
-            <input id="pet-phone" name="phone" value={formatPhone(form.phone)} onChange={(event) => { setForm((current) => ({ ...current, phone: normalizePhone(event.target.value) })); clearError('phone'); }} placeholder={t('phone_placeholder')} required inputMode="tel" autoComplete="tel" maxLength={14} aria-invalid={Boolean(fieldErrors.phone)} aria-describedby={fieldErrors.phone ? 'pet-phone-error' : undefined} />
-            {fieldErrors.phone && <p id="pet-phone-error" className="field-error" role="alert"><Icon name="alert" size={16} />{fieldErrors.phone}</p>}
+            <PhonePrivacyField id="pet-phone" phone={form.phone} hidden={Boolean(form.phoneHidden)} onPhoneChange={phone => { setForm(current => ({ ...current, phone })); clearError('phone'); }} onHiddenChange={phoneHidden => { setForm(current => ({ ...current, phoneHidden })); clearError('phone'); }} error={fieldErrors.phone} />
             {submit.error && <p className="submit-error" role="alert"><Icon name="alert" size={17} />{submit.error}</p>}
 
             <Button type="submit" disabled={submit.submitting} variant="primary" fullWidth className="form-submit" aria-busy={submit.submitting}>
@@ -286,7 +283,7 @@ function AuthenticatedPetForm({ status, userId }: { status: PetStatus; userId: s
       </form>
 
       <aside className="preview-col" aria-label={t('preview_label')}>
-        <PetPreviewCard status={status} name={form.name} type={form.type} breed={form.breed} color={form.color} district={form.district} place={form.place} phone={form.phone} photoPreview={photo.preview} hasReward={form.hasReward} />
+        <PetPreviewCard status={status} name={form.name} type={form.type} breed={form.breed} color={form.color} district={form.district} place={form.place} phone={form.phoneHidden ? '' : form.phone} photoPreview={photo.preview} hasReward={form.hasReward} />
       </aside>
 
       <style jsx>{`

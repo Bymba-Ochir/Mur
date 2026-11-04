@@ -8,6 +8,7 @@ import { useAuth } from '../../../lib/useAuth';
 import { useLanguage } from '../../../lib/i18n';
 import { fetchConversationById, fetchMessages, sendMessage, subscribeToMessages, otherParticipant, markConversationRead } from '../../../lib/chatService';
 import { getErrorMessage } from '../../../lib/utils';
+import { conversationListingHref } from '../../../lib/conversationListing';
 import type { Conversation, Message, PetType } from '../../../lib/types';
 
 
@@ -140,7 +141,8 @@ function MessageThreadContent({ id }: { id: string }) {
   if (error) return <div className="page-shell page-shell--narrow"><div className="state-panel state-panel--error" role="alert"><span className="state-panel__icon"><Icon name="alert" size={28} /></span><h2>{t('thread_load_error')}</h2><p>{error}</p><div className="thread-error-actions"><Button variant="secondary" onClick={retryLoad}>{t('thread_retry')}</Button><Button as="link" href="/messages" variant="ghost">{t('thread_back')}</Button></div></div><style jsx>{`.thread-error-actions{display:flex;flex-wrap:wrap;justify-content:center;gap:var(--sp-2);margin-top:var(--sp-3)}`}</style></div>;
   if (!conv) return null;
 
-  const petName = conv.pet ? `${petTypeLabel(conv.pet.type)}${conv.pet.name ? ` — ${conv.pet.name}` : ''}` : t('chat_deleted_pet');
+  const petName = conv.pet ? `${petTypeLabel(conv.pet.type)}${conv.pet.name ? ` — ${conv.pet.name}` : ''}` : conv.adoptionId ? t('nav_adoptions') : conv.sittingId ? t('sitting_badge') : t('chat_deleted_pet');
+  const listingHref = conversationListingHref(conv);
   const other = otherParticipant(conv, user.id);
   const initial = other.charAt(0).toUpperCase();
 
@@ -149,11 +151,11 @@ function MessageThreadContent({ id }: { id: string }) {
       <header className="chat-header" aria-label={t('thread_header_label')}>
         <Link href="/messages" className="chat-back" aria-label={t('thread_back')}><Icon name="arrowLeft" size={20} /></Link>
         <span className="participant-avatar" aria-hidden="true">{initial}</span>
-        <div className="chat-header-info"><strong className="chat-other">{other}</strong>{conv.pet ? <Link href={`/pets/${conv.petId}`} className="chat-pet-link"><span className="chat-pet-thumb">{conv.pet.photoURL ? <Image src={conv.pet.photoURL} alt="" fill sizes="36px" className="chat-pet-photo" /> : <Icon name="paw" size={18} />}</span><span><small>{t('thread_listing_label')}</small><span className="chat-pet-name">{petName}</span></span></Link> : <span className="removed-listing"><Icon name="info" size={14} />{t('chat_deleted_pet')}</span>}</div>
+        <div className="chat-header-info"><strong className="chat-other">{other}</strong>{listingHref ? <Link href={listingHref} className="chat-pet-link"><span className="chat-pet-thumb">{conv.pet?.photoURL ? <Image src={conv.pet.photoURL} alt="" fill sizes="36px" className="chat-pet-photo" /> : <Icon name="paw" size={18} />}</span><span><small>{t('thread_listing_label')}</small><span className="chat-pet-name">{petName}</span></span></Link> : <span className="removed-listing"><Icon name="info" size={14} />{t('chat_deleted_pet')}</span>}</div>
         {conv.pet?.resolved && <span className="header-status"><Icon name="check" size={13} />{t('messages_resolved')}</span>}
       </header>
 
-      {!conv.pet && <aside className="removed-notice"><Icon name="info" size={17} /><p>{t('thread_removed_notice')}</p></aside>}
+      {!listingHref && <aside className="removed-notice"><Icon name="info" size={17} /><p>{t('thread_removed_notice')}</p></aside>}
 
       <div className="chat-body">
         <div ref={messagesRef} className="chat-messages" role="log" aria-live="polite" aria-relevant="additions" aria-label={t('thread_messages_label')} onScroll={handleMessageScroll}>

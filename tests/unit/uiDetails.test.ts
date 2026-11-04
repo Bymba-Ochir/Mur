@@ -123,7 +123,9 @@ describe('page detail safeguards', () => {
     expect(gallery).toContain('detail_gallery_previous');
     expect(gallery).not.toContain('>‹</button>');
     expect(editForm).toContain('<form className="edit-form"');
-    expect(editForm).toContain('aria-invalid');
+    expect(editForm).toContain('PhonePrivacyField');
+    expect(editForm).toContain('error={phoneError}');
+    expect(source('components/PhonePrivacyField.tsx')).toContain('aria-invalid={Boolean(error)}');
     expect(sightings).toContain('aria-controls="sighting-form"');
     expect(sightings).not.toContain('style={{');
   });
@@ -156,7 +158,8 @@ describe('page detail safeguards', () => {
     expect(form).toContain('<fieldset className="form-step">');
     expect(form).toContain('aria-invalid={Boolean(fieldErrors.color)}');
     expect(form).toContain('aria-invalid={Boolean(fieldErrors.place)}');
-    expect(form).toContain('aria-invalid={Boolean(fieldErrors.phone)}');
+    expect(form).toContain('error={fieldErrors.phone}');
+    expect(source('components/PhonePrivacyField.tsx')).toContain('aria-invalid={Boolean(error)}');
     expect(form).toContain('@media (max-width: 900px)');
     expect(form).not.toContain('style={{');
     expect(form).not.toMatch(/⏳|📍|🎁/);
@@ -222,7 +225,8 @@ describe('page detail safeguards', () => {
     expect(detail).toContain('className="description-block"');
     expect(detail).not.toContain('style={{');
     expect(form).toContain('aria-invalid={Boolean(fieldErrors.description)}');
-    expect(form).toContain('aria-invalid={Boolean(fieldErrors.phone)}');
+    expect(form).toContain('error={fieldErrors.phone}');
+    expect(source('components/PhonePrivacyField.tsx')).toContain('aria-invalid={Boolean(error)}');
     expect(form).not.toContain('style={{');
     expect(form).not.toMatch(/⏳|📍/);
     expect(edit).toContain('<form className="edit-form"');

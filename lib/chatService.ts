@@ -3,12 +3,16 @@
 import { supabase } from './supabase';
 import type { Conversation, Message, ConversationPreview, ConversationPetSummary } from './types';
 import { hydrateListingPhotos } from './photoRepository';
+import { COMPACT_PAGE_SIZE, finalizePage } from './pagination';
+import type { ContactListingKind } from './listingContact';
 
 // ─── Маппинг ────────────────────────────────────────────────────────────────
 
 interface ConversationRow {
   id: string;
-  pet_id: string;
+  pet_id: string | null;
+  adoption_id?: string | null;
+  sitting_id?: string | null;
   initiator_id: string;
   owner_id: string;
   created_at: string;
@@ -26,6 +30,8 @@ export function mapConversationRow(row: ConversationRow): Conversation {
   return {
     id: row.id,
     petId: row.pet_id,
+    adoptionId: row.adoption_id ?? null,
+    sittingId: row.sitting_id ?? null,
     initiatorId: row.initiator_id,
     ownerId: row.owner_id,
     initiatorName: 'МӨР хэрэглэгч',
@@ -91,58 +97,20 @@ function withParticipantNames(row: ConversationRow, names: Map<string, string>):
 /**
  * Амьтны эзэнтэй харилцаа үүсгэх эсвэл байгааг нь буцаах
  */
-export async function findOrCreateConversation(petId: string): Promise<string> {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error('Нэвтэрнэ үү');
-
-  // Аль хэдийн байгаа эсэхийг шалгах
-  const { data: existing } = await supabase
-    .from('conversations')
-    .select('id')
-    .eq('pet_id', petId)
-    .eq('initiator_id', user.id)
-    .maybeSingle();
-
-  if (existing) return existing.id;
-
-  // Амьтны эзэнийг олох
-  const { data: pet, error: petErr } = await supabase
-    .from('pets')
-    .select('created_by')
-    .eq('id', petId)
-    .single();
-
-  if (petErr || !pet?.created_by) throw new Error('Амьтны мэдээлэл олдсонгүй');
-  if (pet.created_by === user.id) throw new Error('Өөрийнхөө амьтанд чат үүсгэх боломжгүй');
-  const { data: blocked } = await supabase.from('user_blocks').select('blocked_id').eq('blocker_id', user.id).eq('blocked_id', pet.created_by).maybeSingle();
-  if (blocked) throw new Error('Та энэ хэрэглэгчийг хаасан тул чат эхлүүлэх боломжгүй.');
-
-  // Шинэ харилцаа үүсгэх — participant display data нь profiles-оос уншигдана
-  const { data: conv, error: convErr } = await supabase
-    .from('conversations')
-    .insert({
-      pet_id: petId,
-      initiator_id: user.id,
-      owner_id: pet.created_by,
-    })
-    .select('id')
-    .single();
-
-  if (convErr) {
-    // Unique constraint зөрсөн бол (race condition) — дахин шалгах
-    if (convErr.code === '23505') {
-      const { data: retry } = await supabase
-        .from('conversations')
-        .select('id')
-        .eq('pet_id', petId)
-        .eq('initiator_id', user.id)
-        .maybeSingle();
-      if (retry) return retry.id;
-    }
-    throw convErr;
+export async function findOrCreateListingConversation(kind: ContactListingKind, listingId: string): Promise<string> {
+  const { data, error } = await supabase.rpc('start_listing_conversation', { target_kind: kind, target_id: listingId });
+  if (error) {
+    if (error.message?.includes('SELF_CHAT')) throw new Error('Өөрийнхөө зарт чат үүсгэх боломжгүй.');
+    if (error.message?.includes('INTERACTION_DENIED') || error.code === '42501') throw new Error('Хэрэглэгчийн харилцах тохиргооноос шалтгаалан чат эхлүүлэх боломжгүй.');
+    if (error.message?.includes('CHAT_RATE_LIMIT')) throw new Error('Хэт олон шинэ чат эхлүүллээ. Нэг цагийн дараа дахин оролдоно уу.');
+    throw error;
   }
+  if (!data) throw new Error('Чат эхлүүлж чадсангүй. Дахин оролдоно уу.');
+  return data;
+}
 
-  return conv.id;
+export async function findOrCreateConversation(petId: string): Promise<string> {
+  return findOrCreateListingConversation('pet', petId);
 }
 
 /**
@@ -210,53 +178,26 @@ export async function sendMessage(conversationId: string, content: string): Prom
 /**
  * Хэрэглэгчийн харилцааны жагсаалт (сүүлийн мессежтэй)
  */
-export async function fetchConversationList(): Promise<ConversationPreview[]> {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return [];
-
-  // Харилцуудыг татах
-  const { data: convs, error: convErr } = await supabase
-    .from('conversations')
-    .select('*, pets(id, name, type, status, resolved)')
-    .or(`initiator_id.eq.${user.id},owner_id.eq.${user.id}`)
-    .order('created_at', { ascending: false });
-
-  if (convErr) throw convErr;
-  if (!convs) return [];
-
-  if (convs.length === 0) return [];
-
-  // Сүүлийн мессежүүдийг татах
-  const convIds = convs.map((c) => c.id);
-  const { data: msgs, error: msgError } = await supabase
-    .from('messages')
-    .select('*')
-    .in('conversation_id', convIds)
-    .order('created_at', { ascending: false });
-  if (msgError) throw msgError;
-
-  // Харилцаа бүрийн хувьд сүүлийн мессежийг олох
-  const lastMsgMap = new Map<string, MessageRow>();
-  const unreadMap = new Map<string, number>();
-  if (msgs) {
-    for (const m of msgs) {
-      if (!lastMsgMap.has(m.conversation_id)) {
-        lastMsgMap.set(m.conversation_id, m);
-      }
-      if (m.sender_id !== user.id && !m.read_at) unreadMap.set(m.conversation_id, (unreadMap.get(m.conversation_id) ?? 0) + 1);
-    }
-  }
-
-  const names = await fetchParticipantNames(convs.flatMap((row) => [row.initiator_id, row.owner_id]));
-  const petRows = convs.flatMap((row) => row.pets ? [row.pets] : []);
-  const hydratedPets = await hydrateListingPhotos('pet', petRows);
-  const petById = new Map(hydratedPets.map((pet) => [pet.id, pet]));
-  return convs.map((row) => ({
+export async function fetchConversationPage(before?: Pick<Conversation, 'id' | 'createdAt'>) {
+  const { data, error } = await supabase.rpc('list_conversation_page', {
+    before_created_at: before?.createdAt ?? null, before_id: before?.id ?? null,
+  });
+  if (error) throw error;
+  const page = finalizePage(data as Array<{ conversation: ConversationRow; pet: ConversationRow['pets']; last_message: MessageRow | null; unread_count: number }> | null, 0, COMPACT_PAGE_SIZE);
+  const rows = page.items.map(row => ({ ...row.conversation, pets: row.pet }));
+  const names = await fetchParticipantNames(rows.flatMap(row => [row.initiator_id, row.owner_id]));
+  const hydrated = await hydrateListingPhotos('pet', rows.flatMap(row => row.pets ? [row.pets] : []));
+  const petById = new Map(hydrated.map(pet => [pet.id, pet]));
+  return { ...page, items: rows.map((row, index): ConversationPreview => ({
     ...withParticipantNames(row, names),
     pet: row.pets ? mapPetSummary(petById.get(row.pets.id) ?? row.pets) : null,
-    lastMessage: lastMsgMap.get(row.id) ? mapMessageRow(lastMsgMap.get(row.id)!) : null,
-    unreadCount: unreadMap.get(row.id) ?? 0,
-  }));
+    lastMessage: page.items[index].last_message ? mapMessageRow(page.items[index].last_message!) : null,
+    unreadCount: Number(page.items[index].unread_count),
+  })) };
+}
+
+export async function fetchConversationList(): Promise<ConversationPreview[]> {
+  return (await fetchConversationPage()).items;
 }
 
 export async function markConversationRead(conversationId: string): Promise<void> {

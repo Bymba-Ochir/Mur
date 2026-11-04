@@ -2,9 +2,10 @@ import { validatePetAge } from './petAge';
 // lib/adoptionService.ts
 // Үрчлүүлэх амьтны мэдээллийг Supabase (Postgres + Storage)-д бичих, унших функцууд
 import { supabase } from './supabase';
+import { listingPhone } from './listingContact';
 import { mapAdoptionRow } from './adoptionMapping';
 import type { Adoption, AdoptionInput, AdoptionFilters, UpdateAdoptionFields } from './types';
-import { cleanText, requireMongolianPhone } from './inputValidation';
+import { cleanText } from './inputValidation';
 import { apiError, authenticatedFetch } from './apiClient';
 import { createIdempotencyKey, idempotentFileName, isIdempotencyKey } from './idempotency';
 import { hydrateListingPhotos, saveListingPhotos } from './photoRepository';
@@ -71,7 +72,8 @@ export async function createAdoption(data: AdoptionInput, mutationId = createIde
       description: cleanText(data.description, 2000, 'Тайлбар', true),
       district: data.district || '',
       place: cleanText(data.place, 300, 'Байршил', true),
-      phone: requireMongolianPhone(data.phone),
+      phone: listingPhone(data.phone, data.phoneHidden),
+      phone_hidden: data.phoneHidden ?? false,
   };
   const result = await supabase
     .from(TABLE)
@@ -157,7 +159,8 @@ export async function updateAdoption(id: string, fields: UpdateAdoptionFields): 
       description: fields.description === undefined ? undefined : cleanText(fields.description, 2000, 'Тайлбар', true),
       place: fields.place === undefined ? undefined : cleanText(fields.place, 300, 'Байршил', true),
       district: fields.district ?? undefined,
-      phone: fields.phone === undefined ? undefined : requireMongolianPhone(fields.phone),
+      phone: fields.phone === undefined ? undefined : listingPhone(fields.phone, fields.phoneHidden),
+      phone_hidden: fields.phoneHidden,
     })
     .eq('id', id);
   if (error) throw error;

@@ -13,6 +13,7 @@ interface AdoptionRow {
   district: string | null;
   place: string | null;
   phone: string | null;
+  phone_hidden?: boolean;
   photo_url: string | null;
   photo_urls?: unknown;
   created_by: string | null;
@@ -31,7 +32,8 @@ export function mapAdoptionRow(row: AdoptionRow): Adoption {
     description: row.description ?? '',
     district: (row.district ?? '') as Adoption['district'],
     place: row.place ?? '',
-    phone: row.phone ?? '',
+    phone: row.phone_hidden ? '' : row.phone ?? '',
+    phoneHidden: row.phone_hidden ?? false,
     photoURL: row.photo_url,
     photoURLs: Array.isArray(row.photo_urls)
       ? row.photo_urls.filter((url): url is string => typeof url === 'string')
