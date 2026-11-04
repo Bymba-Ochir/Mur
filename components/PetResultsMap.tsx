@@ -2,16 +2,18 @@
 import { useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import type { Pet } from '../lib/types';
+import { addMapTiles } from '../lib/leafletMap';
 
 export default function PetResultsMap({ pets }: { pets: Pet[] }) {
   const router = useRouter();
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
     let map: import('leaflet').Map | null = null;
+    let cancelled = false;
     import('leaflet').then((L) => {
-      if (!ref.current) return;
+      if (cancelled || !ref.current) return;
       map = L.map(ref.current).setView([47.9184, 106.9177], 11);
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { attribution: '&copy; OSM &copy; CARTO', maxZoom: 19 }).addTo(map);
+      addMapTiles(L, map);
       const points: [number, number][] = [];
       pets.forEach((pet) => {
         if (pet.lat == null || pet.lng == null) return;
@@ -32,7 +34,7 @@ export default function PetResultsMap({ pets }: { pets: Pet[] }) {
       });
       if (points.length) map.fitBounds(points, { padding: [30, 30], maxZoom: 14 });
     });
-    return () => { map?.remove(); };
+    return () => { cancelled = true; map?.remove(); };
   }, [pets, router]);
   return <div ref={ref} className="h-[min(62vh,520px)] overflow-hidden rounded-[var(--r-lg)] border border-[var(--line)]" />;
 }

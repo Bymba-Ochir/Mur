@@ -1,4 +1,4 @@
-import {test,expect} from '@playwright/test';
+import { test, expect } from './fixtures';
 // Read-only public acceptance checks. Run against the locally updated app.
 for(const width of [360,390,768,1366]) {
  test(`public page overflow and login gate at ${width}px`,async({page})=>{

@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 import { loadEnvConfig } from '@next/env';
 import { randomUUID } from 'node:crypto';
 import { resolve } from 'node:path';

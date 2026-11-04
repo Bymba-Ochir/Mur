@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 
 test.describe('Үндсэн навигаци', () => {
   test('нүүр хуудас ачаалагдаж, гарчиг харагдана', async ({ page }) => {

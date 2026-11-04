@@ -48,7 +48,7 @@ const nextConfig = {
       "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net blob:",
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com",
       "font-src 'self' https://fonts.gstatic.com data:",
-      `img-src 'self' data: blob: ${hostedDatabase ? 'https://*.supabase.co' : localHttp} https://firebasestorage.googleapis.com https://*.tile.openstreetmap.org https://*.basemaps.cartocdn.com`,
+      `img-src 'self' data: blob: ${hostedDatabase ? 'https://*.supabase.co' : localHttp} https://firebasestorage.googleapis.com https://tile.openstreetmap.org`,
       `connect-src 'self' blob: ${hostedDatabase ? 'https://*.supabase.co wss://*.supabase.co' : localHttp + ' ' + localWs} https://cdn.jsdelivr.net https://huggingface.co https://*.huggingface.co https://*.hf.co https://*.sentry.io https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com`,
       "worker-src 'self' blob:",
       "frame-ancestors 'none'",

@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useLanguage } from '../lib/i18n';
+import { addMapTiles, mapMarkerIcon } from '../lib/leafletMap';
 
 // Улаанбаатар хотын төв (анхдагч байршил)
 const UB_CENTER: [number, number] = [47.9184, 106.9177];
@@ -34,14 +35,10 @@ export default function LocationMap({ lat, lng, editable = false, onPick, label 
       const map = L.map(containerRef.current).setView(center, lat != null ? 15 : 11);
       mapRef.current = map;
 
-      // CartoDB — OSM-ээс найдвартай, CORS/rate-limit асуудалгүй
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-        attribution: '&copy; OpenStreetMap &copy; CARTO',
-        maxZoom: 19,
-      }).addTo(map);
+      addMapTiles(L, map);
 
       if (lat != null && lng != null) {
-        markerRef.current = L.marker([lat, lng]).addTo(map);
+        markerRef.current = L.marker([lat, lng], { icon: mapMarkerIcon(L), alt: label || t('detail_last_seen_loc') }).addTo(map);
       }
 
       if (editable) {
@@ -50,19 +47,12 @@ export default function LocationMap({ lat, lng, editable = false, onPick, label 
           if (markerRef.current) {
             markerRef.current.setLatLng([clickLat, clickLng]);
           } else {
-            markerRef.current = L.marker([clickLat, clickLng]).addTo(map);
+            markerRef.current = L.marker([clickLat, clickLng], { icon: mapMarkerIcon(L), alt: label || t('detail_last_seen_loc') }).addTo(map);
           }
           onPick?.({ lat: clickLat, lng: clickLng });
         });
       }
 
-      // Leaflet-ийн marker icon URL асуудлыг засах (build-time import)
-      delete (L.Icon.Default.prototype as any)._getIconUrl;
-      L.Icon.Default.mergeOptions({
-        iconRetinaUrl: new URL('leaflet/dist/images/marker-icon-2x.png', import.meta.url).href,
-        iconUrl: new URL('leaflet/dist/images/marker-icon.png', import.meta.url).href,
-        shadowUrl: new URL('leaflet/dist/images/marker-shadow.png', import.meta.url).href,
-      });
     });
 
     return () => {
@@ -83,9 +73,9 @@ export default function LocationMap({ lat, lng, editable = false, onPick, label 
     if (markerRef.current) {
       markerRef.current.setLatLng([lat, lng]);
     } else {
-      markerRef.current = L.marker([lat, lng]).addTo(mapRef.current);
+      markerRef.current = L.marker([lat, lng], { icon: mapMarkerIcon(L), alt: label || t('detail_last_seen_loc') }).addTo(mapRef.current);
     }
-  }, [lat, lng]);
+  }, [lat, lng, label, t]);
 
   return <>
     <div ref={containerRef} className="location-map" role="region" aria-label={label || t('detail_map_heading')} />
