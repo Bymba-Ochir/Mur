@@ -47,14 +47,14 @@ export type IconName =
 
 const ICONS: Record<IconName, { viewBox: string; paths: ReactNode }> = {
   paw: {
-    viewBox: '0 0 48 48',
+    viewBox: '0 0 24 24',
     paths: (
       <>
-        <ellipse cx="24" cy="30" rx="11" ry="9" />
-        <circle cx="10" cy="18" r="5.5" />
-        <circle cx="38" cy="18" r="5.5" />
-        <circle cx="17" cy="8" r="5" />
-        <circle cx="31" cy="8" r="5" />
+        <ellipse cx="12" cy="17" rx="5" ry="4" />
+        <circle cx="4.5" cy="10" r="2" />
+        <circle cx="19.5" cy="10" r="2" />
+        <circle cx="8.5" cy="4.5" r="2" />
+        <circle cx="15.5" cy="4.5" r="2" />
       </>
     ),
   },
