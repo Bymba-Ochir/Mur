@@ -1,6 +1,6 @@
 # Локал орчин
 
-CI нь Node.js 20 ашигладаг. Node/npm хувилбарыг CI болон хөгжүүлэгчийн орчинд тохируул; lockfile-тай суулгахдаа `npm ci` ашигла. Dependency өөрчлөхдөө л `npm install` ажиллуулж lockfile diff-ийг шалгана.
+CI болон локал хөгжүүлэлтэд Node.js 24 LTS ашиглана. CI-ийн бүх job Node хувилбарыг `.nvmrc`-ээс уншина. Supabase SDK-д native WebSocket шаардлагатай тул Node.js 20 ашиглахгүй. Node/npm хувилбарыг CI болон хөгжүүлэгчийн орчинд тохируул; lockfile-тай суулгахдаа `npm ci` ашигла. Dependency өөрчлөхдөө л `npm install` ажиллуулж lockfile diff-ийг шалгана.
 
 1. Repository-г clone хийх эсвэл ZIP задлах. ZIP-д Git history байхгүй.
 2. Төслийн `package.json` байгаа хавтас руу орно.
