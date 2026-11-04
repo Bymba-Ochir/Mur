@@ -4,10 +4,9 @@ import { useEffect, useRef, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { DISTRICTS } from '../lib/districts';
 import { useLanguage } from '../lib/i18n';
-import { setLocalStorageValue, useLocalStorageValue } from '../lib/useLocalStorageState';
+import { setLocalStorageValue } from '../lib/useLocalStorageState';
 import UiIcon from './ui/icons';
 
-const SEEN_KEY = 'mur-onboarding-v2-seen';
 const OPEN_EVENT = 'mur:open-onboarding';
 type Intent = 'lost' | 'found' | 'adopt' | 'browse';
 
@@ -30,13 +29,12 @@ export default function Onboarding() {
   const pathname = usePathname();
   const dialogRef = useRef<HTMLDivElement>(null);
   const { lang } = useLanguage();
-  const seen = useLocalStorageValue(SEEN_KEY, '1');
   const [manualRoute, setManualRoute] = useState<string | null>(null);
   const [step, setStep] = useState(0);
   const [intent, setIntent] = useState<Intent | null>(null);
   const [district, setDistrict] = useState('');
   const [notifications, setNotifications] = useState(false);
-  const visible = manualRoute === pathname || (pathname === '/' && seen !== '1');
+  const visible = manualRoute === pathname;
   const en = lang === 'en';
 
   useEffect(() => {
@@ -59,10 +57,7 @@ export default function Onboarding() {
     document.addEventListener('keydown', trapFocus);
     const previousOverflow = document.body.style.overflow;
     const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        setLocalStorageValue(SEEN_KEY, '1');
-        setManualRoute(null);
-      }
+      if (event.key === 'Escape') setManualRoute(null);
     };
     document.body.style.overflow = 'hidden';
     document.addEventListener('keydown', closeOnEscape);
@@ -75,7 +70,6 @@ export default function Onboarding() {
   }, [visible]);
 
   function close() {
-    setLocalStorageValue(SEEN_KEY, '1');
     setManualRoute(null);
   }
 

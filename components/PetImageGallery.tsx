@@ -4,6 +4,12 @@ import Image from 'next/image';
 import { useRef, useState } from 'react';
 import { useLanguage } from '../lib/i18n';
 
+const databaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+// Next's server-side image optimizer blocks loopback. Read the local public bucket in the browser.
+const localPhotoPrefix = process.env.NEXT_PUBLIC_DATABASE_MODE === 'local' && databaseUrl
+  ? `${databaseUrl.replace(/\/$/, '')}/storage/v1/object/public/pet-photos/`
+  : null;
+
 export default function PetImageGallery({ images, alt }: { images: string[]; alt: string }) {
   const { t } = useLanguage();
   const photos = [...new Set(images.filter(Boolean))].slice(0, 4);
@@ -44,7 +50,7 @@ export default function PetImageGallery({ images, alt }: { images: string[]; alt
     role="group"
     aria-label={`${photos.length} ${t('detail_gallery_label')}`}
   >
-    {photos.map((src, index) => <Image key={src} src={src} alt={`${alt} — ${index + 1} ${t('detail_gallery_image')}`} aria-hidden={index !== active} fill sizes="(max-width: 900px) 100vw, 620px" className={index === active ? 'active' : ''} />)}
+    {photos.map((src, index) => <Image key={src} src={src} alt={`${alt} — ${index + 1} ${t('detail_gallery_image')}`} aria-hidden={index !== active} unoptimized={localPhotoPrefix !== null && src.startsWith(localPhotoPrefix)} fill sizes="(max-width: 900px) 100vw, 620px" className={index === active ? 'active' : ''} />)}
     {photos.length > 1 && <>
       <button className="arrow previous" type="button" aria-label={t('detail_gallery_previous')} onPointerDown={(e) => e.stopPropagation()} onClick={(e) => { e.preventDefault(); e.stopPropagation(); move(-1); }}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg></button>
       <button className="arrow next" type="button" aria-label={t('detail_gallery_next')} onPointerDown={(e) => e.stopPropagation()} onClick={(e) => { e.preventDefault(); e.stopPropagation(); move(1); }}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg></button>

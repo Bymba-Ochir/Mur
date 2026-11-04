@@ -100,16 +100,26 @@ function AuthenticatedPetForm({ status }: { status: PetStatus }) {
     resetAll();
   }
 
-  if (submit.done) {
-    const petUrl = typeof window !== 'undefined' ? `${window.location.origin}/pets/${submit.newPetId}` : '';
+  if (submit.done && submit.newPetId) {
+    const petPath = `/pets/${submit.newPetId}`;
+    const petUrl = typeof window !== 'undefined' ? new URL(petPath, window.location.origin).href : '';
     return (
       <section className="success-box" role="status" aria-labelledby="report-success-title">
         <span className="success-icon" aria-hidden="true"><Icon name="check" size={28} /></span>
-        <h2 id="report-success-title">{status === 'lost' ? t('report_lost_eyebrow') : t('report_found_eyebrow')}</h2>
+        <h2 id="report-success-title">{t('report_published')}</h2>
         <p>{t('success_msg')}</p>
+        <Button as="link" href={petPath} variant="primary" className="view-post">{t('report_view_post')}<Icon name="arrowRight" size={16} /></Button>
         <ShareButtons url={petUrl} title={status === 'lost' ? t('report_lost_eyebrow') : t('report_found_eyebrow')} />
         <Button variant="secondary" onClick={addAnother} className="add-another">{t('add_another')}</Button>
-        <SuccessStyles />
+        <style jsx>{`
+          .success-box { max-width: 38rem; margin-inline: auto; padding: var(--sp-7); color: var(--ink); background: var(--success-bg); border: 1px solid color-mix(in srgb, var(--success) 30%, transparent); border-radius: var(--r-xl); text-align: center; box-shadow: var(--shadow-sm); }
+          .success-icon { display: grid; place-items: center; width: 3rem; height: 3rem; margin: 0 auto var(--sp-3); color: var(--success); background: var(--card); border-radius: 50%; }
+          h2 { margin: 0 0 var(--sp-2); font-family: var(--font-heading); font-size: var(--text-xl); }
+          p { margin: 0 0 var(--sp-5); color: var(--muted); }
+          .success-box :global(.view-post) { margin-bottom: var(--sp-4); }
+          .success-box :global(.add-another) { margin-top: var(--sp-4); }
+          @media (max-width: 640px) { .success-box { padding: var(--sp-5); border-radius: var(--r-lg); } }
+        `}</style>
       </section>
     );
   }
@@ -292,18 +302,5 @@ function AuthenticatedPetForm({ status }: { status: PetStatus }) {
         @media (prefers-reduced-motion: reduce) { input, select, .upload-zone { transition: none; } }
       `}</style>
     </div>
-  );
-}
-
-function SuccessStyles() {
-  return (
-    <style jsx>{`
-      .success-box { max-width: 38rem; margin-inline: auto; padding: var(--sp-7); color: var(--ink); background: var(--success-bg); border: 1px solid color-mix(in srgb, var(--success) 30%, transparent); border-radius: var(--r-xl); text-align: center; box-shadow: var(--shadow-sm); }
-      .success-icon { display: grid; place-items: center; width: 3rem; height: 3rem; margin: 0 auto var(--sp-3); color: var(--success); background: var(--card); border-radius: 50%; }
-      h2 { margin: 0 0 var(--sp-2); font-family: var(--font-heading); font-size: var(--text-xl); }
-      p { margin: 0 0 var(--sp-5); color: var(--muted); }
-      .add-another { margin-top: var(--sp-4); }
-      @media (max-width: 640px) { .success-box { padding: var(--sp-5); border-radius: var(--r-lg); } }
-    `}</style>
   );
 }

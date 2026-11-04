@@ -12,13 +12,15 @@ beforeEach(() => {
   vi.stubGlobal('matchMedia', vi.fn(() => ({ matches: false })));
 });
 afterEach(() => vi.unstubAllGlobals());
-it('opens automatic onboarding only on home and remembers skipping', async () => {
-  const { rerender, unmount } = render(<LanguageProvider><Onboarding /></LanguageProvider>);
+it('leaves the first visit clear and lets users open and skip the guide', async () => {
+  mock.path = '/';
+  const { unmount } = render(<LanguageProvider><Onboarding /></LanguageProvider>);
   expect(screen.queryByRole('dialog')).toBeNull();
-  mock.path = '/'; rerender(<LanguageProvider><Onboarding /></LanguageProvider>);
+  act(() => window.dispatchEvent(new Event('mur:open-onboarding')));
   fireEvent.click(await screen.findByRole('button', { name: 'Алгасах' }));
   expect(screen.queryByRole('dialog')).toBeNull();
-  unmount(); render(<LanguageProvider><Onboarding /></LanguageProvider>);
+  unmount();
+  render(<LanguageProvider><Onboarding /></LanguageProvider>);
   expect(screen.queryByRole('dialog')).toBeNull();
 });
 it('allows manual guide on another route and closes on Escape', async () => {

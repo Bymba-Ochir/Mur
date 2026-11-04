@@ -4,6 +4,7 @@ import { useLanguage } from '../lib/i18n';
 import PawTrail from '../components/PawTrail';
 import ScrollReveal from '../components/ScrollReveal';
 import Button from '../components/ui/Button';
+import Icon from '../components/ui/icons';
 
 // Hero-ийн зөөлөн paw-print хээ (data-URI SVG) — зөвхөн гоёл чимэглэл
 const PAW_PATTERN =
@@ -29,20 +30,16 @@ export default function Home() {
               {t('hero_title_1')} <span className="gradient-text">{t('hero_title_accent')}</span> {t('hero_title_2')}
             </h1>
             <p className="hero-desc">{t('hero_desc')}</p>
-            <div className="hero-actions">
+            <nav className="hero-actions" aria-label={t('hero_actions_label')}>
               <Button as="link" href="/report-lost" variant="accent">
-                {t('hero_btn_lost')}
-                <svg className="arrow" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
-                  <path d="M3 8h10M9 4l4 4-4 4" />
-                </svg>
+                <Icon name="pin" size={18} />{t('hero_action_lost')}
               </Button>
-              <Button as="link" href="/report-found" variant="secondary">{t('hero_btn_found')}</Button>
-            </div>
-
-            <nav className="quick-actions" aria-label={t('listings_title')}>
-              <Button as="link" href="/listings" variant="ghost">{t('listings_title')}</Button>
-              <Button as="link" href="/my-pets" variant="ghost">{t('mypets_title')}</Button>
-              <Button as="link" href="/clinics" variant="ghost">{t('clinics_title')}</Button>
+              <Button as="link" href="/report-found" variant="secondary">
+                <Icon name="paw" size={18} />{t('hero_action_found')}
+              </Button>
+              <Button as="link" href="/listings" variant="secondary">
+                <Icon name="search" size={18} />{t('hero_action_search')}
+              </Button>
             </nav>
             <ul className="hero-trust" aria-label={t('hero_trust_aria')}>
               <li>
@@ -70,7 +67,7 @@ export default function Home() {
           <div className="hero-visual" aria-hidden="true">
             <div className="hero-card">
               <div className="hero-card-photo">
-                <span className="status-chip">{t('filter_lost')}</span>
+                <span className="status-chip">{t('hero_preview_label')}</span>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" width="64" height="64" focusable="false">
                   <circle cx="12" cy="12" r="7" />
                   <path d="M9 10.5c0-1 .6-1.5 1.4-1.5M14.6 10.5c0-1-.6-1.5-1.4-1.5M9.5 15c1.5 1 3.5 1 5 0" strokeLinecap="round" />
@@ -87,43 +84,42 @@ export default function Home() {
                 </div>
               </div>
             </div>
-            <div className="hero-card-mini">
-              <span className="dot" />
-              <p>{t('hero_preview_match')}</p>
-            </div>
           </div>
         </div>
       </section>
 
+      <section className="how" aria-labelledby="how-heading">
+        <div className="how-heading">
+          <h2 id="how-heading" className="how-title">{t('how_it_works')}</h2>
+          <button type="button" className="how-guide" onClick={() => window.dispatchEvent(new Event('mur:open-onboarding'))}>
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 2-2.5 2-2.5 4M12 17h.01"/></svg>
+            {t('how_open_guide')}
+          </button>
+        </div>
+        <div className="trail-wrap">
+          <PawTrail labels={[t('step1_title'), t('step2_title'), t('step3_title')]} current={2} />
+        </div>
+
+        <div className="grid steps-grid">
+          <ScrollReveal className="step-card">
+            <span className="step-num" aria-hidden="true">01</span>
+            <p className="step-desc">{t('step1_desc')}</p>
+          </ScrollReveal>
+          <ScrollReveal className="step-card reveal-delay-1">
+            <span className="step-num" aria-hidden="true">02</span>
+            <p className="step-desc">{t('step2_desc')}</p>
+          </ScrollReveal>
+          <ScrollReveal className="step-card reveal-delay-2">
+            <span className="step-num" aria-hidden="true">03</span>
+            <p className="step-desc">{t('step3_desc')}</p>
+          </ScrollReveal>
+        </div>
+      </section>
+
       <section className="services" aria-labelledby="services-heading">
-        <p className="eyebrow">{t('services_title')}</p>
         <h2 id="services-heading" className="services-title">{t('services_subtitle')}</h2>
 
         <div className="services-grid">
-          <Link href="/report-lost" className="service-card">
-            <span className="service-icon" aria-hidden="true">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" focusable="false">
-                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0Z" /><circle cx="12" cy="10" r="3" />
-              </svg>
-            </span>
-            <h3>{t('services_lost')}</h3>
-            <p>{t('services_lost_desc')}</p>
-            <span className="service-arrow" aria-hidden="true">
-              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" focusable="false"><path d="M3 8h10M9 4l4 4-4 4" /></svg>
-            </span>
-          </Link>
-          <Link href="/report-found" className="service-card">
-            <span className="service-icon" aria-hidden="true">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" focusable="false">
-                <circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" />
-              </svg>
-            </span>
-            <h3>{t('services_found')}</h3>
-            <p>{t('services_found_desc')}</p>
-            <span className="service-arrow" aria-hidden="true">
-              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" focusable="false"><path d="M3 8h10M9 4l4 4-4 4" /></svg>
-            </span>
-          </Link>
           <Link href="/adoptions" className="service-card">
             <span className="service-icon" aria-hidden="true">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" focusable="false">
@@ -173,33 +169,8 @@ export default function Home() {
             </span>
           </Link>
         </div>
-      </section>
-
-      <section className="how" aria-labelledby="how-heading">
-        <div className="how-heading">
-          <h2 id="how-heading" className="how-title">{t('how_it_works')}</h2>
-          <button type="button" className="how-guide" onClick={() => window.dispatchEvent(new Event('mur:open-onboarding'))}>
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 2-2.5 2-2.5 4M12 17h.01"/></svg>
-            {t('how_open_guide')}
-          </button>
-        </div>
-        <div className="trail-wrap">
-          <PawTrail labels={[t('step1_title'), t('step2_title'), t('step3_title')]} current={2} />
-        </div>
-
-        <div className="grid steps-grid">
-          <ScrollReveal className="step-card">
-            <span className="step-num" aria-hidden="true">01</span>
-            <p className="step-desc">{t('step1_desc')}</p>
-          </ScrollReveal>
-          <ScrollReveal className="step-card reveal-delay-1">
-            <span className="step-num" aria-hidden="true">02</span>
-            <p className="step-desc">{t('step2_desc')}</p>
-          </ScrollReveal>
-          <ScrollReveal className="step-card reveal-delay-2">
-            <span className="step-num" aria-hidden="true">03</span>
-            <p className="step-desc">{t('step3_desc')}</p>
-          </ScrollReveal>
+        <div className="service-actions">
+          <Button as="link" href="/my-pets" variant="ghost">{t('mypets_title')}</Button>
         </div>
       </section>
 
@@ -263,8 +234,6 @@ export default function Home() {
           box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 35%, transparent),
                       0 12px 36px color-mix(in srgb, var(--accent) 35%, transparent);
         }
-        .hero-actions .arrow { transition: transform 0.2s ease; }
-        .hero-actions :global(.btn-base):hover .arrow { transform: translateX(3px); }
         .hero-trust {
           list-style: none; margin: var(--sp-5) 0 0; padding: 0;
           display: flex; flex-wrap: wrap; gap: var(--sp-2) var(--sp-4);
@@ -314,24 +283,11 @@ export default function Home() {
         .hero-card-body p { font-size: 13px; color: var(--text-tertiary); margin-bottom: 10px; }
         .hero-card-loc { display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--text-secondary); }
         .hero-card-loc svg { color: var(--alert-light); }
-        .hero-card-mini {
-          position: absolute; bottom: 8px; left: 50%; right: auto; translate: -50% 0;
-          display: flex; align-items: center; gap: 8px;
-          width: max-content; max-width: min(240px, calc(100% - 24px)); box-sizing: border-box;
-          background: var(--surface-3); border: 1px solid var(--border-strong);
-          border-radius: var(--r-md); padding: var(--sp-3);
-          box-shadow: var(--shadow-md);
-          animation: float 7s ease-in-out infinite reverse;
-        }
-        .hero-card-mini .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--confirmed); flex-shrink: 0; box-shadow: 0 0 0 4px color-mix(in srgb, var(--confirmed) 18%, transparent); }
-        .hero-card-mini p { min-width: 0; font-size: 11.5px; line-height: 1.35; color: var(--text-secondary); font-weight: 600; white-space: normal; overflow-wrap: anywhere; }
-        @media (max-width: 860px) { .hero-card-mini { bottom: 12px; } }
         @media (max-width: 480px) {
           .hero-visual { max-width: 300px; padding-bottom: var(--sp-4); }
           .hero-card { width: min(240px, calc(100% - 32px)); }
           .hero-card-photo { height: 138px; }
           .hero-card-body { padding: var(--sp-3); }
-          .hero-card-mini { bottom: 0; padding: 9px 11px; }
         }
 
         /* Entrance animation */
@@ -354,11 +310,15 @@ export default function Home() {
         @media (max-width: 640px) { .services-title { font-size: var(--text-xl); } }
         .services-grid {
           display: grid;
-          grid-template-columns: repeat(6, 1fr);
+          grid-template-columns: repeat(4, minmax(0, 1fr));
           gap: var(--sp-4);
           margin-top: var(--sp-5);
         }
-        @media (max-width: 900px) { .services-grid { gap: var(--sp-3); } }
+        @media (max-width: 900px) {
+          .services-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-3); }
+        }
+        @media (max-width: 520px) { .services-grid { grid-template-columns: 1fr; } }
+        .service-actions { margin-top: var(--sp-3); }
         .service-card {
           position: relative;
           display: block;
@@ -367,21 +327,16 @@ export default function Home() {
           border-radius: var(--r-lg);
           padding: var(--sp-5);
           text-decoration: none;
-          grid-column: span 2;
           height: 100%;
           min-height: 190px;
           box-shadow: var(--shadow-sm);
           transition: transform var(--dur-base) var(--ease-out), box-shadow var(--dur-base) var(--ease-out), border-color var(--dur-base) var(--ease-out);
         }
-        .service-card:nth-child(-n + 2) { grid-column: span 3; }
-        .service-card:nth-child(1) { --feature-color: var(--accent); --feature-soft: #FF8A8A; }
+        .service-card:nth-child(1) { --feature-color: var(--primary); --feature-soft: #8178F7; }
         .service-card:nth-child(2) { --feature-color: var(--found); --feature-soft: #7DD8F0; }
-        .service-card:nth-child(3) { --feature-color: var(--primary); --feature-soft: #8178F7; }
-        .service-card:nth-child(4) { --feature-color: var(--found); --feature-soft: #7DD8F0; }
-        .service-card:nth-child(5) { --feature-color: var(--clinic); --feature-soft: #56C7E8; }
-        .service-card:nth-child(6) { --feature-color: var(--assistant); --feature-soft: #A49EFC; }
-        @media (max-width: 900px) { .service-card, .service-card:nth-child(-n + 2) { grid-column: span 3; min-height: 178px; } }
-        @media (max-width: 720px) { .service-card, .service-card:nth-child(-n + 2) { grid-column: span 6; min-height: 0; } }
+        .service-card:nth-child(3) { --feature-color: var(--clinic); --feature-soft: #56C7E8; }
+        .service-card:nth-child(4) { --feature-color: var(--assistant); --feature-soft: #A49EFC; }
+        @media (max-width: 520px) { .service-card { min-height: 0; } }
         @media (hover: hover) and (pointer: fine) { .service-card:hover {
           transform: translateY(-4px);
           box-shadow: var(--shadow-md);
@@ -448,7 +403,7 @@ export default function Home() {
         @media (min-width: 1025px) { .step-desc { font-size: 15px; line-height: 1.65; } }
 
         @media (prefers-reduced-motion: reduce) {
-          .hero-glow, .hero-card, .hero-card-mini { animation: none; }
+          .hero-glow, .hero-card { animation: none; }
           .hero-content > *, .hero-visual, .how { opacity: 1; animation: none; }
         }
       `}</style>

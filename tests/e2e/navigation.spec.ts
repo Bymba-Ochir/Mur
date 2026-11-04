@@ -1,17 +1,21 @@
 import { test, expect } from '@playwright/test';
 
-// Onboarding модалыг хаах — localStorage-д харсан туг тавих
-test.beforeEach(async ({ page }) => {
-  await page.addInitScript(() => {
-    localStorage.setItem('mur-onboarding-v2-seen', '1');
-  });
-});
-
 test.describe('Үндсэн навигаци', () => {
   test('нүүр хуудас ачаалагдаж, гарчиг харагдана', async ({ page }) => {
     await page.goto('/');
     await expect(page.locator('h1')).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Алдсан амьтнаа мэдээлэх', exact: true })).toBeVisible();
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+    const actions = page.getByRole('navigation', { name: 'Алдсан, олдсон амьтны үндсэн үйлдлүүд' });
+    for (const [name, href] of [['Амьтнаа алдсан', '/report-lost'], ['Амьтан олсон', '/report-found'], ['Зар хайх', '/listings']]) {
+      const action = actions.getByRole('link', { name, exact: true });
+      await expect(action).toHaveAttribute('href', href);
+      await expect(action).toBeInViewport();
+    }
+    await expect(page.getByText('Жишээ зар', { exact: true })).toBeVisible();
+    await page.getByRole('button', { name: 'Алхамчилсан заавар үзэх' }).click();
+    await expect(page.getByRole('dialog', { name: 'Та юу хийх вэ?' })).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('dialog')).toHaveCount(0);
   });
 
   test('Navbar-аар "Алдсан" хуудас руу шилжинэ', async ({ page, isMobile }) => {
