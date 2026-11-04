@@ -145,6 +145,7 @@
   --safe-right: env(safe-area-inset-right, 0);
   --touch-target: 44px; --touch-target-sm: 40px;
   --nav-h: 68px;
+  --sticky-sidebar-top: calc(var(--nav-h) + var(--sp-4));
 
   /* ── Container widths ── */
   --container-sm: 540px; --container-md: 720px;
@@ -263,7 +264,8 @@ body {
   line-height: 1.5;
   transition: background 0.3s ease, color 0.3s ease;
   -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
+  /* Clip horizontal spill without creating a scroll ancestor for sticky sidebars. */
+  overflow-x: clip;
   padding-top: 88px;
 }
 @media (max-width: 640px) {
@@ -291,6 +293,14 @@ main {
 .page-shell { width: min(100%, var(--container-xl)); margin-inline: auto; }
 .page-shell--narrow { width: min(100%, var(--container-md)); }
 .page-shell--detail { width: min(100%, var(--container-lg)); }
+
+/* Reusable viewport-pinned sidebar; override --sticky-sidebar-top when needed. */
+.sticky-sidebar {
+  position: sticky;
+  top: var(--sticky-sidebar-top);
+  align-self: start;
+  min-width: 0;
+}
 .page-toolbar {
   display: flex; align-items: center; justify-content: flex-end;
   gap: var(--sp-2); flex-wrap: wrap; margin-bottom: var(--sp-4);
