@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import { authenticatedFetch } from './apiClient';
 import { isMissingNormalizedTable, legacyPhotoUrls, type ListingPhotoKind, type LegacyPhotoRow } from './photoModel';
 
 type ListingRow = {
@@ -102,7 +103,13 @@ export async function saveListingPhotos(kind: ListingPhotoKind, ownerId: string,
     : { target_adoption: ownerId, target_urls: normalizedUrls };
 
   const atomic = await supabase.rpc(rpcName, rpcArgs);
-  if (!atomic.error) return true;
+  if (!atomic.error) {
+    if (kind === 'pet' && normalizedUrls.length) {
+      // The photo transaction already committed its job. A failed wake-up is recovered by the scheduler.
+      void authenticatedFetch(`/api/pets/${encodeURIComponent(ownerId)}/image-processing`, { method: 'POST' }).catch(() => {});
+    }
+    return true;
+  }
 
   // Zero-downtime rollout: before v99 exists, keep the v96 table path working.
   // Once v99 is applied all replacements are one DB transaction under a row lock.

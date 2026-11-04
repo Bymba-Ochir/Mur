@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { limitServiceRequest } from '../../../lib/apiRateLimit';
 import { scheduleBackgroundJobs } from '../../../lib/backgroundJobs';
 import { reportError } from '../../../lib/errorTracking';
+import { schedulePetImageJob } from '../../../lib/petImageJobs';
 
 export const maxDuration = 60;
 export const dynamic = 'force-dynamic';
@@ -18,5 +19,6 @@ export async function GET(request: Request) {
   const limited = await limitServiceRequest('background-jobs');
   if (limited) return limited;
   scheduleBackgroundJobs(true);
+  schedulePetImageJob();
   return NextResponse.json({ accepted: true }, { status: 202, headers: { 'Cache-Control': 'no-store' } });
 }

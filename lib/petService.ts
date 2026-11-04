@@ -1,7 +1,7 @@
 // lib/petService.ts
 // Алдсан/олдсон амьтны мэдээллийг Supabase (Postgres + Storage)-д бичих, унших функцууд
 import { supabase } from './supabase';
-import { getImageEmbedding, getImageHash, cosineSimilarityScore, EMBEDDING_VERSION } from './similarity';
+import { cosineSimilarityScore } from './similarity';
 import { mapPetRow } from './petMapping';
 import type { Pet, PetStatus, PetFilters, PetReportInput, UpdatePetFields } from './types';
 import { cleanText, optionalCoordinate, optionalInteger, requireMongolianPhone } from './inputValidation';
@@ -37,7 +37,7 @@ async function persistPetPhotoUrls(petId: string, photoUrls: string[]): Promise<
 /**
  * Шинэ алдсан/олдсон амьтны бүртгэл нэмэх
  * @param data - { status, name, type, color, place, district, phone, photoFile, lat, lng }
- * @param onProgress - embedding тооцоолж байх үеийн статус мессеж дамжуулах callback
+ * @param onProgress - зураг хадгалах үеийн статус мессеж дамжуулах callback
  */
 export async function createPetReport(
   data: PetReportInput,
@@ -65,22 +65,10 @@ export async function createPetReport(
     ? optionalInteger(data.reward, { min: 0, max: 100_000_000, label: 'Шагналын дүн' })
     : null;
   let photoUrls: string[] = [];
-  let embedding: number[] | null = null;
-  let imageHash: string | null = null;
 
   if (files.length) {
     onProgress?.(`1/${files.length} зураг хадгалж байна...`);
     photoUrls = await Promise.all(files.map((file, index) => uploadPetPhoto(file, data.status, user.id, mutationId, index)));
-    try {
-      [embedding, imageHash] = await Promise.all([
-        getImageEmbedding(files[0], onProgress),
-        getImageHash(files[0]),
-      ]);
-    } catch (err) {
-      // Embedding амжилтгүй бол ч мэдэгдлийг нийтлэхэд саад болгохгүй —
-      // зөвхөн "төстэй байдал" функц тухайн бичлэгт ажиллахгүй болно
-      console.warn('Embedding алдаа:', err instanceof Error ? err.message : err);
-    }
   }
 
   const payload = {
@@ -96,21 +84,11 @@ export async function createPetReport(
       phone,
       has_reward: data.hasReward ?? false,
       reward,
-      color_signature: embedding, // browser fallback-д DINOv2 vector-ийг JSONB хэлбэрээр хадгална
-      dino_embedding: embedding,
-      embedding_version: embedding ? EMBEDDING_VERSION : null,
-      image_hash: imageHash,
       lat: optionalCoordinate(data.lat, 'lat'),
       lng: optionalCoordinate(data.lng, 'lng'),
   };
 
-  let result = await supabase.from(TABLE).insert(payload).select().single();
-
-  // Migration хараахан ажиллаагүй deployment дээр зар нийтлэхийг эвдэхгүй.
-  if (result.error && /image_embedding|dino_embedding|embedding_version|image_hash|schema cache/i.test(result.error.message)) {
-    const { dino_embedding: _dino, embedding_version: _version, image_hash: _hash, ...legacyPayload } = payload;
-    result = await supabase.from(TABLE).insert(legacyPayload).select().single();
-  }
+  const result = await supabase.from(TABLE).insert(payload).select().single();
 
   const { data: inserted, error } = result;
 

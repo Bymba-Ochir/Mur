@@ -1,6 +1,6 @@
 'use client';
-import { useEffect, useRef, useState } from 'react';
-import { createSighting, fetchSightings } from '../lib/sightingService';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { createSighting, fetchSightingsPage, subscribeToSightings } from '../lib/sightingService';
 import { relativeTime } from '../lib/relativeTime';
 import { useToast } from './Toast';
 import Button from './ui/Button';
@@ -12,6 +12,10 @@ import Icon from './ui/icons';
 import { createIdempotencyKey } from '../lib/idempotency';
 
 export default function SightingsList({ petId }: { petId: string }) {
+  return <SightingFeed key={petId} petId={petId} />;
+}
+
+function SightingFeed({ petId }: { petId: string }) {
   const showToast = useToast();
   const { t, lang } = useLanguage();
   const { user } = useAuth();
@@ -23,17 +27,67 @@ export default function SightingsList({ petId }: { petId: string }) {
   const [loadError, setLoadError] = useState('');
   const submitKey = useRef<string | null>(null);
 
-  useEffect(() => {
-    void Promise.resolve().then(load);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  const [hasMore, setHasMore] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const cursor = useRef<Sighting | undefined>(undefined);
+  const generation = useRef(0);
+  const moreBusy = useRef(false);
+  const mounted = useRef(false);
+
+  const load = useCallback(async () => {
+    const request = ++generation.current;
+    try {
+      const page = await fetchSightingsPage(petId);
+      if (!mounted.current || request !== generation.current) return;
+      cursor.current = page.items.at(-1);
+      setSightings(page.items);
+      setHasMore(page.hasMore);
+      setLoadError('');
+    } catch (reason) {
+      if (mounted.current && request === generation.current) setLoadError(getErrorMessage(reason));
+    }
   }, [petId]);
 
-  async function load() {
+  useEffect(() => {
+    mounted.current = true;
+    let timeout: ReturnType<typeof setTimeout> | undefined;
+    const refresh = () => {
+      if (document.visibilityState === 'hidden' || timeout) return;
+      timeout = setTimeout(() => { timeout = undefined; void load(); }, 200);
+    };
+    void Promise.resolve().then(load);
+    const unsubscribe = subscribeToSightings(petId, refresh);
+    const timer = setInterval(refresh, 30_000);
+    window.addEventListener('focus', refresh);
+    document.addEventListener('visibilitychange', refresh);
+    return () => {
+      mounted.current = false;
+      generation.current += 1;
+      if (timeout) clearTimeout(timeout);
+      clearInterval(timer);
+      window.removeEventListener('focus', refresh);
+      document.removeEventListener('visibilitychange', refresh);
+      unsubscribe();
+    };
+  }, [petId, load]);
+
+  async function loadMore() {
+    if (moreBusy.current || !cursor.current) return;
+    const request = generation.current;
+    moreBusy.current = true;
+    setLoadingMore(true);
     try {
+      const page = await fetchSightingsPage(petId, cursor.current);
+      if (!mounted.current || request !== generation.current) return;
+      cursor.current = page.items.at(-1);
+      setSightings(current => [...current, ...page.items]);
+      setHasMore(page.hasMore);
       setLoadError('');
-      setSightings(await fetchSightings(petId));
-    } catch (err) {
-      setLoadError(getErrorMessage(err));
+    } catch (reason) {
+      if (mounted.current && request === generation.current) setLoadError(getErrorMessage(reason));
+    } finally {
+      moreBusy.current = false;
+      if (mounted.current) setLoadingMore(false);
     }
   }
 
@@ -62,7 +116,7 @@ export default function SightingsList({ petId }: { petId: string }) {
     <section className="sightings-section" aria-labelledby="sightings-heading">
       <div className="sightings-header">
         <h2 id="sightings-heading">
-          {t('sightings_title')} ({sightings.length})
+          {t('sightings_title')} ({sightings.length}{hasMore ? '+' : ''})
         </h2>
         <button
           onClick={() => user ? setShowForm((s) => !s) : showToast(t('sightings_login'), 'error')}
@@ -103,6 +157,9 @@ export default function SightingsList({ petId }: { petId: string }) {
           ))}
         </div>
       )}
+      {hasMore && <Button type="button" variant="ghost" onClick={() => void loadMore()} disabled={loadingMore} aria-busy={loadingMore}>
+        {loadingMore ? t('sightings_loading_more') : t('sightings_load_more')}
+      </Button>}
       <style jsx>{`
         .sightings-section { margin-top:var(--sp-5); padding:var(--sp-4); background:var(--surface-2); border:1px solid var(--border-subtle); border-radius:var(--r-lg); box-shadow:var(--shadow-sm); }
         .sightings-header { display:flex; align-items:center; justify-content:space-between; gap:var(--sp-3); margin-bottom:var(--sp-3); }

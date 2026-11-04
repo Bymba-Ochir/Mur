@@ -5,9 +5,19 @@ assertDatabaseTarget(process.env.NEXT_PUBLIC_SUPABASE_URL, hostedDatabase);
 const localHttp = 'http://127.0.0.1:54321 http://localhost:54321 http://[::1]:54321';
 const localWs = 'ws://127.0.0.1:54321 ws://localhost:54321 ws://[::1]:54321';
 
+const onnxCpuFiles = [
+  'node_modules/onnxruntime-node/bin/napi-v3/linux/x64/*',
+  `node_modules/onnxruntime-node/bin/napi-v3/${process.platform}/${process.arch}/*`,
+];
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  // ONNX loads its native binding dynamically; trace it explicitly for Vercel CPU functions.
+  outputFileTracingIncludes: {
+    '/api/background-jobs': onnxCpuFiles,
+    '/api/pets/*/image-processing': onnxCpuFiles,
+  },
   env: {
     NEXT_PUBLIC_DATABASE_MODE: hostedDatabase ? 'hosted' : 'local',
     NEXT_PUBLIC_DATABASE_HOSTS: hostedDatabase ? [

@@ -80,3 +80,35 @@ test.describe('Алдсан мэдэгдэх форм (4 алхам, submit хи
     await expect(page.getByText('Ийм харагдана')).toBeVisible();
   });
 });
+
+
+test('нооргийг сэргээж, зарын төрлөөр тусгаарлан, өөр tab-ийн өөрчлөлтийг дарж бичихгүй', async ({ page, context }) => {
+  await page.goto('/report-lost');
+  await page.getByRole('button', { name: 'Дараах', exact: true }).click();
+  await page.locator('#pet-color').fill('Хар халзан');
+  await expect(page.getByText('Ноорог энэ төхөөрөмж дээр хадгалагдлаа.', { exact: true })).toBeVisible();
+  await page.reload();
+  await page.getByRole('button', { name: 'Үргэлжлүүлэх', exact: true }).click();
+  await expect(page.locator('#pet-color')).toHaveValue('Хар халзан');
+  await expect(page.getByText('Ноорог энэ төхөөрөмж дээр хадгалагдлаа.', { exact: true })).toBeVisible();
+  const other = await context.newPage();
+  try {
+    await other.goto(page.url());
+    await other.getByRole('button', { name: 'Үргэлжлүүлэх', exact: true }).click();
+    await expect(other.getByText('Ноорог энэ төхөөрөмж дээр хадгалагдлаа.', { exact: true })).toBeVisible();
+    await page.locator('#pet-color').fill('Цагаан');
+    await expect(page.locator('.draft-status[role="alert"]')).toContainText('Ноорог өөр цонхонд өөрчлөгдсөн байна.');
+    await other.reload();
+    await other.getByRole('button', { name: 'Үргэлжлүүлэх', exact: true }).click();
+    await expect(other.locator('#pet-color')).toHaveValue('Хар халзан');
+    await other.goto('/report-found');
+    await expect(other.locator('#photo-input')).toBeAttached();
+    await expect(other.getByRole('heading', { name: 'Өмнөх зараа үргэлжлүүлэх үү?' })).toHaveCount(0);
+    await other.goto('/report-lost');
+    await other.getByRole('button', { name: 'Шинээр эхлэх', exact: true }).click();
+    await expect(other.locator('.progress-text')).toContainText('1/4');
+    await other.reload();
+    await expect(other.locator('#photo-input')).toBeAttached();
+    await expect(other.getByRole('heading', { name: 'Өмнөх зараа үргэлжлүүлэх үү?' })).toHaveCount(0);
+  } finally { await other.close(); }
+});

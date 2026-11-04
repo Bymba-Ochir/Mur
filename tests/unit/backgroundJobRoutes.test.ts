@@ -1,12 +1,15 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 vi.mock('../../lib/apiRateLimit', () => ({ limitIpRequest: vi.fn(), limitUserRequest: vi.fn(), limitServiceRequest: vi.fn() }));
 vi.mock('../../lib/backgroundJobs', () => ({ scheduleBackgroundJobs: vi.fn() }));
+vi.mock('../../lib/petImageJobs', () => ({ schedulePetImageJob: vi.fn() }));
 vi.mock('../../lib/supabaseAdmin', () => ({ createAdminClient: vi.fn() }));
 vi.mock('../../lib/serverAuth', () => ({ requireRequestUser: vi.fn() }));
 vi.mock('../../lib/errorTracking', () => ({ reportError: vi.fn() }));
 import { createAdminClient } from '../../lib/supabaseAdmin';
 import { requireRequestUser } from '../../lib/serverAuth';
 import { scheduleBackgroundJobs } from '../../lib/backgroundJobs';
+import { schedulePetImageJob } from '../../lib/petImageJobs';
+import { POST as imageWake } from '../../app/api/pets/[id]/image-processing/route';
 import { limitServiceRequest } from '../../lib/apiRateLimit';
 import { POST as notify } from '../../app/api/notify/route';
 import { POST as sighting } from '../../app/api/sightings/route';
@@ -139,5 +142,23 @@ describe('private scheduled worker entry', () => {
     const response = await worker(request('/api/background-jobs', {}, 'GET'));
     expect(response.status).toBe(202); expect(response.headers.get('cache-control')).toBe('no-store');
     expect(scheduleBackgroundJobs).toHaveBeenCalledExactlyOnceWith(true);
+    expect(schedulePetImageJob).toHaveBeenCalledOnce();
+  });
+});
+
+describe('image worker admission', () => {
+  function lookup(data: unknown) {
+    const query = { select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), maybeSingle: vi.fn().mockResolvedValue({ data, error: null }) };
+    from.mockReturnValue(query); return query;
+  }
+  const invoke = () => imageWake(request('/api/pets/' + petId + '/image-processing', { created_by: id, url: 'https://attacker.test/x' }), { params: Promise.resolve({ id: petId }) });
+  it('verifies ownership using the authenticated account and ignores body fields', async () => {
+    const query = lookup({ id: petId }); expect((await invoke()).status).toBe(202);
+    expect(query.eq).toHaveBeenCalledWith('created_by', owner); expect(schedulePetImageJob).toHaveBeenCalledOnce();
+  });
+  it('rejects other owners and unsigned calls without waking a worker', async () => {
+    lookup(null); expect((await invoke()).status).toBe(404);
+    vi.mocked(requireRequestUser).mockRejectedValue(new Error('UNAUTHORIZED'));
+    expect((await invoke()).status).toBe(401); expect(schedulePetImageJob).not.toHaveBeenCalled();
   });
 });

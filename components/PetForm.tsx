@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { ChangeEvent, FormEvent, KeyboardEvent } from 'react';
 import { DISTRICTS } from '../lib/districts';
 import { useLanguage } from '../lib/i18n';
@@ -16,23 +16,26 @@ import { normalizePhone, formatPhone } from '../lib/utils';
 import BreedSelect from './BreedSelect';
 import FieldHint from './ui/FieldHint';
 import AuthRequired from './AuthRequired';
+import { useAuth } from '../lib/useAuth';
+import { usePetDraft } from '../lib/usePetDraft';
 
 type FieldErrors = Partial<Record<'color' | 'place' | 'phone', string>>;
 
 export default function PetForm({ status }: { status: PetStatus }) {
   const { lang } = useLanguage();
+  const { user } = useAuth();
   return (
     <AuthRequired
       title={lang === 'mn' ? 'Зар оруулахын тулд нэвтэрнэ үү' : 'Sign in to create a report'}
       description={lang === 'mn' ? 'Нэвтэрсний дараа энэ хуудаснаас зургаа оруулж, мэдээллээ бөглөнө.' : 'After signing in, continue on this page to add photos and details.'}
       icon={<Icon name="lock" size={28} />}
     >
-      <AuthenticatedPetForm status={status} />
+      <AuthenticatedPetForm key={`${user?.id}:${status}`} status={status} userId={user?.id ?? ''} />
     </AuthRequired>
   );
 }
 
-function AuthenticatedPetForm({ status }: { status: PetStatus }) {
+function AuthenticatedPetForm({ status, userId }: { status: PetStatus; userId: string }) {
   const { t } = useLanguage();
   const steps = [t('form_step_photo'), t('form_step_info'), t('form_step_location'), t('form_step_contact')];
   const typeLabels: Record<PetType, string> = { 'Нохой': t('type_dog'), 'Муур': t('type_cat'), 'Бусад': t('type_other') };
@@ -53,7 +56,23 @@ function AuthenticatedPetForm({ status }: { status: PetStatus }) {
     location.reset();
   }
 
-  const submit = usePetSubmit({ status, form, photoFiles: photo.photoFiles, coords: location.coords, onSuccess: resetAll });
+  const snapshot = useMemo(() => ({ form, step, photos: photo.photoFiles, coords: location.coords }), [form, step, photo.photoFiles, location.coords]);
+  const draft = usePetDraft(userId, status, snapshot);
+  const submit = usePetSubmit({
+    status, form, photoFiles: photo.photoFiles, coords: location.coords,
+    onAttempt: draft.saveAttempt,
+    onSuccess: async () => { await draft.clear(); resetAll(); },
+  });
+
+  function resumeDraft() {
+    const saved = draft.resume();
+    if (!saved) return;
+    setForm(saved.form);
+    setStep(saved.step);
+    location.setCoords(saved.coords);
+    photo.restore(saved.photos);
+    submit.restoreAttempt(saved.attempt);
+  }
 
   function clearError(name: keyof FieldErrors) {
     setFieldErrors((current) => ({ ...current, [name]: undefined }));
@@ -98,6 +117,7 @@ function AuthenticatedPetForm({ status }: { status: PetStatus }) {
   function addAnother() {
     submit.reset();
     resetAll();
+    draft.restart();
   }
 
   if (submit.done && submit.newPetId) {
@@ -124,9 +144,26 @@ function AuthenticatedPetForm({ status }: { status: PetStatus }) {
     );
   }
 
+  if (draft.phase === 'loading') return <div className="state-panel" role="status">{t('form_draft_loading')}</div>;
+  if (draft.pending) return (
+    <section className="state-panel" aria-labelledby="draft-heading">
+      <span className="state-panel__icon"><Icon name="pencil" size={28} /></span>
+      <h2 id="draft-heading">{t('form_draft_title')}</h2>
+      <p>{t('form_draft_hint')}</p>
+      {draft.error && <p role="alert">{t(draft.error)}</p>}
+      <div className="quick-actions">
+        <Button onClick={resumeDraft}>{t('form_draft_resume')}</Button>
+        <Button variant="ghost" onClick={() => void draft.discard()}>{t('form_draft_discard')}</Button>
+      </div>
+    </section>
+  );
+
   return (
     <div className="form-layout">
       <form onSubmit={handleSubmit} className="pet-form" aria-label={status === 'lost' ? t('form_lost_aria') : t('form_found_aria')}>
+        <p className="draft-status" role={draft.error ? 'alert' : 'status'}>
+          {t(draft.error || (draft.saving ? 'form_draft_saving' : draft.saved ? 'form_draft_saved' : 'form_draft_hint'))}
+        </p>
         <PawTrail labels={steps} current={step} ariaLabel={t('form_steps_aria')} />
         <p className="progress-text" aria-live="polite">{step + 1}/{steps.length}: {steps[step]}</p>
 
@@ -255,6 +292,8 @@ function AuthenticatedPetForm({ status }: { status: PetStatus }) {
       <style jsx>{`
         .form-layout { display: grid; grid-template-columns: minmax(0, 35rem) minmax(17rem, 20rem); justify-content: center; align-items: start; gap: var(--sp-8); width: 100%; }
         .pet-form { display: flex; flex-direction: column; min-width: 0; padding: var(--sp-7); background: var(--card); border: 1px solid var(--line); border-radius: var(--r-xl); box-shadow: var(--shadow-md); }
+        .draft-status { margin: 0 0 var(--sp-4); color: var(--muted); font-size: var(--text-xs); line-height: 1.5; }
+        .draft-status[role="alert"] { color: var(--alert); }
         .form-step { display: flex; flex-direction: column; min-width: 0; margin: 0; padding: 0; border: 0; }
         .preview-col { position: sticky; top: 6.5rem; width: 100%; min-width: 0; }
         .progress-text { margin: var(--sp-3) 0 var(--sp-6); color: var(--muted); font-family: var(--font-mono); font-size: var(--text-xs); text-align: center; letter-spacing: 0.02em; }

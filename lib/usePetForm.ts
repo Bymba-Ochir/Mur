@@ -5,7 +5,7 @@
 //   usePetSubmit   — submit pipeline (createPetReport + reset)
 'use client';
 import { reportError } from './errorTracking';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
 import { compressImage } from './imageCompress';
 import { checkImageContent } from './contentModeration';
@@ -45,10 +45,32 @@ export function usePhotoUpload() {
   const [compressing, setCompressing] = useState(false);
   const [compressStatus, setCompressStatus] = useState('');
 
+  const urls = useRef<string[]>([]);
+  const generation = useRef(0);
+  const mounted = useRef(true);
+  useEffect(() => {
+    mounted.current = true;
+    return () => { mounted.current = false; generation.current += 1; urls.current.forEach(url => URL.revokeObjectURL(url)); };
+  }, []);
+
+  function replacePhotos(files: File[]) {
+    urls.current.forEach(url => URL.revokeObjectURL(url));
+    urls.current = files.map(file => URL.createObjectURL(file));
+    setPhotoFiles(files);
+    setPreviews(urls.current);
+  }
+
+  function restore(files: File[]) {
+    generation.current += 1;
+    replacePhotos(files);
+    setCompressing(false);
+    setCompressStatus('');
+  }
+
   async function handlePhoto(e: ChangeEvent<HTMLInputElement>) {
     const selected = Array.from(e.target.files ?? []).slice(0, 4);
     if (!selected.length) return;
-    previews.forEach((url) => URL.revokeObjectURL(url));
+    const currentGeneration = ++generation.current;
     setCompressing(true);
     try {
       const accepted: File[] = [];
@@ -56,6 +78,7 @@ export function usePhotoUpload() {
         setCompressStatus(`${index + 1}/${selected.length} ${t('photo_optimizing')}`);
         const compressed = await compressImage(selected[index]);
         const check = await checkImageContent(compressed, setCompressStatus);
+        if (!mounted.current || currentGeneration !== generation.current) return;
         if (!check.ok) {
           showToast(`${index + 1}-р зураг: ${check.reason}`, 'error');
           continue;
@@ -64,16 +87,13 @@ export function usePhotoUpload() {
         accepted.push(compressed);
       }
       if (accepted.length) {
-        setPhotoFiles(accepted);
-        setPreviews(accepted.map((file) => URL.createObjectURL(file)));
+        replacePhotos(accepted);
         showToast(`${accepted.length} ${t('photo_ready')}`, 'success');
       }
     } catch {
-      setPhotoFiles(selected);
-      setPreviews(selected.map((file) => URL.createObjectURL(file)));
+      if (mounted.current && currentGeneration === generation.current) replacePhotos(selected);
     } finally {
-      setCompressing(false);
-      setCompressStatus('');
+      if (mounted.current && currentGeneration === generation.current) { setCompressing(false); setCompressStatus(''); }
       e.target.value = '';
     }
   }
@@ -82,21 +102,16 @@ export function usePhotoUpload() {
     if (!compressing) document.getElementById('photo-input')?.click();
   }
 
-  function reset() {
-    previews.forEach((url) => URL.revokeObjectURL(url));
-    setPhotoFiles([]);
-    setPreviews([]);
-    setCompressing(false);
-    setCompressStatus('');
-  }
+  function reset() { restore([]); }
 
   function removePhoto(index: number) {
     URL.revokeObjectURL(previews[index]);
+    urls.current = urls.current.filter((_, itemIndex) => itemIndex !== index);
     setPhotoFiles((current) => current.filter((_, itemIndex) => itemIndex !== index));
     setPreviews((current) => current.filter((_, itemIndex) => itemIndex !== index));
   }
 
-  return { photoFiles, previews, photoFile: photoFiles[0] ?? null, preview: previews[0] ?? null, compressing, compressStatus, handlePhoto, openFilePicker, removePhoto, reset };
+  return { photoFiles, previews, photoFile: photoFiles[0] ?? null, preview: previews[0] ?? null, compressing, compressStatus, handlePhoto, openFilePicker, removePhoto, restore, reset };
 }
 
 // ---------- Байршил: geolocation + ойролцоо дүүрэг ----------
@@ -138,13 +153,14 @@ export function usePetLocation(onDistrictGuess: (d: District) => void) {
 
 // ---------- Submit: createPetReport + төлөв ----------
 export function usePetSubmit({
-  status, form, photoFiles, coords, onSuccess,
+  status, form, photoFiles, coords, onSuccess, onAttempt,
 }: {
   status: PetStatus;
   form: PetFormData;
   photoFiles: File[];
   coords: { lat: number; lng: number } | null;
-  onSuccess: (id: string) => void;
+  onSuccess: (id: string) => void | Promise<void>;
+  onAttempt?: (attempt: IdempotencyAttempt) => Promise<unknown>;
 }) {
   const showToast = useToast();
   const { t } = useLanguage();
@@ -164,6 +180,7 @@ export function usePetSubmit({
     const attempt = resolveIdempotencyAttempt(attemptRef.current, fingerprint);
     attemptRef.current = attempt;
     try {
+      await onAttempt?.(attempt);
       const id = await createPetReport(
         {
           ...form,
@@ -184,9 +201,9 @@ export function usePetSubmit({
         attempt.key,
       );
       attemptRef.current = null;
+      await onSuccess(id);
       setNewPetId(id);
       setDone(true);
-      onSuccess(id);
     } catch (err) {
       reportError(err, { area: 'frontend', operation: 'create-pet-report' });
       const msg = getErrorMessage(err);
@@ -208,5 +225,5 @@ export function usePetSubmit({
     attemptRef.current = null;
   }
 
-  return { submitting, statusMsg, done, newPetId, error, handleSubmit, reset };
+  return { submitting, statusMsg, done, newPetId, error, handleSubmit, reset, restoreAttempt: (value: IdempotencyAttempt | null) => { attemptRef.current = value; } };
 }
