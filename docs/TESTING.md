@@ -34,3 +34,10 @@ Emulation нь бодит Android/iOS төхөөрөмжийн push, keyboard, S
 | Интеграц | AI, QPay, push, cron-ийг тусдаа үр дүнгээр батлах |
 
 Run бүрийн commit, орчин, команд, exit code, тестийн тоо болон батлагдаагүй хэсгийг release тэмдэглэлд бич.
+
+
+## Magic-link ба local email
+
+`tests/e2e/magic-link.spec.ts` нь зөвхөн `127.0.0.1:54321` Supabase, `127.0.0.1:54324` Mailpit болон зөвшөөрөгдсөн `localhost:3000` / `127.0.0.1:3000` app ашиглана. Login UI-аас local email хүсэж, зөвхөн санамсаргүй fixture хаягийн имэйлийг уншаад бодит нэг удаагийн холбоосоор нэвтэрнэ. Browser session-ийн user-ийг Auth API-аар verify хийж шалгана. Test account болон тухайн имэйлийг дуусахад устгана; shared inbox-ийг бүхэлд нь цэвэрлэхгүй.
+
+Local Mailpit delivery нь production SMTP, domain DNS эсвэл гаднын inbox-д email очсоны баталгаа биш. Тэдгээрийг нээлтийн checklist-ийн дагуу тусад нь батална.

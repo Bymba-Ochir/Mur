@@ -9,6 +9,11 @@
 - Утас нуух, чатын эрх, rate limit, idempotency, background queue, Sentry-ийн код бий. Энэ нь production migration, scheduler, email delivery ажиллагааны баталгаа биш.
 - Нууцлалын Монгол/Англи тайлбар утас нуух, чат, Sentry, зөвшөөрөлтэй Analytics, Groq болон зураг цэвэрлэх тусдаа ажлыг тайлбарлана. Legal хуудсууд одоо байгаа Feedback сувгийг ашиглана.
 
+- Local backup-ийн 75 хүснэгтийн мөрийн тоо, 29 migration, RLS/policy/trigger-ийг тусгаарласан restore дээр тулгасан; хүрээ болон хязгаарыг [backup тайлангаас](BACKUP.md#2026-11-05-ны-local-restore-шалгалт) харна. Production backup батлагдсан гэсэн үг биш.
+- Нууцлалын хуудсанд analytics зөвшөөрөх/татгалзах сонголтоо дахин өөрчлөх удирдлага бий. Өөр tab-ийн сонголттой синхрончлогдоно.
+
+- 2026-11-05: Local Mailpit-аас UI-д хүссэн magic link-ээр desktop/mobile browser-т нэвтэрч, үүссэн session-ийг Auth API-аар баталсан. Зөвхөн зориулалтын local account болон имэйлийг үүсгэж/устгасан. Энэ нь production SMTP-ийн баталгаа биш.
+
 ## Нээхээс өмнө
 
 | Шалгалт | Дууссаны нотолгоо |

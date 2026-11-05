@@ -65,3 +65,15 @@ printf 'Backup: %s\nTest container: %s\n' "$backup" "$test_db"
 ```
 
 2026-11-03-ны локал туршилтаар `mur_restore_test`, 23 migration бүртгэл, RLS идэвхтэй 37 хүснэгт гарсан. Шалгалтын дараа `docker stop "$test_db"` ажиллуулбал container устаж, dump VM-д үлдэнэ.
+
+
+## 2026-11-05-ны local restore шалгалт
+
+Одоогийн local Supabase-аас шинэ dump үүсгэж, ижил PostgreSQL image ашигласан `--network none` түр container-ийн `mur_restore_test` database-д `ON_ERROR_STOP=1`, нэг transaction-аар сэргээсэн. Үндсэн local DB-г reset хийгээгүй, production-д холбогдоогүй.
+
+- `public`, `private`, `auth`, `storage` schema-ийн 75 хүснэгтийн мөрийн тоо эх DB-тэй яг таарсан.
+- 29 migration, RLS идэвхтэй 38 хүснэгт, 81 policy, 33 user trigger таарсан.
+- Шахсан dump 128,624 byte; dump, restore, тулгалт нийт 101 секунд. Түр container-ийг шалгалтын дараа зогсоосон.
+- Backup VM дотор `/home/mur/mur-backups/mur-restore-launch-20261104165304-90db25.sql.gz` замд үлдсэн. Файлын нэр VM-ийн системийн огноотой; энэ тайлангийн огноо Asia/Ulaanbaatar.
+
+Энэ нь schema/data restore-ийн баталгаа. `--no-acl` ашигласан тул grant/owner сэргэлт, Storage зураг файлын byte, hosted Auth/SMTP/Vault/provider тохиргоо болон production backup-ийн баталгаа биш. Production-ийн бүрэн restore rehearsal тусдаа хэвээр.

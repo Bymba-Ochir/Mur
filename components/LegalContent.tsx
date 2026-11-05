@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useLanguage } from '../lib/i18n';
 import Icon from './ui/icons';
 import FeedbackButton from './FeedbackButton';
+import AnalyticsPreferences from './AnalyticsPreferences';
 
 export interface LegalSection {
   heading: string;
@@ -63,6 +64,7 @@ export default function LegalContent({ mn, en, kind }: { mn: LegalDoc; en: Legal
               </div>
             </section>
           ))}
+          {kind === 'privacy' && <AnalyticsPreferences />}
           <footer className="legal-footer">
             <div><Icon name="message" size={20} /><span><small>{t('legal_contact')}</small><FeedbackButton /></span></div>
             <Link href={relatedHref}>{relatedTitle}<Icon name="arrowRight" size={16} /></Link>

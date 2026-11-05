@@ -32,6 +32,17 @@ describe('getConsentStatus / setConsentStatus', () => {
   });
 });
 
+it('withdrawing consent stops both usage and performance events immediately', () => {
+  const pageview = { type: 'pageview', url: '/privacy' } as const;
+  const vital = { type: 'vital', url: '/privacy' } as const;
+  setConsentStatus('accepted');
+  expect(analyticsBeforeSend(pageview)).toBe(pageview);
+  expect(speedInsightsBeforeSend(vital)).toBe(vital);
+  setConsentStatus('declined');
+  expect(analyticsBeforeSend(pageview)).toBeNull();
+  expect(speedInsightsBeforeSend(vital)).toBeNull();
+});
+
 describe('analyticsBeforeSend', () => {
   const event = { type: 'pageview', url: '/listings' } as const;
 

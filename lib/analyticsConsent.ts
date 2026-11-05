@@ -5,16 +5,23 @@
 // дата цуглуулалтыг хэрэглэгчийн сонголтод холбоно.
 import type { BeforeSendEvent } from '@vercel/analytics';
 import type { BeforeSendMiddleware } from '@vercel/speed-insights';
-import { setLocalStorageValue } from './useLocalStorageState';
+import { setLocalStorageValue, useLocalStorageValue } from './useLocalStorageState';
 
 const CONSENT_KEY = 'mur-analytics-consent';
 
 export type ConsentStatus = 'accepted' | 'declined' | null;
 
+function parseConsentStatus(value: string | null): ConsentStatus {
+  return value === 'accepted' || value === 'declined' ? value : null;
+}
+
+export function useAnalyticsConsent(): ConsentStatus {
+  return parseConsentStatus(useLocalStorageValue(CONSENT_KEY, 'declined'));
+}
+
 export function getConsentStatus(): ConsentStatus {
   try {
-    const v = localStorage.getItem(CONSENT_KEY);
-    if (v === 'accepted' || v === 'declined') return v;
+    return parseConsentStatus(localStorage.getItem(CONSENT_KEY));
   } catch {
     // localStorage байхгүй/хориотой үед зөвшөөрөл тодорхойгүй гэж үзнэ
   }

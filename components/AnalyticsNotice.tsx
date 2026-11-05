@@ -1,7 +1,6 @@
 'use client';
 import { useLanguage } from '../lib/i18n';
-import { setConsentStatus } from '../lib/analyticsConsent';
-import { useLocalStorageValue } from '../lib/useLocalStorageState';
+import { setConsentStatus, useAnalyticsConsent } from '../lib/analyticsConsent';
 import Icon from './ui/icons';
 
 // Апп cookie хэрэглэдэггүй тул энэ нь "cookie" баннер биш — зөвхөн нэргүй
@@ -11,7 +10,7 @@ export default function AnalyticsNotice() {
   const { t } = useLanguage();
   // localStorage-тэй синхрончлогдсон зөвшөөрөл — useSyncExternalStore.
   // server дээр 'declined' → анхны анивчилтгүй; null (шийдээгүй) үед л харуулна
-  const consent = useLocalStorageValue('mur-analytics-consent', 'declined');
+  const consent = useAnalyticsConsent();
   const visible = consent === null;
 
   function choose(status: 'accepted' | 'declined') {

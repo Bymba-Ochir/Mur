@@ -51,7 +51,7 @@ const PRIVACY_MN: LegalDoc = {
       heading: '5. Гуравдагч талын үйлчилгээ',
       paragraphs: [
         'Бид Supabase (бүртгэл, мэдээлэл, зураг, чат), Vercel (хостинг), QPay (хандивын төлбөр), Hugging Face (зургийн шинжилгээний загвар татах), OpenStreetMap (газрын зураг) үйлчилгээг ашиглана. AI зөвлөхийн Groq холболт идэвхтэй үед таны асуулт болон сонгосон амьтны тухай мэдээллийг хариулт боловсруулахын тулд Groq руу дамжуулна. Асуултдаа нууц үг, төлбөрийн мэдээлэл болон бусдын хувийн мэдээллийг оруулахгүй байна уу.',
-        'Алдааг оношлоход Sentry ашиглана. Алдааны техникийн мэдээллийг илгээхээс өмнө имэйл, утас, token зэрэг мэдээллийг шүүх тохиргоо ашигладаг. Хэрэглээний хэмжилтийг зөвшөөрсөн үед Vercel Analytics болон Speed Insights-д хуудасны хэрэглээ, гүйцэтгэлийн мэдээлэл дамжуулна. Зөвшөөрлийн сонголтыг энэ хөтчийн хадгалалтад бүртгэнэ.',
+        'Алдааг оношлоход Sentry ашиглана. Алдааны техникийн мэдээллийг илгээхээс өмнө имэйл, утас, token зэрэг мэдээллийг шүүх тохиргоо ашигладаг. Хэрэглээний хэмжилтийг зөвшөөрсөн үед Vercel Analytics болон Speed Insights-д хуудасны хэрэглээ, гүйцэтгэлийн мэдээлэл дамжуулна. Зөвшөөрлийн сонголтыг энэ хөтчийн хадгалалтад бүртгэнэ. Энэ хуудасны «Хэрэглээний хэмжилт» хэсгээс зөвшөөрөх эсвэл татгалзах сонголтоо хүссэн үедээ өөрчилж болно.',
         'Эдгээр үйлчилгээ тус бүр өөрийн нууцлалын бодлоготой бөгөөд та тэдгээрийг танилцахыг уриалж байна.',
       ],
     },
@@ -123,7 +123,7 @@ const PRIVACY_EN: LegalDoc = {
       heading: '5. Third-party services',
       paragraphs: [
         'We use Supabase (accounts, data, photos, and chat), Vercel (hosting), QPay (donation payments), Hugging Face (downloading photo-analysis models), and OpenStreetMap (maps). When the Groq integration for the AI assistant is enabled, your question and selected pet context are sent to Groq to generate a response. Do not include passwords, payment details, or other people’s personal information in your question.',
-        'We use Sentry to diagnose errors and apply filters for information such as email addresses, phone numbers, and tokens before sending technical error reports. With your analytics consent, Vercel Analytics and Speed Insights receive page usage and performance information. Your consent choice is saved in this browser.',
+        'We use Sentry to diagnose errors and apply filters for information such as email addresses, phone numbers, and tokens before sending technical error reports. With your analytics consent, Vercel Analytics and Speed Insights receive page usage and performance information. Your consent choice is saved in this browser. You can allow or stop analytics at any time in the Usage analytics section on this page.',
         'Each of these services has its own privacy policy, which we encourage you to review.',
       ],
     },
