@@ -415,7 +415,8 @@ describe('page detail safeguards', () => {
     expect(legal).toContain('className="mobile-toc"');
     expect(legal).toContain('aria-label={t(\'legal_toc\')}');
     expect(legal).toContain('scroll-margin-top');
-    expect(legal).toContain('mailto:hello@mur.mn');
+    expect(legal).toContain('<FeedbackButton />');
+    expect(legal).not.toContain('hello@mur.mn');
     expect(legal).not.toContain('⚖️');
     expect(legal).not.toContain('style={{');
     expect(privacy).toContain('kind="privacy"');

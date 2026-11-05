@@ -12,6 +12,8 @@
 | [supabase/tests/](../supabase/tests/) | pgTAP шалгалтууд. |
 | [supabase/seed.sql](../supabase/seed.sql) | Локал seed. |
 
+Нийтэд нээхдээ [нээлтийн бэлтгэл](PUBLIC-LAUNCH.md)-ийн provider болон хоёр хэрэглэгчтэй шалгалтыг баталгаажуулна.
+
 Шинэ production release-д [deploy](DEPLOYMENT.md) болон [migration](DATABASE.md) зааврыг ашиглана.
 
 `wireframes.html` нь дизайны лавлагаа; live UI баталгаа биш.

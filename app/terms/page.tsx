@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 const TERMS_MN: LegalDoc = {
   title: 'Үйлчилгээний нөхцөл',
-  updated: 'Сүүлд шинэчилсэн: 2026 оны 8-р сар',
+  updated: 'Сүүлд шинэчилсэн: 2026 оны 11-р сарын 5',
   sections: [
     {
       heading: '1. Хүлээн зөвшөөрөх',
@@ -76,7 +76,7 @@ const TERMS_MN: LegalDoc = {
     {
       heading: '11. Холбоо барих',
       paragraphs: [
-        'Нөхцөл, үйлчилгээний талаарх асуултаа дараах имэйл хаягаар илгээнэ үү: hello@mur.mn',
+        'Нөхцөл, үйлчилгээний талаарх асуултаа «Санал хүсэлт» товчоор МӨР-ийн админд илгээнэ үү. Нууц үг, нэвтрэх холбоос, төлбөрийн мэдээлэл бүү илгээгээрэй.',
       ],
     },
   ],
@@ -84,7 +84,7 @@ const TERMS_MN: LegalDoc = {
 
 const TERMS_EN: LegalDoc = {
   title: 'Terms of Service',
-  updated: 'Last updated: August 2026',
+  updated: 'Last updated: November 5, 2026',
   sections: [
     {
       heading: '1. Acceptance of terms',
@@ -151,7 +151,7 @@ const TERMS_EN: LegalDoc = {
     {
       heading: '11. Contact us',
       paragraphs: [
-        'For questions about these terms or the service, please contact us at: hello@mur.mn',
+        'Send questions about these terms or the service to Mur administrators using the Feedback button. Do not send passwords, sign-in links, or payment details.',
       ],
     },
   ],
