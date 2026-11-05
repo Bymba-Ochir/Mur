@@ -1,8 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { useLanguage } from '../lib/i18n';
-import PawTrail from '../components/PawTrail';
-import ScrollReveal from '../components/ScrollReveal';
+import { BrandMark } from '../components/ui/BrandLogo';
 import Button from '../components/ui/Button';
 import Icon from '../components/ui/icons';
 
@@ -23,7 +22,7 @@ export default function Home() {
         <div className="hero-inner">
           <div className="hero-content">
             <p className="eyebrow">
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M12 21s-7-4.5-9.5-9C.7 8.3 2 4.8 5.4 4.1 7.6 3.6 9.8 4.6 12 7c2.2-2.4 4.4-3.4 6.6-2.9 3.4.7 4.7 4.2 2.9 7.9C19 16.5 12 21 12 21z" /></svg>
+              <Icon name="heart" size={14} />
               {t('hero_eyebrow')}
             </p>
             <h1 className="hero-title">
@@ -42,24 +41,9 @@ export default function Home() {
               </Button>
             </nav>
             <ul className="hero-trust" aria-label={t('hero_trust_aria')}>
-              <li>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
-                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0Z" /><circle cx="12" cy="10" r="3" />
-                </svg>
-                <span>{t('hero_trust_location')}</span>
-              </li>
-              <li>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
-                  <circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" />
-                </svg>
-                <span>{t('hero_trust_photo')}</span>
-              </li>
-              <li>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
-                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92Z" />
-                </svg>
-                <span>{t('hero_trust_direct')}</span>
-              </li>
+              <li><Icon name="pin" size={16} /><span>{t('hero_trust_location')}</span></li>
+              <li><Icon name="search" size={16} /><span>{t('hero_trust_photo')}</span></li>
+              <li><Icon name="message" size={16} /><span>{t('hero_trust_direct')}</span></li>
             </ul>
           </div>
 
@@ -68,18 +52,13 @@ export default function Home() {
             <div className="hero-card">
               <div className="hero-card-photo">
                 <span className="status-chip">{t('hero_preview_label')}</span>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" width="64" height="64" focusable="false">
-                  <circle cx="12" cy="12" r="7" />
-                  <path d="M9 10.5c0-1 .6-1.5 1.4-1.5M14.6 10.5c0-1-.6-1.5-1.4-1.5M9.5 15c1.5 1 3.5 1 5 0" strokeLinecap="round" />
-                </svg>
+                <BrandMark size={88} />
               </div>
               <div className="hero-card-body">
-                <h4>{t('type_dog')}</h4>
+                <p className="hero-card-title">{t('type_dog')}</p>
                 <p>{t('hero_preview_breed')}</p>
                 <div className="hero-card-loc">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="13" height="13" focusable="false">
-                    <path d="M12 21s-7-4.5-8.5-9.6C2.6 7.8 4.4 5 7.3 4.9c1.9-.1 3.5 1 4.7 2.6C13.2 5.9 14.8 4.8 16.7 4.9c2.9.1 4.7 2.9 3.8 6.5C19 16.5 12 21 12 21z" />
-                  </svg>
+                  <Icon name="pin" size={14} />
                   {t('hero_preview_location')}
                 </div>
               </div>
@@ -96,24 +75,19 @@ export default function Home() {
             {t('how_open_guide')}
           </button>
         </div>
-        <div className="trail-wrap">
-          <PawTrail labels={[t('step1_title'), t('step2_title'), t('step3_title')]} current={2} />
-        </div>
-
-        <div className="grid steps-grid">
-          <ScrollReveal className="step-card">
-            <span className="step-num" aria-hidden="true">01</span>
-            <p className="step-desc">{t('step1_desc')}</p>
-          </ScrollReveal>
-          <ScrollReveal className="step-card reveal-delay-1">
-            <span className="step-num" aria-hidden="true">02</span>
-            <p className="step-desc">{t('step2_desc')}</p>
-          </ScrollReveal>
-          <ScrollReveal className="step-card reveal-delay-2">
-            <span className="step-num" aria-hidden="true">03</span>
-            <p className="step-desc">{t('step3_desc')}</p>
-          </ScrollReveal>
-        </div>
+        <ol className="steps-grid" role="list" aria-labelledby="how-heading">
+          {[
+            { title: t('step1_title'), description: t('step1_desc') },
+            { title: t('step2_title'), description: t('step2_desc') },
+            { title: t('step3_title'), description: t('step3_desc') },
+          ].map((step, index) => (
+            <li key={step.title} className="step-card">
+              <span className="step-num" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
+              <h3 className="step-title">{step.title}</h3>
+              <p className="step-desc">{step.description}</p>
+            </li>
+          ))}
+        </ol>
       </section>
 
       <section className="services" aria-labelledby="services-heading">
@@ -161,9 +135,6 @@ export default function Home() {
             </span>
           </Link>
         </div>
-        <div className="service-actions">
-          <Button as="link" href="/my-pets" variant="ghost">{t('mypets_title')}</Button>
-        </div>
       </section>
 
       <style jsx>{`
@@ -185,8 +156,8 @@ export default function Home() {
 
         /* Зөөлөн paw-print хээ */
         .hero::after {
-          content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none; opacity: 0.04;
-          background-image: ${PAW_PATTERN}; background-size: 110px 110px;
+          content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none; opacity: 0.025;
+          background-image: ${PAW_PATTERN}; background-size: 128px 128px;
         }
 
         .hero-inner {
@@ -202,8 +173,7 @@ export default function Home() {
         .hero-title {
           font-size: clamp(2.6rem, 5.4vw, 4.4rem); margin-bottom: var(--sp-5); line-height: 1.06;
         }
-        @media (max-width: 640px) { .hero-title { font-size: var(--text-2xl); margin-bottom: var(--sp-3); } }
-        @media (max-width: 480px) { .hero-title { font-size: var(--text-xl); margin-bottom: var(--sp-3); } }
+        @media (max-width: 640px) { .hero-title { font-size: clamp(1.75rem, 6vw, 2.25rem); margin-bottom: var(--sp-3); } }
         @media (min-width: 1025px) { .hero-title { font-size: var(--text-display-lg); margin-bottom: var(--sp-5); } }
         .hero-desc {
           color: var(--text-secondary); max-width: 480px; margin-bottom: var(--sp-5);
@@ -234,7 +204,7 @@ export default function Home() {
           display: inline-flex; align-items: center; gap: 7px;
           font-size: var(--text-xs); font-weight: 500; color: var(--text-secondary);
         }
-        .hero-trust svg { color: var(--primary-light); flex-shrink: 0; }
+        .hero-trust :global(svg) { color: var(--primary-light); flex-shrink: 0; }
         @media (max-width: 480px) {
           .hero-trust { flex-direction: column; gap: var(--sp-2); margin-top: var(--sp-4); }
           .hero-trust li { font-size: 13px; }
@@ -246,7 +216,6 @@ export default function Home() {
           width: 100%; max-width: 380px; min-width: 0; min-height: 320px; justify-self: center;
           padding-inline: 12px; box-sizing: border-box;
         }
-        @media (max-width: 860px) { .hero-visual { min-height: 0; padding: var(--sp-3) 0 var(--sp-5); } }
         .hero-card {
           position: relative; width: min(280px, calc(100% - 24px));
           background: var(--surface-2); border: 1px solid var(--border-subtle);
@@ -263,7 +232,7 @@ export default function Home() {
             radial-gradient(circle at 40% 30%, color-mix(in srgb, var(--primary) 55%, transparent), transparent 75%),
             var(--surface-3);
         }
-        .hero-card-photo svg { color: var(--surface-2); opacity: 0.9; }
+        .hero-card-photo :global(img) { width: 88px; height: 88px; }
         .status-chip {
           position: absolute; top: 12px; left: 12px;
           background: var(--accent); color: var(--text-on-accent);
@@ -271,15 +240,17 @@ export default function Home() {
           padding: 5px 11px; border-radius: var(--r-pill);
         }
         .hero-card-body { padding: var(--sp-4); }
-        .hero-card-body h4 { font-family: var(--font-display); font-size: 17px; margin-bottom: 2px; color: var(--text-primary); }
-        .hero-card-body p { font-size: 13px; color: var(--text-tertiary); margin-bottom: 10px; }
+        .hero-card-body .hero-card-title { font-family: var(--font-display); font-size: 17px; font-weight: 700; margin-bottom: 2px; color: var(--text-primary); }
+        .hero-card-body > p:not(.hero-card-title) { font-size: 13px; color: var(--text-tertiary); margin-bottom: 10px; }
         .hero-card-loc { display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--text-secondary); }
-        .hero-card-loc svg { color: var(--alert-light); }
-        @media (max-width: 480px) {
-          .hero-visual { max-width: 300px; padding-bottom: var(--sp-4); }
-          .hero-card { width: min(240px, calc(100% - 32px)); }
-          .hero-card-photo { height: 138px; }
-          .hero-card-body { padding: var(--sp-3); }
+        .hero-card-loc :global(svg) { color: var(--primary); flex-shrink: 0; }
+        @media (max-width: 860px) {
+          .hero-visual { max-width: 520px; min-height: 0; padding: 0; justify-self: start; }
+          .hero-card { display: grid; grid-template-columns: 112px minmax(0, 1fr); width: 100%; animation: none; }
+          .hero-card-photo { height: auto; min-height: 132px; padding-top: 20px; }
+          .hero-card-photo :global(img) { width: 64px; height: 64px; }
+          .hero-card-body { align-self: center; min-width: 0; padding: var(--sp-3); }
+          .status-chip { top: 8px; left: 8px; padding: 4px 8px; font-size: 10px; }
         }
 
         /* Entrance animation */
@@ -298,9 +269,9 @@ export default function Home() {
         .services { margin-top: 0; padding: clamp(48px, 7vw, 80px) 0; border-top: 1px solid var(--border-subtle); }
         @media (max-width: 640px) { .services { padding: var(--sp-7) 0; } }
         @media (max-width: 480px) { .services { padding: var(--sp-6) 0; } }
-        .services-title { font-size: clamp(1.8rem, 3.2vw, 2.6rem); max-width: 640px; line-height: 1.15; }
+        .services-title { font-size: clamp(1.4rem, 3vw, 1.9rem); margin-bottom: var(--sp-5); line-height: 1.2; }
+        @media (min-width: 1025px) { .services-title { font-size: var(--text-3xl); margin-bottom: var(--sp-6); } }
         @media (max-width: 640px) { .services-title { font-size: var(--text-xl); } }
-        .service-actions { margin-top: var(--sp-3); }
 
         .how { margin-top: 0; padding: clamp(48px, 7vw, 80px) 0; border-top: 1px solid var(--border-subtle); animation: rise-in 0.6s cubic-bezier(0.16,1,0.3,1) 0.55s backwards; }
         @media (max-width: 640px) { .how { padding: var(--sp-7) 0; } }
@@ -313,10 +284,7 @@ export default function Home() {
         @media (max-width: 640px) { .how-heading { align-items: flex-start; flex-direction: column; margin-bottom: var(--sp-4); } }
         @media (max-width: 480px) { .how-heading { margin-bottom: var(--sp-3); } .how-title { font-size: var(--text-xl); } .how-guide { width: 100%; justify-content: center; } }
         @media (min-width: 1025px) { .how-title { font-size: var(--text-3xl); } .how-heading { margin-bottom: var(--sp-6); } }
-        .trail-wrap { max-width: 520px; margin-bottom: var(--sp-4); }
-        @media (max-width: 480px) { .trail-wrap { margin-bottom: var(--sp-3); } }
-        @media (min-width: 1025px) { .trail-wrap { max-width: 620px; margin-bottom: var(--sp-5); } }
-        .steps-grid { margin-top: 0; gap: var(--sp-5); grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        .steps-grid { display: grid; list-style: none; margin: 0; padding: 0; gap: var(--sp-5); grid-template-columns: repeat(3, minmax(0, 1fr)); }
         @media (max-width: 640px) { .steps-grid { gap: var(--sp-4); } }
         @media (max-width: 480px) { .steps-grid { gap: var(--sp-3); } }
         @media (max-width: 720px) { .steps-grid { grid-template-columns: 1fr; } }
@@ -325,20 +293,14 @@ export default function Home() {
           position: relative;
           background: var(--surface-2); border: 1px solid var(--border-subtle); border-radius: var(--r-lg);
           padding: var(--sp-6) var(--sp-5); box-shadow: var(--shadow-sm); overflow: hidden;
-          transition: transform 0.3s cubic-bezier(0.16,1,0.3,1), box-shadow 0.3s cubic-bezier(0.16,1,0.3,1), border-color 0.3s ease;
         }
         @media (max-width: 640px) { .step-card { padding: var(--sp-5) var(--sp-4); border-radius: var(--r-md); } }
         @media (max-width: 480px) { .step-card { padding: var(--sp-4) var(--sp-3); } }
-        @media (min-width: 1025px) { .step-card { padding: var(--sp-7) var(--sp-6); border-radius: var(--r-xl); } }
-        @media (hover: hover) and (pointer: fine) { .step-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-lift); border-color: transparent; } }
         .step-num {
           display: block; font-family: var(--font-display); font-weight: 800; line-height: 1;
-          font-size: clamp(2.2rem, 7vw, 3rem);
-          background: var(--grad-accent); -webkit-background-clip: text; background-clip: text;
-          color: transparent; opacity: 0.6; margin-bottom: var(--sp-3);
+          font-size: 1.5rem; color: var(--primary); margin-bottom: var(--sp-3);
         }
-        /* Цайвар горимд watermark тоог бүдэг болгох */
-        :global([data-theme="light"]) .step-num { opacity: 0.35; }
+        .step-title { font-size: var(--text-base); margin: 0 0 var(--sp-2); }
         .step-desc { color: var(--text-secondary); font-size: 13.5px; line-height: 1.5; }
         @media (max-width: 480px) { .step-desc { font-size: 14px; line-height: 1.6; } }
         @media (min-width: 1025px) { .step-desc { font-size: 15px; line-height: 1.65; } }

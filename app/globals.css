@@ -1126,30 +1126,6 @@ body:has([data-floating-notice='analytics']) [data-floating-notice='install'] {
 }
 .home .service-card:hover .service-arrow { color: var(--feature-color); transform: translateX(3px); }
 
-.home .step-card {
-  position: relative;
-  min-height: 180px;
-  padding: var(--sp-6) var(--sp-5);
-  overflow: hidden;
-  background: var(--surface-2);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--r-lg);
-  box-shadow: var(--shadow-sm);
-  transition: transform var(--dur-base) var(--ease-out), box-shadow var(--dur-base) var(--ease-out), border-color var(--dur-base) var(--ease-out);
-}
-.home .step-card:hover { transform: translateY(-5px); border-color: rgba(98, 91, 246, 0.24); box-shadow: var(--shadow-md); }
-.home .step-num {
-  display: block;
-  margin-bottom: var(--sp-3);
-  color: var(--accent);
-  font-family: var(--font-display);
-  font-size: clamp(2.2rem, 7vw, 3rem);
-  font-weight: 800;
-  line-height: 1;
-  opacity: 0.42;
-}
-.home .step-desc { color: var(--text-secondary); font-size: 13.5px; line-height: 1.55; }
-
 @media (max-width: 1100px) {
   .home .services-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
@@ -1159,7 +1135,6 @@ body:has([data-floating-notice='analytics']) [data-floating-notice='install'] {
 @media (max-width: 480px) {
   .home .service-card { padding: var(--sp-4); border-radius: var(--r-md); }
   .home .service-arrow { top: var(--sp-4); }
-  .home .step-card { min-height: 0; padding: var(--sp-4); border-radius: var(--r-md); }
 }
 
 /* ═══════════════════════════════════════
