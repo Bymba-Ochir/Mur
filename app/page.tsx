@@ -122,50 +122,42 @@ export default function Home() {
         <div className="services-grid">
           <Link href="/adoptions" className="service-card">
             <span className="service-icon" aria-hidden="true">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" focusable="false">
-                <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" />
-              </svg>
+              <Icon name="heart" size={24} aria-hidden="true" />
             </span>
             <h3>{t('services_adopt')}</h3>
             <p>{t('services_adopt_desc')}</p>
             <span className="service-arrow" aria-hidden="true">
-              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" focusable="false"><path d="M3 8h10M9 4l4 4-4 4" /></svg>
+              <Icon name="arrowRight" size={16} aria-hidden="true" />
             </span>
           </Link>
           <Link href="/sitting" className="service-card">
             <span className="service-icon" aria-hidden="true">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" focusable="false">
-                <circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 3" />
-              </svg>
+              <Icon name="paw" size={24} aria-hidden="true" />
             </span>
             <h3>{t('services_sitting')}</h3>
             <p>{t('services_sitting_desc')}</p>
             <span className="service-arrow" aria-hidden="true">
-              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" focusable="false"><path d="M3 8h10M9 4l4 4-4 4" /></svg>
+              <Icon name="arrowRight" size={16} aria-hidden="true" />
             </span>
           </Link>
           <Link href="/clinics" className="service-card">
             <span className="service-icon" aria-hidden="true">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" focusable="false">
-                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" /><path d="M12 22V10" />
-              </svg>
+              <Icon name="cross" size={24} aria-hidden="true" />
             </span>
             <h3>{t('services_clinics')}</h3>
             <p>{t('services_clinics_desc')}</p>
             <span className="service-arrow" aria-hidden="true">
-              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" focusable="false"><path d="M3 8h10M9 4l4 4-4 4" /></svg>
+              <Icon name="arrowRight" size={16} aria-hidden="true" />
             </span>
           </Link>
           <Link href="/assistant" className="service-card">
             <span className="service-icon" aria-hidden="true">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" focusable="false">
-                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z" /><path d="M8 9h8M8 13h5" />
-              </svg>
+              <Icon name="bot" size={24} aria-hidden="true" />
             </span>
             <h3>{t('services_assistant')}</h3>
             <p>{t('services_assistant_desc')}</p>
             <span className="service-arrow" aria-hidden="true">
-              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" focusable="false"><path d="M3 8h10M9 4l4 4-4 4" /></svg>
+              <Icon name="arrowRight" size={16} aria-hidden="true" />
             </span>
           </Link>
         </div>
@@ -308,58 +300,7 @@ export default function Home() {
         @media (max-width: 480px) { .services { padding: var(--sp-6) 0; } }
         .services-title { font-size: clamp(1.8rem, 3.2vw, 2.6rem); max-width: 640px; line-height: 1.15; }
         @media (max-width: 640px) { .services-title { font-size: var(--text-xl); } }
-        .services-grid {
-          display: grid;
-          grid-template-columns: repeat(4, minmax(0, 1fr));
-          gap: var(--sp-4);
-          margin-top: var(--sp-5);
-        }
-        @media (max-width: 900px) {
-          .services-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-3); }
-        }
-        @media (max-width: 520px) { .services-grid { grid-template-columns: 1fr; } }
         .service-actions { margin-top: var(--sp-3); }
-        .service-card {
-          position: relative;
-          display: block;
-          background: var(--surface-2);
-          border: 1px solid var(--border-subtle);
-          border-radius: var(--r-lg);
-          padding: var(--sp-5);
-          text-decoration: none;
-          height: 100%;
-          min-height: 190px;
-          box-shadow: var(--shadow-sm);
-          transition: transform var(--dur-base) var(--ease-out), box-shadow var(--dur-base) var(--ease-out), border-color var(--dur-base) var(--ease-out);
-        }
-        .service-card:nth-child(1) { --feature-color: var(--primary); --feature-soft: #8178F7; }
-        .service-card:nth-child(2) { --feature-color: var(--found); --feature-soft: #7DD8F0; }
-        .service-card:nth-child(3) { --feature-color: var(--clinic); --feature-soft: #56C7E8; }
-        .service-card:nth-child(4) { --feature-color: var(--assistant); --feature-soft: #A49EFC; }
-        @media (max-width: 520px) { .service-card { min-height: 0; } }
-        @media (hover: hover) and (pointer: fine) { .service-card:hover {
-          transform: translateY(-4px);
-          box-shadow: var(--shadow-md);
-          border-color: color-mix(in srgb, var(--feature-color) 55%, var(--border-subtle));
-        } }
-        .service-card:active { transform: translateY(-1px) scale(0.995); }
-        .service-card:focus-visible { outline: 3px solid var(--border-focus); outline-offset: 3px; }
-        .service-icon {
-          display: inline-flex; align-items: center; justify-content: center;
-          width: 48px; height: 48px; border-radius: var(--r-md);
-          background: linear-gradient(135deg, var(--feature-soft), var(--feature-color)); color: #FFFFFF;
-          margin-bottom: var(--sp-4);
-          transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out), transform var(--dur-base) var(--ease-out), box-shadow var(--dur-base) var(--ease-out);
-        }
-        .service-card:hover .service-icon { transform: scale(1.06) rotate(-3deg); box-shadow: 0 8px 20px color-mix(in srgb, var(--feature-color) 24%, transparent); }
-        .service-card h3 { font-family: var(--font-display); font-size: var(--text-base); font-weight: 700; color: var(--text-primary); margin-bottom: var(--sp-1); }
-        .service-card p { font-size: var(--text-xs); color: var(--text-secondary); line-height: 1.5; }
-        .service-arrow {
-          position: absolute; top: var(--sp-5); right: var(--sp-4);
-          color: var(--text-tertiary);
-          transition: transform var(--dur-base) var(--ease-out), color var(--dur-base) var(--ease-out);
-        }
-        .service-card:hover .service-arrow { transform: translateX(3px); color: var(--feature-color); }
 
         .how { margin-top: 0; padding: clamp(48px, 7vw, 80px) 0; border-top: 1px solid var(--border-subtle); animation: rise-in 0.6s cubic-bezier(0.16,1,0.3,1) 0.55s backwards; }
         @media (max-width: 640px) { .how { padding: var(--sp-7) 0; } }

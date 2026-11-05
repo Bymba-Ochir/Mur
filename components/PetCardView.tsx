@@ -58,7 +58,7 @@ export default function PetCardView({
 
   return (
     <div className={`pet-card${staticClass}`} {...containerProps}>
-      <div className="thumb">
+      <div className="thumb listing-media">
         <span className={`badge ${status}`}>{badgeLabel}</span>
         {imageNode ?? (
           <span className="emoji" aria-hidden="true"><PetIcon type={type} size={56} /></span>
@@ -69,8 +69,10 @@ export default function PetCardView({
         <h3>{name || typeLabel || type}</h3>
         <p>{typeLabel || type}{breed ? `, ${breed}` : ''}{color ? `, ${color}` : ''}</p>
         <p className="place"><Icon name="pin" size={14} aria-hidden="true" /> {district} — {place}</p>
-        {hasReward ? <p className="reward"><Icon name="sparkles" size={14} aria-hidden="true" /> {rewardLabel}</p> : null}
-        {createdAt && <p className="time"><Icon name="calendar" size={14} aria-hidden="true" /> {relativeTime(createdAt, language)}</p>}
+        {(hasReward || createdAt) && <div className="card-meta">
+          {hasReward ? <p className="reward"><Icon name="sparkles" size={14} aria-hidden="true" /> {rewardLabel}</p> : null}
+          {createdAt && <p className="time"><Icon name="calendar" size={14} aria-hidden="true" /> {relativeTime(createdAt, language)}</p>}
+        </div>}
         <div className="card-actions">
         {showMasked ? (
           <button
@@ -103,7 +105,7 @@ export default function PetCardView({
           background: var(--card); border: 1px solid var(--line); border-radius: var(--r-lg);
           overflow: hidden; box-shadow: var(--shadow-sm);
           transition: transform var(--dur-base) var(--ease-out), box-shadow var(--dur-base) var(--ease-out), border-color var(--dur-base) var(--ease-out);
-          display: flex; flex-direction: column; height: 100%;
+          display: flex; flex-direction: column; min-width: 0; align-self: start;
         }
         @media (max-width: 640px) {
           .pet-card { border-radius: var(--r-md); }
@@ -118,18 +120,9 @@ export default function PetCardView({
         .pet-card:focus-within { border-color: var(--primary-light); box-shadow: var(--shadow-md); }
         .pet-card.static:hover { transform: none; box-shadow: var(--shadow-sm); border-color: var(--line); }
         .thumb {
-          height: 152px; background: var(--thumb-bg); position: relative;
+          background: var(--thumb-bg); position: relative;
           display: flex; align-items: center; justify-content: center; overflow: hidden;
           flex-shrink: 0;
-        }
-        @media (min-width: 1025px) {
-          .thumb { height: 200px; }
-        }
-        @media (max-width: 640px) {
-          .thumb { height: 180px; }
-        }
-        @media (max-width: 400px) {
-          .thumb { height: 160px; }
         }
         .thumb::after {
           content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 50%;
@@ -179,7 +172,7 @@ export default function PetCardView({
         @media (min-width: 1025px) {
           .similarity { font-size: 11px; padding: 4px 11px; bottom: 14px; right: 14px; }
         }
-        .info { padding: 14px 15px; flex: 1; display: flex; flex-direction: column; gap: 2px; }
+        .info { padding: 14px 15px; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
         @media (max-width: 480px) {
           .info { padding: 12px 14px; }
         }
@@ -200,6 +193,9 @@ export default function PetCardView({
         @media (min-width: 1025px) {
           p { font-size: 13.5px; margin: 4px 0; line-height: 1.5; }
         }
+        h3, p { overflow-wrap: anywhere; }
+        .card-meta { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 4px; }
+        .card-meta p { margin: 0; }
         .place,.reward,.time { display:flex; align-items:center; gap:6px; }
         .place :global(svg),.reward :global(svg),.time :global(svg) { flex:0 0 auto; }
         .reward { margin-top: 6px; font-size: 12.5px; color: var(--accent); font-weight: 600; }
@@ -211,24 +207,24 @@ export default function PetCardView({
         }
         .card-actions {
           display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--sp-2);
-          margin-top: auto; padding-top: var(--sp-3);
+          margin-top: var(--sp-3);
         }
-        .phone, .detail-link {
+        .phone, .card-actions :global(.detail-link) {
           display: inline-flex; align-items: center; justify-content: center; gap: 5px; min-height: var(--touch-target);
           color: var(--primary); font-size: 13px; font-weight: 650; text-decoration: none;
           background: var(--eyebrow-bg); border: 1px solid transparent; padding: 6px 12px; border-radius: var(--r-md);
           transition: background var(--dur-fast) ease, color var(--dur-fast) ease, border-color var(--dur-fast) ease;
         }
-        .detail-link { justify-content: space-between; background: transparent; border-color: var(--border-subtle); }
-        .phone:hover, .detail-link:hover { background: var(--primary); color: var(--text-on-accent); border-color: var(--primary); }
+        .card-actions :global(.detail-link) { justify-content: space-between; background: transparent; border-color: var(--border-subtle); }
+        .phone:hover, .card-actions :global(.detail-link):hover { background: var(--primary); color: var(--text-on-accent); border-color: var(--primary); }
         @media (max-width: 480px) {
-          .phone, .detail-link { font-size: 14px; }
+          .phone, .card-actions :global(.detail-link) { font-size: 14px; }
         }
         @media (min-width: 1025px) {
-          .phone, .detail-link { font-size: 14px; }
+          .phone, .card-actions :global(.detail-link) { font-size: 14px; }
         }
         .reveal-btn { cursor: pointer; font-family: inherit; width: 100%; }
-        .reveal-btn:focus-visible, .phone:focus-visible, .detail-link:focus-visible { outline: 2px solid var(--border-focus); outline-offset: 2px; }
+        .reveal-btn:focus-visible, .phone:focus-visible, .card-actions :global(.detail-link):focus-visible { outline: 2px solid var(--border-focus); outline-offset: 2px; }
         @media (prefers-reduced-motion: reduce) {
           .pet-card, .thumb :global(img) { transition: none; }
         }

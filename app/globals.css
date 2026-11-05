@@ -1048,15 +1048,24 @@ body:has([data-floating-notice='analytics']) [data-floating-notice='install'] {
   .login-modal-panel input { padding: 12px 14px; font-size: 16px; }
 }
 
+/* Reserve the same photo proportions in listing, form preview and loading cards. */
+.listing-media { width: 100%; aspect-ratio: 4 / 3; }
+
 /* Home cards are rendered through Link/ScrollReveal components, so these
    structural styles must be global instead of relying only on styled-jsx. */
+.home .services-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  align-items: stretch;
+  gap: var(--sp-4);
+  margin-top: var(--sp-5);
+}
 .home .service-card {
   --feature-color: var(--primary);
   --feature-soft: var(--primary-light);
   position: relative;
   display: block;
-  grid-column: span 2;
-  min-height: 190px;
+  min-width: 0;
   padding: var(--sp-5);
   overflow: hidden;
   color: var(--text-primary);
@@ -1067,18 +1076,17 @@ body:has([data-floating-notice='analytics']) [data-floating-notice='install'] {
   text-decoration: none;
   transition: transform var(--dur-base) var(--ease-out), box-shadow var(--dur-base) var(--ease-out), border-color var(--dur-base) var(--ease-out);
 }
-.home .service-card:nth-child(-n + 2) { grid-column: span 3; }
 .home .service-card:nth-child(1) { --feature-color: var(--accent); --feature-soft: #FF8A8A; }
 .home .service-card:nth-child(2) { --feature-color: var(--found); --feature-soft: #7DD8F0; }
 .home .service-card:nth-child(3) { --feature-color: var(--primary); --feature-soft: #8178F7; }
 .home .service-card:nth-child(4) { --feature-color: var(--found); --feature-soft: #7DD8F0; }
-.home .service-card:nth-child(5) { --feature-color: var(--clinic); --feature-soft: #56C7E8; }
-.home .service-card:nth-child(6) { --feature-color: var(--assistant); --feature-soft: #A49EFC; }
 .home .service-card:hover {
   transform: translateY(-5px);
   border-color: color-mix(in srgb, var(--feature-color) 55%, var(--border-subtle));
   box-shadow: var(--shadow-md);
 }
+.home .service-card:active { transform: translateY(-1px) scale(.995); }
+.home .service-card:focus-visible { outline: 3px solid var(--border-focus); outline-offset: 3px; }
 .home .service-icon {
   display: inline-flex;
   align-items: center;
@@ -1104,7 +1112,7 @@ body:has([data-floating-notice='analytics']) [data-floating-notice='install'] {
   font-weight: 700;
 }
 .home .service-card p {
-  max-width: 32ch;
+  margin: 0;
   color: var(--text-secondary);
   font-size: var(--text-xs);
   line-height: 1.55;
@@ -1142,13 +1150,11 @@ body:has([data-floating-notice='analytics']) [data-floating-notice='install'] {
 }
 .home .step-desc { color: var(--text-secondary); font-size: 13.5px; line-height: 1.55; }
 
-@media (max-width: 900px) {
-  .home .service-card,
-  .home .service-card:nth-child(-n + 2) { grid-column: span 3; }
+@media (max-width: 1100px) {
+  .home .services-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 600px) {
-  .home .service-card,
-  .home .service-card:nth-child(-n + 2) { grid-column: span 6; min-height: 0; }
+  .home .services-grid { grid-template-columns: 1fr; gap: var(--sp-3); }
 }
 @media (max-width: 480px) {
   .home .service-card { padding: var(--sp-4); border-radius: var(--r-md); }
