@@ -2,8 +2,6 @@ const { withSentryConfig } = require('@sentry/nextjs/config');
 const { assertDatabaseTarget, allowsHostedDatabase } = require('./lib/databaseSafety.cjs');
 const hostedDatabase = allowsHostedDatabase();
 assertDatabaseTarget(process.env.NEXT_PUBLIC_SUPABASE_URL, hostedDatabase);
-const localHttp = 'http://127.0.0.1:54321 http://localhost:54321 http://[::1]:54321';
-const localWs = 'ws://127.0.0.1:54321 ws://localhost:54321 ws://[::1]:54321';
 
 const onnxCpuFiles = [
   'node_modules/onnxruntime-node/bin/napi-v3/linux/x64/*',
@@ -36,32 +34,12 @@ const nextConfig = {
       { protocol: 'https', hostname: 'firebasestorage.googleapis.com' },
     ],
   },
-  // Security headers. CSP-г аппын бодит хэрэгцээнд тааруулсан:
-  // - 'unsafe-inline' script: layout-ийн theme script (dangerouslySetInnerHTML)
-  // - 'unsafe-inline' style: styled-jsx
-  // - 'unsafe-eval' + jsdelivr/Hugging Face CDN + blob: — browser-ийн DINOv2
-  //   (transformers.js/ONNX runtime, lib/similarity.ts) заагдсан CDN-ээс ачаалагддаг
-  // - supabase storage/realtime, Sentry, fonts, unpkg (leaflet.css)
+  // HTML CSP is generated per request in proxy.ts.
   async headers() {
-    const csp = [
-      "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net blob:",
-      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com",
-      "font-src 'self' https://fonts.gstatic.com data:",
-      `img-src 'self' data: blob: ${hostedDatabase ? 'https://*.supabase.co' : localHttp} https://firebasestorage.googleapis.com https://tile.openstreetmap.org`,
-      `connect-src 'self' blob: ${hostedDatabase ? 'https://*.supabase.co wss://*.supabase.co' : localHttp + ' ' + localWs} https://cdn.jsdelivr.net https://huggingface.co https://*.huggingface.co https://*.hf.co https://*.sentry.io https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com`,
-      "worker-src 'self' blob:",
-      "frame-ancestors 'none'",
-      "base-uri 'self'",
-      "form-action 'self'",
-      "object-src 'none'",
-    ].join('; ');
-
     return [
       {
         source: '/(.*)',
         headers: [
-          { key: 'Content-Security-Policy', value: csp },
           { key: 'X-Frame-Options', value: 'DENY' },
           { key: 'X-Content-Type-Options', value: 'nosniff' },
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },

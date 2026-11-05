@@ -1,3 +1,4 @@
+import { readJsonBody, jsonBodyErrorResponse } from '../../../lib/requestJson';
 import { limitIpRequest, limitUserRequest } from '../../../lib/apiRateLimit';
 import { reportError } from '../../../lib/errorTracking';
 import { canUpdatePushSubscription } from '../../../lib/pushOwnership';
@@ -34,7 +35,7 @@ export async function POST(request: Request) {
   try {
     const ipLimit = await limitIpRequest(request, 'push-create');
     if (ipLimit) return ipLimit;
-    const body = await request.json() as SubscriptionBody;
+    const body = await readJsonBody(request) as SubscriptionBody;
     const keys = body.keys;
     if (!isAllowedPushEndpoint(body.endpoint)) return NextResponse.json({ error: 'Push endpoint буруу байна.' }, { status: 400 });
     if (typeof keys?.p256dh !== 'string' || typeof keys?.auth !== 'string' || keys.p256dh.length > 500 || keys.auth.length > 500) return NextResponse.json({ error: 'Push түлхүүр буруу байна.' }, { status: 400 });
@@ -65,6 +66,8 @@ export async function POST(request: Request) {
     }
     return NextResponse.json({ ok: true });
   } catch (error) {
+    const bodyError = jsonBodyErrorResponse(error);
+    if (bodyError) return bodyError;
     reportError(error, { area: 'backend', operation: 'push-subscription-create' });
     return NextResponse.json({ error: 'Push бүртгэл хадгалахад алдаа гарлаа.' }, { status: 500 });
   }

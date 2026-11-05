@@ -1,3 +1,5 @@
+import { headers } from 'next/headers';
+import NonceStyleRegistry from '../components/StyleRegistry';
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import { Inter, JetBrains_Mono, Montserrat } from 'next/font/google';
@@ -38,11 +40,13 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default async function RootLayout({ children }: { children: ReactNode }) {
+  const nonce = (await headers()).get('x-nonce') ?? '';
   return (
     <html lang="mn" suppressHydrationWarning>
       <head>
-        <script
+        <meta property="csp-nonce" content={nonce} />
+        <script nonce={nonce}
           dangerouslySetInnerHTML={{
             __html: `
               (function() {
@@ -57,21 +61,23 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         />
       </head>
       <body className={`${inter.variable} ${montserrat.variable} ${jetBrainsMono.variable}`}>
-        <AuthProvider>
-          <LanguageProvider>
-            <DocumentLanguage />
-            <ToastProvider>
-              <FeedbackProvider>
-                <Navbar />
-                <main id="main-content"><PageTransition>{children}</PageTransition></main>
-                <Footer />
-              </FeedbackProvider>
-              <InstallPrompt />
-              <Onboarding />
-              <AnalyticsProvider />
-            </ToastProvider>
-          </LanguageProvider>
-        </AuthProvider>
+        <NonceStyleRegistry nonce={nonce}>
+          <AuthProvider>
+            <LanguageProvider>
+              <DocumentLanguage />
+              <ToastProvider>
+                <FeedbackProvider>
+                  <Navbar />
+                  <main id="main-content"><PageTransition>{children}</PageTransition></main>
+                  <Footer />
+                </FeedbackProvider>
+                <InstallPrompt />
+                <Onboarding />
+                <AnalyticsProvider />
+              </ToastProvider>
+            </LanguageProvider>
+          </AuthProvider>
+        </NonceStyleRegistry>
       </body>
     </html>
   );

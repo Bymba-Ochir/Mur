@@ -1,3 +1,4 @@
+import { readJsonBody, jsonBodyErrorResponse } from '../../../lib/requestJson';
 import { limitIpRequest, limitUserRequest } from '../../../lib/apiRateLimit';
 import { reportError } from '../../../lib/errorTracking';
 // app/api/assistant/route.ts
@@ -36,7 +37,7 @@ export async function POST(request: Request) {
   try {
     const ipLimit = await limitIpRequest(request, 'assistant');
     if (ipLimit) return ipLimit;
-    const parsed = parseAssistantRequest(await request.json().catch(() => null));
+    const parsed = parseAssistantRequest(await readJsonBody(request));
     if (!parsed.ok) return NextResponse.json({ error: parsed.error }, { status: 400 });
 
     let userId: string;
@@ -90,6 +91,8 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ text });
   } catch (err) {
+    const bodyError = jsonBodyErrorResponse(err);
+    if (bodyError) return bodyError;
     reportError(err, { area: 'backend', operation: 'assistant' });
     return NextResponse.json({ text: null }, { status: 500 });
   }

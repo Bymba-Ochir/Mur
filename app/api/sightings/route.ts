@@ -1,3 +1,4 @@
+import { readJsonBody, jsonBodyErrorResponse } from '../../../lib/requestJson';
 import { limitIpRequest, limitUserRequest } from '../../../lib/apiRateLimit';
 import { reportError } from '../../../lib/errorTracking';
 import { NextResponse } from 'next/server';
@@ -27,7 +28,7 @@ export async function POST(request: Request) {
 
     const { user, admin } = await requireRequestUser(request);
 
-    const body = await request.json() as { petId?: unknown; message?: unknown; place?: unknown };
+    const body = await readJsonBody(request) as { petId?: unknown; message?: unknown; place?: unknown };
     if (typeof body.petId !== 'string' || !UUID.test(body.petId)) return NextResponse.json({ error: 'Зарын дугаар буруу байна.' }, { status: 400 });
     const message = cleanText(typeof body.message === 'string' ? body.message : '', 1000, 'Харсан мэдээлэл', true);
     const place = cleanText(typeof body.place === 'string' ? body.place : '', 300, 'Байршил') || null;
@@ -93,6 +94,8 @@ export async function POST(request: Request) {
     // v103's trigger commits the job in the same transaction as the v99 RPC.
     return await complete(false);
   } catch (error) {
+    const bodyError = jsonBodyErrorResponse(error);
+    if (bodyError) return bodyError;
     reportError(error, { area: 'backend', operation: 'create-sighting' });
     const unauthorized = error instanceof Error && error.message === 'UNAUTHORIZED';
     return NextResponse.json({ error: unauthorized ? 'Мэдээлэл илгээхийн тулд нэвтэрнэ үү.' : 'Мэдээлэл хадгалахад алдаа гарлаа.' }, { status: unauthorized ? 401 : 500 });

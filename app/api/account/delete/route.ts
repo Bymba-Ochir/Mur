@@ -1,3 +1,4 @@
+import { readJsonBody, jsonBodyErrorResponse } from '../../../../lib/requestJson';
 import { limitIpRequest, limitUserRequest } from '../../../../lib/apiRateLimit';
 import { reportError } from '../../../../lib/errorTracking';
 import { NextResponse } from 'next/server';
@@ -10,7 +11,7 @@ export async function DELETE(request: Request) {
   try {
     const ipLimit = await limitIpRequest(request, 'account-delete');
     if (ipLimit) return ipLimit;
-    const body = await request.json();
+    const body = await readJsonBody(request);
     if (body.confirmation !== 'УСТГАХ') return NextResponse.json({ error: 'Баталгаажуулах үг буруу байна.' }, { status: 400 });
     const { user, admin } = await requireRequestUser(request);
     const userLimit = await limitUserRequest('account-delete', user.id, admin);
@@ -25,6 +26,8 @@ export async function DELETE(request: Request) {
     scheduleBackgroundJobs();
     return NextResponse.json({ success: true });
   } catch (error) {
+    const bodyError = jsonBodyErrorResponse(error);
+    if (bodyError) return bodyError;
     const unauthorized = error instanceof Error && error.message === 'UNAUTHORIZED';
     reportError(error, { area: 'backend', operation: 'account-delete' });
     return NextResponse.json({ error: unauthorized ? 'Нэвтрэх шаардлагатай.' : 'Бүртгэлийг устгаж чадсангүй.' }, { status: unauthorized ? 401 : 500 });

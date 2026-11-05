@@ -1,3 +1,4 @@
+import { readJsonBody, jsonBodyErrorResponse } from '../../../../lib/requestJson';
 import { limitIpRequest } from '../../../../lib/apiRateLimit';
 import { reportError } from '../../../../lib/errorTracking';
 // app/api/donations/create/route.ts
@@ -56,18 +57,20 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Idempotency-Key шаардлагатай.' }, { status: 400 });
     }
 
-    const body = await request.json();
+    const body = await readJsonBody(request);
     const { amount, supporterName, message, isAnonymous } = body;
 
-    if (!Number.isSafeInteger(amount) || amount < 1000 || amount > 5_000_000) {
+    if (typeof amount !== 'number' || !Number.isSafeInteger(amount) || amount < 1000 || amount > 5_000_000) {
       return NextResponse.json({ error: 'Дүн 1,000₮ - 5,000,000₮ хооронд байх ёстой' }, { status: 400 });
     }
-    if (supporterName && (typeof supporterName !== 'string' || supporterName.length > 100)) {
+    if (supporterName != null && (typeof supporterName !== 'string' || supporterName.length > 100)) {
       return NextResponse.json({ error: 'Нэр хэт урт байна' }, { status: 400 });
     }
-    if (message && (typeof message !== 'string' || message.length > 500)) {
+    if (message != null && (typeof message !== 'string' || message.length > 500)) {
       return NextResponse.json({ error: 'Мессеж хэт урт байна' }, { status: 400 });
     }
+
+    if (isAnonymous != null && typeof isAnonymous !== 'boolean') return NextResponse.json({ error: 'Нууцлах сонголт буруу байна.' }, { status: 400 });
 
     const input: DonationInput = {
       amount,
@@ -189,6 +192,8 @@ export async function POST(request: Request) {
 
     return NextResponse.json(donationPayload(finalRow, qpayInvoice.urls));
   } catch (err) {
+    const bodyError = jsonBodyErrorResponse(err);
+    if (bodyError) return bodyError;
     reportError(err, { area: 'backend', operation: 'donation-create' });
     return NextResponse.json({ error: 'Хандив үүсгэхэд алдаа гарлаа. Дахин оролдоно уу.' }, { status: 500 });
   }

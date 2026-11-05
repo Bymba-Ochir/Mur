@@ -50,7 +50,6 @@ it.each([
   { ...input, page: '/pets?secret=value' },
   { ...input, message: '    ' },
   { ...input, message: 'x'.repeat(2001) },
-  { ...input, ignored: 'x'.repeat(16384) },
 ])('rejects invalid feedback without writing', async (body) => {
   expect((await POST(request(body))).status).toBe(400);
   expect(createAdminClient).not.toHaveBeenCalled();
@@ -71,4 +70,9 @@ it('acknowledges retries only when the saved submission matches', async () => {
 it('keeps record IDs out of the captured page area', () => {
   expect(feedbackPage('/messages/private-conversation')).toBe('/messages');
   expect(feedbackPage('/')).toBe('/');
+});
+
+it('rejects oversized feedback with 413 before writing', async () => {
+  expect((await POST(request({ ...input, ignored: 'x'.repeat(16384) }))).status).toBe(413);
+  expect(createAdminClient).not.toHaveBeenCalled();
 });

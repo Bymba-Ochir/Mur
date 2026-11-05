@@ -2,7 +2,9 @@ import { limitIpRequest, limitUserRequest } from '../../../../lib/apiRateLimit';
 import { reportError } from '../../../../lib/errorTracking';
 import { NextResponse } from 'next/server';
 import { requireRequestUser } from '../../../../lib/serverAuth';
-import { fetchServerPhotoRecords } from '../../../../lib/serverPhotoRepository';
+import { accountExportPages, encodeAccountExport } from '../../../../lib/accountExport';
+
+export const maxDuration = 60;
 
 export async function GET(request: Request) {
   try {
@@ -11,38 +13,42 @@ export async function GET(request: Request) {
     const { user, admin } = await requireRequestUser(request);
     const userLimit = await limitUserRequest('account-export', user.id, admin);
     if (userLimit) return userLimit;
-    const queries = await Promise.all([
-      admin.from('profiles').select('*').eq('id', user.id).maybeSingle(),
-      admin.from('pets').select('id,status,name,type,breed,color,place,district,resolved,created_at').eq('created_by', user.id),
-      admin.from('adoptions').select('id,name,type,age,gender,breed,description,district,place,created_at').eq('created_by', user.id),
-      admin.from('sitting_listings').select('id,pet_type,description,district,place,experience,availability,price,created_at').eq('user_id', user.id),
-      admin.from('my_pets').select('*').eq('user_id', user.id),
-      admin.from('appointments').select('*').eq('user_id', user.id),
-      admin.from('adoption_applications').select('*').or(`applicant_id.eq.${user.id},owner_id.eq.${user.id}`),
-      admin.from('sitting_bookings').select('*').or(`customer_id.eq.${user.id},sitter_id.eq.${user.id}`),
-      admin.from('sitting_reviews').select('*').or(`reviewer_id.eq.${user.id},sitter_id.eq.${user.id}`),
-      admin.from('notifications').select('*').eq('user_id', user.id),
-      admin.from('sightings').select('id,pet_id,message,place,created_at').eq('reporter_id', user.id),
-      admin.from('reports').select('id,pet_id,reason,status,created_at').eq('reporter_id', user.id),
-      admin.from('push_subscriptions').select('id,district,endpoint,created_at').eq('user_id', user.id),
-      admin.from('pet_favorites').select('pet_id,created_at').eq('user_id', user.id),
-      admin.from('saved_searches').select('*').eq('user_id', user.id),
-    ]);
-    const failed = queries.find((result) => result.error);
-    if (failed?.error) throw failed.error;
-    const petIds = (queries[1].data ?? []).map((row) => row.id);
-    const adoptionIds = (queries[2].data ?? []).map((row) => row.id);
-    const [petPhotos, adoptionPhotos] = await Promise.all([
-      fetchServerPhotoRecords(admin, 'pet', petIds),
-      fetchServerPhotoRecords(admin, 'adoption', adoptionIds),
-    ]);
-    const { data: conversations, error: conversationError } = await admin.from('conversations').select('*').or(`initiator_id.eq.${user.id},owner_id.eq.${user.id}`);
-    if (conversationError) throw conversationError;
-    const conversationIds = (conversations ?? []).map((row) => row.id);
-    const messageResult = conversationIds.length ? await admin.from('messages').select('*').in('conversation_id', conversationIds) : { data: [], error: null };
-    if (messageResult.error) throw messageResult.error;
-    const payload = { exportedAt: new Date().toISOString(), account: { id: user.id, email: user.email, createdAt: user.created_at }, profile: queries[0].data, pets: queries[1].data, petPhotos, adoptions: queries[2].data, adoptionPhotos, sittingListings: queries[3].data, myPets: queries[4].data, appointments: queries[5].data, adoptionApplications: queries[6].data, sittingBookings: queries[7].data, sittingReviews: queries[8].data, notifications: queries[9].data, sightings: queries[10].data, reports: queries[11].data, pushSubscriptions: queries[12].data, petFavorites: queries[13].data, savedSearches: queries[14].data, conversations, messages: messageResult.data };
-    return new NextResponse(JSON.stringify(payload, null, 2), { headers: { 'Content-Type': 'application/json; charset=utf-8', 'Content-Disposition': `attachment; filename="mur-data-${new Date().toISOString().slice(0, 10)}.json"`, 'Cache-Control': 'no-store' } });
+    const controller = new AbortController();
+    const abort = () => controller.abort();
+    request.signal.addEventListener('abort', abort, { once: true });
+    if (request.signal.aborted) abort();
+    try {
+      const { data: profile, error } = await admin.from('profiles').select('*').eq('id', user.id).abortSignal(controller.signal).maybeSingle();
+      if (error) throw error;
+      const iterator = encodeAccountExport(user, profile, accountExportPages(admin, user.id, controller.signal));
+      const encoder = new TextEncoder();
+      const cleanup = () => request.signal.removeEventListener('abort', abort);
+      const stream = new ReadableStream<Uint8Array>({
+        async pull(output) {
+          try {
+            const { done, value } = await iterator.next();
+            if (done) { cleanup(); output.close(); }
+            else output.enqueue(encoder.encode(value));
+          } catch (error) {
+            cleanup();
+            if (!controller.signal.aborted) reportError(error, { area: 'backend', operation: 'account-export-stream' });
+            controller.abort();
+            // Never complete a truncated JSON document as a successful export.
+            output.error(new Error('Account export interrupted'));
+          }
+        },
+        async cancel() { cleanup(); controller.abort(); await iterator.return(); },
+      });
+      return new NextResponse(stream, { headers: {
+        'Content-Type': 'application/json; charset=utf-8',
+        'Content-Disposition': `attachment; filename="mur-data-${new Date().toISOString().slice(0, 10)}.json"`,
+        'Cache-Control': 'private, no-store',
+      } });
+    } catch (error) {
+      request.signal.removeEventListener('abort', abort);
+      controller.abort();
+      throw error;
+    }
   } catch (error) {
     reportError(error, { area: 'backend', operation: 'account-export' });
     const unauthorized = error instanceof Error && error.message === 'UNAUTHORIZED';

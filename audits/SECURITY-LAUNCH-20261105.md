@@ -1,5 +1,24 @@
 # Mur — 2026-11-05-ны нээлтийн техникийн шалгалт
 
+## Хамгийн сүүлийн хатууруулалт — 2026-11-05
+
+Суурь: `d05aa86`. Доорх хуучин snapshot-уудын дөрвөн follow-up-ийг энэ засвар шийдсэн:
+
+- Dependency: Sentry bundler-ийн `glob`-ийг scoped override-аар 14.0.3, TypeScript-ESLint-ийн `minimatch`-ийг 11.0.4 болгосон. Framework/Sentry downgrade болон audit ignore ашиглаагүй. Энэ хоёр override нь transitive major солилт тул lint/build болон Sentry-ийн globFiles API-г тусад нь шалгасан. Audit: **бүх severity 0**; CI gate одоо `--audit-level=moderate`.
+- CSP: HTML request бүрд server-generated nonce, trusted framework/theme/styled-jsx output-д nonce дамжуулна. Browser-ийн nonce/CSP header-ийг дарж солино; prefetch header-ээр алгасахгүй. Production JavaScript `unsafe-inline`, `unsafe-eval` байхгүй. AI WASM-д зөвхөн `wasm-unsafe-eval`, Leaflet/React style attribute-д `style-src-attr 'unsafe-inline'` үлдсэн. Style element нь nonce шаарддаг. Local CSP-д hosted DB source байхгүй.
+- JSON: 9 inbound JSON API нэг streamed reader ашиглана. Ердийн хүсэлт **16 KiB**, notify/legacy QPay webhook **64 KiB**. Actual bytes тоолдог тул Content-Length дутуу/хуурамч байлаа ч cap үйлчилнэ; overflow **413**, malformed UTF-8/JSON/object **400**. Auth, rate limit, idempotency болон payment verification хадгалагдсан. Уншдаггүй signed callback body-г parse хийх шаардлагагүй.
+- Account export: verified user-ийн өгөгдөл **100 мөрийн keyset page**, conversation IDs мөн 100-аар, photo parent IDs 20-оор (<=80 child photo) уншина. JSON response нь backpressure-тай stream; бүх мөр/ID-ийг memory-д хураахгүй. Cancel query-г зогсооно; дундаас нь DB алдаа гарвал valid боловч дутуу JSON болгож дуусгахгүй. Нэг transaction snapshot биш тул export дундуур зэрэг өөрчлөгдсөн өгөгдөл нэг агшны snapshot болох баталгаа байхгүй; маш том export нь hosting-ийн 60 секундийн хязгаарт хэвээр хамаарна.
+
+Nonce-д request бүрийн render шаардлагатай: HTML нь dynamic, private/no-store; shared CDN HTML cache ашиглахгүй. Static JS/CSS/image asset cache хэвээр. Ачаалал нэмэгдэх үед Vercel function usage-г хянана. [Next nonce guide](https://nextjs.org/docs/app/guides/content-security-policy), [MDN script/WASM CSP](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Content-Security-Policy/script-src).
+
+Баталгаажуулалт: TypeScript, ESLint, **66 файл / 410 unit тест**, production build; local SQL **4 файл / 92 тест**; desktop/mobile E2E **74 PASS / 2 platform skip**. Browser-ийн жинхэнэ DINOv2 inference нь 384 finite dimension гаргасан; DB matching request-ийг local interception-оор хоосон fixture response болгосон. Export acceptance нь өөр account-ийн өгөгдлийг оруулахгүйгээр 1,105 message, 1,105 seed notification болон trigger-ийн notification-уудыг бүрэн татсан. Бүх fixture зөвхөн local DB дээр үүсэж цэвэрлэгдсэн.
+
+**DB schema/RLS/migration өөрчлөлт байхгүй. Production SQL шаардлагагүй.** Push/deploy болон provider-ийн дараах бодит төлөвийг тусад нь release-ийн үр дүнгээр батална. Domain, SMTP, production backup/RLS болон live integrations-ийн шалгалт local pass-аар батлагдахгүй.
+
+## Өмнөх шалгалтын түүх
+
+Доорх advisory болон үлдсэн ажил гэсэн тоонууд нь өмнөх snapshot; одоогийн төлөвийг дээрх хэсгээс харна.
+
 Суурь: `3fa22f7`. Энэ тайлангийн огноо Asia/Ulaanbaatar. Зөвхөн public HTTP response, repository болон local dependency/test орчныг шалгасан. Production database, provider credential, Git history, бүх route-ийн эрхийн бүрэн аудит биш.
 
 ## Public HTTP

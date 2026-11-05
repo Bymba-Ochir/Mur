@@ -1,3 +1,4 @@
+import { readJsonBody, jsonBodyErrorResponse } from '../../../lib/requestJson';
 import { limitIpRequest, limitUserRequest } from '../../../lib/apiRateLimit';
 import { reportError } from '../../../lib/errorTracking';
 import { NextResponse } from 'next/server';
@@ -14,7 +15,7 @@ export async function POST(request: Request) {
     const { user, admin } = await requireRequestUser(request);
     const userLimit = await limitUserRequest('reports', user.id, admin);
     if (userLimit) return userLimit;
-    const body = await request.json() as { petId?: unknown; reason?: unknown };
+    const body = await readJsonBody(request) as { petId?: unknown; reason?: unknown };
     if (typeof body.petId !== 'string' || !UUID.test(body.petId)) return NextResponse.json({ error: 'Зарын дугаар буруу байна.' }, { status: 400 });
     if (typeof body.reason !== 'string' || !ALLOWED_REASONS.has(body.reason)) return NextResponse.json({ error: 'Шалгуулах шалтгааныг сонгоно уу.' }, { status: 400 });
     const { data: pet, error: petError } = await admin.from('pets').select('created_by').eq('id', body.petId).maybeSingle();
@@ -26,6 +27,8 @@ export async function POST(request: Request) {
     if (error) throw error;
     return NextResponse.json({ ok: true }, { status: 201 });
   } catch (error) {
+    const bodyError = jsonBodyErrorResponse(error);
+    if (bodyError) return bodyError;
     reportError(error, { area: 'backend', operation: 'create-report' });
     const unauthorized = error instanceof Error && error.message === 'UNAUTHORIZED';
     return NextResponse.json({ error: unauthorized ? 'Зарыг шалгуулахаар илгээхийн тулд нэвтэрнэ үү.' : 'Мэдээллийг илгээж чадсангүй.' }, { status: unauthorized ? 401 : 500 });

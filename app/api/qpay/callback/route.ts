@@ -1,3 +1,4 @@
+import { readJsonBody, jsonBodyErrorResponse, WEBHOOK_BODY_LIMIT } from '../../../../lib/requestJson';
 import { limitIpRequest, limitServiceRequest } from '../../../../lib/apiRateLimit';
 import { reportError } from '../../../../lib/errorTracking';
 import { NextResponse } from 'next/server';
@@ -44,7 +45,7 @@ async function handleCallback(request: Request) {
     // Existing invoices already have the legacy callback URL registered with QPay.
     let lookupId = donationId;
     if (!signedUrl) {
-      const body = await request.json().catch(() => null);
+      const body = await readJsonBody(request, { maxBytes: WEBHOOK_BODY_LIMIT });
       const invoiceId: unknown = body?.invoice_id;
       if (typeof invoiceId !== 'string' || !invoiceId || invoiceId.length > 200) return acknowledge();
       lookupId = invoiceId;
@@ -76,6 +77,8 @@ async function handleCallback(request: Request) {
 
     return acknowledge();
   } catch (err) {
+    const bodyError = jsonBodyErrorResponse(err);
+    if (bodyError) return bodyError;
     reportError(err, { area: 'backend', operation: 'qpay-callback' });
     return NextResponse.json({ error: 'Callback unavailable' }, { status: 503, headers: noStore });
   }
