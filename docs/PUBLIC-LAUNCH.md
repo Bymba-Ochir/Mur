@@ -30,6 +30,21 @@
 | Модераци | Санал хүсэлт, мэдээлсэн заруудыг хэн хэзээ шалгах нь тодорхой; туршилтын зар, хувийн мэдээллийг нийтэд үлдээгээгүй. |
 | Зардал | Provider тус бүрийн одоогийн plan, хэрэглээний limit, alert, төлбөрийн эзэмшигч тодорхой. Төлбөртэй plan-ийг хэрэглэгчийн шийдвэргүй идэвхжүүлэхгүй. |
 
+2026-11-05-ны public HTTP болон dependency шалгалт, засвар, үлдсэн advisory-ийн хүрээг [техникийн тайлангаас](../audits/SECURITY-LAUNCH-20261105.md) харна.
+
+## Mur-ийн managed орчинд тааруулах нь
+
+- Mur нь Next.js/React, Vercel, Supabase ашиглана. VPS-ийн Nginx/Caddy, pm2, certbot, SSH/ufw тохиргоо одоогийн hosting-д хамаарахгүй. Vercel production build/deploy болон domain-ийн TLS-ийг хариуцна. Local VM-ийн аюулгүй байдал нь тусдаа, production hosting биш.
+- Domain DNS-ийн A/CNAME утгыг Vercel **Settings → Domains** дээр тухайн domain-д харуулснаар оруулна. Дурын серверийн IP/AAAA бичлэг нэмэхгүй. DNS зөв болсон үед Vercel certificate үүсгэж, сунгалтыг автоматаар оролддог. Domain бүртгэлийн сунгалт нь certificate сунгалтаас тусдаа.
+- `NEXT_PUBLIC_SITE_URL`-ийг шинэ domain-тай тааруулж rebuild хийнэ. Browser-ийн database guard зөвшөөрөгдсөн hostname-уудаа build үед авдаг тул зөвхөн DNS солих нь хангалтгүй.
+- Supabase publishable/legacy anon key болон Sentry ingestion DSN нь browser-д харагдах public тохиргоо. Service-role/secret key, QPay/Groq credential, cron secret, Sentry auth token нь серверийн нууц. Public key харагдсаныг secret leak гэж андуурахгүй; RLS, grants, verified user болон server authorization-ийг шалгана.
+- Одоогийн нэвтрэлт magic link ашиглаж, Supabase browser session ба серверээр verify хийсэн Bearer token-оор ажиллана. Cookie-auth хэрэглэдэг системийн HttpOnly/CSRF жишээг шууд хуулж authentication-ийг солихгүй. Cookie ашигладаг privileged route нэмэх бол түүнд тохирсон CSRF/origin хамгаалалтыг тусад нь загварчилна.
+- Hosted Supabase-ийн public Data API нь зориуд browser-оос дуудагдана. PostgreSQL network restrictions, credential ба SSL тохиргоог Dashboard дээр шалгахын зэрэгцээ хүснэгтийн RLS/grant-ийг батална. Production database-ийн сүлжээ, эрхийг local скриптээр автоматаар өөрчлөхгүй.
+- `npm run audit:security` нь high/critical advisory илэрвэл амжилтгүй гарна; CI quality job мөн ажиллуулна. Moderate advisory-уудыг тайлангаас review хийнэ. GitHub check унах нь Vercel automatic deploy-г дангаараа зогсоодог гэсэн баталгаа биш: release хийхдээ CI болон deployment-ийг хамтад нь батална.
+- 2026-11-05-нд production-ийн HTTP → HTTPS 308 redirect, CSP/HSTS/frame/nosniff header болон `/.env`, `/.env.local`, `/.git/HEAD`, `/.git/config`-ийн 404 хариуг шалгасан. Энэ нь бүх route, Git history эсвэл нууц түлхүүрийн бүрэн аудит биш. CSP дэх inline/eval зөвшөөрлүүдийн нэмэлт hardening нь тусдаа ажил; AI/image урсгалыг туршихгүйгээр хасахгүй.
+
+Эх сурвалж: [Vercel domain](https://vercel.com/docs/domains/working-with-domains/add-a-domain), [TLS](https://vercel.com/docs/domains/working-with-ssl), [Supabase API key](https://supabase.com/docs/guides/getting-started/api-keys), [RLS](https://supabase.com/docs/guides/database/postgres/row-level-security).
+
 ## Хоёр хэрэглэгчтэй smoke test
 
 1. Гаднын email-аар нэвтрэх; logout; хуучин/дахин хэрэглэсэн magic link-ийг шалгах.

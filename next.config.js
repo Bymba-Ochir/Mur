@@ -1,4 +1,4 @@
-const { withSentryConfig } = require('@sentry/nextjs');
+const { withSentryConfig } = require('@sentry/nextjs/config');
 const { assertDatabaseTarget, allowsHostedDatabase } = require('./lib/databaseSafety.cjs');
 const hostedDatabase = allowsHostedDatabase();
 assertDatabaseTarget(process.env.NEXT_PUBLIC_SUPABASE_URL, hostedDatabase);

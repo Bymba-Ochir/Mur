@@ -33,7 +33,7 @@ npm run dev
 
 ## Технологи
 
-`package.json`-д Next.js ^16.3.0, React ^19.2.8, TypeScript ^5.9.3, Tailwind ^4.3.3, Supabase JS ^2.45.0, Vitest ^4.1.10 байна. Яг суух хувилбарын эх сурвалж нь `package-lock.json`.
+`package.json`-д Next.js ^16.4.5, React ^19.2.8, TypeScript ^5.9.3, Tailwind ^4.3.3, Supabase JS ^2.45.0, Vitest ^4.1.12 байна. Яг суух хувилбарын эх сурвалж нь `package-lock.json`.
 
 Зургийн төстэй байдал: browser дотор `Xenova/dinov2-small`, 384 хэмжээст embedding; transformers.js 3.0.2 CDN-ээс ачаална. Энэ нь амьтны identity-г баталдаг үйлчилгээ биш. AI туслахын Groq интеграц нь тусдаа.
 
