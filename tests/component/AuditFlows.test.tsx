@@ -7,7 +7,7 @@ import InstallPrompt from '../../components/InstallPrompt';
 import { LanguageProvider, useLanguage } from '../../lib/i18n';
 import { useListingFilters } from '../../lib/useListingFilters';
 beforeEach(() => {
-  localStorage.clear(); mock.path = '/listings';
+  localStorage.clear(); mock.path = '/listings'; mock.push.mockReset();
   window.history.replaceState(null, '', '/listings');
   vi.stubGlobal('matchMedia', vi.fn(() => ({ matches: false })));
 });
@@ -57,4 +57,35 @@ it('restores filters from URL after remount and responds to history changes', ()
   expect(screen.getByRole('textbox')).toHaveValue('хар нохой');
   act(() => { window.history.replaceState(null, '', '/listings?status=lost'); window.dispatchEvent(new PopStateEvent('popstate')); });
   expect(screen.getByText('lost')).toBeInTheDocument();
+});
+
+it.each([
+  ['Амьтнаа алдсан', '/report-lost'],
+  ['Амьтан олсон', '/report-found'],
+])('opens the report form for %s without district or notification prompts', (choice, route) => {
+  const requestPermission = vi.fn();
+  vi.stubGlobal('Notification', { requestPermission });
+  render(<LanguageProvider><Onboarding /></LanguageProvider>);
+  act(() => window.dispatchEvent(new Event('mur:open-onboarding')));
+  fireEvent.click(screen.getByRole('button', { name: new RegExp('^' + choice) }));
+  fireEvent.click(screen.getByRole('button', { name: 'Маягт нээх' }));
+  expect(mock.push).toHaveBeenCalledWith(route);
+  expect(screen.queryByRole('dialog')).toBeNull();
+  expect(requestPermission).not.toHaveBeenCalled();
+});
+
+it.each([
+  ['Зар хайх', '/listings'],
+  ['Амьтан үрчлэх', '/adoptions'],
+])('applies the chosen district when opening %s', (choice, route) => {
+  render(<LanguageProvider><Onboarding /></LanguageProvider>);
+  act(() => window.dispatchEvent(new Event('mur:open-onboarding')));
+  fireEvent.click(screen.getByRole('button', { name: new RegExp('^' + choice) }));
+  fireEvent.click(screen.getByRole('button', { name: 'Үргэлжлүүлэх' }));
+  fireEvent.change(screen.getByRole('combobox'), { target: { value: 'Баянзүрх' } });
+  fireEvent.click(screen.getByRole('button', { name: 'Зар үзэх' }));
+  const destination = new URL(mock.push.mock.calls[0][0], 'http://localhost');
+  expect(destination.pathname).toBe(route);
+  expect(destination.searchParams.get('district')).toBe('Баянзүрх');
+  expect(screen.queryByRole('dialog')).toBeNull();
 });

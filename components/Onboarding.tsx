@@ -2,10 +2,9 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { DISTRICTS } from '../lib/districts';
+import { DISTRICTS, type District } from '../lib/districts';
 import { useLanguage } from '../lib/i18n';
-import { setLocalStorageValue } from '../lib/useLocalStorageState';
-import UiIcon from './ui/icons';
+import UiIcon, { type IconName } from './ui/icons';
 
 const OPEN_EVENT = 'mur:open-onboarding';
 type Intent = 'lost' | 'found' | 'adopt' | 'browse';
@@ -14,14 +13,12 @@ const intentRoutes: Record<Intent, string> = {
   lost: '/report-lost', found: '/report-found', adopt: '/adoptions', browse: '/listings',
 };
 
-function Icon({ name }: { name: Intent | 'location' | 'bell' }) {
-  const common = { width: 24, height: 24, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const };
-  if (name === 'lost') return <svg {...common}><path d="M12 9v4m0 4h.01"/><path d="M10.3 3.7 2.6 17a2 2 0 0 0 1.7 3h15.4a2 2 0 0 0 1.7-3L13.7 3.7a2 2 0 0 0-3.4 0Z"/></svg>;
-  if (name === 'found') return <svg {...common}><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4m-7-5 1.5 1.5L14 9"/></svg>;
-  if (name === 'adopt') return <svg {...common}><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z"/></svg>;
-  if (name === 'browse') return <svg {...common}><path d="M3 6h18M3 12h18M3 18h18"/><circle cx="7" cy="6" r="1" fill="currentColor"/><circle cx="16" cy="12" r="1" fill="currentColor"/><circle cx="10" cy="18" r="1" fill="currentColor"/></svg>;
-  if (name === 'location') return <svg {...common}><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg>;
-  return <svg {...common}><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg>;
+const guideIcons: Record<Intent | 'location', IconName> = {
+  lost: 'alert', found: 'eye', adopt: 'heart', browse: 'search', location: 'pin',
+};
+
+function Icon({ name }: { name: Intent | 'location' }) {
+  return <UiIcon name={guideIcons[name]} size={24} />;
 }
 
 export default function Onboarding() {
@@ -32,13 +29,14 @@ export default function Onboarding() {
   const [manualRoute, setManualRoute] = useState<string | null>(null);
   const [step, setStep] = useState(0);
   const [intent, setIntent] = useState<Intent | null>(null);
-  const [district, setDistrict] = useState('');
-  const [notifications, setNotifications] = useState(false);
+  const [district, setDistrict] = useState<District | ''>('');
   const visible = manualRoute === pathname;
   const en = lang === 'en';
+  const needsDistrict = intent === 'browse' || intent === 'adopt';
+  const totalSteps = intent && !needsDistrict ? 1 : 2;
 
   useEffect(() => {
-    const open = () => { setStep(0); setManualRoute(pathname); };
+    const open = () => { setStep(0); setIntent(null); setDistrict(''); setManualRoute(pathname); };
     window.addEventListener(OPEN_EVENT, open);
     return () => window.removeEventListener(OPEN_EVENT, open);
   }, [pathname]);
@@ -46,11 +44,14 @@ export default function Onboarding() {
   useEffect(() => {
     if (!visible) return;
     const previousFocus = document.activeElement as HTMLElement | null;
-    dialogRef.current?.querySelector<HTMLButtonElement>('button')?.focus();
     const trapFocus = (event: KeyboardEvent) => {
       if (event.key !== 'Tab') return;
       const nodes = Array.from(dialogRef.current?.querySelectorAll<HTMLElement>('button:not(:disabled), select, input, a[href]') ?? []);
       const first = nodes[0], last = nodes.at(-1);
+      if (!first || !last) return;
+      if (!nodes.includes(document.activeElement as HTMLElement)) {
+        event.preventDefault(); (event.shiftKey ? last : first).focus(); return;
+      }
       if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
       else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
     };
@@ -69,22 +70,24 @@ export default function Onboarding() {
     };
   }, [visible]);
 
+  useEffect(() => {
+    if (!visible) return;
+    const frame = requestAnimationFrame(() => dialogRef.current?.querySelector<HTMLElement>('#onb-title')?.focus());
+    return () => cancelAnimationFrame(frame);
+  }, [visible, step]);
+
   function close() {
     setManualRoute(null);
   }
 
-  async function enableNotifications() {
-    if (!('Notification' in window)) return;
-    const permission = await Notification.requestPermission();
-    const enabled = permission === 'granted';
-    setNotifications(enabled);
-    setLocalStorageValue('mur-notifications-preferred', enabled ? '1' : '0');
-  }
-
-  function finish() {
-    if (district) setLocalStorageValue('mur-preferred-district', district);
+  function advance() {
+    if (!intent) return;
+    if (step === 0 && needsDistrict) { setStep(1); return; }
+    const params = new URLSearchParams();
+    if (needsDistrict && DISTRICTS.includes(district as District)) params.set('district', district);
+    const destination = intentRoutes[intent] + (params.size ? '?' + params.toString() : '');
     close();
-    if (intent) router.push(intentRoutes[intent]);
+    router.push(destination);
   }
 
   if (!visible) return null;
@@ -105,19 +108,19 @@ export default function Onboarding() {
     <div className="onb-overlay" role="dialog" aria-modal="true" aria-labelledby="onb-title" onClick={close}>
       <div ref={dialogRef} className="onb-card" onClick={(event) => event.stopPropagation()}>
         <div className="onb-top">
-          <div className="onb-progress" aria-label={`${step + 1} / 3`}>
-            {[0, 1, 2].map((item) => <span key={item} className={item <= step ? 'active' : ''} />)}
+          <div className="onb-progress" role="progressbar" aria-label={en ? 'Guide progress' : 'Зааврын явц'} aria-valuemin={1} aria-valuemax={totalSteps} aria-valuenow={step + 1}>
+            {Array.from({ length: totalSteps }, (_, item) => item).map((item) => <span key={item} className={item <= step ? 'active' : ''} />)}
           </div>
           <button className="onb-close" type="button" onClick={close} aria-label={en ? 'Close' : 'Хаах'}>×</button>
         </div>
 
         {step === 0 && <>
           <span className="onb-kicker">{en ? 'WELCOME TO МӨР' : 'МӨР-Т ТАВТАЙ МОРИЛ'}</span>
-          <h2 id="onb-title">{en ? 'What would you like to do?' : 'Та юу хийх вэ?'}</h2>
-          <p className="onb-lead">{en ? 'Choose one to open the right section immediately.' : 'Танд хэрэгтэй хэсгийг шууд нээхийн тулд нэгийг сонгоно уу.'}</p>
+          <h2 id="onb-title" tabIndex={-1}>{en ? 'What would you like to do?' : 'Та юу хийх вэ?'}</h2>
+          <p className="onb-lead">{en ? 'Choose an action. For browsing or adoption, you can also filter by district.' : 'Хэрэгтэй үйлдлээ сонгоорой. Зар хайх, үрчлэх үед дүүргээр шүүж болно.'}</p>
           <div className="onb-choices">
             {choices.map((choice) => (
-              <button key={choice.id} type="button" className={intent === choice.id ? 'selected' : ''} onClick={() => setIntent(choice.id)}>
+              <button key={choice.id} type="button" aria-pressed={intent === choice.id} className={intent === choice.id ? 'selected' : ''} onClick={() => setIntent(choice.id)}>
                 <span className="choice-icon"><Icon name={choice.id} /></span>
                 <span><strong>{choice.title}</strong><small>{choice.text}</small></span>
                 <span className="choice-check"><UiIcon name="check" size={15} /></span>
@@ -128,30 +131,19 @@ export default function Onboarding() {
 
         {step === 1 && <div className="onb-centered">
           <span className="large-icon"><Icon name="location" /></span>
-          <h2 id="onb-title">{en ? 'Choose your district' : 'Байршлаа сонгоно уу'}</h2>
-          <p className="onb-lead">{en ? 'We will use it as the default filter. You can change it later.' : 'Жагсаалтыг энэ дүүргээр анхлан шүүнэ. Дараа нь хүссэн үедээ сольж болно.'}</p>
+          <h2 id="onb-title" tabIndex={-1}>{en ? 'Choose your district' : 'Байршлаа сонгоно уу'}</h2>
+          <p className="onb-lead">{en ? 'Filter this search by district, or leave it blank to search all districts.' : 'Энэ удаагийн хайлтыг дүүргээр шүүнэ. Бүх дүүргээс хайх бол сонгохгүй орхиж болно.'}</p>
           <label htmlFor="onboarding-district">{en ? 'District' : 'Дүүрэг'}</label>
-          <select id="onboarding-district" value={district} onChange={(event) => setDistrict(event.target.value)}>
-            <option value="">{en ? 'Choose later' : 'Дараа сонгох'}</option>
+          <select id="onboarding-district" value={district} onChange={(event) => setDistrict(event.target.value as District | '')}>
+            <option value="">{en ? 'All districts' : 'Бүх дүүрэг'}</option>
             {DISTRICTS.map((item) => <option key={item} value={item}>{item}</option>)}
           </select>
         </div>}
 
-        {step === 2 && <div className="onb-centered">
-          <span className="large-icon"><Icon name="bell" /></span>
-          <h2 id="onb-title">{en ? 'Do not miss a match' : 'Шинэ тохирлыг бүү алдаарай'}</h2>
-          <p className="onb-lead">{en ? 'Allow notifications for new matches, messages, and vaccine reminders.' : 'Шинэ тохирол, зурвас болон вакцины сануулга ирэхэд мэдэгдэл аваарай.'}</p>
-          <button type="button" className={`notification-choice ${notifications ? 'enabled' : ''}`} onClick={enableNotifications}>
-            <Icon name="bell" />
-            <span><strong>{notifications ? (en ? 'Notifications enabled' : 'Мэдэгдэл идэвхтэй') : (en ? 'Enable notifications' : 'Мэдэгдэл идэвхжүүлэх')}</strong><small>{en ? 'You can turn this off in your browser.' : 'Browser-ын тохиргооноос хүссэн үедээ унтрааж болно.'}</small></span>
-          </button>
-          <p className="privacy-note">{en ? 'МӨР only sends service-related notifications.' : 'МӨР зөвхөн үйлчилгээтэй холбоотой хэрэгтэй мэдэгдэл илгээнэ.'}</p>
-        </div>}
-
         <div className="onb-actions">
           {step > 0 ? <button className="secondary" type="button" onClick={() => setStep(step - 1)}>{en ? 'Back' : 'Буцах'}</button> : <button className="secondary" type="button" onClick={close}>{en ? 'Skip' : 'Алгасах'}</button>}
-          <button className="primary" type="button" disabled={step === 0 && !intent} onClick={() => step === 2 ? finish() : setStep(step + 1)}>
-            {step === 2 ? (en ? 'Start' : 'Эхлэх') : (en ? 'Continue' : 'Үргэлжлүүлэх')}
+          <button className="primary" type="button" disabled={step === 0 && !intent} onClick={advance}>
+            {step === 1 ? (en ? 'View listings' : 'Зар үзэх') : intent && !needsDistrict ? (en ? 'Open form' : 'Маягт нээх') : (en ? 'Continue' : 'Үргэлжлүүлэх')}
           </button>
         </div>
       </div>
@@ -182,10 +174,6 @@ export default function Onboarding() {
         .large-icon :global(svg) { width: 30px; height: 30px; }
         label { display: block; margin: 0 0 7px; color: var(--text-secondary); font-size: 12px; font-weight: 700; text-align: left; }
         select { width: 100%; height: 52px; padding: 0 14px; color: var(--text-primary); background: var(--surface-2); border: 1px solid var(--border-subtle); border-radius: var(--r-md); font: inherit; }
-        .notification-choice { display: flex; align-items: center; gap: 14px; width: 100%; padding: 16px; color: var(--text-primary); text-align: left; background: var(--surface-2); border: 1px solid var(--border-subtle); border-radius: var(--r-md); cursor: pointer; }
-        .notification-choice :global(svg) { color: var(--primary); flex: 0 0 auto; }
-        .notification-choice.enabled { border-color: var(--success); }
-        .privacy-note { margin: 14px 0 0; color: var(--text-tertiary); font-size: 11px; }
         .onb-actions { display: grid; grid-template-columns: 1fr 1.5fr; gap: 10px; margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border-subtle); }
         .onb-actions button { min-height: 48px; border-radius: var(--r-md); font-weight: 700; cursor: pointer; }
         .onb-actions .secondary { color: var(--text-secondary); background: transparent; border: 1px solid var(--border-subtle); }
