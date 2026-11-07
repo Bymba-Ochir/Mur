@@ -1,5 +1,6 @@
 import { ulaanbaatarDate } from './bookingDate';
 import { supabase } from './supabase';
+import { reportError } from './errorTracking';
 import { assertDateOrder, cleanText, optionalIsoDate } from './inputValidation';
 import { COMPACT_PAGE_SIZE, finalizePage, pageWindow, type PageResult } from './pagination';
 
@@ -130,10 +131,38 @@ export async function notificationCount(): Promise<number> { const { count, erro
 export async function unreadNotificationCount(): Promise<number> { const { count, error } = await supabase.from('notifications').select('id', { count: 'exact', head: true }).is('read_at', null); if (error) return 0; return count ?? 0; }
 export async function markNotificationRead(id: string): Promise<void> { const { error } = await supabase.from('notifications').update({ read_at: new Date().toISOString() }).eq('id', id).is('read_at', null); if (error) throw error; }
 export async function markAllNotificationsRead(): Promise<void> { const { error } = await supabase.from('notifications').update({ read_at: new Date().toISOString() }).is('read_at', null); if (error) throw error; }
-export function subscribeToNotifications(userIdValue: string, onChange: () => void): () => void {
-  const channel = supabase
-    .channel(`notifications:${userIdValue}`)
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'notifications', filter: `user_id=eq.${userIdValue}` }, onChange)
-    .subscribe();
-  return () => { void supabase.removeChannel(channel); };
+type NotificationSubscription = {
+  channel: ReturnType<typeof supabase.channel>;
+  listeners: Set<() => void>;
+};
+
+const notificationSubscriptions = new Map<string, NotificationSubscription>();
+let notificationChannelSequence = 0;
+
+export function subscribeToNotifications(userId: string, onChange: () => void): () => void {
+  // The navbar and inbox share one channel. Realtime returns an existing
+  // channel by topic and rejects new postgres_changes handlers after joining.
+  const listener = () => onChange();
+  let subscription = notificationSubscriptions.get(userId);
+  if (subscription) {
+    subscription.listeners.add(listener);
+  } else {
+    const listeners = new Set([listener]);
+    const refresh = () => { for (const callback of listeners) callback(); };
+    // A new topic can join while the previous channel is still unsubscribing.
+    const channel = supabase
+      .channel(`notifications:${userId}:${++notificationChannelSequence}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'notifications', filter: `user_id=eq.${userId}` }, refresh)
+      .subscribe(status => { if (status === 'SUBSCRIBED') refresh(); });
+    subscription = { channel, listeners };
+    notificationSubscriptions.set(userId, subscription);
+  }
+
+  const { channel, listeners } = subscription;
+  return () => {
+    if (!listeners.delete(listener) || listeners.size > 0) return;
+    notificationSubscriptions.delete(userId);
+    void supabase.removeChannel(channel)
+      .catch(error => reportError(error, { area: 'frontend', operation: 'close-notification-channel' }));
+  };
 }

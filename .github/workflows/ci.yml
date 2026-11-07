@@ -63,7 +63,10 @@ jobs:
       - run: npm run db:reset
       - run: npm run db:test
       - run: npx playwright install --with-deps chromium
-      - run: npm run build
+      - name: Build with a disposable public push key for E2E
+        run: |
+          export NEXT_PUBLIC_VAPID_PUBLIC_KEY="$(node -p 'require("web-push").generateVAPIDKeys().publicKey')"
+          npm run build
       - name: Start local server and run E2E
         env:
           PLAYWRIGHT_BASE_URL: http://localhost:3000
