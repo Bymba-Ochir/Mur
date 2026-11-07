@@ -6,6 +6,7 @@ import { supabase } from './supabase';
 import type { District } from './districts';
 
 const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+export const PUSH_SUBSCRIPTION_EVENT = 'mur:push-subscription-changed';
 
 function urlBase64ToUint8Array(base64String: string): Uint8Array<ArrayBuffer> {
   const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
@@ -19,7 +20,7 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array<ArrayBuffer> {
 }
 
 export function isPushSupported(): boolean {
-  return typeof window !== 'undefined' && 'serviceWorker' in navigator && 'PushManager' in window;
+  return typeof window !== 'undefined' && 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
 }
 
 /**
@@ -61,27 +62,34 @@ async function subscribePush({ district, userId }: { district?: District | null;
     body: JSON.stringify({ endpoint: json.endpoint, keys: json.keys, district: district || null, vaccine: Boolean(userId) }),
   });
   if (!response.ok) { const payload = await response.json().catch(() => null) as { error?: string } | null; throw new Error(payload?.error || 'Push бүртгэл хадгалахад алдаа гарлаа.'); }
+  window.dispatchEvent(new Event(PUSH_SUBSCRIPTION_EVENT));
 }
 
-export async function isSubscribed(): Promise<boolean> {
-  if (!isPushSupported()) return false;
+interface PushStatus { subscribed: boolean; vaccine: boolean; }
+
+async function readPushStatus(district?: District): Promise<PushStatus> {
+  const inactive = { subscribed: false, vaccine: false };
+  if (!isPushSupported() || Notification.permission !== 'granted') return inactive;
   const registration = await navigator.serviceWorker.getRegistration('/sw.js');
-  if (!registration) return false;
-  const sub = await registration.pushManager.getSubscription();
-  return !!sub;
+  const subscription = await registration?.pushManager.getSubscription();
+  if (!subscription) return inactive;
+  const identity = subscription.toJSON();
+  const { data: { session } } = await supabase.auth.getSession();
+  const response = await fetch('/api/push-subscriptions/status', {
+    method: 'POST', cache: 'no-store',
+    headers: { 'Content-Type': 'application/json', ...(session ? { Authorization: `Bearer ${session.access_token}` } : {}) },
+    body: JSON.stringify({ endpoint: identity.endpoint, keys: identity.keys, ...(district ? { district } : {}) }),
+  });
+  if (!response.ok) throw new Error('Push status unavailable');
+  const result = await response.json() as Partial<PushStatus>;
+  if (typeof result.subscribed !== 'boolean' || typeof result.vaccine !== 'boolean') throw new Error('Invalid push status');
+  return { subscribed: result.subscribed, vaccine: result.vaccine };
+}
+
+export async function isSubscribed(district: District): Promise<boolean> {
+  return (await readPushStatus(district)).subscribed;
 }
 
 export async function isVaccineSubscribed(): Promise<boolean> {
-  if (!isPushSupported()) return false;
-  const registration = await navigator.serviceWorker.getRegistration('/sw.js');
-  const sub = await registration?.pushManager.getSubscription();
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!sub || !session) return false;
-  const response = await fetch(`/api/push-subscriptions?endpoint=${encodeURIComponent(sub.endpoint)}`, {
-    headers: { Authorization: `Bearer ${session.access_token}` },
-    cache: 'no-store',
-  });
-  if (!response.ok) return false;
-  const data = await response.json() as { vaccine?: boolean };
-  return data.vaccine === true;
+  return (await readPushStatus()).vaccine;
 }

@@ -17,6 +17,7 @@ export const API_RATE_POLICIES = {
   'content-delete': { ip: minute(30), user: minute(20), requiresUser: true },
   'push-status': { ip: minute(60), user: minute(30), requiresUser: true },
   'push-create': { ip: hour(8) },
+  'push-browser-status': { ip: minute(60), user: minute(30) },
   assistant: { ip: { limit: 60, windowSeconds: 600 }, user: { limit: 30, windowSeconds: 600 }, requiresUser: true },
   reports: { ip: minute(30), user: hour(8), requiresUser: true },
   'feedback-create': { ip: hour(10) },

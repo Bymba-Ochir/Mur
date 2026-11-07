@@ -82,3 +82,39 @@ Production migration-ийн өмнө managed backup/restore боломж бол�
 3. [Read-only audit](../audits/race-condition-v99-readonly.sql)-аар давхардсан идэвхтэй цаг, давхар зөвшөөрсөн үрчлэлт, давхцсан асаргааны захиалга тус бүр 0 байгааг шалгана.
 
 `Get-Content ... | Set-Clipboard` нь SQL текстийг хуулна. Ажиллуулахдаа Supabase Dashboard → SQL Editor → Run ашиглана.
+
+## Push status болон volunteer COUNT rollout (2026-11-07)
+
+Шинэ migration: `supabase/migrations/20261106155501_volunteer_district_counts.sql`.
+Энэ нь **pre-deploy**: `get_volunteer_count(text)` RPC болон district index-ийг
+шинэ код deploy хийхээс өмнө production дээр гараар хэрэглэнэ. Одоо байгаа RLS,
+волонтерын мөрүүд болон push subscription ownership дүрмүүдийг өөрчлөхгүй.
+RPC нь `SECURITY INVOKER` тул дуудсан role-ийн SELECT/RLS эрхийг мөрдөнө.
+
+1. Local шалгалт: `npm run db:check`, `npm run db:reset`, `npm run db:test`.
+   `db:reset` нь local өгөгдлийг устгадаг тул хэрэгтэй local data-гаа эхлээд нөөцөл.
+2. Production backup-аа баталсны дараа **зөвхөн шинэ SQL файлыг** Supabase Dashboard
+   → SQL Editor-д paste хийж **Run** дарна. Imported migration түүхийг дахин тоглуулахгүй.
+   Local CLI/app-ийг production DB-д холбохгүй; `db push --linked` ашиглахгүй.
+3. SQL амжилттай болсны дараа typecheck/lint/test/build тэнцсэн кодыг push/deploy хийнэ.
+4. Deploy-ийн дараа дүүрэг сонгоход тоо RPC-ээс ирж, `/rest/v1/volunteers` мөрүүд
+   бөөнөөр татагдахгүйг шалга. Migration байхгүй үед UI худал 0 харуулахгүй,
+   алдаа болон дахин оролдох үйлдэл харуулна; full-table fallback байхгүй.
+
+```powershell
+Set-Location 'D:\Mur\mur-mvp'
+Get-Content -LiteralPath '.\supabase\migrations\20261106155501_volunteer_district_counts.sql' -Raw | Set-Clipboard
+```
+
+Энэ команд SQL-ийг **зөвхөн хуулна**, ажиллуулахгүй.
+
+Push төлөв шалгах шинэ `POST /api/push-subscriptions/status` нь read-only.
+Endpoint дангаараа ownership биш: bounded JSON body дахь одоогийн browser-ийн
+keys-ийг хадгалсан keys-тэй тулгана. Account-тай холбогдсон subscription-д
+Supabase-аар шалгасан ижил account заавал хэрэгтэй. Guest/өөр account-д эзэмшигч,
+district, key-үүдийг задлахгүй; зөвхөн boolean төлөв буцаана. Proof нь URL/log/response-д
+орохгүй. Шинэ public status route-д тусдаа IP болон verified-user rate limit бий.
+Одоо байгаа authenticated GET нь хуучин client-үүдийн нийцэлд хэвээр.
+
+Rollback: өмнөх Vercel deployment руу кодыг буцааж болно. Энэ migration нь нэмэлт
+RPC/index л үүсгэдэг тул rollback хийхдээ production function/index-ийг устгах шаардлагагүй.

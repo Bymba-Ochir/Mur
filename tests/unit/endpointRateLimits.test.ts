@@ -23,6 +23,7 @@ import { POST as assistant } from '../../app/api/assistant/route';
 import { POST as donationCreate } from '../../app/api/donations/create/route';
 import { GET as donationStatus } from '../../app/api/donations/status/route';
 import { POST as callback } from '../../app/api/qpay/callback/route';
+import { POST as browserPushStatus } from '../../app/api/push-subscriptions/status/route';
 import { GET as pushStatus, POST as pushCreate } from '../../app/api/push-subscriptions/route';
 import { POST as notify } from '../../app/api/notify/route';
 import { GET as cron } from '../../app/api/vaccine-reminders/route';
@@ -55,6 +56,7 @@ const endpoints: Array<[string, () => Promise<Response>]> = [
   ['POST /qpay/callback', () => callback(request('/api/qpay/callback'))],
   ['GET /push-subscriptions', () => pushStatus(request('/api/push-subscriptions?endpoint=https://fcm.googleapis.com/device', 'GET'))],
   ['POST /push-subscriptions', () => pushCreate(request('/api/push-subscriptions'))],
+  ['POST /push-subscriptions/status', () => browserPushStatus(request('/api/push-subscriptions/status'))],
   ['POST /notify', () => notify(request('/api/notify', 'POST', {}, { 'x-webhook-secret': 'private' }))],
   ['GET /vaccine-reminders', () => cron(request('/api/vaccine-reminders', 'GET'))],
   ['GET /background-jobs', () => backgroundWorker(request('/api/background-jobs', 'GET'))],

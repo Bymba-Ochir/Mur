@@ -1,7 +1,7 @@
 // lib/volunteerService.ts
 import { supabase } from './supabase';
 import { subscribeToNearbyAlerts } from './push';
-import type { District } from './districts';
+import { DISTRICTS, type District } from './districts';
 
 export async function joinAsVolunteer(district: District): Promise<void> {
   const { data: { user } } = await supabase.auth.getUser();
@@ -32,7 +32,8 @@ export async function leaveAsVolunteer(district: District): Promise<void> {
 }
 
 export async function isVolunteer(district: District): Promise<boolean> {
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError) throw authError;
   if (!user) return false;
   const { data, error } = await supabase
     .from('volunteers')
@@ -40,19 +41,16 @@ export async function isVolunteer(district: District): Promise<boolean> {
     .eq('user_id', user.id)
     .eq('district', district)
     .maybeSingle();
-  if (error) return false;
+  if (error) throw error;
   return !!data;
 }
 
-/**
- * Дүүрэг бүрийн сайн дурын идэвхтний тоог буцаана: { 'Баянзүрх': 5, ... }
- */
-export async function fetchVolunteerCounts(): Promise<Record<string, number>> {
-  const { data, error } = await supabase.from('volunteers').select('district');
+/** One scalar COUNT from PostgreSQL, never a browser-side scan of volunteers. */
+export async function fetchVolunteerCount(district: District): Promise<number> {
+  if (!DISTRICTS.includes(district)) throw new Error('Invalid district');
+  const { data, error } = await supabase.rpc('get_volunteer_count', { target_district: district });
   if (error) throw error;
-  const counts: Record<string, number> = {};
-  for (const row of data) {
-    counts[row.district] = (counts[row.district] || 0) + 1;
-  }
-  return counts;
+  const count = typeof data === 'string' && /^\d+$/.test(data) ? Number(data) : data;
+  if (typeof count !== 'number' || !Number.isSafeInteger(count) || count < 0) throw new Error('Invalid volunteer count');
+  return count;
 }

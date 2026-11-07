@@ -2,12 +2,10 @@ import { readJsonBody, jsonBodyErrorResponse } from '../../../lib/requestJson';
 import { limitIpRequest, limitUserRequest } from '../../../lib/apiRateLimit';
 import { reportError } from '../../../lib/errorTracking';
 import { canUpdatePushSubscription } from '../../../lib/pushOwnership';
-import { isAllowedPushEndpoint } from '../../../lib/pushEndpoint';
+import { parsePushIdentity } from '../../../lib/pushSubscriptionIdentity';
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '../../../lib/supabaseAdmin';
 import { DISTRICTS } from '../../../lib/districts';
-
-interface SubscriptionBody { endpoint?: unknown; keys?: { p256dh?: unknown; auth?: unknown }; district?: unknown; vaccine?: unknown; }
 
 export async function GET(request: Request) {
   const token = request.headers.get('authorization')?.replace(/^Bearer\s+/i, '');
@@ -35,10 +33,10 @@ export async function POST(request: Request) {
   try {
     const ipLimit = await limitIpRequest(request, 'push-create');
     if (ipLimit) return ipLimit;
-    const body = await readJsonBody(request) as SubscriptionBody;
-    const keys = body.keys;
-    if (!isAllowedPushEndpoint(body.endpoint)) return NextResponse.json({ error: 'Push endpoint буруу байна.' }, { status: 400 });
-    if (typeof keys?.p256dh !== 'string' || typeof keys?.auth !== 'string' || keys.p256dh.length > 500 || keys.auth.length > 500) return NextResponse.json({ error: 'Push түлхүүр буруу байна.' }, { status: 400 });
+    const body = await readJsonBody(request);
+    const identity = parsePushIdentity(body);
+    if (!identity) return NextResponse.json({ error: 'Push endpoint эсвэл түлхүүр буруу байна.' }, { status: 400 });
+    const { keys } = identity;
     const district = typeof body.district === 'string' && DISTRICTS.includes(body.district as (typeof DISTRICTS)[number]) ? body.district : null;
     const admin = createAdminClient();
     let userId: string | null = null;
@@ -46,15 +44,15 @@ export async function POST(request: Request) {
     if (token) { const { data, error } = await admin.auth.getUser(token); if (error || !data.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); userId = data.user.id; }
     if (body.vaccine === true && !userId) return NextResponse.json({ error: 'Вакцины сануулгад нэвтрэх шаардлагатай.' }, { status: 401 });
     if (!district && body.vaccine !== true) return NextResponse.json({ error: 'Дүүрэг сонгоно уу.' }, { status: 400 });
-    const { data: existing, error: findError } = await admin.from('push_subscriptions').select('district,user_id,keys').eq('endpoint', body.endpoint).maybeSingle();
+    const { data: existing, error: findError } = await admin.from('push_subscriptions').select('district,user_id,keys').eq('endpoint', identity.endpoint).maybeSingle();
     if (findError) throw findError;
     if (existing && !canUpdatePushSubscription(existing, userId, keys)) {
       return NextResponse.json({ error: 'Push бүртгэлийг шинэчлэх эрхгүй байна.' }, { status: 403 });
     }
-    const payload = { endpoint: body.endpoint, keys, district: district ?? existing?.district ?? null, user_id: body.vaccine === true ? userId : existing?.user_id ?? null };
+    const payload = { endpoint: identity.endpoint, keys, district: district ?? existing?.district ?? null, user_id: body.vaccine === true ? userId : existing?.user_id ?? null };
     if (existing) {
       // Compare-and-set: a concurrent claim must not be overwritten.
-      let query = admin.from('push_subscriptions').update(payload).eq('endpoint', body.endpoint).eq('keys', JSON.stringify(existing.keys));
+      let query = admin.from('push_subscriptions').update(payload).eq('endpoint', identity.endpoint).eq('keys', JSON.stringify(existing.keys));
       query = existing.user_id ? query.eq('user_id', existing.user_id) : query.is('user_id', null);
       const { data, error } = await query.select('endpoint');
       if (error) throw error;
