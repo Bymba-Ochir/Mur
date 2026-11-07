@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation';
 import { useAuth } from '../lib/useAuth';
 import { isAdmin } from '../lib/adminService';
 import ThemeToggle from './ThemeToggle';
-import DonateButton from './DonateButton';
+import DonateButton, { type BankTransfer } from './DonateButton';
 import FeedbackButton from './FeedbackButton';
 import LanguageToggle from './LanguageToggle';
 import LoginModal from './LoginModal';
@@ -22,7 +22,7 @@ function truncateEmail(email: string): string {
   return local.length > 10 ? `${local.slice(0, 9)}…` : local;
 }
 
-export default function Navbar({ donationsEnabled = false }: { donationsEnabled?: boolean }) {
+export default function Navbar({ donationsEnabled = false, bankTransfer }: { donationsEnabled?: boolean; bankTransfer?: BankTransfer }) {
   const { user, logout } = useAuth();
   const { t } = useLanguage();
   const pathname = usePathname();
@@ -264,7 +264,7 @@ export default function Navbar({ donationsEnabled = false }: { donationsEnabled?
 
         {/* Right side: donate + toggles + user/account */}
         <div className="nav-right">
-          {donationsEnabled && <DonateButton compactOnDesktop />}
+          {(bankTransfer || donationsEnabled) && <DonateButton bankTransfer={bankTransfer} compactOnDesktop />}
           <LanguageToggle />
           <ThemeToggle />
           {user ? (
@@ -402,7 +402,7 @@ export default function Navbar({ donationsEnabled = false }: { donationsEnabled?
               )}
             </nav>
             <div className="mobile-menu-actions">
-              {donationsEnabled && <DonateButton />}
+              {(bankTransfer || donationsEnabled) && <DonateButton bankTransfer={bankTransfer} />}
               <div className="mobile-menu-row">
                 <LanguageToggle />
                 <ThemeToggle />

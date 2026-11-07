@@ -2,11 +2,16 @@
 import { useState } from 'react';
 import DonateModal from './DonateModal';
 import { useLanguage } from '../lib/i18n';
+import Modal from './ui/Modal';
 import Icon from './ui/icons';
 
-export default function DonateButton({ compactOnDesktop = false }: { compactOnDesktop?: boolean }) {
+export interface BankTransfer { iban: string; bank: string; recipient: string }
+
+export default function DonateButton({ compactOnDesktop = false, bankTransfer }: { compactOnDesktop?: boolean; bankTransfer?: BankTransfer }) {
   const { t } = useLanguage();
   const [open, setOpen] = useState(false);
+  const [copyStatus, setCopyStatus] = useState<'copied' | 'failed' | null>(null);
+  const close = () => { setOpen(false); setCopyStatus(null); };
   const label = t('donate_btn');
   return (
     <>
@@ -15,7 +20,22 @@ export default function DonateButton({ compactOnDesktop = false }: { compactOnDe
         <span className="donate-icon"><Icon name="heart" size={17} /></span>
         <span className="donate-label">{label}</span>
       </button>
-      {open && <DonateModal onClose={() => setOpen(false)} />}
+      {open && (bankTransfer ? (
+        <Modal open onClose={close} title={t('donate_title')} closeLabel={t('donate_close')} width="sm">
+          <p>{t('donate_transfer_hint')}</p>
+          <p>{bankTransfer.bank} · {bankTransfer.recipient}</p>
+          <p><code>{bankTransfer.iban}</code></p>
+          <button type="button" className="donate-btn" onClick={async () => {
+            try {
+              await navigator.clipboard.writeText(bankTransfer.iban);
+              setCopyStatus('copied');
+            } catch {
+              setCopyStatus('failed');
+            }
+          }}>{t('donate_copy_iban')}</button>
+          <p role="status">{copyStatus && t(copyStatus === 'copied' ? 'donate_iban_copied' : 'donate_copy_failed')}</p>
+        </Modal>
+      ) : <DonateModal onClose={close} />)}
       <style jsx>{`
         .donate-btn {
           background: var(--grad-accent);

@@ -42,6 +42,10 @@ export const metadata: Metadata = {
 };
 
 export default async function RootLayout({ children }: { children: ReactNode }) {
+  const iban = process.env.DONATION_IBAN?.trim();
+  const bank = process.env.DONATION_BANK?.trim();
+  const recipient = process.env.DONATION_RECIPIENT?.trim();
+  const bankTransfer = iban && bank && recipient ? { iban, bank, recipient } : undefined;
   const nonce = (await headers()).get('x-nonce') ?? '';
   return (
     <html lang="mn" suppressHydrationWarning>
@@ -68,7 +72,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
               <DocumentLanguage />
               <ToastProvider>
                 <FeedbackProvider>
-                  <Navbar donationsEnabled={getQPayDonationConfig() !== null} />
+                  <Navbar bankTransfer={bankTransfer} donationsEnabled={getQPayDonationConfig() !== null} />
                   <main id="main-content"><PageTransition>{children}</PageTransition></main>
                   <Footer />
                 </FeedbackProvider>

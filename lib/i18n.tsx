@@ -212,6 +212,8 @@ admin_health_title: 'Системийн төлөв', admin_health_desc: 'Апп�
 admin_audit_title: 'Админы үйлдлийн түүх', admin_audit_desc: 'Админы сүүлийн 100 үйлдлийн бүртгэл.', admin_audit_empty_title: 'Үйлдлийн түүх хоосон байна', admin_audit_empty_desc: 'Бүртгэгдсэн үйлдлүүд энд харагдана.', admin_audit_setup: 'Түүх харагдахгүй бол өгөгдлийн сангийн тохиргоог шалгана уу.', admin_audit_action: 'Үйлдэл', admin_audit_target: 'Төрөл', admin_audit_time: 'Огноо',
 admin_audit_delete: 'Устгасан', admin_audit_dismiss_report: 'Зарын мэдээллийг үл хэрэгссэн', admin_audit_review_user: 'Хэрэглэгчийн мэдээллийг шалгасан', admin_audit_dismiss_user: 'Хэрэглэгчийн мэдээллийг үл хэрэгссэн', admin_target_pet: 'Алдсан/олдсон зар', admin_target_adoption: 'Үрчлүүлэх зар', admin_target_sitting: 'Асрах зар', admin_target_report: 'Зарын мэдээлэл', admin_target_user_report: 'Хэрэглэгчийн мэдээлэл',
 
+donate_transfer_hint: 'Банкны апп-аасаа хүссэн дүнгээ шилжүүлээрэй.', donate_copy_iban: 'Данс хуулах',
+donate_iban_copied: 'Дансны дугаар хуулагдлаа.', donate_copy_failed: 'Дансны дугаарыг гараар хуулна уу.',
 donate_title: 'МӨР-ийг дэмжих', donate_close: 'Хаах',
 donate_intro: 'Таны хандив сервер, домэйн зэрэг зардлыг санхүүжүүлэхэд зарцуулагдана. Баярлалаа!',
 donate_min_error: 'Хандивын дүн 1,000–5,000,000 ₮ хооронд байх ёстой.',
@@ -860,6 +862,8 @@ admin_health_title: 'System status', admin_health_desc: 'Latest production confi
 admin_audit_title: 'Admin audit log', admin_audit_desc: 'The 100 most recent admin actions.', admin_audit_empty_title: 'Audit log is empty', admin_audit_empty_desc: 'Admin actions will appear here after they are completed.', admin_audit_setup: 'If the audit log remains empty, check that the admin audit migration has been applied.', admin_audit_action: 'Action', admin_audit_target: 'Target', admin_audit_time: 'Date',
 admin_audit_delete: 'Deleted', admin_audit_dismiss_report: 'Dismissed post report', admin_audit_review_user: 'Reviewed user report', admin_audit_dismiss_user: 'Dismissed user report', admin_target_pet: 'Lost/found listing', admin_target_adoption: 'Adoption listing', admin_target_sitting: 'Pet-sitting listing', admin_target_report: 'Post report', admin_target_user_report: 'User report',
 
+donate_transfer_hint: 'Send an amount of your choice from your banking app.', donate_copy_iban: 'Copy IBAN',
+donate_iban_copied: 'IBAN copied.', donate_copy_failed: 'Please copy the IBAN manually.',
 donate_title: 'Support МӨР', donate_close: 'Close',
 donate_intro: 'Your donation helps cover server, domain, and development costs. Thank you!',
 donate_min_error: 'Enter an amount between ₮1,000 and ₮5,000,000.',
