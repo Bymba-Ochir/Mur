@@ -2,18 +2,32 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { useAuth } from '../lib/useAuth';
+import { googleLoginEnabled } from '../lib/supabaseClient';
 import { useLanguage } from '../lib/i18n';
 import Button from './ui/Button';
 import Modal from './ui/Modal';
 import FieldHint from './ui/FieldHint';
 
-/** Имэйл (magic link) нэвтрэх модал — Navbar-аас салгагдсан. */
 export default function LoginModal({ onClose }: { onClose: () => void }) {
-  const { loginWithEmail } = useAuth();
+  const { loginWithEmail, loginWithGoogle } = useAuth();
   const { t } = useLanguage();
+  const [showEmail, setShowEmail] = useState(!googleLoginEnabled);
+  const [openingGoogle, setOpeningGoogle] = useState(false);
   const [email, setEmail] = useState('');
   const [sent, setSent] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+
+  async function handleGoogle() {
+    setErr(null);
+    setOpeningGoogle(true);
+    try {
+      await loginWithGoogle();
+    } catch {
+      setErr(t('login_google_error'));
+    } finally {
+      setOpeningGoogle(false);
+    }
+  }
 
   async function handleSend(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -30,10 +44,21 @@ export default function LoginModal({ onClose }: { onClose: () => void }) {
     <Modal open onClose={onClose} title={t('login_title')} closeLabel={t('close')} width="sm" panelClassName="login-modal-panel">
         {sent ? (
           <p className="login-sent" role="status">{t('login_sent')}</p>
+        ) : !showEmail ? (
+          <>
+            <Button onClick={handleGoogle} disabled={openingGoogle} aria-busy={openingGoogle}>
+              {t('login_google')}
+            </Button>
+            {err && <p className="login-error" role="alert">{err}</p>}
+            <Button variant="ghost" disabled={openingGoogle} onClick={() => { setErr(null); setShowEmail(true); }}>
+              {t('login_use_email')}
+            </Button>
+          </>
         ) : (
           <form onSubmit={handleSend}>
             <label htmlFor="login-email">{t('login_email_label')}</label>
             <FieldHint mn="Нууц үг шаардахгүй. Энэ имэйл рүү нэг удаагийн нэвтрэх холбоос очно. Ирэхгүй бол Spam/Junk хавтсаа шалгана уу." en="No password is needed. A one-time sign-in link will be sent to this email. Check Spam/Junk if it does not arrive." />
+            {googleLoginEnabled && <FieldHint mn="Холбоосыг энэ хөтөч дээр нээгээрэй." en="Open the link in this same browser." />}
             <input
               id="login-email"
               type="email" required value={email}
@@ -43,6 +68,11 @@ export default function LoginModal({ onClose }: { onClose: () => void }) {
             />
             {err && <p id="login-error" className="login-error" role="alert">{err}</p>}
             <Button type="submit" variant="primary">{t('login_button')}</Button>
+            {googleLoginEnabled && (
+              <Button variant="ghost" onClick={() => { setErr(null); setShowEmail(false); }}>
+                {t('login_google')}
+              </Button>
+            )}
           </form>
         )}
     </Modal>

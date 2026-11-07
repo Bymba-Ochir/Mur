@@ -12,6 +12,7 @@ interface AuthContextValue {
   user: User | null;
   loading: boolean;
   loginWithEmail: (email: string) => Promise<void>;
+  loginWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -37,14 +38,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => { active = false; listener.subscription.unsubscribe(); };
   }, []);
 
-  /**
-   * Имэйл рүү нэвтрэх холбоос (magic link) илгээнэ.
-   * Google/Facebook OAuth тохируулах шаардлагагүй тул MVP-д хамгийн хурдан.
-   */
   const loginWithEmail = async (email: string): Promise<void> => {
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: { emailRedirectTo: typeof window !== 'undefined' ? window.location.origin : undefined },
+    });
+    if (error) throw error;
+  };
+
+  const loginWithGoogle = async (): Promise<void> => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: new URL('/auth/complete', window.location.origin).href },
     });
     if (error) throw error;
   };
@@ -54,7 +59,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, loginWithEmail, logout }}>
+    <AuthContext.Provider value={{ user, loading, loginWithEmail, loginWithGoogle, logout }}>
       {children}
     </AuthContext.Provider>
   );

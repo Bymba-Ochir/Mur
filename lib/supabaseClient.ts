@@ -1,6 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
 import { assertDatabaseTarget, allowsHostedDatabase } from './databaseSafety.cjs';
 
+export const googleLoginEnabled = process.env.NEXT_PUBLIC_GOOGLE_LOGIN_ENABLED === 'true';
+
 /** All public clients, including metadata/sitemap, pass the same target guard. */
 export function createPublicClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -9,7 +11,12 @@ export function createPublicClient() {
   if (!key) throw new Error('NEXT_PUBLIC_SUPABASE_ANON_KEY is required');
   const browser = typeof window !== 'undefined';
   return createClient(url!, key, {
-    auth: { persistSession: browser, autoRefreshToken: browser, detectSessionInUrl: browser },
+    auth: {
+      persistSession: browser,
+      autoRefreshToken: browser,
+      detectSessionInUrl: browser,
+      flowType: browser && googleLoginEnabled ? 'pkce' : 'implicit',
+    },
     global: { fetch: databaseFetch(url!) },
   });
 }
