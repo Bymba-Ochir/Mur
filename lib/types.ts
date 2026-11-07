@@ -83,6 +83,7 @@ export interface Sighting {
   lat: number | null;
   lng: number | null;
   sightedAt: string | null;
+  photoUrl: string | null;
   createdAt: string;
 }
 

@@ -1,6 +1,7 @@
 import { test, expect } from './fixtures';
 import type { Locator } from '@playwright/test';
 import type { Session } from '@supabase/supabase-js';
+import sharp from 'sharp';
 import { loadEnvConfig } from '@next/env';
 import { randomInt, randomUUID } from 'node:crypto';
 import { resolve } from 'node:path';
@@ -10,6 +11,7 @@ import { createPublicClient } from '../../lib/supabaseClient';
 let userId: string | undefined;
 let session: Session | null = null;
 const petId = randomUUID();
+const sightingOnlyPetId = randomUUID();
 test.beforeAll(async () => {
   loadEnvConfig(resolve(__dirname, '../..'), true);
   if (process.env.NEXT_PUBLIC_SUPABASE_URL !== 'http://127.0.0.1:54321') throw new Error('Map tests require local Supabase');
@@ -21,16 +23,27 @@ test.beforeAll(async () => {
   const signed = await createPublicClient().auth.signInWithPassword({ email, password });
   if (signed.error || !signed.data.session) throw new Error('Local map sign-in failed');
   session = signed.data.session;
-  const inserted = await admin.from('pets').insert({
-    id: petId, created_by: userId, status: 'lost', name: 'Map fixture', type: 'Муур',
-    color: 'Бор', district: 'Баянзүрх', place: 'Туршилтын байршил', phone: String(randomInt(10_000_000, 100_000_000)), lat: 47.9184, lng: 106.9177,
-  });
+  const fixture = {
+    created_by: userId, status: 'lost', name: 'Map fixture', type: 'Муур',
+    color: 'Бор', district: 'Баянзүрх', place: 'Туршилтын байршил', phone: String(randomInt(10_000_000, 100_000_000)),
+  };
+  const inserted = await admin.from('pets').insert([
+    { ...fixture, id: petId, lat: 47.9184, lng: 106.9177 },
+    { ...fixture, id: sightingOnlyPetId, lat: null, lng: null },
+  ]);
   if (inserted.error) throw inserted.error;
+  for (const message of ['Нэг байршлын эхний мэдээлэл', '<img src=x onerror=alert(1)>']) {
+    const sighting = await admin.rpc('create_sighting_if_active', {
+      target_id: randomUUID(), target_pet: sightingOnlyPetId, target_reporter: userId,
+      target_message: message, target_place: null, target_lat: 47.9184, target_lng: 106.9177, target_sighted_at: null,
+    });
+    if (sighting.error) throw sighting.error;
+  }
 });
 
 test.afterAll(async () => {
   const admin = createAdminClient();
-  const deleted = await admin.from('pets').delete().eq('id', petId);
+  const deleted = await admin.from('pets').delete().in('id', [petId, sightingOnlyPetId]);
   if (deleted.error) throw deleted.error;
   if (userId) {
     const removed = await admin.auth.admin.deleteUser(userId);
@@ -77,17 +90,22 @@ test('first click on an empty report map creates a working marker', async ({ pag
   await expectMapAssets(map);
 });
 
-test('sighting pin and time can be omitted or published and read after reload', async ({ page }) => {
+test('optional sighting photo, pin and time can be published and read after reload', async ({ page }) => {
   await page.addInitScript(auth => localStorage.setItem('sb-127-auth-token', JSON.stringify(auth)), session);
   await page.goto(`/pets/${petId}`);
   const section = page.locator('.sightings-section');
   const form = section.locator('form');
+  const map = page.locator('.map-section .location-map');
+  const purple = map.locator('img[src="/map-marker.svg"]');
+  const orange = map.locator('img[src="/sighting-map-marker.svg"]');
+  const popup = map.locator('.leaflet-popup-content');
   const time = form.getByLabel('Харсан огноо, цаг (заавал биш)');
   const openForm = () => section.getByRole('button', { name: '+ Би харсан', exact: true }).click();
   const publish = async () => {
     const posted = page.waitForResponse(res => new URL(res.url()).pathname === '/api/sightings' && res.request().method() === 'POST');
     await form.getByRole('button', { name: 'Нийтлэх', exact: true }).click();
-    expect((await posted).status()).toBe(201);
+    const response = await posted;
+    expect(response.status()).toBe(201);
   };
 
   await openForm();
@@ -102,25 +120,85 @@ test('sighting pin and time can be omitted or published and read after reload', 
   await form.getByRole('button', { name: 'Цэг арилгах' }).click();
   await expect(picker.locator('.leaflet-marker-icon')).toHaveCount(0);
   await publish();
+  await expect(section.getByText('Тайлбартай боловч цэг, цаггүй', { exact: true })).toBeVisible();
+  await expect(orange).toHaveCount(0);
 
   await openForm();
   await form.getByLabel('Харсан тухай мэдээлэл').fill('Газрын зураг, цагтай мэдээлэл');
+  await form.getByLabel('Харсан байршил').fill('Хорооллын цэцэрлэг');
   await time.fill('2025-01-02T18:30');
+  const image = await sharp({ create: { width: 64, height: 48, channels: 3, background: '#d5640c' } }).png().toBuffer();
+  const photo = form.getByLabel('Зураг (заавал биш)', { exact: true });
+  const photoAlt = 'Харсан тухай хавсаргасан зураг';
+  await photo.setInputFiles({ name: 'sighting.png', mimeType: 'image/png', buffer: image });
+  await expect(form.getByRole('img', { name: photoAlt })).toBeVisible();
+  await form.getByRole('button', { name: 'Зураг хасах' }).click();
+  await expect(form.getByRole('img', { name: photoAlt })).toHaveCount(0);
+  await photo.setInputFiles({ name: 'sighting.png', mimeType: 'image/png', buffer: image });
+  await expect(form.getByRole('img', { name: photoAlt })).toBeVisible();
   await form.getByRole('button', { name: 'Газрын зураг дээр тэмдэглэх (заавал биш)' }).click();
   await expect(picker.locator('.leaflet-control-zoom-in')).toBeVisible();
   await picker.click({ position: { x: 140, y: 100 } });
   await publish();
-  await expect(section.getByText('Газрын зураг, цагтай мэдээлэл', { exact: true })).toBeVisible();
+  await expect(section.getByText('Газрын зураг, цагтай мэдээлэл', { exact: true })).toHaveCount(1);
+  await expect(purple).toBeVisible();
+  await expect(orange).toBeVisible();
+  await orange.click();
+  await expect(popup.getByText('Газрын зураг, цагтай мэдээлэл', { exact: true })).toBeVisible();
+  await expect(popup.getByText('Харсан байршил: Хорооллын цэцэрлэг')).toBeVisible();
+  await expect(popup.getByText(/^Харсан: /)).toBeVisible();
+  await expect(popup.getByText(/^Нийтэлсэн: /)).toBeVisible();
+  await expect.poll(() => popup.getByRole('img', { name: photoAlt }).evaluate((img: HTMLImageElement) => img.naturalWidth)).toBe(64);
 
   await page.reload();
   const saved = section.locator('article').filter({ hasText: 'Газрын зураг, цагтай мэдээлэл' });
   await expect(saved.getByText('Харсан:', { exact: false })).toBeVisible();
+  await expect.poll(() => saved.getByRole('img', { name: photoAlt }).evaluate((img: HTMLImageElement) => img.naturalWidth)).toBe(64);
   await saved.getByRole('button', { name: 'Газрын зураг харах' }).click();
-  await expectMapAssets(saved.getByRole('region', { name: 'Харсан байршил' }));
+  await expect(popup.getByText('Газрын зураг, цагтай мэдээлэл', { exact: true })).toBeVisible();
+  await expect(saved.locator('.location-map')).toHaveCount(0);
+  await map.locator('.leaflet-popup-close-button').click();
+  await orange.focus();
+  await orange.press('Enter');
+  await expect(popup.getByText('Газрын зураг, цагтай мэдээлэл', { exact: true })).toBeVisible();
   const plain = section.locator('article').filter({ hasText: 'Тайлбартай боловч цэг, цаггүй' });
   await expect(plain).toBeVisible();
   await expect(plain.getByRole('button', { name: 'Газрын зураг харах' })).toHaveCount(0);
   await expect(plain.locator('time')).toHaveCount(1);
+});
+
+test('sighting photo retries verify the file contents and reject a fake image', async ({ request }) => {
+  const photo = await sharp({ create: { width: 32, height: 24, channels: 3, background: '#625bf6' } }).png().toBuffer();
+  const key = randomUUID();
+  const details = JSON.stringify({
+    petId, message: 'Photo retry fixture', lat: 47.91848765301045, lng: 106.91778653520563,
+  });
+  function submit(buffer: Buffer, idempotencyKey = key) {
+    return request.post('/api/sightings', {
+      headers: { authorization: `Bearer ${session!.access_token}`, 'idempotency-key': idempotencyKey },
+      multipart: { details, photo: { name: 'photo.png', mimeType: 'image/png', buffer } },
+    });
+  }
+  expect((await submit(photo)).status()).toBe(201);
+  const retry = await submit(photo);
+  expect(retry.status()).toBe(200);
+  expect(await retry.json()).toMatchObject({ duplicate: true });
+  expect((await submit(Buffer.from('different file'))).status()).toBe(409);
+  expect((await submit(Buffer.from('not an image'), randomUUID())).status()).toBe(400);
+});
+
+test('sightings alone create a map, with overlapping reports readable as text', async ({ page }) => {
+  await page.goto(`/pets/${sightingOnlyPetId}`);
+  const map = page.locator('.map-section .location-map');
+  const pin = map.locator('img[src="/sighting-map-marker.svg"]');
+  await expect(pin).toHaveCount(1);
+  await expect(map.locator('img[src="/map-marker.svg"]')).toHaveCount(0);
+  await pin.click();
+  const popup = map.locator('.leaflet-popup-content');
+  await expect(popup.getByText('Нэг байршлын эхний мэдээлэл')).toBeVisible();
+  await expect(popup.getByText('<img src=x onerror=alert(1)>')).toBeVisible();
+  await expect(popup.locator('img')).toHaveCount(0);
+  await expect(popup.getByText(/^Харсан: /)).toHaveCount(0);
 });
 
 test('clinic map uses the same working tiles and local marker asset', async ({ page }) => {

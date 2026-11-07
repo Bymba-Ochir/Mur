@@ -5,6 +5,7 @@ import { limitServiceRequest } from './apiRateLimit';
 import { reportError } from './errorTracking';
 import { isAllowedPushEndpoint } from './pushEndpoint';
 import { ownedPetPhotoStoragePath } from './storageObjectPath';
+import { SIGHTING_PHOTO_BUCKET, sightingPhotoPathParts } from './sightingPhoto';
 
 type AdminClient = ReturnType<typeof createAdminClient>;
 type Payload = Record<string, unknown>;
@@ -97,6 +98,18 @@ async function executeJob(admin: AdminClient, job: BackgroundJob): Promise<strin
     // Unique IDs make crash/retry delivery idempotent. A deleted recipient no
     // longer needs the notification (the only FK here is notifications.user_id).
     if (error && error.code !== '23505' && error.code !== '23503') throw error;
+    return null;
+  }
+  if (job.kind === 'storage-cleanup' && typeof job.payload.sightingPhotoPath === 'string') {
+    const path = job.payload.sightingPhotoPath;
+    const parts = sightingPhotoPathParts(path);
+    if (!parts) throw new Error('Invalid sighting cleanup path');
+    const { data, error } = await admin.from('sightings').select('photo_path').eq('id', parts.sightingId).maybeSingle();
+    if (error) throw error;
+    if (data?.photo_path !== path) {
+      const { error: removeError } = await admin.storage.from(SIGHTING_PHOTO_BUCKET).remove([path]);
+      if (removeError) throw removeError;
+    }
     return null;
   }
   const ownerId = text(job.payload, 'ownerId');

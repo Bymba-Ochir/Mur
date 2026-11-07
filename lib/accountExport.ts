@@ -13,7 +13,7 @@ const ownedTables: Record<string, OwnedTable> = {
   sittingBookings: { table: 'sitting_bookings', participants: ['customer_id', 'sitter_id'] },
   sittingReviews: { table: 'sitting_reviews', participants: ['reviewer_id', 'sitter_id'] },
   notifications: { table: 'notifications' },
-  sightings: { table: 'sightings', columns: 'id,pet_id,message,place,lat,lng,sighted_at,created_at', owner: 'reporter_id' },
+  sightings: { table: 'sightings', columns: 'id,pet_id,message,place,lat,lng,sighted_at,photo_path,created_at', owner: 'reporter_id' },
   reports: { table: 'reports', columns: 'id,pet_id,reason,status,created_at', owner: 'reporter_id' },
   pushSubscriptions: { table: 'push_subscriptions', columns: 'id,district,endpoint,created_at' },
   petFavorites: { table: 'pet_favorites', columns: 'pet_id,created_at', key: 'pet_id' },

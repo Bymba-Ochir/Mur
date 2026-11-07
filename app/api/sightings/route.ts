@@ -1,4 +1,4 @@
-import { readJsonBody, jsonBodyErrorResponse } from '../../../lib/requestJson';
+import { jsonBodyErrorResponse } from '../../../lib/requestJson';
 import { limitIpRequest, limitUserRequest } from '../../../lib/apiRateLimit';
 import { reportError } from '../../../lib/errorTracking';
 import { NextResponse } from 'next/server';
@@ -6,6 +6,7 @@ import { requireRequestUser } from '../../../lib/serverAuth';
 import { cleanText, InputValidationError, isInputValidationError, optionalCoordinate } from '../../../lib/inputValidation';
 import { readIdempotencyKey } from '../../../lib/idempotency';
 import { scheduleBackgroundJobs } from '../../../lib/backgroundJobs';
+import { readSightingSubmission, uploadSightingPhoto } from '../../../lib/serverSightingPhoto';
 
 export const maxDuration = 60;
 
@@ -20,11 +21,18 @@ interface ExistingSighting {
   lat: number | null;
   lng: number | null;
   sighted_at: string | null;
+  photo_path: string | null;
 }
 
 function readCoordinate(value: unknown, kind: 'lat' | 'lng') {
   if (value != null && typeof value !== 'number') throw new InputValidationError('Газрын зургийн координат буруу байна.');
   return optionalCoordinate(value, kind);
+}
+
+// PostgREST may round the last digits of double precision coordinates.
+function matchesCoordinate(stored: number | null | undefined, requested: number | null) {
+  if (stored == null || requested == null) return stored == null && requested == null;
+  return Math.abs(stored - requested) <= 1e-10;
 }
 
 function readSightedAt(value: unknown): string | null {
@@ -43,13 +51,14 @@ export async function POST(request: Request) {
   try {
     const ipLimit = await limitIpRequest(request, 'sightings');
     if (ipLimit) return ipLimit;
-    const idempotencyKey = readIdempotencyKey(request);
+    const idempotencyKey = readIdempotencyKey(request)?.toLowerCase();
     if (!idempotencyKey) return NextResponse.json({ error: 'Idempotency-Key шаардлагатай.' }, { status: 400 });
 
     const { user, admin } = await requireRequestUser(request);
 
-    const body = await readJsonBody(request) as { petId?: unknown; message?: unknown; place?: unknown; lat?: unknown; lng?: unknown; sightedAt?: unknown } | null;
-    if (typeof body?.petId !== 'string' || !UUID.test(body.petId)) return NextResponse.json({ error: 'Зарын дугаар буруу байна.' }, { status: 400 });
+    const { body, photo } = await readSightingSubmission(request);
+    if (typeof body.petId !== 'string' || !UUID.test(body.petId)) return NextResponse.json({ error: 'Зарын дугаар буруу байна.' }, { status: 400 });
+    const petId = body.petId.toLowerCase();
     const message = cleanText(typeof body.message === 'string' ? body.message : '', 1000, 'Харсан мэдээлэл', true);
     const place = cleanText(typeof body.place === 'string' ? body.place : '', 300, 'Байршил') || null;
 
@@ -58,18 +67,19 @@ export async function POST(request: Request) {
     if ((lat === null) !== (lng === null)) throw new InputValidationError('Газрын зураг дээр байршлаа дахин сонгоно уу.');
     const sightedAt = readSightedAt(body.sightedAt);
 
-    const sameRequest = (row: ExistingSighting) => row.pet_id === body.petId
+    const sameRequest = (row: ExistingSighting) => row.pet_id === petId
       && row.reporter_id === user.id
       && row.message === message
       && row.place === place
-      && (row.lat ?? null) === lat
-      && (row.lng ?? null) === lng
-      && (row.sighted_at ? new Date(row.sighted_at).toISOString() : null) === sightedAt;
+      && matchesCoordinate(row.lat, lat)
+      && matchesCoordinate(row.lng, lng)
+      && (row.sighted_at ? new Date(row.sighted_at).toISOString() : null) === sightedAt
+      && (photo ? row.photo_path?.endsWith(`/${photo.digest}.jpg`) === true : row.photo_path == null);
 
     const readExisting = async (): Promise<ExistingSighting | null> => {
       const { data, error } = await admin
         .from('sightings')
-        .select('id,pet_id,reporter_id,message,place,lat,lng,sighted_at')
+        .select('id,pet_id,reporter_id,message,place,lat,lng,sighted_at,photo_path')
         .eq('id', idempotencyKey)
         .maybeSingle();
       if (error) throw error;
@@ -97,15 +107,17 @@ export async function POST(request: Request) {
     const newIpLimit = await limitIpRequest(request, 'sighting-new', admin);
     if (newIpLimit) return newIpLimit;
 
+    const photoPath = photo ? await uploadSightingPhoto(admin, idempotencyKey, photo) : null;
     const { data: claimRows, error: claimError } = await admin.rpc('create_sighting_if_active', {
       target_id: idempotencyKey,
-      target_pet: body.petId,
+      target_pet: petId,
       target_reporter: user.id,
       target_message: message,
       target_place: place,
       target_lat: lat,
       target_lng: lng,
       target_sighted_at: sightedAt,
+      ...(photoPath ? { target_photo_path: photoPath } : {}),
     });
     if (claimError) {
       if (/PET_NOT_ACTIVE/.test(claimError.message ?? '')) {

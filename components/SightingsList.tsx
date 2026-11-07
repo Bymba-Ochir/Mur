@@ -1,107 +1,78 @@
 'use client';
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { createSighting, fetchSightingsPage, subscribeToSightings } from '../lib/sightingService';
+import { useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
+import { compressImage } from '../lib/imageCompress';
+import { SIGHTING_PHOTO_LIMIT, SIGHTING_PHOTO_TYPES } from '../lib/sightingPhoto';
+import { createSighting } from '../lib/sightingService';
+import type { SightingFeed } from '../lib/useSightingFeed';
+import { sightingDateTimeFormat, sightingMapPinId } from '../lib/sightingPresentation';
 import { relativeTime } from '../lib/relativeTime';
 import { useToast } from './Toast';
 import Button from './ui/Button';
 import LocationMap from './LocationMap';
 import { useLanguage } from '../lib/i18n';
-import type { Sighting } from '../lib/types';
 import { getErrorMessage } from '../lib/utils';
 import { useAuth } from '../lib/useAuth';
 import Icon from './ui/icons';
 import { createIdempotencyKey } from '../lib/idempotency';
 
 type MapPoint = { lat: number; lng: number };
-type SightingFeedProps = { petId: string; initialCenter?: MapPoint | null };
+type SightingFeedProps = {
+  petId: string;
+  initialCenter?: MapPoint | null;
+  feed: SightingFeed;
+  onShowOnMap: (pinId: string) => void;
+};
 
 export default function SightingsList(props: SightingFeedProps) {
-  return <SightingFeed key={props.petId} {...props} />;
+  return <SightingFormAndList key={props.petId} {...props} />;
 }
 
-function SightingFeed({ petId, initialCenter }: SightingFeedProps) {
+function SightingFormAndList({ petId, initialCenter, feed, onShowOnMap }: SightingFeedProps) {
   const showToast = useToast();
   const { t, lang } = useLanguage();
   const { user } = useAuth();
-  const [sightings, setSightings] = useState<Sighting[]>([]);
+  const { sightings, load, loadMore, loadError, hasMore, loadingMore } = feed;
   const [message, setMessage] = useState('');
   const [place, setPlace] = useState('');
   const [sightedTime, setSightedTime] = useState('');
   const [pin, setPin] = useState<MapPoint | null>(null);
   const [showPicker, setShowPicker] = useState(false);
-  const [openMapId, setOpenMapId] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [showForm, setShowForm] = useState(false);
-  const [loadError, setLoadError] = useState('');
   const submitKey = useRef<string | null>(null);
-
-  const [hasMore, setHasMore] = useState(false);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const cursor = useRef<Sighting | undefined>(undefined);
-  const generation = useRef(0);
-  const moreBusy = useRef(false);
-  const mounted = useRef(false);
-
-  const load = useCallback(async () => {
-    const request = ++generation.current;
-    try {
-      const page = await fetchSightingsPage(petId);
-      if (!mounted.current || request !== generation.current) return;
-      cursor.current = page.items.at(-1);
-      setSightings(page.items);
-      setHasMore(page.hasMore);
-      setLoadError('');
-    } catch (reason) {
-      if (mounted.current && request === generation.current) setLoadError(getErrorMessage(reason));
-    }
-  }, [petId]);
+  const [photo, setPhoto] = useState<{ file: File; preview: string } | null>(null);
+  const [preparingPhoto, setPreparingPhoto] = useState(false);
+  const previewUrl = photo?.preview;
 
   useEffect(() => {
-    mounted.current = true;
-    let timeout: ReturnType<typeof setTimeout> | undefined;
-    const refresh = () => {
-      if (document.visibilityState === 'hidden' || timeout) return;
-      timeout = setTimeout(() => { timeout = undefined; void load(); }, 200);
-    };
-    void Promise.resolve().then(load);
-    const unsubscribe = subscribeToSightings(petId, refresh);
-    const timer = setInterval(refresh, 30_000);
-    window.addEventListener('focus', refresh);
-    document.addEventListener('visibilitychange', refresh);
-    return () => {
-      mounted.current = false;
-      generation.current += 1;
-      if (timeout) clearTimeout(timeout);
-      clearInterval(timer);
-      window.removeEventListener('focus', refresh);
-      document.removeEventListener('visibilitychange', refresh);
-      unsubscribe();
-    };
-  }, [petId, load]);
+    return () => { if (previewUrl) URL.revokeObjectURL(previewUrl); };
+  }, [previewUrl]);
 
-  async function loadMore() {
-    if (moreBusy.current || !cursor.current) return;
-    const request = generation.current;
-    moreBusy.current = true;
-    setLoadingMore(true);
+  async function selectPhoto(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.currentTarget.files?.[0];
+    event.currentTarget.value = '';
+    if (!file || preparingPhoto || submitting) return;
+    if (!SIGHTING_PHOTO_TYPES.some(type => type === file.type) || !file.size || file.size > 10 * 1024 * 1024) {
+      showToast(t('sightings_photo_invalid'), 'error');
+      return;
+    }
+    setPreparingPhoto(true);
     try {
-      const page = await fetchSightingsPage(petId, cursor.current);
-      if (!mounted.current || request !== generation.current) return;
-      cursor.current = page.items.at(-1);
-      setSightings(current => [...current, ...page.items]);
-      setHasMore(page.hasMore);
-      setLoadError('');
-    } catch (reason) {
-      if (mounted.current && request === generation.current) setLoadError(getErrorMessage(reason));
+      const prepared = await compressImage(file);
+      if (prepared.size > SIGHTING_PHOTO_LIMIT) throw new Error('Photo too large after compression');
+      submitKey.current = null;
+      setPhoto({ file: prepared, preview: URL.createObjectURL(prepared) });
+    } catch {
+      showToast(t('sightings_photo_invalid'), 'error');
     } finally {
-      moreBusy.current = false;
-      if (mounted.current) setLoadingMore(false);
+      setPreparingPhoto(false);
     }
   }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (submitting || !message.trim()) return;
+    if (submitting || preparingPhoto || !message.trim()) return;
     const observed = sightedTime ? new Date(sightedTime) : null;
     if (observed && (!Number.isFinite(observed.getTime()) || observed.getTime() > Date.now())) {
       showToast(t('sightings_time_invalid'), 'error');
@@ -114,12 +85,13 @@ function SightingFeed({ petId, initialCenter }: SightingFeedProps) {
       await createSighting(petId, {
         message, place, lat: pin?.lat ?? null, lng: pin?.lng ?? null,
         sightedAt: observed?.toISOString() ?? null,
-      }, key);
+      }, key, photo?.file);
       submitKey.current = null;
       setMessage('');
       setPlace('');
       setSightedTime('');
       setPin(null);
+      setPhoto(null);
       setShowPicker(false);
       setShowForm(false);
       await load();
@@ -136,9 +108,7 @@ function SightingFeed({ petId, initialCenter }: SightingFeedProps) {
     setPin(value);
   }
 
-  const formatSeenTime = new Intl.DateTimeFormat(lang === 'mn' ? 'mn-MN' : 'en', {
-    dateStyle: 'medium', timeStyle: 'short',
-  });
+  const formatSeenTime = sightingDateTimeFormat(lang);
 
   return (
     <section className="sightings-section" aria-labelledby="sightings-heading">
@@ -184,7 +154,16 @@ function SightingFeed({ petId, initialCenter }: SightingFeedProps) {
               <LocationMap lat={pin?.lat} lng={pin?.lng} initialCenter={initialCenter} editable onPick={pickLocation} label={t('map_label')} />
             </>}
           </div>
-          <Button type="submit" disabled={submitting} aria-busy={submitting} variant="primary">
+          <label htmlFor="sighting-photo">{t('sightings_photo_optional')}</label>
+          <input id="sighting-photo" className="field" type="file" accept={SIGHTING_PHOTO_TYPES.join(',')}
+            disabled={submitting || preparingPhoto} onChange={selectPhoto} />
+          {preparingPhoto && <p className="sighting-hint" role="status">{t('photo_optimizing')}</p>}
+          {photo && <div className="sighting-photo-preview">
+            <Image src={photo.preview} alt={t('sightings_photo_alt')} width={200} height={140} unoptimized />
+            <Button variant="ghost" size="sm" disabled={submitting || preparingPhoto}
+              onClick={() => { submitKey.current = null; setPhoto(null); }}>{t('photo_remove')}</Button>
+          </div>}
+          <Button type="submit" disabled={submitting || preparingPhoto} aria-busy={submitting} variant="primary">
             {submitting ? t('sightings_submitting') : t('sightings_submit')}
           </Button>
         </form>
@@ -194,25 +173,27 @@ function SightingFeed({ petId, initialCenter }: SightingFeedProps) {
         <p className="sightings-empty">{t('sightings_none')}</p>
       ) : (
         <div className="sighting-list">
-          {sightings.map((s) => (
+          {sightings.map((s) => {
+            const pinId = sightingMapPinId(s);
+            return (
             <article key={s.id} className="sighting-item">
               <p>{s.message}</p>
+              {s.photoUrl && <a className="sighting-photo" href={s.photoUrl} target="_blank" rel="noopener noreferrer">
+                <Image src={s.photoUrl} alt={t('sightings_photo_alt')} width={240} height={160} unoptimized />
+              </a>}
               <p className="sighting-meta">
                 {s.place && <span><Icon name="pin" size={12} aria-hidden="true" /> {s.place}</span>}
                 {s.sightedAt && <span><Icon name="calendar" size={12} aria-hidden="true" /> {t('sightings_time_seen')} <time dateTime={s.sightedAt}>{formatSeenTime.format(new Date(s.sightedAt))}</time></span>}
                 <span>{t('sightings_time_posted')} <time dateTime={s.createdAt}>{relativeTime(s.createdAt, lang)}</time></span>
               </p>
-              {s.lat != null && s.lng != null && <div className="sighting-item-map">
-                <Button size="sm" variant="ghost" aria-expanded={openMapId === s.id} aria-controls={`sighting-map-${s.id}`}
-                  onClick={() => setOpenMapId(value => value === s.id ? null : s.id)}>
-                  <Icon name="pin" size={16} aria-hidden="true" /> {t(openMapId === s.id ? 'sightings_map_hide' : 'sightings_map_show')}
+              {pinId && <div className="sighting-item-map">
+                <Button size="sm" variant="ghost" onClick={() => onShowOnMap(pinId)}>
+                  <Icon name="pin" size={16} aria-hidden="true" /> {t('sightings_map_show')}
                 </Button>
-                <div id={`sighting-map-${s.id}`} hidden={openMapId !== s.id}>
-                  {openMapId === s.id && <LocationMap lat={s.lat} lng={s.lng} label={t('sightings_place_label')} />}
-                </div>
               </div>}
             </article>
-          ))}
+            );
+          })}
         </div>
       )}
       {hasMore && <Button type="button" variant="ghost" onClick={() => void loadMore()} disabled={loadingMore} aria-busy={loadingMore}>
@@ -235,6 +216,11 @@ function SightingFeed({ petId, initialCenter }: SightingFeedProps) {
         .sighting-hint { color:var(--text-secondary); font-size:var(--text-xs); }
         .map-hint { margin-bottom:var(--sp-2); }
         .sighting-item-map { margin-top:var(--sp-2); }
+        .sighting-photo-preview { display:flex; flex-wrap:wrap; gap:var(--sp-2); align-items:center; }
+        .sighting-photo { display:block; width:fit-content; max-width:100%; margin-top:var(--sp-2); }
+        .sighting-photo :global(img), .sighting-photo-preview :global(img) {
+          display:block; max-width:100%; height:auto; border-radius:var(--r-sm);
+        }
         .sightings-empty { padding:var(--sp-4); color:var(--text-secondary); background:var(--card); border:1px dashed var(--border-subtle); border-radius:var(--r-md); text-align:center; font-size:var(--text-sm); }
         .sighting-list { display:grid; gap:var(--sp-2); }
         .sighting-item { padding:var(--sp-3); background:var(--card); border:1px solid var(--border-subtle); border-radius:var(--r-md); }

@@ -8,7 +8,10 @@ import { relativeTime } from '../../../lib/relativeTime';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import ShareButtons from '../../../components/ShareButtons';
-import LocationMap from '../../../components/LocationMap';
+import PetSightingsMap from '../../../components/PetSightingsMap';
+import type { LocationMapFocus } from '../../../components/LocationMap';
+import { useSightingFeed } from '../../../lib/useSightingFeed';
+import { sightingMapPinId } from '../../../lib/sightingPresentation';
 import ReportButton from '../../../components/ReportButton';
 import SightingsList from '../../../components/SightingsList';
 import PetIcon from '../../../components/PetIcon';
@@ -39,6 +42,8 @@ function PetDetailClientContent({ id }: { id: string }) {
   const showToast = useToast();
   const { t, lang } = useLanguage();
   const [pet, setPet] = useState<Pet | null>(null);
+  const feed = useSightingFeed(pet?.id);
+  const [mapFocus, setMapFocus] = useState<LocationMapFocus | null>(null);
   const [error, setError] = useState<string | null>(null);
   const url = useCurrentLocation();
   const [resolving, setResolving] = useState(false);
@@ -195,10 +200,10 @@ function PetDetailClientContent({ id }: { id: string }) {
         </div>
       </div>
 
-      {pet.lat != null && pet.lng != null && (
+      {((pet.lat != null && pet.lng != null) || feed.sightings.some(sightingMapPinId)) && (
         <section className="detail-section map-section" aria-labelledby="pet-map-heading">
-          <div className="section-heading"><div><h2 id="pet-map-heading">{t('detail_map_heading')}</h2><p>{t('detail_last_seen_loc')}</p></div></div>
-          <LocationMap lat={pet.lat} lng={pet.lng} label={t('detail_last_seen_loc')} />
+          <div className="section-heading"><div><h2 id="pet-map-heading">{t('detail_map_heading')}</h2><p>{t(pet.lat != null && pet.lng != null ? 'detail_last_seen_loc' : 'sightings_map_locations')}</p></div></div>
+          <PetSightingsMap lat={pet.lat} lng={pet.lng} sightings={feed.sightings} focus={mapFocus} />
         </section>
       )}
 
@@ -208,7 +213,8 @@ function PetDetailClientContent({ id }: { id: string }) {
         <ReportButton petId={pet.id} />
       </section>
 
-      <SightingsList petId={pet.id} initialCenter={pet.lat != null && pet.lng != null ? { lat: pet.lat, lng: pet.lng } : null} />
+      <SightingsList petId={pet.id} feed={feed} onShowOnMap={pinId => setMapFocus({ pinId })}
+        initialCenter={pet.lat != null && pet.lng != null ? { lat: pet.lat, lng: pet.lng } : null} />
 
       <style jsx>{`
         .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }

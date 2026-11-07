@@ -11,11 +11,50 @@ export function addMapTiles(leaflet: typeof import('leaflet'), map: Map) {
 }
 
 /** An explicit first-party icon avoids Leaflet's CSS image-path detection. */
-export function mapMarkerIcon(leaflet: typeof import('leaflet')) {
+export function mapMarkerIcon(leaflet: typeof import('leaflet'), variant: 'default' | 'sighting' = 'default') {
   return leaflet.icon({
-    iconUrl: '/map-marker.svg',
+    iconUrl: variant === 'sighting' ? '/sighting-map-marker.svg' : '/map-marker.svg',
     iconSize: [32, 40],
     iconAnchor: [16, 40],
     popupAnchor: [0, -36],
   });
+}
+
+export type MapPopupDetails = {
+  message: string;
+  lines: readonly string[];
+  photo?: { src: string; alt: string };
+};
+
+export function createMapPinPopup(title: string, details: readonly MapPopupDetails[]) {
+  const popup = document.createElement('div');
+  popup.className = 'location-pin-popup';
+  const heading = document.createElement('strong');
+  heading.textContent = title;
+  popup.append(heading);
+  for (const detail of details) {
+    const entry = document.createElement('article');
+    const message = document.createElement('p');
+    message.textContent = detail.message;
+    entry.append(message);
+    for (const line of detail.lines) {
+      const meta = document.createElement('small');
+      meta.textContent = line;
+      entry.append(meta);
+    }
+    if (detail.photo) {
+      const link = document.createElement('a');
+      link.href = detail.photo.src;
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      const image = document.createElement('img');
+      image.src = detail.photo.src;
+      image.alt = detail.photo.alt;
+      image.loading = 'lazy';
+      link.append(image);
+      entry.append(link);
+    }
+    popup.append(entry);
+  }
+  return popup;
 }

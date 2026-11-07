@@ -6,7 +6,7 @@ export async function authenticatedFetch(path: string, init: RequestInit = {}): 
   if (!session) throw new Error('Эхлээд нэвтэрнэ үү.');
   const headers = new Headers(init.headers);
   headers.set('Authorization', `Bearer ${session.access_token}`);
-  if (init.body && !headers.has('Content-Type')) headers.set('Content-Type', 'application/json');
+  if (init.body && !(init.body instanceof FormData) && !headers.has('Content-Type')) headers.set('Content-Type', 'application/json');
   try {
     return await fetch(path, { ...init, headers });
   } catch (error) {
