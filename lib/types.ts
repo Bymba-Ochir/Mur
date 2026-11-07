@@ -80,6 +80,9 @@ export interface Sighting {
   id: string;
   message: string;
   place: string | null;
+  lat: number | null;
+  lng: number | null;
+  sightedAt: string | null;
   createdAt: string;
 }
 

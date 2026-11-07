@@ -208,7 +208,7 @@ function PetDetailClientContent({ id }: { id: string }) {
         <ReportButton petId={pet.id} />
       </section>
 
-      <SightingsList petId={pet.id} />
+      <SightingsList petId={pet.id} initialCenter={pet.lat != null && pet.lng != null ? { lat: pet.lat, lng: pet.lng } : null} />
 
       <style jsx>{`
         .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }

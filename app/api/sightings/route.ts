@@ -3,7 +3,7 @@ import { limitIpRequest, limitUserRequest } from '../../../lib/apiRateLimit';
 import { reportError } from '../../../lib/errorTracking';
 import { NextResponse } from 'next/server';
 import { requireRequestUser } from '../../../lib/serverAuth';
-import { cleanText } from '../../../lib/inputValidation';
+import { cleanText, InputValidationError, isInputValidationError, optionalCoordinate } from '../../../lib/inputValidation';
 import { readIdempotencyKey } from '../../../lib/idempotency';
 import { scheduleBackgroundJobs } from '../../../lib/backgroundJobs';
 
@@ -17,6 +17,26 @@ interface ExistingSighting {
   reporter_id: string | null;
   message: string;
   place: string | null;
+  lat: number | null;
+  lng: number | null;
+  sighted_at: string | null;
+}
+
+function readCoordinate(value: unknown, kind: 'lat' | 'lng') {
+  if (value != null && typeof value !== 'number') throw new InputValidationError('Газрын зургийн координат буруу байна.');
+  return optionalCoordinate(value, kind);
+}
+
+function readSightedAt(value: unknown): string | null {
+  if (value == null) return null;
+  if (typeof value !== 'string' || !/^[1-9]\d{3}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(value)) {
+    throw new InputValidationError('Харсан огноо, цаг буруу байна.');
+  }
+  const date = new Date(value);
+  if (!Number.isFinite(date.getTime()) || date.toISOString() !== value || date.getTime() > Date.now()) {
+    throw new InputValidationError('Харсан огноо, цаг хүчинтэй бөгөөд ирээдүйд биш байх ёстой.');
+  }
+  return value;
 }
 
 export async function POST(request: Request) {
@@ -28,15 +48,28 @@ export async function POST(request: Request) {
 
     const { user, admin } = await requireRequestUser(request);
 
-    const body = await readJsonBody(request) as { petId?: unknown; message?: unknown; place?: unknown };
-    if (typeof body.petId !== 'string' || !UUID.test(body.petId)) return NextResponse.json({ error: 'Зарын дугаар буруу байна.' }, { status: 400 });
+    const body = await readJsonBody(request) as { petId?: unknown; message?: unknown; place?: unknown; lat?: unknown; lng?: unknown; sightedAt?: unknown } | null;
+    if (typeof body?.petId !== 'string' || !UUID.test(body.petId)) return NextResponse.json({ error: 'Зарын дугаар буруу байна.' }, { status: 400 });
     const message = cleanText(typeof body.message === 'string' ? body.message : '', 1000, 'Харсан мэдээлэл', true);
     const place = cleanText(typeof body.place === 'string' ? body.place : '', 300, 'Байршил') || null;
+
+    const lat = readCoordinate(body.lat, 'lat');
+    const lng = readCoordinate(body.lng, 'lng');
+    if ((lat === null) !== (lng === null)) throw new InputValidationError('Газрын зураг дээр байршлаа дахин сонгоно уу.');
+    const sightedAt = readSightedAt(body.sightedAt);
+
+    const sameRequest = (row: ExistingSighting) => row.pet_id === body.petId
+      && row.reporter_id === user.id
+      && row.message === message
+      && row.place === place
+      && (row.lat ?? null) === lat
+      && (row.lng ?? null) === lng
+      && (row.sighted_at ? new Date(row.sighted_at).toISOString() : null) === sightedAt;
 
     const readExisting = async (): Promise<ExistingSighting | null> => {
       const { data, error } = await admin
         .from('sightings')
-        .select('id,pet_id,reporter_id,message,place')
+        .select('id,pet_id,reporter_id,message,place,lat,lng,sighted_at')
         .eq('id', idempotencyKey)
         .maybeSingle();
       if (error) throw error;
@@ -54,11 +87,7 @@ export async function POST(request: Request) {
 
     const existing = await readExisting();
     if (existing) {
-      const sameRequest = existing.pet_id === body.petId
-        && existing.reporter_id === user.id
-        && existing.message === message
-        && existing.place === place;
-      if (!sameRequest) return NextResponse.json({ error: 'Idempotency-Key өөр хүсэлтэд аль хэдийн ашиглагдсан байна.' }, { status: 409 });
+      if (!sameRequest(existing)) return NextResponse.json({ error: 'Idempotency-Key өөр хүсэлтэд аль хэдийн ашиглагдсан байна.' }, { status: 409 });
       return await complete(true);
     }
 
@@ -74,6 +103,9 @@ export async function POST(request: Request) {
       target_reporter: user.id,
       target_message: message,
       target_place: place,
+      target_lat: lat,
+      target_lng: lng,
+      target_sighted_at: sightedAt,
     });
     if (claimError) {
       if (/PET_NOT_ACTIVE/.test(claimError.message ?? '')) {
@@ -85,7 +117,7 @@ export async function POST(request: Request) {
     const claim = Array.isArray(claimRows) ? claimRows[0] : claimRows;
     if (!claim?.created) {
       const raced = await readExisting();
-      if (raced && raced.pet_id === body.petId && raced.reporter_id === user.id && raced.message === message && raced.place === place) {
+      if (raced && sameRequest(raced)) {
         return await complete(true);
       }
       return NextResponse.json({ error: 'Idempotency-Key өөр хүсэлтэд аль хэдийн ашиглагдсан байна.' }, { status: 409 });
@@ -96,6 +128,7 @@ export async function POST(request: Request) {
   } catch (error) {
     const bodyError = jsonBodyErrorResponse(error);
     if (bodyError) return bodyError;
+    if (isInputValidationError(error)) return NextResponse.json({ error: error.message }, { status: 400 });
     reportError(error, { area: 'backend', operation: 'create-sighting' });
     const unauthorized = error instanceof Error && error.message === 'UNAUTHORIZED';
     return NextResponse.json({ error: unauthorized ? 'Мэдээлэл илгээхийн тулд нэвтэрнэ үү.' : 'Мэдээлэл хадгалахад алдаа гарлаа.' }, { status: unauthorized ? 401 : 500 });

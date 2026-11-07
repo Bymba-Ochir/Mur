@@ -80,6 +80,27 @@ describe('sighting mutation/outbox separation', () => {
     expect(rpc).toHaveBeenCalledExactlyOnceWith('create_sighting_if_active', expect.objectContaining({ target_reporter: owner, target_pet: petId }));
     expect(from).toHaveBeenCalledExactlyOnceWith('sightings'); expect(scheduleBackgroundJobs).toHaveBeenCalledOnce();
   });
+  it('passes optional observation details to the atomic write and checks them on retry', async () => {
+    const payload = { petId, message: 'Seen', place: 'Park', lat: 47.91, lng: 106.91, sightedAt: '2025-01-01T04:00:00.000Z' };
+    existing(); rpc.mockResolvedValue({ data: [{ created: true }], error: null });
+    expect((await sighting(request('/api/sightings', payload))).status).toBe(201);
+    expect(rpc).toHaveBeenCalledWith('create_sighting_if_active', expect.objectContaining({
+      target_lat: 47.91, target_lng: 106.91, target_sighted_at: payload.sightedAt,
+    }));
+
+    existing({ id, pet_id: petId, reporter_id: owner, message: 'Seen', place: 'Park', lat: 47.91, lng: 106.91, sighted_at: '2025-01-01T04:00:00+00:00' });
+    expect((await sighting(request('/api/sightings', payload))).status).toBe(200);
+    expect((await sighting(request('/api/sightings', { ...payload, lng: 106.92 }))).status).toBe(409);
+    expect((await sighting(request('/api/sightings', { ...payload, sightedAt: null }))).status).toBe(409);
+  });
+  it.each([
+    { lat: 47.91 }, { lat: '47.91', lng: 106.91 }, { lat: 91, lng: 106.91 },
+    { sightedAt: '2025-02-30T04:00:00.000Z' }, { sightedAt: '2099-01-01T00:00:00.000Z' },
+  ])('rejects invalid observation details before DB access: %j', async (fields) => {
+    expect((await sighting(request('/api/sightings', { petId, message: 'Seen', ...fields }))).status).toBe(400);
+    expect(from).not.toHaveBeenCalled();
+    expect(rpc).not.toHaveBeenCalled();
+  });
   it('repairs a matching pre-v103 retry without accepting forged identities', async () => {
     existing({ id, pet_id: petId, reporter_id: owner, message: 'Seen', place: 'Park' });
     expect((await sighting(request('/api/sightings', { petId, message: 'Seen', place: 'Park' }))).status).toBe(200);

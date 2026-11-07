@@ -9,6 +9,8 @@ interface LocationMapProps {
   /** анхны координат (view горимд заавал) */
   lat?: number | null;
   lng?: number | null;
+  /** Сонгосон цэг байхгүй үед ашиглах төв; marker үүсгэхгүй. */
+  initialCenter?: { lat: number; lng: number } | null;
   /** true бол дарж байршил сонгож болно */
   editable?: boolean;
   /** editable=true үед сонгосон {lat,lng}-г буцаана */
@@ -17,7 +19,7 @@ interface LocationMapProps {
   label?: string;
 }
 
-export default function LocationMap({ lat, lng, editable = false, onPick, label }: LocationMapProps) {
+export default function LocationMap({ lat, lng, initialCenter, editable = false, onPick, label }: LocationMapProps) {
   const { t } = useLanguage();
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<import('leaflet').Map | null>(null);
@@ -31,8 +33,10 @@ export default function LocationMap({ lat, lng, editable = false, onPick, label 
       if (cancelled || !containerRef.current || mapRef.current) return;
       LRef.current = L;
 
-      const center: [number, number] = lat != null && lng != null ? [lat, lng] : UB_CENTER;
-      const map = L.map(containerRef.current).setView(center, lat != null ? 15 : 11);
+      const center: [number, number] = lat != null && lng != null
+        ? [lat, lng]
+        : initialCenter ? [initialCenter.lat, initialCenter.lng] : UB_CENTER;
+      const map = L.map(containerRef.current).setView(center, lat != null || initialCenter ? 15 : 11);
       mapRef.current = map;
 
       addMapTiles(L, map);
@@ -43,7 +47,7 @@ export default function LocationMap({ lat, lng, editable = false, onPick, label 
 
       if (editable) {
         map.on('click', (e) => {
-          const { lat: clickLat, lng: clickLng } = e.latlng;
+          const { lat: clickLat, lng: clickLng } = map.wrapLatLng(e.latlng);
           if (markerRef.current) {
             markerRef.current.setLatLng([clickLat, clickLng]);
           } else {
@@ -60,6 +64,7 @@ export default function LocationMap({ lat, lng, editable = false, onPick, label 
       if (mapRef.current) {
         mapRef.current.remove();
         mapRef.current = null;
+        markerRef.current = null;
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -67,7 +72,12 @@ export default function LocationMap({ lat, lng, editable = false, onPick, label 
 
   // Гаднаас (жишээ нь geolocation товч) lat/lng өөрчлөгдөхөд газрын зургийг шинэчилнэ
   useEffect(() => {
-    if (!mapRef.current || !LRef.current || lat == null || lng == null) return;
+    if (!mapRef.current || !LRef.current) return;
+    if (lat == null || lng == null) {
+      markerRef.current?.remove();
+      markerRef.current = null;
+      return;
+    }
     const L = LRef.current;
     mapRef.current.setView([lat, lng], 15);
     if (markerRef.current) {

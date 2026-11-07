@@ -7,19 +7,19 @@ import { COMPACT_PAGE_SIZE, finalizePage } from './pagination';
 
 export async function createSighting(
   petId: string,
-  { message, place }: { message: string; place: string | null },
+  details: Pick<Sighting, 'message' | 'place' | 'lat' | 'lng' | 'sightedAt'>,
   idempotencyKey = createIdempotencyKey(),
 ): Promise<void> {
   const response = await authenticatedFetch('/api/sightings', {
     method: 'POST',
     headers: idempotencyHeaders(idempotencyKey),
-    body: JSON.stringify({ petId, message, place }),
+    body: JSON.stringify({ petId, ...details }),
   });
   if (!response.ok) throw await apiError(response);
 }
 
 export async function fetchSightingsPage(petId: string, before?: Pick<Sighting, 'id' | 'createdAt'>) {
-  let query = supabase.from('sightings').select('id,message,place,created_at')
+  let query = supabase.from('sightings').select('id,message,place,lat,lng,sighted_at,created_at')
     .eq('pet_id', petId).order('created_at', { ascending: false }).order('id', { ascending: false });
   if (before) {
     if (!/^[a-f0-9]{8}-(?:[a-f0-9]{4}-){3}[a-f0-9]{12}$/i.test(before.id)
@@ -29,7 +29,10 @@ export async function fetchSightingsPage(petId: string, before?: Pick<Sighting, 
   }
   const { data, error } = await query.limit(COMPACT_PAGE_SIZE + 1);
   if (error) throw error;
-  const rows = (data ?? []).map((s): Sighting => ({ id: s.id, message: s.message, place: s.place, createdAt: s.created_at }));
+  const rows = (data ?? []).map((s): Sighting => ({
+    id: s.id, message: s.message, place: s.place, lat: s.lat, lng: s.lng,
+    sightedAt: s.sighted_at, createdAt: s.created_at,
+  }));
   return finalizePage(rows, 0, COMPACT_PAGE_SIZE);
 }
 

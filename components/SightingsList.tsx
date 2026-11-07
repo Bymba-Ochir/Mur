@@ -4,6 +4,7 @@ import { createSighting, fetchSightingsPage, subscribeToSightings } from '../lib
 import { relativeTime } from '../lib/relativeTime';
 import { useToast } from './Toast';
 import Button from './ui/Button';
+import LocationMap from './LocationMap';
 import { useLanguage } from '../lib/i18n';
 import type { Sighting } from '../lib/types';
 import { getErrorMessage } from '../lib/utils';
@@ -11,17 +12,24 @@ import { useAuth } from '../lib/useAuth';
 import Icon from './ui/icons';
 import { createIdempotencyKey } from '../lib/idempotency';
 
-export default function SightingsList({ petId }: { petId: string }) {
-  return <SightingFeed key={petId} petId={petId} />;
+type MapPoint = { lat: number; lng: number };
+type SightingFeedProps = { petId: string; initialCenter?: MapPoint | null };
+
+export default function SightingsList(props: SightingFeedProps) {
+  return <SightingFeed key={props.petId} {...props} />;
 }
 
-function SightingFeed({ petId }: { petId: string }) {
+function SightingFeed({ petId, initialCenter }: SightingFeedProps) {
   const showToast = useToast();
   const { t, lang } = useLanguage();
   const { user } = useAuth();
   const [sightings, setSightings] = useState<Sighting[]>([]);
   const [message, setMessage] = useState('');
   const [place, setPlace] = useState('');
+  const [sightedTime, setSightedTime] = useState('');
+  const [pin, setPin] = useState<MapPoint | null>(null);
+  const [showPicker, setShowPicker] = useState(false);
+  const [openMapId, setOpenMapId] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [loadError, setLoadError] = useState('');
@@ -93,15 +101,26 @@ function SightingFeed({ petId }: { petId: string }) {
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (!message.trim()) return;
+    if (submitting || !message.trim()) return;
+    const observed = sightedTime ? new Date(sightedTime) : null;
+    if (observed && (!Number.isFinite(observed.getTime()) || observed.getTime() > Date.now())) {
+      showToast(t('sightings_time_invalid'), 'error');
+      return;
+    }
     setSubmitting(true);
     try {
       const key = submitKey.current ?? createIdempotencyKey();
       submitKey.current = key;
-      await createSighting(petId, { message, place }, key);
+      await createSighting(petId, {
+        message, place, lat: pin?.lat ?? null, lng: pin?.lng ?? null,
+        sightedAt: observed?.toISOString() ?? null,
+      }, key);
       submitKey.current = null;
       setMessage('');
       setPlace('');
+      setSightedTime('');
+      setPin(null);
+      setShowPicker(false);
       setShowForm(false);
       await load();
       showToast(t('sightings_thanks'), 'success');
@@ -111,6 +130,15 @@ function SightingFeed({ petId }: { petId: string }) {
       setSubmitting(false);
     }
   }
+
+  function pickLocation(value: MapPoint | null) {
+    submitKey.current = null;
+    setPin(value);
+  }
+
+  const formatSeenTime = new Intl.DateTimeFormat(lang === 'mn' ? 'mn-MN' : 'en', {
+    dateStyle: 'medium', timeStyle: 'short',
+  });
 
   return (
     <section className="sightings-section" aria-labelledby="sightings-heading">
@@ -136,6 +164,26 @@ function SightingFeed({ petId }: { petId: string }) {
           <textarea id="sighting-message" className="field" value={message} onChange={(e) => { submitKey.current = null; setMessage(e.target.value); }} placeholder={t('sightings_placeholder')} required maxLength={1000} rows={4} />
           <label htmlFor="sighting-place">{t('sightings_place_label')}</label>
           <input id="sighting-place" className="field" value={place} onChange={(e) => { submitKey.current = null; setPlace(e.target.value); }} placeholder={t('sightings_place_placeholder')} maxLength={300} />
+          <label htmlFor="sighting-time">{t('sightings_time_label')}</label>
+          <input id="sighting-time" className="field" type="datetime-local" value={sightedTime} aria-describedby="sighting-time-hint"
+            onChange={(e) => { submitKey.current = null; setSightedTime(e.target.value); }} />
+          <p className="sighting-hint" id="sighting-time-hint">{t('sightings_time_hint')}</p>
+          <div className="sighting-tools">
+            <Button variant="secondary" size="sm" aria-expanded={showPicker} aria-controls="sighting-picker" onClick={() => setShowPicker(value => !value)}>
+              <Icon name="pin" size={16} aria-hidden="true" />
+              {showPicker ? t('sightings_map_hide') : `${t('sightings_map_pick')} ${t('map_optional')}`}
+            </Button>
+            {pin && <>
+              <span className="sighting-hint" role="status">{t('sightings_map_selected')}</span>
+              <Button variant="ghost" size="sm" onClick={() => pickLocation(null)}>{t('sightings_map_clear')}</Button>
+            </>}
+          </div>
+          <div id="sighting-picker" hidden={!showPicker}>
+            {showPicker && <>
+              <p className="sighting-hint map-hint">{t('sightings_map_hint')}</p>
+              <LocationMap lat={pin?.lat} lng={pin?.lng} initialCenter={initialCenter} editable onPick={pickLocation} label={t('map_label')} />
+            </>}
+          </div>
           <Button type="submit" disabled={submitting} aria-busy={submitting} variant="primary">
             {submitting ? t('sightings_submitting') : t('sightings_submit')}
           </Button>
@@ -151,8 +199,18 @@ function SightingFeed({ petId }: { petId: string }) {
               <p>{s.message}</p>
               <p className="sighting-meta">
                 {s.place && <span><Icon name="pin" size={12} aria-hidden="true" /> {s.place}</span>}
-                <span><Icon name="calendar" size={12} aria-hidden="true" /> {relativeTime(s.createdAt, lang)}</span>
+                {s.sightedAt && <span><Icon name="calendar" size={12} aria-hidden="true" /> {t('sightings_time_seen')} <time dateTime={s.sightedAt}>{formatSeenTime.format(new Date(s.sightedAt))}</time></span>}
+                <span>{t('sightings_time_posted')} <time dateTime={s.createdAt}>{relativeTime(s.createdAt, lang)}</time></span>
               </p>
+              {s.lat != null && s.lng != null && <div className="sighting-item-map">
+                <Button size="sm" variant="ghost" aria-expanded={openMapId === s.id} aria-controls={`sighting-map-${s.id}`}
+                  onClick={() => setOpenMapId(value => value === s.id ? null : s.id)}>
+                  <Icon name="pin" size={16} aria-hidden="true" /> {t(openMapId === s.id ? 'sightings_map_hide' : 'sightings_map_show')}
+                </Button>
+                <div id={`sighting-map-${s.id}`} hidden={openMapId !== s.id}>
+                  {openMapId === s.id && <LocationMap lat={s.lat} lng={s.lng} label={t('sightings_place_label')} />}
+                </div>
+              </div>}
             </article>
           ))}
         </div>
@@ -172,6 +230,11 @@ function SightingFeed({ petId }: { petId: string }) {
         .sighting-form { display:grid; gap:var(--sp-2); margin-bottom:var(--sp-4); padding:var(--sp-3); background:var(--card); border:1px solid var(--border-subtle); border-radius:var(--r-md); }
         .sighting-form label { color:var(--text-secondary); font-size:var(--text-xs); font-weight:650; }
         .sighting-form textarea { min-height:110px; }
+        .sighting-form input { min-width:0; }
+        .sighting-tools { display:flex; align-items:center; flex-wrap:wrap; gap:var(--sp-2); }
+        .sighting-hint { color:var(--text-secondary); font-size:var(--text-xs); }
+        .map-hint { margin-bottom:var(--sp-2); }
+        .sighting-item-map { margin-top:var(--sp-2); }
         .sightings-empty { padding:var(--sp-4); color:var(--text-secondary); background:var(--card); border:1px dashed var(--border-subtle); border-radius:var(--r-md); text-align:center; font-size:var(--text-sm); }
         .sighting-list { display:grid; gap:var(--sp-2); }
         .sighting-item { padding:var(--sp-3); background:var(--card); border:1px solid var(--border-subtle); border-radius:var(--r-md); }

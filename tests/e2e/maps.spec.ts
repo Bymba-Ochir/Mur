@@ -77,6 +77,52 @@ test('first click on an empty report map creates a working marker', async ({ pag
   await expectMapAssets(map);
 });
 
+test('sighting pin and time can be omitted or published and read after reload', async ({ page }) => {
+  await page.addInitScript(auth => localStorage.setItem('sb-127-auth-token', JSON.stringify(auth)), session);
+  await page.goto(`/pets/${petId}`);
+  const section = page.locator('.sightings-section');
+  const form = section.locator('form');
+  const time = form.getByLabel('Харсан огноо, цаг (заавал биш)');
+  const openForm = () => section.getByRole('button', { name: '+ Би харсан', exact: true }).click();
+  const publish = async () => {
+    const posted = page.waitForResponse(res => new URL(res.url()).pathname === '/api/sightings' && res.request().method() === 'POST');
+    await form.getByRole('button', { name: 'Нийтлэх', exact: true }).click();
+    expect((await posted).status()).toBe(201);
+  };
+
+  await openForm();
+  await form.getByLabel('Харсан тухай мэдээлэл').fill('Тайлбартай боловч цэг, цаггүй');
+  await expect(time).toHaveValue('');
+  await form.getByRole('button', { name: 'Газрын зураг дээр тэмдэглэх (заавал биш)' }).click();
+  const picker = form.getByRole('region', { name: 'Газрын зураг дээр байршил тэмдэглэх' });
+  await expect(picker.locator('.leaflet-control-zoom-in')).toBeVisible();
+  await expect(picker.locator('.leaflet-marker-icon')).toHaveCount(0);
+  await picker.click({ position: { x: 140, y: 100 } });
+  await expectMapAssets(picker);
+  await form.getByRole('button', { name: 'Цэг арилгах' }).click();
+  await expect(picker.locator('.leaflet-marker-icon')).toHaveCount(0);
+  await publish();
+
+  await openForm();
+  await form.getByLabel('Харсан тухай мэдээлэл').fill('Газрын зураг, цагтай мэдээлэл');
+  await time.fill('2025-01-02T18:30');
+  await form.getByRole('button', { name: 'Газрын зураг дээр тэмдэглэх (заавал биш)' }).click();
+  await expect(picker.locator('.leaflet-control-zoom-in')).toBeVisible();
+  await picker.click({ position: { x: 140, y: 100 } });
+  await publish();
+  await expect(section.getByText('Газрын зураг, цагтай мэдээлэл', { exact: true })).toBeVisible();
+
+  await page.reload();
+  const saved = section.locator('article').filter({ hasText: 'Газрын зураг, цагтай мэдээлэл' });
+  await expect(saved.getByText('Харсан:', { exact: false })).toBeVisible();
+  await saved.getByRole('button', { name: 'Газрын зураг харах' }).click();
+  await expectMapAssets(saved.getByRole('region', { name: 'Харсан байршил' }));
+  const plain = section.locator('article').filter({ hasText: 'Тайлбартай боловч цэг, цаггүй' });
+  await expect(plain).toBeVisible();
+  await expect(plain.getByRole('button', { name: 'Газрын зураг харах' })).toHaveCount(0);
+  await expect(plain.locator('time')).toHaveCount(1);
+});
+
 test('clinic map uses the same working tiles and local marker asset', async ({ page }) => {
   await page.goto('/clinics');
   await expectMapAssets(page.locator('.clinic-map'));
