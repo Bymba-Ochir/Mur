@@ -35,6 +35,7 @@ function SightingFormAndList({ petId, initialCenter, feed, onShowOnMap }: Sighti
   const { sightings, load, loadMore, loadError, hasMore, loadingMore } = feed;
   const [message, setMessage] = useState('');
   const [place, setPlace] = useState('');
+  const [sightedDate, setSightedDate] = useState('');
   const [sightedTime, setSightedTime] = useState('');
   const [pin, setPin] = useState<MapPoint | null>(null);
   const [showPicker, setShowPicker] = useState(false);
@@ -73,7 +74,11 @@ function SightingFormAndList({ petId, initialCenter, feed, onShowOnMap }: Sighti
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (submitting || preparingPhoto || !message.trim()) return;
-    const observed = sightedTime ? new Date(sightedTime) : null;
+    if (Boolean(sightedDate) !== Boolean(sightedTime)) {
+      showToast(t('sightings_time_incomplete'), 'error');
+      return;
+    }
+    const observed = sightedDate && sightedTime ? new Date(`${sightedDate}T${sightedTime}`) : null;
     if (observed && (!Number.isFinite(observed.getTime()) || observed.getTime() > Date.now())) {
       showToast(t('sightings_time_invalid'), 'error');
       return;
@@ -89,6 +94,7 @@ function SightingFormAndList({ petId, initialCenter, feed, onShowOnMap }: Sighti
       submitKey.current = null;
       setMessage('');
       setPlace('');
+      setSightedDate('');
       setSightedTime('');
       setPin(null);
       setPhoto(null);
@@ -131,18 +137,33 @@ function SightingFormAndList({ petId, initialCenter, feed, onShowOnMap }: Sighti
       {showForm && (
         <form id="sighting-form" onSubmit={handleSubmit} className="sighting-form">
           <label htmlFor="sighting-message">{t('sightings_message_label')}</label>
-          <textarea id="sighting-message" className="field" value={message} onChange={(e) => { submitKey.current = null; setMessage(e.target.value); }} placeholder={t('sightings_placeholder')} required maxLength={1000} rows={4} />
-          <label htmlFor="sighting-place">{t('sightings_place_label')}</label>
+          <textarea id="sighting-message" className="field" value={message} onChange={(e) => { submitKey.current = null; setMessage(e.target.value); }} placeholder={t('sightings_placeholder')} required maxLength={1000} rows={3} />
+          <fieldset className="sighting-time-fields" aria-describedby="sighting-time-hint">
+            <legend>{t('sightings_time_label')}</legend>
+            <div className="sighting-time-grid">
+              <label htmlFor="sighting-date">{t('sightings_date')}
+                <input id="sighting-date" className="field" type="date" value={sightedDate}
+                  onChange={(e) => { submitKey.current = null; setSightedDate(e.target.value); }} />
+              </label>
+              <label htmlFor="sighting-time">{t('sightings_clock')}
+                <input id="sighting-time" className="field" type="time" value={sightedTime}
+                  onChange={(e) => { submitKey.current = null; setSightedTime(e.target.value); }} />
+              </label>
+            </div>
+            <p className="sighting-hint" id="sighting-time-hint">{t('sightings_time_hint')}</p>
+          </fieldset>
+          <label htmlFor="sighting-place">{t('sightings_place_label')} {t('map_optional')}</label>
           <input id="sighting-place" className="field" value={place} onChange={(e) => { submitKey.current = null; setPlace(e.target.value); }} placeholder={t('sightings_place_placeholder')} maxLength={300} />
-          <label htmlFor="sighting-time">{t('sightings_time_label')}</label>
-          <input id="sighting-time" className="field" type="datetime-local" value={sightedTime} aria-describedby="sighting-time-hint"
-            onChange={(e) => { submitKey.current = null; setSightedTime(e.target.value); }} />
-          <p className="sighting-hint" id="sighting-time-hint">{t('sightings_time_hint')}</p>
           <div className="sighting-tools">
-            <Button variant="secondary" size="sm" aria-expanded={showPicker} aria-controls="sighting-picker" onClick={() => setShowPicker(value => !value)}>
+            <Button variant="ghost" size="sm" aria-expanded={showPicker} aria-controls="sighting-picker" onClick={() => setShowPicker(value => !value)}>
               <Icon name="pin" size={16} aria-hidden="true" />
-              {showPicker ? t('sightings_map_hide') : `${t('sightings_map_pick')} ${t('map_optional')}`}
+              {showPicker ? t('sightings_map_hide') : t('sightings_map_pick')}
             </Button>
+            <label className="sighting-photo-picker">
+              <input id="sighting-photo" type="file" accept={SIGHTING_PHOTO_TYPES.join(',')}
+                aria-label={t('sightings_photo_optional')} disabled={submitting || preparingPhoto} onChange={selectPhoto} />
+              <Icon name="camera" size={16} aria-hidden="true" />{t('sightings_photo_add')}
+            </label>
             {pin && <>
               <span className="sighting-hint" role="status">{t('sightings_map_selected')}</span>
               <Button variant="ghost" size="sm" onClick={() => pickLocation(null)}>{t('sightings_map_clear')}</Button>
@@ -151,21 +172,20 @@ function SightingFormAndList({ petId, initialCenter, feed, onShowOnMap }: Sighti
           <div id="sighting-picker" hidden={!showPicker}>
             {showPicker && <>
               <p className="sighting-hint map-hint">{t('sightings_map_hint')}</p>
-              <LocationMap lat={pin?.lat} lng={pin?.lng} initialCenter={initialCenter} editable onPick={pickLocation} label={t('map_label')} />
+              <LocationMap lat={pin?.lat} lng={pin?.lng} initialCenter={initialCenter} editable markerVariant="sighting" onPick={pickLocation} label={t('map_label')} />
             </>}
           </div>
-          <label htmlFor="sighting-photo">{t('sightings_photo_optional')}</label>
-          <input id="sighting-photo" className="field" type="file" accept={SIGHTING_PHOTO_TYPES.join(',')}
-            disabled={submitting || preparingPhoto} onChange={selectPhoto} />
           {preparingPhoto && <p className="sighting-hint" role="status">{t('photo_optimizing')}</p>}
           {photo && <div className="sighting-photo-preview">
-            <Image src={photo.preview} alt={t('sightings_photo_alt')} width={200} height={140} unoptimized />
+            <Image src={photo.preview} alt={t('sightings_photo_alt')} width={112} height={84} unoptimized />
             <Button variant="ghost" size="sm" disabled={submitting || preparingPhoto}
               onClick={() => { submitKey.current = null; setPhoto(null); }}>{t('photo_remove')}</Button>
           </div>}
-          <Button type="submit" disabled={submitting || preparingPhoto} aria-busy={submitting} variant="primary">
-            {submitting ? t('sightings_submitting') : t('sightings_submit')}
-          </Button>
+          <div className="sighting-submit">
+            <Button type="submit" disabled={submitting || preparingPhoto} aria-busy={submitting} variant="primary">
+              {submitting ? t('sightings_submitting') : t('sightings_submit')}
+            </Button>
+          </div>
         </form>
       )}
 
@@ -208,9 +228,20 @@ function SightingFormAndList({ petId, initialCenter, feed, onShowOnMap }: Sighti
         .sighting-error { display:flex; align-items:center; gap:var(--sp-2); margin-bottom:var(--sp-3); padding:var(--sp-2) var(--sp-3); color:var(--alert); background:color-mix(in srgb,var(--alert) 8%,var(--surface-2)); border-radius:var(--r-md); font-size:var(--text-xs); }
         .sighting-error span { flex:1; }
         .sighting-error button { color:var(--alert); background:none; border:0; font:650 inherit; text-decoration:underline; cursor:pointer; }
-        .sighting-form { display:grid; gap:var(--sp-2); margin-bottom:var(--sp-4); padding:var(--sp-3); background:var(--card); border:1px solid var(--border-subtle); border-radius:var(--r-md); }
+        .sighting-form { display:grid; gap:var(--sp-2); margin-bottom:var(--sp-3); padding-bottom:var(--sp-3); border-bottom:1px solid var(--border-subtle); }
+        .sighting-time-fields { min-width:0; padding:0; margin:0; border:0; }
+        .sighting-time-fields legend { padding:0; margin-bottom:var(--sp-1); color:var(--text-secondary); font-size:var(--text-xs); font-weight:650; }
+        .sighting-time-grid { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:var(--sp-2); }
+        .sighting-time-grid label { display:grid; gap:var(--sp-1); min-width:0; }
+        .sighting-time-grid input { width:100%; box-sizing:border-box; }
+        .sighting-form .sighting-photo-picker { position:relative; display:inline-flex; align-items:center; justify-content:center; gap:var(--sp-2); min-height:36px; padding:var(--sp-1) var(--sp-3); color:var(--primary); border:1.5px solid var(--border-subtle); border-radius:var(--r-md); cursor:pointer; }
+        .sighting-photo-picker input { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); }
+        .sighting-photo-picker:focus-within { outline:2px solid var(--border-focus); outline-offset:2px; }
+        .sighting-photo-picker:has(input:disabled) { opacity:.55; cursor:not-allowed; }
+        .sighting-submit { display:flex; justify-content:flex-end; margin-top:var(--sp-1); }
+        @media(pointer:coarse) { .sighting-photo-picker { min-height:44px; } }
         .sighting-form label { color:var(--text-secondary); font-size:var(--text-xs); font-weight:650; }
-        .sighting-form textarea { min-height:110px; }
+        .sighting-form textarea { min-height:84px; resize:vertical; }
         .sighting-form input { min-width:0; }
         .sighting-tools { display:flex; align-items:center; flex-wrap:wrap; gap:var(--sp-2); }
         .sighting-hint { color:var(--text-secondary); font-size:var(--text-xs); }
@@ -221,13 +252,14 @@ function SightingFormAndList({ petId, initialCenter, feed, onShowOnMap }: Sighti
         .sighting-photo :global(img), .sighting-photo-preview :global(img) {
           display:block; max-width:100%; height:auto; border-radius:var(--r-sm);
         }
-        .sightings-empty { padding:var(--sp-4); color:var(--text-secondary); background:var(--card); border:1px dashed var(--border-subtle); border-radius:var(--r-md); text-align:center; font-size:var(--text-sm); }
+        .sightings-empty { margin:0; padding:var(--sp-2) 0; color:var(--text-secondary); font-size:var(--text-sm); }
         .sighting-list { display:grid; gap:var(--sp-2); }
-        .sighting-item { padding:var(--sp-3); background:var(--card); border:1px solid var(--border-subtle); border-radius:var(--r-md); }
+        .sighting-item { padding:var(--sp-2) 0; border-bottom:1px solid var(--border-subtle); }
+        .sighting-item:last-child { border-bottom:0; }
         .sighting-item > p:first-child { color:var(--text-primary); font-size:var(--text-sm); line-height:1.6; white-space:pre-wrap; }
         .sighting-meta { display:flex; align-items:center; gap:var(--sp-3); flex-wrap:wrap; margin-top:var(--sp-2); color:var(--text-tertiary); font-size:var(--text-xs); }
         .sighting-meta span { display:inline-flex; align-items:center; gap:var(--sp-1); }
-        @media(max-width:560px){.sightings-section{margin-top:var(--sp-4);padding:var(--sp-3);border-radius:var(--r-md)}.sightings-header{align-items:stretch;flex-direction:column}.sighting-toggle{width:100%}.sighting-form{padding:var(--sp-2)}}
+        @media(max-width:560px){.sightings-section{margin-top:var(--sp-4);padding:var(--sp-3);border-radius:var(--r-md)}.sightings-header{gap:var(--sp-2)}.sighting-toggle{flex-shrink:0}}
       `}</style>
     </section>
   );

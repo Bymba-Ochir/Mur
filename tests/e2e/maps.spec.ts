@@ -61,13 +61,13 @@ test.beforeEach(async ({ page, baseURL }) => {
   });
 });
 
-async function expectMapAssets(map: Locator) {
+async function expectMapAssets(map: Locator, markerSource = '/map-marker.svg') {
   await expect(map).toBeVisible();
   await expect.poll(() => map.locator('.leaflet-tile-loaded').count()).toBeGreaterThan(0);
   await expect(map.locator('.leaflet-control-attribution a[href="https://www.openstreetmap.org/copyright"]')).toBeVisible();
   const marker = map.locator('img.leaflet-marker-icon').first();
   await expect(marker).toBeVisible();
-  await expect(marker).toHaveAttribute('src', '/map-marker.svg');
+  await expect(marker).toHaveAttribute('src', markerSource);
   await expect.poll(() => marker.evaluate((image: HTMLImageElement) => image.complete && image.naturalWidth > 0)).toBe(true);
 }
 
@@ -90,7 +90,7 @@ test('first click on an empty report map creates a working marker', async ({ pag
   await expectMapAssets(map);
 });
 
-test('optional sighting photo, pin and time can be published and read after reload', async ({ page }) => {
+test('optional sighting photo, pin and time can be published and read after reload', async ({ page }, testInfo) => {
   await page.addInitScript(auth => localStorage.setItem('sb-127-auth-token', JSON.stringify(auth)), session);
   await page.goto(`/pets/${petId}`);
   const section = page.locator('.sightings-section');
@@ -99,7 +99,8 @@ test('optional sighting photo, pin and time can be published and read after relo
   const purple = map.locator('img[src="/map-marker.svg"]');
   const orange = map.locator('img[src="/sighting-map-marker.svg"]');
   const popup = map.locator('.leaflet-popup-content');
-  const time = form.getByLabel('Харсан огноо, цаг (заавал биш)');
+  const date = form.getByLabel('Огноо', { exact: true });
+  const time = form.getByLabel('Цаг', { exact: true });
   const openForm = () => section.getByRole('button', { name: '+ Би харсан', exact: true }).click();
   const publish = async () => {
     const posted = page.waitForResponse(res => new URL(res.url()).pathname === '/api/sightings' && res.request().method() === 'POST');
@@ -111,12 +112,12 @@ test('optional sighting photo, pin and time can be published and read after relo
   await openForm();
   await form.getByLabel('Харсан тухай мэдээлэл').fill('Тайлбартай боловч цэг, цаггүй');
   await expect(time).toHaveValue('');
-  await form.getByRole('button', { name: 'Газрын зураг дээр тэмдэглэх (заавал биш)' }).click();
+  await form.getByRole('button', { name: 'Газрын зураг дээр тэмдэглэх' }).click();
   const picker = form.getByRole('region', { name: 'Газрын зураг дээр байршил тэмдэглэх' });
   await expect(picker.locator('.leaflet-control-zoom-in')).toBeVisible();
   await expect(picker.locator('.leaflet-marker-icon')).toHaveCount(0);
   await picker.click({ position: { x: 140, y: 100 } });
-  await expectMapAssets(picker);
+  await expectMapAssets(picker, '/sighting-map-marker.svg');
   await form.getByRole('button', { name: 'Цэг арилгах' }).click();
   await expect(picker.locator('.leaflet-marker-icon')).toHaveCount(0);
   await publish();
@@ -126,7 +127,11 @@ test('optional sighting photo, pin and time can be published and read after relo
   await openForm();
   await form.getByLabel('Харсан тухай мэдээлэл').fill('Газрын зураг, цагтай мэдээлэл');
   await form.getByLabel('Харсан байршил').fill('Хорооллын цэцэрлэг');
-  await time.fill('2025-01-02T18:30');
+  await date.fill('2025-01-02');
+  await form.getByRole('button', { name: 'Нийтлэх', exact: true }).click();
+  await expect(page.getByText('Огноо болон цагийг хамтад нь оруулна уу, эсвэл хоёуланг нь хоосон үлдээнэ үү.')).toBeVisible();
+  await expect(form).toBeVisible();
+  await time.fill('18:30');
   const image = await sharp({ create: { width: 64, height: 48, channels: 3, background: '#d5640c' } }).png().toBuffer();
   const photo = form.getByLabel('Зураг (заавал биш)', { exact: true });
   const photoAlt = 'Харсан тухай хавсаргасан зураг';
@@ -136,9 +141,11 @@ test('optional sighting photo, pin and time can be published and read after relo
   await expect(form.getByRole('img', { name: photoAlt })).toHaveCount(0);
   await photo.setInputFiles({ name: 'sighting.png', mimeType: 'image/png', buffer: image });
   await expect(form.getByRole('img', { name: photoAlt })).toBeVisible();
-  await form.getByRole('button', { name: 'Газрын зураг дээр тэмдэглэх (заавал биш)' }).click();
+  await form.getByRole('button', { name: 'Газрын зураг дээр тэмдэглэх' }).click();
   await expect(picker.locator('.leaflet-control-zoom-in')).toBeVisible();
   await picker.click({ position: { x: 140, y: 100 } });
+  await expectMapAssets(picker, '/sighting-map-marker.svg');
+  await form.screenshot({ path: testInfo.outputPath('sighting-form.png') });
   await publish();
   await expect(section.getByText('Газрын зураг, цагтай мэдээлэл', { exact: true })).toHaveCount(1);
   await expect(purple).toBeVisible();
@@ -153,6 +160,9 @@ test('optional sighting photo, pin and time can be published and read after relo
   await page.reload();
   const saved = section.locator('article').filter({ hasText: 'Газрын зураг, цагтай мэдээлэл' });
   await expect(saved.getByText('Харсан:', { exact: false })).toBeVisible();
+  const expectedTime = await page.evaluate(() => new Date('2025-01-02T18:30').toISOString());
+  const savedTime = await saved.locator('time').first().getAttribute('datetime');
+  expect(new Date(savedTime!).toISOString()).toBe(expectedTime);
   await expect.poll(() => saved.getByRole('img', { name: photoAlt }).evaluate((img: HTMLImageElement) => img.naturalWidth)).toBe(64);
   await saved.getByRole('button', { name: 'Газрын зураг харах' }).click();
   await expect(popup.getByText('Газрын зураг, цагтай мэдээлэл', { exact: true })).toBeVisible();
@@ -187,7 +197,8 @@ test('sighting photo retries verify the file contents and reject a fake image', 
   expect((await submit(Buffer.from('not an image'), randomUUID())).status()).toBe(400);
 });
 
-test('sightings alone create a map, with overlapping reports readable as text', async ({ page }) => {
+test('sightings alone create a map, with overlapping reports readable as text', async ({ page }, testInfo) => {
+  await page.addInitScript(() => localStorage.setItem('mur-theme', 'dark'));
   await page.goto(`/pets/${sightingOnlyPetId}`);
   const map = page.locator('.map-section .location-map');
   const pin = map.locator('img[src="/sighting-map-marker.svg"]');
@@ -199,6 +210,27 @@ test('sightings alone create a map, with overlapping reports readable as text', 
   await expect(popup.getByText('<img src=x onerror=alert(1)>')).toBeVisible();
   await expect(popup.locator('img')).toHaveCount(0);
   await expect(popup.getByText(/^Харсан: /)).toHaveCount(0);
+  const wrapper = map.locator('.leaflet-popup-content-wrapper');
+  const cardColor = await map.evaluate(element => getComputedStyle(element).getPropertyValue('--card').trim());
+  expect(cardColor).toBeTruthy();
+  expect(await wrapper.evaluate(element => getComputedStyle(element).backgroundColor)).not.toBe('rgb(255, 255, 255)');
+  await map.screenshot({ path: testInfo.outputPath('sighting-map-dark.png') });
+
+  // The real popup and map panes must stay below the fixed navbar while scrolling.
+  await map.evaluate(element => {
+    const navbar = document.querySelector('.navbar')!;
+    const mapRect = element.getBoundingClientRect();
+    const navRect = navbar.getBoundingClientRect();
+    window.scrollBy({ top: mapRect.top - navRect.top + 4, behavior: 'instant' });
+  });
+  await expect.poll(() => page.evaluate(() => {
+    const navbar = document.querySelector('.navbar')!;
+    const nav = navbar.getBoundingClientRect();
+    const mapRect = document.querySelector('.map-section .location-map')!.getBoundingClientRect();
+    const x = (Math.max(nav.left, mapRect.left) + Math.min(nav.right, mapRect.right)) / 2;
+    const y = (nav.top + nav.bottom) / 2;
+    return mapRect.top <= y && mapRect.bottom >= y && navbar.contains(document.elementFromPoint(x, y));
+  })).toBe(true);
 });
 
 test('clinic map uses the same working tiles and local marker asset', async ({ page }) => {

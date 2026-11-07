@@ -19,6 +19,7 @@ interface LocationMapProps {
   initialCenter?: { lat: number; lng: number } | null;
   /** true бол дарж байршил сонгож болно */
   editable?: boolean;
+  markerVariant?: 'default' | 'sighting';
   /** editable=true үед сонгосон {lat,lng}-г буцаана */
   onPick?: (coords: { lat: number; lng: number }) => void;
   /** screen reader-д газрын зургийн зорилгыг тайлбарлана */
@@ -27,7 +28,7 @@ interface LocationMapProps {
   focus?: LocationMapFocus | null;
 }
 
-export default function LocationMap({ lat, lng, initialCenter, editable = false, onPick, label, pins = NO_PINS, focus }: LocationMapProps) {
+export default function LocationMap({ lat, lng, initialCenter, editable = false, markerVariant = 'default', onPick, label, pins = NO_PINS, focus }: LocationMapProps) {
   const { t } = useLanguage();
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<import('leaflet').Map | null>(null);
@@ -53,7 +54,7 @@ export default function LocationMap({ lat, lng, initialCenter, editable = false,
       setReady(true);
 
       if (lat != null && lng != null) {
-        markerRef.current = L.marker([lat, lng], { icon: mapMarkerIcon(L), alt: label || t('detail_last_seen_loc') }).addTo(map);
+        markerRef.current = L.marker([lat, lng], { icon: mapMarkerIcon(L, markerVariant), alt: label || t('detail_last_seen_loc') }).addTo(map);
       }
 
       if (editable) {
@@ -62,7 +63,7 @@ export default function LocationMap({ lat, lng, initialCenter, editable = false,
           if (markerRef.current) {
             markerRef.current.setLatLng([clickLat, clickLng]);
           } else {
-            markerRef.current = L.marker([clickLat, clickLng], { icon: mapMarkerIcon(L), alt: label || t('detail_last_seen_loc') }).addTo(map);
+            markerRef.current = L.marker([clickLat, clickLng], { icon: mapMarkerIcon(L, markerVariant), alt: label || t('detail_last_seen_loc') }).addTo(map);
           }
           onPick?.({ lat: clickLat, lng: clickLng });
         });
@@ -95,10 +96,11 @@ export default function LocationMap({ lat, lng, initialCenter, editable = false,
     mapRef.current.setView([lat, lng], 15);
     if (markerRef.current) {
       markerRef.current.setLatLng([lat, lng]);
+      markerRef.current.setIcon(mapMarkerIcon(L, markerVariant));
     } else {
-      markerRef.current = L.marker([lat, lng], { icon: mapMarkerIcon(L), alt: label || t('detail_last_seen_loc') }).addTo(mapRef.current);
+      markerRef.current = L.marker([lat, lng], { icon: mapMarkerIcon(L, markerVariant), alt: label || t('detail_last_seen_loc') }).addTo(mapRef.current);
     }
-  }, [lat, lng, label, t]);
+  }, [lat, lng, label, markerVariant, t]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -131,7 +133,7 @@ export default function LocationMap({ lat, lng, initialCenter, editable = false,
       } else {
         const marker = L.marker([pin.lat, pin.lng], {
           icon: mapMarkerIcon(L, 'sighting'), alt: pin.title, zIndexOffset: 1000,
-        }).bindPopup(content, { maxWidth: 280, maxHeight: 200 }).addTo(map);
+        }).bindPopup(content, { maxWidth: 260, maxHeight: Math.max(80, map.getSize().y - 120) }).addTo(map);
         markers.set(pin.id, { marker, snapshot });
         positionsChanged = true;
       }
@@ -160,11 +162,17 @@ export default function LocationMap({ lat, lng, initialCenter, editable = false,
     <div ref={containerRef} className="location-map" role="region" aria-label={label || t('detail_map_heading')} />
     <style jsx>{`
       .location-map {
+        position: relative; isolation: isolate; z-index: 0;
         width: 100%; height: clamp(220px, 42vw, 320px); min-height: clamp(220px, 42vw, 320px);
         overflow: hidden; border: 1px solid var(--border-subtle); border-radius: var(--r-md);
       }
+      .location-map :global(.leaflet-popup-content-wrapper),
+      .location-map :global(.leaflet-popup-tip) { background:var(--card); color:var(--ink); }
+      .location-map :global(.leaflet-popup-close-button) { color:var(--muted); }
+      .location-map :global(.leaflet-bar a),
+      .location-map :global(.leaflet-control-attribution) { background:var(--card); color:var(--ink); }
       .location-map :global(.location-pin-popup) { overflow-wrap: anywhere; }
-      .location-map :global(.location-pin-popup article) { margin-top: 8px; padding-top: 6px; border-top: 1px solid #ddd; }
+      .location-map :global(.location-pin-popup article) { margin-top: 8px; padding-top: 6px; border-top: 1px solid var(--border-subtle); }
       .location-map :global(.location-pin-popup p) { margin: 0 0 5px; white-space: pre-wrap; }
       .location-map :global(.location-pin-popup small) { display: block; margin-top: 3px; }
       .location-map :global(.location-pin-popup img) {
