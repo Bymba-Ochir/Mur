@@ -5,10 +5,12 @@ import { compressImage } from '../lib/imageCompress';
 import { SIGHTING_PHOTO_LIMIT, SIGHTING_PHOTO_TYPES } from '../lib/sightingPhoto';
 import { createSighting } from '../lib/sightingService';
 import type { SightingFeed } from '../lib/useSightingFeed';
-import { sightingDateTimeFormat, sightingMapPinId } from '../lib/sightingPresentation';
+import { sightingMapPinId } from '../lib/sightingPresentation';
+import { dateTimeFormat, EMPTY_DATE_TIME, parseDateTimeInput } from '../lib/dateTime';
 import { relativeTime } from '../lib/relativeTime';
 import { useToast } from './Toast';
 import Button from './ui/Button';
+import DateTimeField from './ui/DateTimeField';
 import LocationMap from './LocationMap';
 import { useLanguage } from '../lib/i18n';
 import { getErrorMessage } from '../lib/utils';
@@ -35,8 +37,7 @@ function SightingFormAndList({ petId, initialCenter, feed, onShowOnMap }: Sighti
   const { sightings, load, loadMore, loadError, hasMore, loadingMore } = feed;
   const [message, setMessage] = useState('');
   const [place, setPlace] = useState('');
-  const [sightedDate, setSightedDate] = useState('');
-  const [sightedTime, setSightedTime] = useState('');
+  const [observedAt, setObservedAt] = useState(EMPTY_DATE_TIME);
   const [pin, setPin] = useState<MapPoint | null>(null);
   const [showPicker, setShowPicker] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -74,11 +75,11 @@ function SightingFormAndList({ petId, initialCenter, feed, onShowOnMap }: Sighti
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (submitting || preparingPhoto || !message.trim()) return;
-    if (Boolean(sightedDate) !== Boolean(sightedTime)) {
-      showToast(t('sightings_time_incomplete'), 'error');
+    if (Boolean(observedAt.date) !== Boolean(observedAt.time)) {
+      showToast(t('date_time_incomplete'), 'error');
       return;
     }
-    const observed = sightedDate && sightedTime ? new Date(`${sightedDate}T${sightedTime}`) : null;
+    const observed = parseDateTimeInput(observedAt);
     if (observed && (!Number.isFinite(observed.getTime()) || observed.getTime() > Date.now())) {
       showToast(t('sightings_time_invalid'), 'error');
       return;
@@ -94,8 +95,7 @@ function SightingFormAndList({ petId, initialCenter, feed, onShowOnMap }: Sighti
       submitKey.current = null;
       setMessage('');
       setPlace('');
-      setSightedDate('');
-      setSightedTime('');
+      setObservedAt(EMPTY_DATE_TIME);
       setPin(null);
       setPhoto(null);
       setShowPicker(false);
@@ -114,7 +114,7 @@ function SightingFormAndList({ petId, initialCenter, feed, onShowOnMap }: Sighti
     setPin(value);
   }
 
-  const formatSeenTime = sightingDateTimeFormat(lang);
+  const formatSeenTime = dateTimeFormat(lang);
 
   return (
     <section className="sightings-section" aria-labelledby="sightings-heading">
@@ -138,20 +138,8 @@ function SightingFormAndList({ petId, initialCenter, feed, onShowOnMap }: Sighti
         <form id="sighting-form" onSubmit={handleSubmit} className="sighting-form">
           <label htmlFor="sighting-message">{t('sightings_message_label')}</label>
           <textarea id="sighting-message" className="field" value={message} onChange={(e) => { submitKey.current = null; setMessage(e.target.value); }} placeholder={t('sightings_placeholder')} required maxLength={1000} rows={3} />
-          <fieldset className="sighting-time-fields" aria-describedby="sighting-time-hint">
-            <legend>{t('sightings_time_label')}</legend>
-            <div className="sighting-time-grid">
-              <label htmlFor="sighting-date">{t('sightings_date')}
-                <input id="sighting-date" className="field" type="date" value={sightedDate}
-                  onChange={(e) => { submitKey.current = null; setSightedDate(e.target.value); }} />
-              </label>
-              <label htmlFor="sighting-time">{t('sightings_clock')}
-                <input id="sighting-time" className="field" type="time" value={sightedTime}
-                  onChange={(e) => { submitKey.current = null; setSightedTime(e.target.value); }} />
-              </label>
-            </div>
-            <p className="sighting-hint" id="sighting-time-hint">{t('sightings_time_hint')}</p>
-          </fieldset>
+          <DateTimeField id="sighting" label={t('sightings_time_label')} value={observedAt}
+            onChange={value => { submitKey.current = null; setObservedAt(value); }} />
           <label htmlFor="sighting-place">{t('sightings_place_label')} {t('map_optional')}</label>
           <input id="sighting-place" className="field" value={place} onChange={(e) => { submitKey.current = null; setPlace(e.target.value); }} placeholder={t('sightings_place_placeholder')} maxLength={300} />
           <div className="sighting-tools">
@@ -229,11 +217,6 @@ function SightingFormAndList({ petId, initialCenter, feed, onShowOnMap }: Sighti
         .sighting-error span { flex:1; }
         .sighting-error button { color:var(--alert); background:none; border:0; font:650 inherit; text-decoration:underline; cursor:pointer; }
         .sighting-form { display:grid; gap:var(--sp-2); margin-bottom:var(--sp-3); padding-bottom:var(--sp-3); border-bottom:1px solid var(--border-subtle); }
-        .sighting-time-fields { min-width:0; padding:0; margin:0; border:0; }
-        .sighting-time-fields legend { padding:0; margin-bottom:var(--sp-1); color:var(--text-secondary); font-size:var(--text-xs); font-weight:650; }
-        .sighting-time-grid { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:var(--sp-2); }
-        .sighting-time-grid label { display:grid; gap:var(--sp-1); min-width:0; }
-        .sighting-time-grid input { width:100%; box-sizing:border-box; }
         .sighting-form .sighting-photo-picker { position:relative; display:inline-flex; align-items:center; justify-content:center; gap:var(--sp-2); min-height:36px; padding:var(--sp-1) var(--sp-3); color:var(--primary); border:1.5px solid var(--border-subtle); border-radius:var(--r-md); cursor:pointer; }
         .sighting-photo-picker input { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); }
         .sighting-photo-picker:focus-within { outline:2px solid var(--border-focus); outline-offset:2px; }

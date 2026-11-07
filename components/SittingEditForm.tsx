@@ -5,23 +5,37 @@ import type { District } from '../lib/districts';
 import { useLanguage } from '../lib/i18n';
 import Button from './ui/Button';
 import PhonePrivacyField from './PhonePrivacyField';
+import SittingCareFields from './SittingCareFields';
+import { dateTimeInputFromIso, parseDateTimeInput } from '../lib/dateTime';
 import Icon from './ui/icons';
 import type { SittingPetType } from '../lib/types';
 import { normalizePhone } from '../lib/utils';
 
 const PET_TYPE_VALUES: SittingPetType[] = ['Нохой', 'Муур', 'Бусад', 'Бүгд'];
-export interface SittingEditValues { petType: SittingPetType; description: string; experience: string; availability: string; price: string; district: District; place: string; phone: string; phoneHidden?: boolean; }
-type Errors = Partial<Record<'description' | 'price' | 'place' | 'phone', string>>;
+export interface SittingEditValues { petType: SittingPetType; description: string; experience: string; isBeginner: boolean; availability: string; availableFrom: string | null; price: string; district: District; place: string; phone: string; phoneHidden?: boolean; }
+type Errors = Partial<Record<'description' | 'price' | 'place' | 'phone' | 'availableTime', string>>;
 
 export default function SittingEditForm({ initial, onSave, onCancel, saving }: { initial: SittingEditValues; onSave: (values: SittingEditValues) => void; onCancel: () => void; saving: boolean; }) {
-  const { t, lang } = useLanguage(); const [form, setForm] = useState(initial); const [errors, setErrors] = useState<Errors>({});
+  const { t, lang } = useLanguage();
+  const [form, setForm] = useState(() => ({ ...initial, availableTime: dateTimeInputFromIso(initial.availableFrom) }));
+  const [errors, setErrors] = useState<Errors>({});
   function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault(); const next: Errors = {};
     if (!form.description.trim()) next.description = t('sitting_description_required');
     if (form.price && (Number(form.price) < 0 || Number(form.price) > 100000000)) next.price = t('sitting_price_invalid');
     if (!form.place.trim()) next.place = t('sitting_place_required');
     if (!form.phoneHidden && normalizePhone(form.phone).length !== 8) next.phone = t('sitting_phone_invalid');
-    setErrors(next); if (!Object.keys(next).length) onSave({ ...form, description: form.description.trim(), place: form.place.trim(), phone: normalizePhone(form.phone) });
+    const { availableTime, ...values } = form;
+    const selectedAvailability = parseDateTimeInput(availableTime);
+    if (selectedAvailability && !Number.isFinite(selectedAvailability.getTime())) next.availableTime = t('date_time_incomplete');
+    setErrors(next);
+    if (!Object.keys(next).length) onSave({
+      ...values,
+      availableFrom: selectedAvailability?.toISOString() ?? null,
+      description: form.description.trim(),
+      place: form.place.trim(),
+      phone: normalizePhone(form.phone),
+    });
   }
   const typeLabel = (value: SittingPetType) => value === 'Нохой' ? t('type_dog') : value === 'Муур' ? t('type_cat') : value === 'Бусад' ? t('type_other') : t('sitting_pet_type_all');
   return (
@@ -32,7 +46,10 @@ export default function SittingEditForm({ initial, onSave, onCancel, saving }: {
         <label htmlFor="edit-s-price"><span>{t('sitting_price_label')}</span><small id="edit-price-hint">{lang === 'mn' ? 'Нэг өдрийн үнэ. Хоосон бол тохиролцоно, 0 бол үнэгүй.' : 'Daily price. Leave blank to negotiate, or enter 0 for free.'}</small><input id="edit-s-price" type="number" min="0" max="100000000" step="1" value={form.price} onChange={(e) => { setForm({ ...form, price: e.target.value }); setErrors({ ...errors, price: undefined }); }} aria-invalid={Boolean(errors.price)} aria-describedby={errors.price ? 'edit-price-hint edit-s-price-error' : 'edit-price-hint'} />{errors.price && <small id="edit-s-price-error" role="alert">{errors.price}</small>}</label>
       </div>
       <label htmlFor="edit-s-desc"><span>{t('sitting_description_label')}</span><textarea id="edit-s-desc" value={form.description} onChange={(e) => { setForm({ ...form, description: e.target.value }); setErrors({ ...errors, description: undefined }); }} rows={5} maxLength={2000} required aria-invalid={Boolean(errors.description)} aria-describedby={errors.description ? 'edit-s-desc-error' : undefined} />{errors.description && <small id="edit-s-desc-error" role="alert">{errors.description}</small>}</label>
-      <div className="field-grid"><label htmlFor="edit-s-exp"><span>{t('sitting_experience_label')}</span><input id="edit-s-exp" value={form.experience} onChange={(e) => setForm({ ...form, experience: e.target.value })} maxLength={500} /></label><label htmlFor="edit-s-avail"><span>{t('sitting_availability_label')}</span><input id="edit-s-avail" value={form.availability} onChange={(e) => setForm({ ...form, availability: e.target.value })} maxLength={500} /></label></div>
+      <SittingCareFields id="edit-s" value={form} timeError={errors.availableTime} onChange={value => {
+        setForm(current => ({ ...current, ...value }));
+        setErrors(current => ({ ...current, availableTime: undefined }));
+      }} />
       <div className="field-grid"><label htmlFor="edit-s-district"><span>{t('district_label')}</span><select id="edit-s-district" value={form.district} onChange={(e) => setForm({ ...form, district: e.target.value as District })}>{DISTRICTS.map((district) => <option key={district}>{district}</option>)}</select></label><label htmlFor="edit-s-place"><span>{t('detail_place').replace(':', '')}</span><input id="edit-s-place" value={form.place} onChange={(e) => { setForm({ ...form, place: e.target.value }); setErrors({ ...errors, place: undefined }); }} maxLength={300} required aria-invalid={Boolean(errors.place)} aria-describedby={errors.place ? 'edit-s-place-error' : undefined} />{errors.place && <small id="edit-s-place-error" role="alert">{errors.place}</small>}</label></div>
       <PhonePrivacyField id="edit-s-phone" phone={form.phone} hidden={Boolean(form.phoneHidden)} onPhoneChange={phone => setForm(current => ({ ...current, phone }))} onHiddenChange={phoneHidden => setForm(current => ({ ...current, phoneHidden }))} error={errors.phone} />
       <div className="edit-actions"><Button type="submit" disabled={saving} variant="primary">{saving ? t('detail_saving') : t('detail_save')}</Button><Button type="button" onClick={onCancel} variant="ghost">{t('detail_cancel')}</Button></div>

@@ -10,6 +10,8 @@ import Button from './ui/Button';
 import Icon from './ui/icons';
 import ShareButtons from './ShareButtons';
 import FieldHint from './ui/FieldHint';
+import SittingCareFields, { type SittingCareValues } from './SittingCareFields';
+import { EMPTY_DATE_TIME, parseDateTimeInput } from '../lib/dateTime';
 import AuthRequired from './AuthRequired';
 import { useAuth } from '../lib/useAuth';
 import SittingCardView from './SittingCardView';
@@ -24,7 +26,10 @@ import type { SittingPetType } from '../lib/types';
 import type { District } from '../lib/districts';
 import { fingerprintSubmission, resolveIdempotencyAttempt, type IdempotencyAttempt } from '../lib/idempotency';
 
-type FieldErrors = Partial<Record<'description' | 'place' | 'phone' | 'price', string>>;
+type FieldErrors = Partial<Record<'description' | 'place' | 'phone' | 'price' | 'availableTime', string>>;
+const EMPTY_CARE: SittingCareValues = {
+  experience: '', isBeginner: false, availability: '', availableTime: EMPTY_DATE_TIME,
+};
 
 export default function SittingForm() {
   const { user } = useAuth();
@@ -42,8 +47,10 @@ function AuthenticatedSittingForm() {
   const [step, setStep] = useState(0);
   const [petType, setPetType] = useState<SittingPetType>('Нохой');
   const [description, setDescription] = useState('');
-  const [experience, setExperience] = useState('');
-  const [availability, setAvailability] = useState('');
+  const [care, setCare] = useState(EMPTY_CARE);
+  const selectedAvailability = parseDateTimeInput(care.availableTime);
+  const availableFrom = selectedAvailability && Number.isFinite(selectedAvailability.getTime())
+    ? selectedAvailability.toISOString() : null;
   const [price, setPrice] = useState('');
   const [district, setDistrict] = useState<District>(DISTRICTS[0]);
   const [place, setPlace] = useState('');
@@ -90,8 +97,8 @@ function AuthenticatedSittingForm() {
   }
 
   function resetAll() {
-    setStep(0); setPetType('Нохой'); setDescription(''); setExperience('');
-    setAvailability(''); setPrice(''); setDistrict(DISTRICTS[0]); setPlace(''); setPhone(''); setPhoneHidden(false);
+    setStep(0); setPetType('Нохой'); setDescription(''); setCare(EMPTY_CARE);
+    setPrice(''); setDistrict(DISTRICTS[0]); setPlace(''); setPhone(''); setPhoneHidden(false);
     setPhotoFile(null); setPhotoPreview(null); setError(null); setFieldErrors({});
     attemptRef.current = null;
     location.reset();
@@ -99,17 +106,26 @@ function AuthenticatedSittingForm() {
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (submitting) return;
+    if (step < 2) { goNext(); return; }
+    const infoErrors = validateStep(1);
+    if (Object.keys(infoErrors).length) {
+      setFieldErrors(infoErrors);
+      setStep(1);
+      return;
+    }
     const validation = validateStep(2);
     if (Object.keys(validation).length) { setFieldErrors(validation); return; }
     setSubmitting(true);
     setError(null);
     setStatusMsg(t('submitting'));
-    const fingerprint = fingerprintSubmission({ petType, description, experience, availability, price, district, place, phone, phoneHidden, coords: location.coords }, photoFile ? [photoFile] : []);
+    const fingerprint = fingerprintSubmission({ petType, description, ...care, availableFrom, price, district, place, phone, phoneHidden, coords: location.coords }, photoFile ? [photoFile] : []);
     const attempt = resolveIdempotencyAttempt(attemptRef.current, fingerprint);
     attemptRef.current = attempt;
     try {
       const id = await createSittingListing({
-        petType, description, district, place, experience, availability,
+        petType, description, district, place, availableFrom,
+        experience: care.experience, isBeginner: care.isBeginner, availability: care.availability,
         phone: normalizePhone(phone), phoneHidden,
         price: price ? Number(price) : null,
         photoFile,
@@ -130,6 +146,7 @@ function AuthenticatedSittingForm() {
     const next: FieldErrors = {};
     if (index === 1) {
       if (!description.trim()) next.description = t('sitting_description_required');
+      if (selectedAvailability && !availableFrom) next.availableTime = t('date_time_incomplete');
       if (price && (Number(price) < 0 || Number(price) > 100000000)) next.price = t('sitting_price_invalid');
     }
     if (index === 2) {
@@ -191,12 +208,10 @@ function AuthenticatedSittingForm() {
             <FieldHint mn="Ямар үйлчилгээ үзүүлэх, хаана асрах болон таны давуу талыг тодорхой бичнэ." en="Explain the service, where care is provided and what you offer." />
             <textarea id="s-desc" value={description} onChange={(e) => { setDescription(e.target.value); setFieldErrors((current) => ({ ...current, description: undefined })); }} rows={4} placeholder={t('sitting_description_placeholder')} required maxLength={2000} aria-invalid={Boolean(fieldErrors.description)} aria-describedby={fieldErrors.description ? 's-desc-error' : undefined} />
             {fieldErrors.description && <p className="field-error" id="s-desc-error" role="alert">{fieldErrors.description}</p>}
-            <label htmlFor="s-exp">{t('sitting_experience_label')}</label>
-            <FieldHint mn="Хэдэн жил, ямар төрлийн амьтан асарч байсан туршлагаа бичнэ. Заавал биш." en="Describe years and types of pet-care experience. Optional." />
-            <input id="s-exp" value={experience} onChange={(e) => setExperience(e.target.value)} placeholder={t('sitting_experience_placeholder')} maxLength={500} />
-            <label htmlFor="s-avail">{t('sitting_availability_label')}</label>
-            <FieldHint mn="Боломжтой өдөр, цагийг бичнэ. Жишээ: ажлын өдөр 18:00-аас хойш." en="Enter available days and times, e.g. weekdays after 18:00." />
-            <input id="s-avail" value={availability} onChange={(e) => setAvailability(e.target.value)} placeholder={t('sitting_availability_placeholder')} maxLength={500} />
+            <SittingCareFields id="s" value={care} timeError={fieldErrors.availableTime} onChange={value => {
+              setCare(current => ({ ...current, ...value }));
+              setFieldErrors(current => ({ ...current, availableTime: undefined }));
+            }} />
             <label htmlFor="s-price">{t('sitting_price_label')}</label>
             <FieldHint mn="Нэг өдрийн үнэ. Хоосон бол тохиролцоно, 0 бол үнэгүй." en="Daily price in MNT. Leave blank to negotiate, or enter 0 for free." />
             <input id="s-price" type="number" min="0" max="100000000" step="1" value={price} onChange={(e) => { setPrice(e.target.value); setFieldErrors((current) => ({ ...current, price: undefined })); }} placeholder={t('sitting_price_placeholder')} aria-invalid={Boolean(fieldErrors.price)} aria-describedby={fieldErrors.price ? 's-price-error' : undefined} />
@@ -253,8 +268,11 @@ function AuthenticatedSittingForm() {
           description={description}
           district={district}
           place={place}
-          experience={experience}
-          availability={availability}
+          experience={care.experience}
+          beginnerLabel={care.isBeginner ? t('sitting_beginner') : undefined}
+          availability={care.availability}
+          availableFrom={availableFrom}
+          availableFromLabel={t('sitting_available_from_short')}
           price={price ? Number(price) : null}
           phone={phoneHidden ? '' : formatPhone(phone)}
           interactive={false}

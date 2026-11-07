@@ -379,6 +379,8 @@ export interface SittingListing {
   place: string;
   experience: string;
   availability: string;
+  availableFrom: string | null;
+  isBeginner: boolean;
   phone: string;
   phoneHidden?: boolean;
   price: number | null;
@@ -395,6 +397,8 @@ export interface SittingListingInput {
   place: string;
   experience: string;
   availability: string;
+  availableFrom?: string | null;
+  isBeginner?: boolean;
   phone: string;
   phoneHidden?: boolean;
   price?: number | null;
@@ -417,6 +421,8 @@ export interface UpdateSittingListingFields {
   place?: string;
   experience?: string;
   availability?: string;
+  availableFrom?: string | null;
+  isBeginner?: boolean;
   phone?: string;
   phoneHidden?: boolean;
   price?: number | null;

@@ -22,7 +22,10 @@ export default function SittingCard({ listing }: { listing: SittingListing }) {
       district={listing.district}
       place={listing.place}
       experience={listing.experience}
+      beginnerLabel={listing.isBeginner ? t('sitting_beginner') : undefined}
       availability={listing.availability}
+      availableFrom={listing.availableFrom}
+      availableFromLabel={t('sitting_available_from_short')}
       price={listing.price}
       phone={listing.phoneHidden ? '' : listing.phone}
       createdAt={listing.createdAt}

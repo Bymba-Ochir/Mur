@@ -22,6 +22,8 @@ interface SittingRow {
   place: string | null;
   experience: string | null;
   availability: string | null;
+  available_from?: string | null;
+  is_beginner?: boolean;
   phone: string | null;
   phone_hidden?: boolean;
   price: number | null;
@@ -41,6 +43,8 @@ function mapSittingRow(row: SittingRow): SittingListing {
     place: row.place ?? '',
     experience: row.experience ?? '',
     availability: row.availability ?? '',
+    availableFrom: row.available_from ?? null,
+    isBeginner: row.is_beginner ?? false,
     phone: row.phone_hidden ? '' : row.phone ?? '',
     phoneHidden: row.phone_hidden ?? false,
     price: row.price ?? null,
@@ -92,6 +96,8 @@ export async function createSittingListing(data: SittingListingInput, mutationId
       place: cleanText(data.place, 300, 'Байршил', true),
       experience: cleanText(data.experience, 500, 'Туршлага'),
       availability: cleanText(data.availability, 500, 'Боломжит цаг'),
+      available_from: data.availableFrom ?? null,
+      is_beginner: data.isBeginner ?? false,
       phone: listingPhone(data.phone, data.phoneHidden),
       phone_hidden: data.phoneHidden ?? false,
       price,
@@ -152,6 +158,8 @@ export async function updateSittingListing(id: string, fields: UpdateSittingList
   if (fields.place !== undefined) updateData.place = cleanText(fields.place, 300, 'Байршил', true);
   if (fields.experience !== undefined) updateData.experience = cleanText(fields.experience, 500, 'Туршлага');
   if (fields.availability !== undefined) updateData.availability = cleanText(fields.availability, 500, 'Боломжит цаг');
+  if (fields.availableFrom !== undefined) updateData.available_from = fields.availableFrom;
+  if (fields.isBeginner !== undefined) updateData.is_beginner = fields.isBeginner;
   if (fields.phone !== undefined) updateData.phone = listingPhone(fields.phone, fields.phoneHidden);
   if (fields.phoneHidden !== undefined) updateData.phone_hidden = fields.phoneHidden;
   if (fields.price !== undefined) updateData.price = optionalInteger(fields.price, { min: 0, max: 100_000_000, label: 'Үйлчилгээний үнэ' });

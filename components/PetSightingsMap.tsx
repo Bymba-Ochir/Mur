@@ -2,7 +2,8 @@
 
 import { useMemo } from 'react';
 import { useLanguage } from '../lib/i18n';
-import { sightingDateTimeFormat, sightingMapPinId } from '../lib/sightingPresentation';
+import { sightingMapPinId } from '../lib/sightingPresentation';
+import { dateTimeFormat } from '../lib/dateTime';
 import type { Sighting } from '../lib/types';
 import LocationMap, { type LocationMapPin, type LocationMapFocus } from './LocationMap';
 
@@ -14,7 +15,7 @@ export default function PetSightingsMap({ lat, lng, sightings, focus }: {
 }) {
   const { t, lang } = useLanguage();
   const pins = useMemo(() => {
-    const formatter = sightingDateTimeFormat(lang);
+    const formatter = dateTimeFormat(lang);
     const groups = new Map<string, LocationMapPin>();
     for (const sighting of sightings) {
       const id = sightingMapPinId(sighting);

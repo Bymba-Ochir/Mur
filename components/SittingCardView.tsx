@@ -4,12 +4,14 @@ import ListingCardLink from './ListingCardLink';
 import PetIcon from './PetIcon';
 import Icon from './ui/icons';
 import { relativeTime } from '../lib/relativeTime';
+import { dateTimeFormat } from '../lib/dateTime';
 import { maskPhone, formatPhone } from '../lib/utils';
 import type { SittingPetType } from '../lib/types';
 
 export interface SittingCardViewProps extends HTMLAttributes<HTMLElement> {
   badgeLabel: string; petType: SittingPetType; petTypeLabel?: string; description: string;
   district: string; place: string; experience: string; availability: string;
+  beginnerLabel?: string; availableFrom?: string | null; availableFromLabel?: string;
   price: number | null; phone: string; imageNode?: ReactNode; createdAt?: string;
   revealed?: boolean; onRevealPhone?: () => void; interactive?: boolean;
   showPhoneLabel?: string; callPhoneLabel?: string; freeLabel?: string; perDayLabel?: string;
@@ -18,6 +20,7 @@ export interface SittingCardViewProps extends HTMLAttributes<HTMLElement> {
 
 export default function SittingCardView({
   badgeLabel, petType, petTypeLabel, description, district, place, experience, availability,
+  beginnerLabel, availableFrom, availableFromLabel,
   price, phone, imageNode, createdAt, revealed = true, onRevealPhone, interactive = true,
   showPhoneLabel = 'Дугаар харах', callPhoneLabel = 'Утсаар холбогдох', freeLabel = 'Үнэгүй',
   perDayLabel = '/ өдөр', detailHref, detailLabel = 'Дэлгэрэнгүй', language = 'mn', ...containerProps
@@ -30,7 +33,12 @@ export default function SittingCardView({
       <div className="thumb"><span className="badge">{badgeLabel}</span>{imageNode ?? <span className="pet-placeholder" aria-hidden="true"><PetIcon type={iconType} size={56} /></span>}</div>
       <div className="info">
         <h3><ListingCardLink href={interactive ? detailHref : undefined} label={detailLabel}>{title}</ListingCardLink></h3><p className="pet-type">{petTypeLabel || petType}</p>
-        {experience && <p className="clamp-line">{experience}</p>}{availability && <p className="clamp-line">{availability}</p>}
+        {beginnerLabel && <p className="clamp-line">{beginnerLabel}</p>}
+        {experience && <p className="clamp-line">{experience}</p>}
+        {availableFrom && <p className="time"><Icon name="calendar" size={14} aria-hidden="true" />
+          <span>{availableFromLabel} <time dateTime={availableFrom}>{dateTimeFormat(language).format(new Date(availableFrom))}</time></span>
+        </p>}
+        {availability && <p className="clamp-line">{availability}</p>}
         <p className="place"><Icon name="pin" size={14} aria-hidden="true" /><span>{district} — {place}</span></p>
         <p className={`price${price === 0 ? ' free' : ''}`}>{price == null ? (language === 'mn' ? 'Үнэ тохиролцоно' : 'Price negotiable') : price !== 0 ? <>₮ {price.toLocaleString(language === 'mn' ? 'mn-MN' : 'en-US')} <span>{perDayLabel}</span></> : freeLabel}</p>
         {createdAt && <p className="time"><Icon name="calendar" size={14} aria-hidden="true" />{relativeTime(createdAt, language)}</p>}

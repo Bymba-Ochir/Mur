@@ -6,7 +6,7 @@ type OwnedTable = { table: string; columns?: string; owner?: string; participant
 const ownedTables: Record<string, OwnedTable> = {
   pets: { table: 'pets', columns: 'id,status,name,type,breed,color,place,district,resolved,created_at', owner: 'created_by' },
   adoptions: { table: 'adoptions', columns: 'id,name,type,age,gender,breed,description,district,place,created_at', owner: 'created_by' },
-  sittingListings: { table: 'sitting_listings', columns: 'id,pet_type,description,district,place,experience,availability,price,created_at' },
+  sittingListings: { table: 'sitting_listings', columns: 'id,pet_type,description,district,place,experience,availability,available_from,is_beginner,price,created_at' },
   myPets: { table: 'my_pets' },
   appointments: { table: 'appointments' },
   adoptionApplications: { table: 'adoption_applications', participants: ['applicant_id', 'owner_id'] },
