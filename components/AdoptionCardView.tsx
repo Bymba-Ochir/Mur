@@ -1,7 +1,7 @@
 'use client';
 import { formatPetAge } from '../lib/petAge';
 import type { HTMLAttributes, ReactNode } from 'react';
-import Link from 'next/link';
+import ListingCardLink from './ListingCardLink';
 import PetIcon from './PetIcon';
 import { relativeTime } from '../lib/relativeTime';
 import { maskPhone, formatPhone } from '../lib/utils';
@@ -47,7 +47,7 @@ export default function AdoptionCardView({
   const staticClass = interactive ? '' : ' static';
 
   return (
-    <div className={`pet-card${staticClass}`} {...containerProps}>
+    <div className={`pet-card${staticClass}${interactive && detailHref ? ' listing-card--linked' : ''}`} {...containerProps}>
       <div className="thumb">
         <span className="badge adopt">{badgeLabel}</span>
         {imageNode ?? (
@@ -55,14 +55,15 @@ export default function AdoptionCardView({
         )}
       </div>
       <div className="info">
-        <h3>{name || typeLabel || type}</h3>
+        <h3><ListingCardLink href={interactive ? detailHref : undefined} label={detailLabel}>{name || typeLabel || type}</ListingCardLink></h3>
         <p>{typeLabel || type}{breed ? `, ${breed}` : ''}</p>
         {age && <p>{formatPetAge(age, language)}{gender && gender !== 'Тодорхойгүй' ? ` · ${genderLabel || gender}` : ''}</p>}
         <p className="place"><Icon name="pin" size={14} aria-hidden="true" /> {district} — {place}</p>
         {createdAt && <p className="time"><Icon name="calendar" size={14} aria-hidden="true" /> {relativeTime(createdAt, language)}</p>}
-        <div className="card-actions">
+        {phone && <div className="card-actions">
         {showMasked ? (
           <button
+            type="button"
             className="phone reveal-btn"
             onClick={(e) => { e.stopPropagation(); onRevealPhone!(); }}
             aria-label={showPhoneLabel}
@@ -79,8 +80,7 @@ export default function AdoptionCardView({
             <Icon name="phone" size={14} aria-hidden="true" /> {formatPhone(phone)}
           </a>
         ) : null}
-        {detailHref && <Link className="detail-link" href={detailHref}>{detailLabel}<span aria-hidden="true">→</span></Link>}
-        </div>
+        </div>}
       </div>
 
       <style jsx>{`
@@ -149,9 +149,7 @@ export default function AdoptionCardView({
         @media (max-width: 480px) { .phone { margin-top: 10px; font-size: 14px; } }
         @media (min-width: 1025px) { .phone { margin-top: 12px; font-size: 14px; } }
         .reveal-btn { border: none; cursor: pointer; font-family: inherit; text-align: left; }
-        .detail-link { display: inline-flex; align-items: center; gap: var(--sp-1); min-height: var(--touch-target); margin-left: auto; padding: var(--sp-2); color: var(--primary); border-radius: var(--r-sm); font-size: var(--text-sm); font-weight: 750; text-decoration: none; }
-        .detail-link:hover { background: var(--eyebrow-bg); }
-        .reveal-btn:focus-visible, .phone:focus-visible, .detail-link:focus-visible { outline: 2px solid var(--border-focus); outline-offset: 2px; }
+        .reveal-btn:focus-visible, .phone:focus-visible { outline: 2px solid var(--border-focus); outline-offset: 2px; }
       `}</style>
     </div>
   );

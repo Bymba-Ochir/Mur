@@ -14,6 +14,8 @@ export default function PetCard({ pet }: { pet: Pet }) {
 
   const typeLabel = pet.type === 'Нохой' ? t('type_dog') : pet.type === 'Муур' ? t('type_cat') : t('type_other');
 
+  const detailHref = `/pets/${pet.id}${query ? "?returnTo=" + encodeURIComponent("/listings" + query) : ""}`;
+
   return (
     <PetCardView
       status={pet.status}
@@ -34,14 +36,14 @@ export default function PetCard({ pet }: { pet: Pet }) {
       similarityLabel={t('listings_card_similarity')}
       showPhoneLabel={t('listings_card_show_phone')}
       callPhoneLabel={t('listings_card_call')}
-      detailHref={`/pets/${pet.id}${query ? "?returnTo=" + encodeURIComponent("/listings" + query) : ""}`}
+      detailHref={detailHref}
       detailLabel={t('listings_card_detail')}
       language={lang}
       revealed={revealed}
       onRevealPhone={() => setRevealed(true)}
       imageNode={
         pet.photoURLs.length ? (
-          <PetImageGallery images={pet.photoURLs} alt={`${typeLabel}${pet.name ? ' — ' + pet.name : ''}, ${pet.color || ''}`} />
+          <PetImageGallery href={detailHref} linkLabel={`${t('listings_card_detail')}: ${pet.name || typeLabel}`} images={pet.photoURLs} alt={`${typeLabel}${pet.name ? ' — ' + pet.name : ''}, ${pet.color || ''}`} />
         ) : undefined
       }
     />

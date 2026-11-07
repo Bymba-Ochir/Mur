@@ -1226,3 +1226,13 @@ body:has([data-floating-notice='analytics']) [data-floating-notice='install'] {
   #listing-contact:target { outline:2px solid var(--border-focus); outline-offset:6px; border-radius:var(--r-sm); }
   @media(max-width:560px) { .quick-actions > * { flex:1 1 9rem; justify-content:center; } }
 }
+
+/* One native card link covers non-interactive space. Controls remain separate. */
+.listing-card--linked { position: relative; isolation: isolate; }
+.listing-card-link { color: inherit; text-decoration: none; }
+.listing-card-link::after { content: ''; position: absolute; inset: 0; z-index: 1; cursor: pointer; }
+.listing-card-link:focus-visible { outline: none; }
+.listing-card--linked:has(.listing-card-link:focus-visible) { outline: 3px solid var(--border-focus); outline-offset: 3px; }
+.listing-card--linked .phone { position: relative; z-index: 5; }
+.listing-card--linked .thumb .badge, .listing-card--linked .thumb .similarity { z-index: 4; pointer-events: none; }
+.listing-card--linked.pet-card .thumb::after, .listing-card--linked.sitting-card .thumb::after { z-index: 3; }

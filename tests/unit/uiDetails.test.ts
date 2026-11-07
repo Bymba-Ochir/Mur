@@ -97,14 +97,6 @@ describe('page detail safeguards', () => {
     expect(listings).not.toContain('style={{ flex:');
   });
 
-  it('listing cards expose separate phone and detail controls', () => {
-    const card = source('components/PetCardView.tsx');
-    const listingCard = source('components/PetCard.tsx');
-    expect(card).toContain('className="card-actions"');
-    expect(card).toContain('className="detail-link"');
-    expect(listingCard).not.toContain('role="link"');
-    expect(listingCard).not.toContain('tabIndex={0}');
-  });
 
   it('lost and found detail uses semantic sections and a stable mobile breakpoint', () => {
     const detail = source('app/pets/[id]/PetDetailClient.tsx');

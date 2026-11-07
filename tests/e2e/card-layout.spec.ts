@@ -41,21 +41,17 @@ test('listing photos are larger and actions follow content without a stretched b
     const frame = await first.locator('.thumb').boundingBox();
     expect(frame).not.toBeNull();
     expect(Math.abs(frame!.height / frame!.width - .75)).toBeLessThan(.01);
-    const metrics = await first.evaluate(node => {
-      const meta = node.querySelector('.card-meta')!.getBoundingClientRect();
-      const actions = node.querySelector('.card-actions')!.getBoundingClientRect();
-      return { gap: actions.top - meta.bottom };
-    });
-    expect(metrics.gap).toBeLessThanOrEqual(20);
-    const detail = first.locator('.detail-link');
-    await expect(detail).toHaveCSS('border-top-style', 'solid');
-    expect((await detail.boundingBox())!.height).toBeGreaterThanOrEqual(44);
+    const detail = first.locator('.listing-card-link');
     await expect(detail).toHaveAttribute('href', /\/pets\/20e742b5-/);
+    await expect(detail).toHaveText('Lucky Boy');
+    await expect(first.locator('.card-actions')).toHaveCount(0);
+    await expect(first.locator('.detail-link')).toHaveCount(0);
     await expect(first.locator('.phone')).toHaveCount(0);
     await expect(first).not.toContainText('88776655');
     const gallery = first.locator('.gallery');
     await gallery.locator('.next').click();
     await expect(gallery.locator('.counter')).toHaveText('2 / 2');
+    await expect(page).toHaveURL(/\/listings$/);
     const contact = cards.nth(1).locator('button.phone');
     await contact.click();
     await expect(cards.nth(1).locator('a.phone')).toHaveAttribute('href', 'tel:99112233');

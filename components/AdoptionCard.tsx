@@ -15,6 +15,8 @@ export default function AdoptionCard({ adoption }: { adoption: Adoption }) {
 
   const typeLabel = adoption.type === 'Муур' ? t('type_cat') : adoption.type === 'Нохой' ? t('type_dog') : t('type_other');
 
+  const detailHref = `/adoptions/${adoption.id}${query ? "?returnTo=" + encodeURIComponent("/adoptions" + query) : ""}`;
+
   return (
     <AdoptionCardView
       badgeLabel={t('nav_adoptions').toUpperCase()}
@@ -33,12 +35,12 @@ export default function AdoptionCard({ adoption }: { adoption: Adoption }) {
       onRevealPhone={() => setRevealed(true)}
       showPhoneLabel={t('listings_card_show_phone')}
       callPhoneLabel={t('listings_card_call')}
-      detailHref={`/adoptions/${adoption.id}${query ? "?returnTo=" + encodeURIComponent("/adoptions" + query) : ""}`}
+      detailHref={detailHref}
       detailLabel={t('listings_card_detail')}
       language={lang}
       imageNode={
         images.length ? (
-          <PetImageGallery images={images} alt={`${adoption.type}${adoption.name ? ' — ' + adoption.name : ''}`} />
+          <PetImageGallery href={detailHref} linkLabel={`${t('listings_card_detail')}: ${adoption.name || typeLabel}`} images={images} alt={`${adoption.type}${adoption.name ? ' — ' + adoption.name : ''}`} />
         ) : undefined
       }
     />

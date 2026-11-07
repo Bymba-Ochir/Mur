@@ -1,6 +1,6 @@
 'use client';
 import type { HTMLAttributes, ReactNode } from 'react';
-import Link from 'next/link';
+import ListingCardLink from './ListingCardLink';
 import PetIcon from './PetIcon';
 import { relativeTime } from '../lib/relativeTime';
 import { maskPhone, formatPhone } from '../lib/utils';
@@ -57,7 +57,7 @@ export default function PetCardView({
   const staticClass = interactive ? '' : ' static';
 
   return (
-    <div className={`pet-card${staticClass}`} {...containerProps}>
+    <div className={`pet-card${staticClass}${interactive && detailHref ? ' listing-card--linked' : ''}`} {...containerProps}>
       <div className="thumb listing-media">
         <span className={`badge ${status}`}>{badgeLabel}</span>
         {imageNode ?? (
@@ -66,16 +66,17 @@ export default function PetCardView({
         {(hybridScore ?? similarity) != null && <span className="similarity">{hybridScore ?? similarity}% {similarityLabel}</span>}
       </div>
       <div className="info">
-        <h3>{name || typeLabel || type}</h3>
+        <h3><ListingCardLink href={interactive ? detailHref : undefined} label={detailLabel}>{name || typeLabel || type}</ListingCardLink></h3>
         <p>{typeLabel || type}{breed ? `, ${breed}` : ''}{color ? `, ${color}` : ''}</p>
         <p className="place"><Icon name="pin" size={14} aria-hidden="true" /> {district} — {place}</p>
         {(hasReward || createdAt) && <div className="card-meta">
           {hasReward ? <p className="reward"><Icon name="sparkles" size={14} aria-hidden="true" /> {rewardLabel}</p> : null}
           {createdAt && <p className="time"><Icon name="calendar" size={14} aria-hidden="true" /> {relativeTime(createdAt, language)}</p>}
         </div>}
-        <div className="card-actions">
+        {phone && <div className="card-actions">
         {showMasked ? (
           <button
+            type="button"
             className="phone reveal-btn"
             onClick={(e) => { e.stopPropagation(); onRevealPhone!(); }}
             aria-label={showPhoneLabel}
@@ -92,12 +93,7 @@ export default function PetCardView({
             <Icon name="phone" size={14} aria-hidden="true" /> {formatPhone(phone)}
           </a>
         ) : null}
-        {detailHref ? (
-          <Link className="detail-link" href={detailHref}>
-            {detailLabel}<span aria-hidden="true">→</span>
-          </Link>
-        ) : null}
-        </div>
+        </div>}
       </div>
 
       <style jsx>{`
@@ -209,22 +205,21 @@ export default function PetCardView({
           display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--sp-2);
           margin-top: var(--sp-3);
         }
-        .phone, .card-actions :global(.detail-link) {
+        .phone {
           display: inline-flex; align-items: center; justify-content: center; gap: 5px; min-height: var(--touch-target);
           color: var(--primary); font-size: 13px; font-weight: 650; text-decoration: none;
           background: var(--eyebrow-bg); border: 1px solid transparent; padding: 6px 12px; border-radius: var(--r-md);
           transition: background var(--dur-fast) ease, color var(--dur-fast) ease, border-color var(--dur-fast) ease;
         }
-        .card-actions :global(.detail-link) { justify-content: space-between; background: transparent; border-color: var(--border-subtle); }
-        .phone:hover, .card-actions :global(.detail-link):hover { background: var(--primary); color: var(--text-on-accent); border-color: var(--primary); }
+        .phone:hover { background: var(--primary); color: var(--text-on-accent); border-color: var(--primary); }
         @media (max-width: 480px) {
-          .phone, .card-actions :global(.detail-link) { font-size: 14px; }
+          .phone { font-size: 14px; }
         }
         @media (min-width: 1025px) {
-          .phone, .card-actions :global(.detail-link) { font-size: 14px; }
+          .phone { font-size: 14px; }
         }
         .reveal-btn { cursor: pointer; font-family: inherit; width: 100%; }
-        .reveal-btn:focus-visible, .phone:focus-visible, .card-actions :global(.detail-link):focus-visible { outline: 2px solid var(--border-focus); outline-offset: 2px; }
+        .reveal-btn:focus-visible, .phone:focus-visible { outline: 2px solid var(--border-focus); outline-offset: 2px; }
         @media (prefers-reduced-motion: reduce) {
           .pet-card, .thumb :global(img) { transition: none; }
         }
