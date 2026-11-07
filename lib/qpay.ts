@@ -15,8 +15,19 @@ const QPAY_INVOICE_CODE = process.env.QPAY_INVOICE_CODE;
 
 let cachedToken: { access_token: string; expires_at: number } | null = null;
 
+function hasQPayCredentials(): boolean {
+  return Boolean(QPAY_USERNAME?.trim() && QPAY_PASSWORD?.trim() && QPAY_INVOICE_CODE?.trim());
+}
+
+export function getQPayDonationConfig() {
+  if (process.env.QPAY_DONATIONS_ENABLED !== 'true' || !hasQPayCredentials()) return null;
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+  const callbackSecret = process.env.QPAY_CALLBACK_SECRET;
+  return siteUrl && callbackSecret?.trim() ? { siteUrl, callbackSecret } : null;
+}
+
 function validateConfig(): void {
-  if (!QPAY_USERNAME || !QPAY_PASSWORD || !QPAY_INVOICE_CODE) {
+  if (!hasQPayCredentials()) {
     // Dev/preview орчинд QPay тохируулаагүй бол sandbox response буцаана
     if (process.env.NODE_ENV !== 'production') {
       return; // sandbox mode
@@ -33,7 +44,7 @@ export async function getQPayToken(): Promise<string> {
   }
 
   // Dev mode: QPay credentials not set, return mock token
-  if (!QPAY_USERNAME || !QPAY_PASSWORD || !QPAY_INVOICE_CODE) {
+  if (!hasQPayCredentials()) {
     cachedToken = { access_token: 'dev-mock-token', expires_at: Date.now() + 3600_000 };
     return cachedToken.access_token;
   }

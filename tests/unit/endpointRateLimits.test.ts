@@ -5,7 +5,11 @@ vi.mock('../../lib/serverAuth', () => ({ requireRequestUser: vi.fn() }));
 vi.mock('../../lib/supabaseAdmin', () => ({ createAdminClient: vi.fn() }));
 vi.mock('../../lib/errorTracking', () => ({ reportError: vi.fn() }));
 vi.mock('../../lib/backgroundJobs', () => ({ scheduleBackgroundJobs: vi.fn() }));
-vi.mock('../../lib/qpay', () => ({ checkQPayPayment: vi.fn(), createQPayInvoice: vi.fn() }));
+vi.mock('../../lib/qpay', async (importOriginal) => ({
+  ...await importOriginal<typeof import('../../lib/qpay')>(),
+  checkQPayPayment: vi.fn(),
+  createQPayInvoice: vi.fn(),
+}));
 vi.mock('web-push', () => ({ default: { setVapidDetails: vi.fn(), sendNotification: vi.fn() } }));
 
 import { limitIpRequest, limitUserRequest, limitServiceRequest } from '../../lib/apiRateLimit';
@@ -128,6 +132,21 @@ describe('authenticated budgets and trusted service entry points', () => {
     expect((await notify(request('/api/notify', 'POST', {}, { 'x-webhook-secret': 'wrong' }))).status).toBe(401);
     expect(limitServiceRequest).not.toHaveBeenCalled();
     expect(webpush.sendNotification).not.toHaveBeenCalled();
+  });
+
+  it('rejects a new donation when checkout is disabled without claiming or reserving an invoice', async () => {
+    vi.stubEnv('QPAY_DONATIONS_ENABLED', 'false');
+    const insert = vi.fn();
+    from.mockReturnValue({
+      select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: null, error: null }) }) }),
+      insert,
+    });
+
+    const response = await donationCreate(request('/api/donations/create', 'POST', { amount: 1000 }));
+    expect(response.status).toBe(503);
+    expect(insert).not.toHaveBeenCalled();
+    expect(rpc).not.toHaveBeenCalled();
+    expect(createQPayInvoice).not.toHaveBeenCalled();
   });
 
   it('keeps donation idempotent retries out of the new-invoice quota', async () => {

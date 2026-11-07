@@ -4,7 +4,7 @@ import { reportError } from '../../../../lib/errorTracking';
 // app/api/donations/create/route.ts
 import { NextResponse } from 'next/server';
 import { randomBytes, randomUUID } from 'crypto';
-import { createQPayInvoice } from '../../../../lib/qpay';
+import { createQPayInvoice, getQPayDonationConfig } from '../../../../lib/qpay';
 import { createQPayCallbackUrl } from '../../../../lib/qpayCallback';
 import { createAdminClient } from '../../../../lib/supabaseAdmin';
 import { readIdempotencyKey } from '../../../../lib/idempotency';
@@ -79,12 +79,6 @@ export async function POST(request: Request) {
       isAnonymous: Boolean(isAnonymous),
     };
 
-    const appUrl = process.env.NEXT_PUBLIC_SITE_URL;
-    if (!appUrl) {
-      reportError(new Error('NEXT_PUBLIC_SITE_URL is not configured'), { area: 'backend', operation: 'donation-create' });
-      return NextResponse.json({ error: 'Серверийн тохиргооны алдаа (SITE_URL)' }, { status: 500 });
-    }
-
     const supabaseAdmin = createAdminClient();
     const selectFields = 'id,amount,supporter_name,message,is_anonymous,status_token,invoice_id,qr_image,qr_text,created_at,invoice_claim_token,invoice_claimed_at';
     const readDonation = async (): Promise<DonationRow | null> => {
@@ -108,12 +102,11 @@ export async function POST(request: Request) {
       }
     }
 
-    const callbackSecret = process.env.QPAY_CALLBACK_SECRET;
-    if (!callbackSecret?.trim()) {
-      reportError(new Error('QPAY_CALLBACK_SECRET is not configured'), { area: 'backend', operation: 'donation-create' });
+    const config = getQPayDonationConfig();
+    if (!config) {
       return NextResponse.json({ error: 'QPay түр боломжгүй байна.' }, { status: 503 });
     }
-    const callbackUrl = createQPayCallbackUrl(appUrl, idempotencyKey, callbackSecret);
+    const callbackUrl = createQPayCallbackUrl(config.siteUrl, idempotencyKey, config.callbackSecret);
 
     if (existing) {
       const { data: claimed, error: claimError } = await supabaseAdmin.rpc('claim_donation_invoice', {

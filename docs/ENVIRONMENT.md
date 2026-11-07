@@ -26,6 +26,7 @@ Windows локал runtime нь Vercel metadata байсан ч hosted DB аши
 | `PLAYWRIGHT_BASE_URL` | Тестийн target URL |
 | `QPAY_BASE_URL` | Сервер; QPay base URL, lib/qpay.ts-д default байна |
 | `QPAY_CALLBACK_SECRET` | Серверийн нууц. QPay нэхэмжлэл үүсгэх, callback URL-д HMAC-SHA256 гарын үсэг зурах болон шалгахад шаардлагатай. |
+| `QPAY_DONATIONS_ENABLED` | Сервер; `true` бөгөөд QPay merchant болон callback тохиргоо бүрэн бол «Дэмжих» товч, шинэ нэхэмжлэл идэвхжинэ. |
 | `QPAY_INVOICE_CODE` | Сервер; QPay invoice тохиргоо |
 | `QPAY_PASSWORD` | Серверийн нууц; QPay нэвтрэлт |
 | `QPAY_USERNAME` | Серверийн нууц; QPay нэвтрэлт |

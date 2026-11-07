@@ -22,7 +22,7 @@ function truncateEmail(email: string): string {
   return local.length > 10 ? `${local.slice(0, 9)}…` : local;
 }
 
-export default function Navbar() {
+export default function Navbar({ donationsEnabled = false }: { donationsEnabled?: boolean }) {
   const { user, logout } = useAuth();
   const { t } = useLanguage();
   const pathname = usePathname();
@@ -264,7 +264,7 @@ export default function Navbar() {
 
         {/* Right side: donate + toggles + user/account */}
         <div className="nav-right">
-          <DonateButton compactOnDesktop />
+          {donationsEnabled && <DonateButton compactOnDesktop />}
           <LanguageToggle />
           <ThemeToggle />
           {user ? (
@@ -402,7 +402,7 @@ export default function Navbar() {
               )}
             </nav>
             <div className="mobile-menu-actions">
-              <DonateButton />
+              {donationsEnabled && <DonateButton />}
               <div className="mobile-menu-row">
                 <LanguageToggle />
                 <ThemeToggle />

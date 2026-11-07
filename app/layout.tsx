@@ -14,6 +14,7 @@ import DocumentLanguage from '../components/DocumentLanguage';
 import { LanguageProvider } from '../lib/i18n';
 import { AuthProvider } from '../lib/AuthProvider';
 import AnalyticsProvider from '../components/AnalyticsProvider';
+import { getQPayDonationConfig } from '../lib/qpay';
 import './globals.css';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://mur-chi.vercel.app';
@@ -67,7 +68,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
               <DocumentLanguage />
               <ToastProvider>
                 <FeedbackProvider>
-                  <Navbar />
+                  <Navbar donationsEnabled={getQPayDonationConfig() !== null} />
                   <main id="main-content"><PageTransition>{children}</PageTransition></main>
                   <Footer />
                 </FeedbackProvider>

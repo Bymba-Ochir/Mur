@@ -89,11 +89,10 @@ test.describe('UI regression', () => {
     await expect(page.locator('body')).not.toHaveCSS('overflow', 'hidden');
   });
 
-  test('хандивын modal viewport дээр харагдана', async ({ page, isMobile }) => {
+  test('QPay идэвхгүй үед хандивын товч харагдахгүй', async ({ page, isMobile }) => {
     await page.goto('/');
     if (isMobile) await page.locator('.mobile-menu-btn').click();
-    await page.getByRole('button', { name: /Дэмжих/ }).last().click();
-    await expect(page.getByRole('dialog', { name: 'МӨР-ийг дэмжих', exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Дэмжих', exact: true })).toHaveCount(0);
   });
 
   test('home service card-ууд layout style-тай байна', async ({ page }) => {
