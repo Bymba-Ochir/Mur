@@ -41,7 +41,7 @@ Vercel дээр deploy commit, environment, build log-ийг тулгана. Ө�
 
 1. [Google Auth Platform](https://console.cloud.google.com/auth/overview) дээр External audience сонгож, Web application төрлийн OAuth client үүсгэнэ. Google-ийн Authorized redirect URIs талбарт Supabase-ийн Authentication → Sign In / Providers → Google хэсэгт үзүүлсэн .../auth/v1/callback хаягийг хуулна.
 2. Supabase-ийн Google provider-д Client ID, Client Secret-ийг хадгалж идэвхжүүлнэ. Authentication → URL Configuration → Redirect URLs жагсаалтад https://mur-chi.vercel.app/auth/complete хаягийг нэмнэ.
-3. Vercel-ийн Production орчинд NEXT_PUBLIC_GOOGLE_LOGIN_ENABLED=true тохируулаад шинэ build deploy хийнэ. Тохиргоо идэвхжсэн үед имэйлийн холбоосыг хүсэлт гаргасан хөтөч дээр нээнэ.
+3. Vercel-ийн Production орчинд NEXT_PUBLIC_GOOGLE_LOGIN_ENABLED=true тохируулаад шинэ build deploy хийнэ. Тохиргоо идэвхжсэн орчинд нэвтрэх цонх зөвхөн Google товчийг харуулна.
 4. Өмнө нь бүртгүүлсэн баталгаажсан ижил имэйлтэй Google бүртгэлээр орж, өөрийн зар, профайл харагдаж байгааг шалгана. Нийтэд нээхдээ Google-ийн Audience → Publish app тохиргоог шалгана.
 
 `vercel.json` дахь өдөр тутмын cron нь `/api/vaccine-reminders`-ийг 02:00 UTC, `/api/background-jobs`-ийг 03:00 UTC-д дуудна. Cron-д `Authorization: Bearer ...` шаардлагатай.
