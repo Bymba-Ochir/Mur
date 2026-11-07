@@ -849,7 +849,6 @@ body:has([data-floating-notice='analytics']) [data-floating-notice='install'] {
   width: 30px; height: 30px; color: currentColor; background: var(--surface-3); border-radius: var(--r-sm);
 }
 .navbar-wrap .dropdown-item:hover { color: var(--text-primary); background: var(--surface-3); }
-.navbar-wrap .dropdown-accent { color: var(--primary-light); }
 .navbar-wrap .dropdown-danger { margin-top: 4px; color: var(--alert); border-top: 1px solid var(--border-subtle); border-radius: 0 0 var(--r-sm) var(--r-sm); }
 
 .navbar-wrap .mobile-dropdown {

@@ -180,7 +180,7 @@ export default function Navbar() {
   const isActiveRoute = (href: string) => pathname === href || (href !== '/' && pathname.startsWith(`${href}/`));
 
   interface NavLinkItem { href: string; label: string; icon?: IconName; }
-  interface UserMenuItem { href?: string; label: string; isLink: boolean; accent?: boolean; danger?: boolean; onClick?: () => void; icon?: IconName; }
+  interface UserMenuItem { href?: string; label: string; isLink: boolean; danger?: boolean; onClick?: () => void; icon?: IconName; }
 
   const allLinks: NavLinkItem[] = [
     { href: '/report-lost', label: t('nav_lost'), icon: 'alert' },
@@ -203,9 +203,6 @@ export default function Navbar() {
     { href: '/saved', label: t('nav_saved'), isLink: true, icon: 'bookmark' },
     { href: '/activity', label: t('nav_activity'), isLink: true, icon: 'calendar' },
     { href: '/settings', label: t('nav_settings'), isLink: true, icon: 'settings' },
-    { href: '/my-pets', label: t('nav_mypets'), isLink: true, icon: 'paw' },
-    { href: '/messages', label: t('messages_hub_nav'), isLink: true, icon: 'message' },
-    ...(admin ? [{ href: '/admin', label: t('nav_admin'), isLink: true, accent: true, icon: 'shield' as IconName }] : []),
     { label: t('nav_logout'), isLink: false, danger: true, onClick: logout },
   ];
 
@@ -309,7 +306,7 @@ export default function Navbar() {
                       <Link
                         key={idx}
                         href={item.href}
-                        className={`dropdown-item${item.accent ? ' dropdown-accent' : ''}`}
+                        className="dropdown-item"
                         role="menuitem"
                         onClick={() => setShowUserMenu(false)}
                       >
@@ -755,7 +752,6 @@ export default function Navbar() {
           border-radius: var(--r-sm);
         }
         .navbar-wrap .dropdown-item:hover { background: var(--surface-3); color: var(--text-primary); }
-        .navbar-wrap .dropdown-accent { color: var(--accent); }
         .navbar-wrap .dropdown-danger { margin-top: 4px; color: var(--alert); border-top: 1px solid var(--border-subtle); }
 
         /* ─── Shared focus-visible ─── */
