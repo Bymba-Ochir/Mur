@@ -1,4 +1,5 @@
 export const SIGHTING_PHOTO_BUCKET = 'sighting-photos';
+export const GUEST_SIGHTING_PHOTO_BUCKET = 'guest-sighting-photos';
 export const SIGHTING_PHOTO_LIMIT = 3 * 1024 * 1024;
 export const SIGHTING_PHOTO_TYPES = ['image/jpeg', 'image/png', 'image/webp'] as const;
 

@@ -88,6 +88,24 @@ describe('leased, bounded job processing', () => {
     expect(rpc).toHaveBeenCalledWith('finish_background_job', { target_id: id, target_lease: petId, outcome: 'done', next_cursor: null });
     expect(insert.mock.invocationCallOrder[0]).toBeLessThan(rpc.mock.invocationCallOrder[1]);
   });
+  it('notifies the owner about guest sightings without requiring a private address', async () => {
+    queue.push(job('sighting-notification', { ownerId: owner, sightingId: id, petId, guest: true }));
+    expect(await runBackgroundJobs(admin)).toEqual({ processed: 1, failed: 0 });
+    expect(insert).toHaveBeenCalledWith(expect.objectContaining({
+      user_id: owner, href: `/pets/${petId}#guest-sightings`, body: 'Шинэ харсан мэдээлэл нэмэгдлээ.',
+    }));
+  });
+  it('preserves the referenced private image and removes an abandoned retry', async () => {
+    const kept = `${id}/${petId}/${'a'.repeat(64)}.jpg`;
+    const abandoned = `${id}/${owner}/${'a'.repeat(64)}.jpg`;
+    const report = query({ photo_path: kept });
+    from.mockReturnValue(report);
+    queue.push(job('storage-cleanup', { guestSightingPhotoPath: kept }), job('storage-cleanup', { guestSightingPhotoPath: abandoned }));
+    expect(await runBackgroundJobs(admin)).toEqual({ processed: 2, failed: 0 });
+    expect(report.eq).toHaveBeenCalledWith('submission_key', id);
+    expect(storageFrom).toHaveBeenCalledExactlyOnceWith('guest-sighting-photos');
+    expect(remove).toHaveBeenCalledExactlyOnceWith([abandoned]);
+  });
   it.each(['23505', '23503'])('treats a duplicate/deleted recipient (%s) as complete', async (code) => {
     queue.push(notification()); insert.mockResolvedValue({ error: { code } });
     expect((await runBackgroundJobs(admin)).failed).toBe(0);

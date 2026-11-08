@@ -112,7 +112,7 @@ function SightingFormAndList({ petId, guestSiteKey, initialCenter, feed, onShowO
         message, place, lat: pin?.lat ?? null, lng: pin?.lng ?? null,
         sightedAt: observed?.toISOString() ?? null,
       };
-      if (guest && challengeToken) await createGuestSighting(petId, details, key, challengeToken);
+      if (guest && challengeToken) await createGuestSighting(petId, details, key, challengeToken, photo?.file);
       else await createSighting(petId, details, key, photo?.file);
       submitKey.current = null;
       setMessage('');
@@ -174,11 +174,11 @@ function SightingFormAndList({ petId, guestSiteKey, initialCenter, feed, onShowO
               <Icon name="pin" size={16} aria-hidden="true" />
               {showPicker ? t('sightings_map_hide') : t('sightings_map_pick')}
             </Button>
-            {!guest && <label className="sighting-photo-picker">
+            <label className="sighting-photo-picker">
               <input id="sighting-photo" type="file" accept={SIGHTING_PHOTO_TYPES.join(',')}
                 aria-label={t('sightings_photo_optional')} disabled={submitting || preparingPhoto} onChange={selectPhoto} />
               <Icon name="camera" size={16} aria-hidden="true" />{t('sightings_photo_add')}
-            </label>}
+            </label>
             {pin && <>
               <span className="sighting-hint" role="status">{t('sightings_map_selected')}</span>
               <Button variant="ghost" size="sm" onClick={() => pickLocation(null)}>{t('sightings_map_clear')}</Button>

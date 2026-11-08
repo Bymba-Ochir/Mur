@@ -4,10 +4,14 @@ import { scheduleBackgroundJobs } from '../../../../lib/backgroundJobs';
 import { reportError } from '../../../../lib/errorTracking';
 import { readIdempotencyKey } from '../../../../lib/idempotency';
 import { isInputValidationError } from '../../../../lib/inputValidation';
-import { jsonBodyErrorResponse, readJsonBody } from '../../../../lib/requestJson';
+import { jsonBodyErrorResponse } from '../../../../lib/requestJson';
 import { readSightingDetails } from '../../../../lib/sightingInput';
+import { readSightingSubmission, uploadSightingPhoto } from '../../../../lib/serverSightingPhoto';
+import { GUEST_SIGHTING_PHOTO_BUCKET } from '../../../../lib/sightingPhoto';
 import { createAdminClient } from '../../../../lib/supabaseAdmin';
 import { getTurnstileConfig, verifyGuestSightingChallenge } from '../../../../lib/turnstile';
+
+export const maxDuration = 60;
 
 // Aggregate-only pilot metric. The UI calls this once after analytics consent.
 export async function PATCH(request: Request) {
@@ -34,7 +38,7 @@ export async function POST(request: Request) {
 
     const key = readIdempotencyKey(request)?.toLowerCase();
     if (!key) return NextResponse.json({ error: 'Idempotency-Key шаардлагатай.' }, { status: 400 });
-    const body = await readJsonBody(request, { requireJsonContentType: true });
+    const { body, photo } = await readSightingSubmission(request, true);
     const { petId, message, place, lat, lng, sightedAt } = readSightingDetails(body);
     const token = body.turnstileToken;
     if (typeof token !== 'string' || !token || token.length > 2048 || !await verifyGuestSightingChallenge(token, config)) {
@@ -44,9 +48,11 @@ export async function POST(request: Request) {
     const quota = await limitResourceIpRequest(request, 'guest-sighting', petId, admin);
     if (quota) return quota;
 
+    const photoPath = photo ? await uploadSightingPhoto(admin, key, photo, GUEST_SIGHTING_PHOTO_BUCKET) : null;
     const { data, error } = await admin.rpc('submit_guest_sighting', {
       target_key: key, target_pet: petId, target_message: message, target_place: place,
       target_lat: lat, target_lng: lng, target_sighted_at: sightedAt,
+      ...(photoPath ? { target_photo_path: photoPath } : {}),
     });
     if (error?.message === 'PET_NOT_ACTIVE') {
       return NextResponse.json({ error: 'Идэвхтэй зар олдсонгүй.' }, { status: 404 });

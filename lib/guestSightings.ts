@@ -16,4 +16,5 @@ export interface GuestSightingDetails extends GuestSightingSummary {
   lat: number | null;
   lng: number | null;
   sighted_at: string | null;
+  hasPhoto: boolean;
 }

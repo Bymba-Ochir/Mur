@@ -1,10 +1,11 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import { dateTimeFormat } from '../lib/dateTime';
 import type { GuestSightingAction, GuestSightingDetails, GuestSightingSummary } from '../lib/guestSightings';
 import { useLanguage } from '../lib/i18n';
-import { fetchGuestSightings, reviewGuestSighting } from '../lib/sightingService';
+import { fetchGuestSightingPhoto, fetchGuestSightings, reviewGuestSighting } from '../lib/sightingService';
 import { getErrorMessage } from '../lib/utils';
 import LocationMap from './LocationMap';
 import { useToast } from './Toast';
@@ -69,6 +70,7 @@ export default function GuestSightingInbox({ petId, resolved, onPublicChange }: 
       <p><strong>{t(`guest_sighting_${item.state}`)}</strong> · <time dateTime={item.created_at}>{format.format(new Date(item.created_at))}</time></p>
       {details?.id === item.id ? <>
         <p className="guest-message">{details.message}</p>
+        {details.hasPhoto && <GuestSightingPhoto key={details.id} petId={petId} reportId={details.id} />}
         {details.place && <p>{details.place}</p>}
         {details.sighted_at && <p>{t('sightings_time_seen')} <time dateTime={details.sighted_at}>{format.format(new Date(details.sighted_at))}</time></p>}
         {details.lat != null && details.lng != null && <LocationMap lat={details.lat} lng={details.lng} markerVariant="sighting" label={t('sightings_place_label')} />}
@@ -97,4 +99,29 @@ export default function GuestSightingInbox({ petId, resolved, onPublicChange }: 
       .guest-inbox-actions { display:flex; flex-wrap:wrap; gap:var(--sp-2); margin-top:var(--sp-2); }
     `}</style>
   </section>;
+}
+
+function GuestSightingPhoto({ petId, reportId }: { petId: string; reportId: string }) {
+  const { t } = useLanguage();
+  const [url, setUrl] = useState<string>();
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    let objectUrl: string | undefined;
+    fetchGuestSightingPhoto(petId, reportId, controller.signal).then(blob => {
+      if (controller.signal.aborted) return;
+      objectUrl = URL.createObjectURL(blob);
+      setUrl(objectUrl);
+    }).catch(() => { if (!controller.signal.aborted) setFailed(true); });
+    return () => {
+      controller.abort();
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
+  }, [petId, reportId]);
+
+  if (failed) return <p role="status">{t('guest_sighting_photo_error')}</p>;
+  if (!url) return <p role="status">{t('detail_loading')}</p>;
+  return <Image src={url} alt={t('sightings_photo_alt')} width={320} height={240}
+    style={{ maxWidth: '100%', height: 'auto', borderRadius: 'var(--r-sm)' }} unoptimized />;
 }

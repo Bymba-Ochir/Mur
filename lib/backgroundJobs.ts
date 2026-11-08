@@ -5,7 +5,7 @@ import { limitServiceRequest } from './apiRateLimit';
 import { reportError } from './errorTracking';
 import { isAllowedPushEndpoint } from './pushEndpoint';
 import { ownedPetPhotoStoragePath } from './storageObjectPath';
-import { SIGHTING_PHOTO_BUCKET, sightingPhotoPathParts } from './sightingPhoto';
+import { GUEST_SIGHTING_PHOTO_BUCKET, SIGHTING_PHOTO_BUCKET, sightingPhotoPathParts } from './sightingPhoto';
 
 type AdminClient = ReturnType<typeof createAdminClient>;
 type Payload = Record<string, unknown>;
@@ -88,26 +88,31 @@ async function executeJob(admin: AdminClient, job: BackgroundJob): Promise<strin
     const sightingId = text(job.payload, 'sightingId');
     const petId = text(job.payload, 'petId');
     if (![ownerId, sightingId, petId].every(id => UUID.test(id))) throw new Error('Invalid background notification ID');
-    const place = text(job.payload, 'place');
+    const guest = job.payload.guest === true;
+    const place = guest ? '' : text(job.payload, 'place');
     const { error } = await admin.from('notifications').insert({
       id: sightingId, user_id: ownerId, type: 'sighting',
       title: 'Таны амьтныг харсан мэдээлэл ирлээ',
       body: place ? `${place} орчим харсан мэдээлэл нэмэгдлээ.` : 'Шинэ харсан мэдээлэл нэмэгдлээ.',
-      href: `/pets/${petId}${job.payload.guest === true ? '#guest-sightings' : ''}`,
+      href: `/pets/${petId}${guest ? '#guest-sightings' : ''}`,
     });
     // Unique IDs make crash/retry delivery idempotent. A deleted recipient no
     // longer needs the notification (the only FK here is notifications.user_id).
     if (error && error.code !== '23505' && error.code !== '23503') throw error;
     return null;
   }
-  if (job.kind === 'storage-cleanup' && typeof job.payload.sightingPhotoPath === 'string') {
-    const path = job.payload.sightingPhotoPath;
-    const parts = sightingPhotoPathParts(path);
+  const guestPhotoPath = job.payload.guestSightingPhotoPath;
+  const isGuestPhoto = typeof guestPhotoPath === 'string';
+  const sightingPhotoPath = isGuestPhoto ? guestPhotoPath : job.payload.sightingPhotoPath;
+  if (job.kind === 'storage-cleanup' && typeof sightingPhotoPath === 'string') {
+    const parts = sightingPhotoPathParts(sightingPhotoPath);
     if (!parts) throw new Error('Invalid sighting cleanup path');
-    const { data, error } = await admin.from('sightings').select('photo_path').eq('id', parts.sightingId).maybeSingle();
+    const { data, error } = await admin.from(isGuestPhoto ? 'guest_sightings' : 'sightings')
+      .select('photo_path').eq(isGuestPhoto ? 'submission_key' : 'id', parts.sightingId).maybeSingle();
     if (error) throw error;
-    if (data?.photo_path !== path) {
-      const { error: removeError } = await admin.storage.from(SIGHTING_PHOTO_BUCKET).remove([path]);
+    if (data?.photo_path !== sightingPhotoPath) {
+      const bucket = isGuestPhoto ? GUEST_SIGHTING_PHOTO_BUCKET : SIGHTING_PHOTO_BUCKET;
+      const { error: removeError } = await admin.storage.from(bucket).remove([sightingPhotoPath]);
       if (removeError) throw removeError;
     }
     return null;

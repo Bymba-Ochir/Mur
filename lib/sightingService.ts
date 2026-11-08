@@ -8,19 +8,22 @@ import { sightingPhotoUrl } from './sightingPhoto';
 import type { GuestSightingAction, GuestSightingDetails, GuestSightingSummary } from './guestSightings';
 import type { PageResult } from './pagination';
 
+function sightingRequestBody(details: Record<string, unknown>, photo?: File) {
+  const payload = JSON.stringify(details);
+  if (!photo) return payload;
+  const form = new FormData();
+  form.set('details', payload);
+  form.set('photo', photo);
+  return form;
+}
+
 export async function createSighting(
   petId: string,
   details: Pick<Sighting, 'message' | 'place' | 'lat' | 'lng' | 'sightedAt'>,
   idempotencyKey = createIdempotencyKey(),
   photo?: File,
 ): Promise<void> {
-  const payload = JSON.stringify({ petId, ...details });
-  let body: string | FormData = payload;
-  if (photo) {
-    body = new FormData();
-    body.set('details', payload);
-    body.set('photo', photo);
-  }
+  const body = sightingRequestBody({ petId, ...details }, photo);
   const response = await authenticatedFetch('/api/sightings', {
     method: 'POST',
     headers: idempotencyHeaders(idempotencyKey),
@@ -34,11 +37,12 @@ export async function createGuestSighting(
   details: Pick<Sighting, 'message' | 'place' | 'lat' | 'lng' | 'sightedAt'>,
   key: string,
   turnstileToken: string,
+  photo?: File,
 ) {
   const response = await fetch('/api/sightings/guest', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...idempotencyHeaders(key) },
-    body: JSON.stringify({ petId, ...details, turnstileToken }),
+    headers: photo ? idempotencyHeaders(key) : { 'Content-Type': 'application/json', ...idempotencyHeaders(key) },
+    body: sightingRequestBody({ petId, ...details, turnstileToken }, photo),
   });
   if (!response.ok) throw await apiError(response);
 }
@@ -61,6 +65,13 @@ export async function reviewGuestSighting(petId: string, id: string, action: Gue
   });
   if (!response.ok) throw await apiError(response);
   return response.json();
+}
+
+export async function fetchGuestSightingPhoto(petId: string, id: string, signal: AbortSignal) {
+  const params = new URLSearchParams({ petId, photoId: id });
+  const response = await authenticatedFetch(`/api/sightings/guest/review?${params}`, { cache: 'no-store', signal });
+  if (!response.ok) throw await apiError(response);
+  return response.blob();
 }
 
 export async function fetchSightingsPage(petId: string, before?: Pick<Sighting, 'id' | 'createdAt'>) {

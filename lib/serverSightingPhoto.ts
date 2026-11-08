@@ -3,17 +3,17 @@ import sharp from 'sharp';
 import type { createAdminClient } from './supabaseAdmin';
 import { InputValidationError } from './inputValidation';
 import { JSON_BODY_LIMIT, JsonBodyError, parseJsonRecord, readBoundedBody, readJsonBody } from './requestJson';
-import { SIGHTING_PHOTO_BUCKET, SIGHTING_PHOTO_LIMIT, SIGHTING_PHOTO_TYPES } from './sightingPhoto';
+import { GUEST_SIGHTING_PHOTO_BUCKET, SIGHTING_PHOTO_BUCKET, SIGHTING_PHOTO_LIMIT, SIGHTING_PHOTO_TYPES } from './sightingPhoto';
 
 type SightingPhoto = { bytes: Buffer; digest: string };
 
-export async function readSightingSubmission(request: Request): Promise<{
+export async function readSightingSubmission(request: Request, requireJsonContentType = false): Promise<{
   body: Record<string, unknown>;
   photo: SightingPhoto | null;
 }> {
   const contentType = request.headers.get('content-type') ?? '';
   if (contentType.split(';')[0].trim().toLowerCase() !== 'multipart/form-data') {
-    return { body: await readJsonBody(request), photo: null };
+    return { body: await readJsonBody(request, { requireJsonContentType }), photo: null };
   }
 
   const bytes = await readBoundedBody(request, SIGHTING_PHOTO_LIMIT + 2 * JSON_BODY_LIMIT);
@@ -50,6 +50,7 @@ async function normalizePhoto(bytes: Buffer) {
 
 export async function uploadSightingPhoto(
   admin: ReturnType<typeof createAdminClient>, sightingId: string, photo: SightingPhoto,
+  bucket: typeof SIGHTING_PHOTO_BUCKET | typeof GUEST_SIGHTING_PHOTO_BUCKET = SIGHTING_PHOTO_BUCKET,
 ) {
   const jpeg = await normalizePhoto(photo.bytes);
   const uploadId = randomUUID();
@@ -61,11 +62,11 @@ export async function uploadSightingPhoto(
     kind: 'storage-cleanup',
     dedupe_key: `sighting-upload:${uploadId}`,
     available_at: new Date(Date.now() + 10 * 60_000).toISOString(),
-    payload: { sightingPhotoPath: path },
+    payload: bucket === GUEST_SIGHTING_PHOTO_BUCKET ? { guestSightingPhotoPath: path } : { sightingPhotoPath: path },
   });
   if (cleanupError) throw cleanupError;
 
-  const { error } = await admin.storage.from(SIGHTING_PHOTO_BUCKET).upload(path, jpeg, {
+  const { error } = await admin.storage.from(bucket).upload(path, jpeg, {
     contentType: 'image/jpeg',
     cacheControl: '300',
     upsert: false,
