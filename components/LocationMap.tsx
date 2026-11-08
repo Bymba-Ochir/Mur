@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
-import type { Marker } from 'leaflet';
+import { createPortal } from 'react-dom';
+import type { ReactNode } from 'react';
+import type { Marker, Popup, PopupEvent } from 'leaflet';
 import { useLanguage } from '../lib/i18n';
 import { addMapTiles, createMapPinPopup, mapMarkerIcon } from '../lib/leafletMap';
 import type { MapPopupDetails } from '../lib/leafletMap';
@@ -26,9 +28,10 @@ interface LocationMapProps {
   label?: string;
   pins?: readonly LocationMapPin[];
   focus?: LocationMapFocus | null;
+  renderPrivatePhoto?: (id: string, defer: boolean, update: () => void) => ReactNode;
 }
 
-export default function LocationMap({ lat, lng, initialCenter, editable = false, markerVariant = 'default', onPick, label, pins = NO_PINS, focus }: LocationMapProps) {
+export default function LocationMap({ lat, lng, initialCenter, editable = false, markerVariant = 'default', onPick, label, pins = NO_PINS, focus, renderPrivatePhoto }: LocationMapProps) {
   const { t } = useLanguage();
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<import('leaflet').Map | null>(null);
@@ -36,6 +39,7 @@ export default function LocationMap({ lat, lng, initialCenter, editable = false,
   const LRef = useRef<typeof import('leaflet') | null>(null);
   const overlays = useRef(new Map<string, { marker: Marker; snapshot: string }>());
   const [ready, setReady] = useState(false);
+  const [photoSlots, setPhotoSlots] = useState<{ elements: HTMLElement[]; update: () => void } | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -148,6 +152,40 @@ export default function LocationMap({ lat, lng, initialCenter, editable = false,
   }, [ready, pins, lat, lng]);
 
   useEffect(() => {
+    const map = mapRef.current;
+    if (!ready || !map || !renderPrivatePhoto) return;
+    let active: Popup | undefined;
+    let lastContent: unknown;
+    function syncPhotoSlots() {
+      const popup = active;
+      const content = popup?.getContent();
+      if (content === lastContent) return;
+      lastContent = content;
+      const elements = content instanceof HTMLElement
+        ? Array.from(content.querySelectorAll<HTMLElement>('[data-private-photo-id]')) : [];
+      setPhotoSlots(popup && elements.length ? { elements, update: () => popup.update() } : null);
+    }
+    function close({ popup }: PopupEvent) {
+      if (popup !== active) return;
+      popup.off('contentupdate', syncPhotoSlots);
+      active = undefined;
+      lastContent = undefined;
+      setPhotoSlots(null);
+    }
+    function open({ popup }: PopupEvent) {
+      active?.off('contentupdate', syncPhotoSlots);
+      active = popup;
+      popup.on('contentupdate', syncPhotoSlots);
+      syncPhotoSlots();
+    }
+    map.on('popupopen', open).on('popupclose', close);
+    return () => {
+      active?.off('contentupdate', syncPhotoSlots);
+      map.off('popupopen', open).off('popupclose', close);
+    };
+  }, [ready, renderPrivatePhoto]);
+
+  useEffect(() => {
     if (!ready || !focus) return;
     const map = mapRef.current;
     const marker = overlays.current.get(focus.pinId)?.marker;
@@ -159,6 +197,10 @@ export default function LocationMap({ lat, lng, initialCenter, editable = false,
   }, [ready, focus]);
 
   return <>
+    {renderPrivatePhoto && photoSlots?.elements.map(element => {
+      const id = element.dataset.privatePhotoId!;
+      return createPortal(renderPrivatePhoto(id, photoSlots.elements.length > 1, photoSlots.update), element, id);
+    })}
     <div ref={containerRef} className="location-map" role="region" aria-label={label || t('detail_map_heading')} />
     <style jsx>{`
       .location-map {

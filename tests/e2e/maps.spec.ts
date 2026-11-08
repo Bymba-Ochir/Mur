@@ -7,6 +7,7 @@ import { randomInt, randomUUID } from 'node:crypto';
 import { resolve } from 'node:path';
 import { createAdminClient } from '../../lib/supabaseAdmin';
 import { createPublicClient } from '../../lib/supabaseClient';
+import { GUEST_SIGHTING_PHOTO_BUCKET } from '../../lib/sightingPhoto';
 
 let userId: string | undefined;
 let session: Session | null = null;
@@ -175,6 +176,65 @@ test('optional sighting photo, pin and time can be published and read after relo
   await expect(plain).toBeVisible();
   await expect(plain.getByRole('button', { name: 'Газрын зураг харах' })).toHaveCount(0);
   await expect(plain.locator('time')).toHaveCount(1);
+});
+
+test('guest photos open on the main map for the owner only', async ({ page }) => {
+  const admin = createAdminClient();
+  const fixtureId = randomUUID();
+  const key = randomUUID();
+  const photoPath = `${key}/${randomUUID()}/${'a'.repeat(64)}.jpg`;
+  const message = 'Private guest map fixture';
+  const photoAlt = 'Харсан тухай хавсаргасан зураг';
+  const listing = await admin.from('pets').insert({
+    id: fixtureId, created_by: userId, status: 'lost', name: 'Guest map fixture',
+    type: 'Муур', color: 'Бор', district: 'Баянзүрх', place: 'Туршилтын байршил',
+    phone: String(randomInt(10_000_000, 100_000_000)),
+  });
+  if (listing.error) throw listing.error;
+  try {
+    const image = await sharp({ create: { width: 32, height: 24, channels: 3, background: '#625bf6' } }).jpeg().toBuffer();
+    const savedPhoto = await admin.storage.from(GUEST_SIGHTING_PHOTO_BUCKET).upload(photoPath, image, { contentType: 'image/jpeg' });
+    if (savedPhoto.error) throw savedPhoto.error;
+    const submitted = await admin.rpc('submit_guest_sighting', {
+      target_key: key, target_pet: fixtureId, target_message: message, target_place: 'Private address',
+      target_lat: 47.91523, target_lng: 106.92073, target_sighted_at: null, target_photo_path: photoPath,
+    });
+    expect(submitted.error).toBeNull();
+    const { data: report, error } = await admin.from('guest_sightings').select('id').eq('submission_key', key).single();
+    if (error) throw error;
+    const published = await admin.rpc('review_guest_sighting', {
+      target_pet: fixtureId, target_id: report.id, target_owner: userId, action: 'publish',
+    });
+    expect(published.error).toBeNull();
+
+    const map = page.locator('.map-section .location-map');
+    const pin = map.locator('img[src="/sighting-map-marker.svg"]');
+    const popup = map.locator('.leaflet-popup-content');
+    await page.goto(`/pets/${fixtureId}`);
+    await pin.click();
+    await expect(popup.getByText('Зочны мэдээлэл · Ойролцоох байршил')).toBeVisible();
+    await expect(popup.getByRole('img', { name: photoAlt })).toHaveCount(0);
+    await expect(popup.getByText(message)).toHaveCount(0);
+
+    await page.addInitScript(auth => localStorage.setItem('sb-127-auth-token', JSON.stringify(auth)), session);
+    await page.goto(`/pets/${fixtureId}?view=owner#guest-sightings`);
+    const inbox = page.locator('#guest-sightings');
+    await expect(inbox.getByText('Нийтэд харагдаж буй')).toBeVisible();
+    await pin.click();
+    await expect.poll(() => popup.getByRole('img', { name: photoAlt }).evaluate((img: HTMLImageElement) => img.naturalWidth)).toBe(32);
+    await expect(popup.getByText(message)).toHaveCount(0);
+
+    await inbox.getByRole('button', { name: 'Шинэ мэдээлэл нээх' }).click();
+    await expect(inbox.getByText(message)).toBeVisible();
+    await expect(inbox.locator('.location-map')).toHaveCount(0);
+    await inbox.getByRole('button', { name: 'Газрын зураг харах' }).click();
+    await expect(popup.getByText('Зочны тэмдэглэсэн яг байршил')).toBeVisible();
+    await expect(popup.getByText(message)).toBeVisible();
+    await expect.poll(() => popup.getByRole('img', { name: photoAlt }).evaluate((img: HTMLImageElement) => img.naturalWidth)).toBe(32);
+  } finally {
+    await admin.from('pets').delete().eq('id', fixtureId);
+    await admin.storage.from(GUEST_SIGHTING_PHOTO_BUCKET).remove([photoPath]);
+  }
 });
 
 test('sighting photo retries verify the file contents and reject a fake image', async ({ request }) => {

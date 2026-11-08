@@ -11,10 +11,11 @@ import ShareButtons from '../../../components/ShareButtons';
 import PetSightingsMap from '../../../components/PetSightingsMap';
 import type { LocationMapFocus } from '../../../components/LocationMap';
 import { useSightingFeed } from '../../../lib/useSightingFeed';
-import { sightingMapPinId } from '../../../lib/sightingPresentation';
+import { guestSightingMapPinId, sightingMapPinId } from '../../../lib/sightingPresentation';
 import ReportButton from '../../../components/ReportButton';
 import SightingsList from '../../../components/SightingsList';
 import GuestSightingInbox from '../../../components/GuestSightingInbox';
+import type { GuestSightingDetails } from '../../../lib/guestSightings';
 import PetIcon from '../../../components/PetIcon';
 import Button from '../../../components/ui/Button';
 import PetEditForm from '../../../components/PetEditForm';
@@ -47,6 +48,7 @@ function PetDetailClientContent({ id, guestSightingSiteKey }: PetDetailProps) {
   const [pet, setPet] = useState<Pet | null>(null);
   const feed = useSightingFeed(pet?.id);
   const [mapFocus, setMapFocus] = useState<LocationMapFocus | null>(null);
+  const [privateSighting, setPrivateSighting] = useState<GuestSightingDetails | null>(null);
   const [error, setError] = useState<string | null>(null);
   const url = useCurrentLocation();
   const [resolving, setResolving] = useState(false);
@@ -203,23 +205,31 @@ function PetDetailClientContent({ id, guestSightingSiteKey }: PetDetailProps) {
         </div>
       </div>
 
-      {((pet.lat != null && pet.lng != null) || feed.sightings.some(sightingMapPinId)) && (
+      {((pet.lat != null && pet.lng != null) || feed.sightings.some(sightingMapPinId) || (isOwner && privateSighting)) && (
         <section className="detail-section map-section" aria-labelledby="pet-map-heading">
           <div className="section-heading"><div><h2 id="pet-map-heading">{t('detail_map_heading')}</h2><p>{t(pet.lat != null && pet.lng != null ? 'detail_last_seen_loc' : 'sightings_map_locations')}</p></div></div>
-          <PetSightingsMap lat={pet.lat} lng={pet.lng} sightings={feed.sightings} focus={mapFocus} />
+          <PetSightingsMap lat={pet.lat} lng={pet.lng} sightings={feed.sightings} focus={mapFocus}
+            ownerPetId={isOwner ? pet.id : undefined} privateSighting={isOwner ? privateSighting : null} />
         </section>
       )}
+
+      <SightingsList petId={pet.id} feed={feed} onShowOnMap={pinId => {
+          setPrivateSighting(null);
+          setMapFocus({ pinId });
+        }}
+        guestSiteKey={pet.createdBy && !pet.resolved ? guestSightingSiteKey : undefined}
+        initialCenter={pet.lat != null && pet.lng != null ? { lat: pet.lat, lng: pet.lng } : null}
+        ownerPanel={isOwner ? <GuestSightingInbox petId={pet.id} resolved={Boolean(pet.resolved)}
+          onPublicChange={feed.load} onShowOnMap={report => {
+            setPrivateSighting(report);
+            setMapFocus({ pinId: guestSightingMapPinId(report.id) });
+          }} /> : undefined} />
 
       <section className="detail-section share-section" aria-labelledby="pet-share-heading">
         <div className="section-heading"><div><h2 id="pet-share-heading">{t('detail_share_heading')}</h2><p>{t('detail_share_hint')}</p></div></div>
         <ShareButtons url={url} title={title} />
         <ReportButton petId={pet.id} />
       </section>
-
-      {isOwner && <GuestSightingInbox petId={pet.id} resolved={Boolean(pet.resolved)} onPublicChange={feed.load} />}
-      <SightingsList petId={pet.id} feed={feed} onShowOnMap={pinId => setMapFocus({ pinId })}
-        guestSiteKey={pet.createdBy && !pet.resolved ? guestSightingSiteKey : undefined}
-        initialCenter={pet.lat != null && pet.lng != null ? { lat: pet.lat, lng: pet.lng } : null} />
 
       <style jsx>{`
         .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
@@ -281,7 +291,7 @@ function PetDetailClientContent({ id, guestSightingSiteKey }: PetDetailProps) {
         .owner-actions :global(.btn-base:last-child:nth-child(3)) { grid-column: 1 / -1; }
         .detail-section { margin-top: var(--sp-5); }
         .map-section { padding-bottom: var(--sp-4); }
-        .share-section { box-shadow: none; }
+        .share-section { margin-top:var(--sp-5); box-shadow:none; }
         .detail-skeleton { display: grid; grid-template-columns: 1.1fr .9fr; gap: var(--sp-6); align-items: start; }
         .skeleton-media { aspect-ratio: 4 / 3; border-radius: var(--r-xl); }
         .skeleton-copy { display: grid; gap: var(--sp-3); }

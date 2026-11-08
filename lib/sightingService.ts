@@ -70,6 +70,7 @@ export async function reviewGuestSighting(petId: string, id: string, action: Gue
 export async function fetchGuestSightingPhoto(petId: string, id: string, signal: AbortSignal) {
   const params = new URLSearchParams({ petId, photoId: id });
   const response = await authenticatedFetch(`/api/sightings/guest/review?${params}`, { cache: 'no-store', signal });
+  if (response.status === 404) return null;
   if (!response.ok) throw await apiError(response);
   return response.blob();
 }

@@ -24,6 +24,7 @@ export type MapPopupDetails = {
   message: string;
   lines: readonly string[];
   photo?: { src: string; alt: string };
+  privatePhotoId?: string;
 };
 
 export function createMapPinPopup(title: string, details: readonly MapPopupDetails[]) {
@@ -53,6 +54,11 @@ export function createMapPinPopup(title: string, details: readonly MapPopupDetai
       image.loading = 'lazy';
       link.append(image);
       entry.append(link);
+    }
+    if (detail.privatePhotoId) {
+      const slot = document.createElement('div');
+      slot.dataset.privatePhotoId = detail.privatePhotoId;
+      entry.append(slot);
     }
     popup.append(entry);
   }

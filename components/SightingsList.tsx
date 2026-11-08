@@ -1,5 +1,6 @@
 'use client';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import type { ReactNode } from 'react';
 import Image from 'next/image';
 import { compressImage } from '../lib/imageCompress';
 import { SIGHTING_PHOTO_LIMIT, SIGHTING_PHOTO_TYPES } from '../lib/sightingPhoto';
@@ -27,13 +28,23 @@ type SightingFeedProps = {
   initialCenter?: MapPoint | null;
   feed: SightingFeed;
   onShowOnMap: (pinId: string) => void;
+  ownerPanel?: ReactNode;
 };
+
+function subscribeToHash(change: () => void) {
+  window.addEventListener('hashchange', change);
+  return () => window.removeEventListener('hashchange', change);
+}
+
+function isGuestInboxLink() {
+  return window.location.hash === '#guest-sightings';
+}
 
 export default function SightingsList(props: SightingFeedProps) {
   return <SightingFormAndList key={props.petId} {...props} />;
 }
 
-function SightingFormAndList({ petId, guestSiteKey, initialCenter, feed, onShowOnMap }: SightingFeedProps) {
+function SightingFormAndList({ petId, guestSiteKey, initialCenter, feed, onShowOnMap, ownerPanel }: SightingFeedProps) {
   const showToast = useToast();
   const { t, lang } = useLanguage();
   const { user } = useAuth();
@@ -50,6 +61,9 @@ function SightingFormAndList({ petId, guestSiteKey, initialCenter, feed, onShowO
   const [challengeToken, setChallengeToken] = useState<string | null>(null);
   const [challengeAttempt, setChallengeAttempt] = useState(0);
   const guest = !user && Boolean(guestSiteKey);
+  const [ownerView, setOwnerView] = useState<boolean | null>(null);
+  const notificationLink = useSyncExternalStore(subscribeToHash, isGuestInboxLink, () => false);
+  const showInbox = Boolean(ownerPanel && (ownerView ?? notificationLink));
 
   function toggleForm() {
     if (!user && !guest) {
@@ -59,6 +73,11 @@ function SightingFormAndList({ petId, guestSiteKey, initialCenter, feed, onShowO
     if (!showForm && guest && !countedGuestOpen.current && getConsentStatus() === 'accepted') {
       countedGuestOpen.current = true;
       void fetch('/api/sightings/guest', { method: 'PATCH', keepalive: true }).catch(() => undefined);
+    }
+    if (showInbox) {
+      setOwnerView(false);
+      setShowForm(true);
+      return;
     }
     if (showForm) setChallengeToken(null);
     setShowForm(!showForm);
@@ -151,12 +170,21 @@ function SightingFormAndList({ petId, guestSiteKey, initialCenter, feed, onShowO
         <button
           onClick={toggleForm}
           className="sighting-toggle"
-          aria-expanded={showForm}
+          aria-expanded={showForm && !showInbox}
           aria-controls="sighting-form"
         >
-          {showForm ? t('sightings_close') : t('sightings_add')}
+          {showForm && !showInbox ? t('sightings_close') : t('sightings_add')}
         </button>
       </div>
+
+      {ownerPanel && <div className="sighting-views" role="group" aria-label={t('sightings_views_label')}>
+        <Button variant={showInbox ? 'ghost' : 'secondary'} size="sm" aria-pressed={!showInbox}
+          aria-controls="sightings-public-panel" onClick={() => setOwnerView(false)}>{t('sightings_public_tab')}</Button>
+        <Button variant={showInbox ? 'secondary' : 'ghost'} size="sm" aria-pressed={showInbox}
+          aria-controls="sightings-owner-panel" onClick={() => setOwnerView(true)}>{t('guest_sighting_inbox')}</Button>
+      </div>}
+      {ownerPanel && <div id="sightings-owner-panel" hidden={!showInbox}>{showInbox && ownerPanel}</div>}
+      <div id="sightings-public-panel" hidden={showInbox}>
 
       {loadError && <div role="alert" className="sighting-error"><Icon name="alert" size={16} aria-hidden="true" /><span>{loadError || t('sightings_load_error')}</span><button type="button" onClick={() => void load()}>{t('sightings_retry')}</button></div>}
 
@@ -212,22 +240,24 @@ function SightingFormAndList({ petId, guestSiteKey, initialCenter, feed, onShowO
           {sightings.map((s) => {
             const pinId = sightingMapPinId(s);
             return (
-            <article key={s.id} className="sighting-item">
-              <p>{s.guestReport ? t('guest_sighting_public') : s.message}</p>
-              {s.photoUrl && <a className="sighting-photo" href={s.photoUrl} target="_blank" rel="noopener noreferrer">
-                <Image src={s.photoUrl} alt={t('sightings_photo_alt')} width={240} height={160} unoptimized />
-              </a>}
-              <p className="sighting-meta">
-                {s.place && <span><Icon name="pin" size={12} aria-hidden="true" /> {s.place}</span>}
-                {s.sightedAt && <span><Icon name="calendar" size={12} aria-hidden="true" /> {t('sightings_time_seen')} <time dateTime={s.sightedAt}>{formatSeenTime.format(new Date(s.sightedAt))}</time></span>}
-                <span>{t('sightings_time_posted')} <time dateTime={s.createdAt}>{relativeTime(s.createdAt, lang)}</time></span>
-              </p>
-              {pinId && <div className="sighting-item-map">
-                <Button size="sm" variant="ghost" onClick={() => onShowOnMap(pinId)}>
-                  <Icon name="pin" size={16} aria-hidden="true" /> {t('sightings_map_show')}
-                </Button>
-              </div>}
-            </article>
+              <article key={s.id} className="sighting-item">
+                <div className="sighting-copy">
+                  <p>{s.guestReport ? t('guest_sighting_public') : s.message}</p>
+                  <p className="sighting-meta">
+                    {s.place && <span><Icon name="pin" size={12} aria-hidden="true" /> {s.place}</span>}
+                    {s.sightedAt && <span><Icon name="calendar" size={12} aria-hidden="true" /> {t('sightings_time_seen')} <time dateTime={s.sightedAt}>{formatSeenTime.format(new Date(s.sightedAt))}</time></span>}
+                    <span>{t('sightings_time_posted')} <time dateTime={s.createdAt}>{relativeTime(s.createdAt, lang)}</time></span>
+                  </p>
+                  {pinId && <div className="sighting-item-map">
+                    <Button size="sm" variant="ghost" onClick={() => onShowOnMap(pinId)}>
+                      <Icon name="pin" size={16} aria-hidden="true" /> {t('sightings_map_show')}
+                    </Button>
+                  </div>}
+                </div>
+                {s.photoUrl && <a className="sighting-photo" href={s.photoUrl} target="_blank" rel="noopener noreferrer">
+                  <Image src={s.photoUrl} alt={t('sightings_photo_alt')} width={132} height={99} loading="lazy" unoptimized />
+                </a>}
+              </article>
             );
           })}
         </div>
@@ -235,10 +265,12 @@ function SightingFormAndList({ petId, guestSiteKey, initialCenter, feed, onShowO
       {hasMore && <Button type="button" variant="ghost" onClick={() => void loadMore()} disabled={loadingMore} aria-busy={loadingMore}>
         {loadingMore ? t('sightings_loading_more') : t('sightings_load_more')}
       </Button>}
+      </div>
       <style jsx>{`
         .sightings-section { margin-top:var(--sp-5); padding:var(--sp-4); background:var(--surface-2); border:1px solid var(--border-subtle); border-radius:var(--r-lg); box-shadow:var(--shadow-sm); }
         .sightings-header { display:flex; align-items:center; justify-content:space-between; gap:var(--sp-3); margin-bottom:var(--sp-3); }
         .sightings-header h2 { font-size:var(--text-lg); }
+        .sighting-views { display:flex; flex-wrap:wrap; gap:var(--sp-2); margin-bottom:var(--sp-3); padding-bottom:var(--sp-3); border-bottom:1px solid var(--border-subtle); }
         .sighting-toggle { min-height:40px; padding:var(--sp-1) var(--sp-3); color:var(--primary); background:var(--eyebrow-bg); border:1px solid var(--glass-border); border-radius:var(--r-md); font:650 var(--text-xs) var(--font-body); cursor:pointer; }
         .sighting-toggle:hover { border-color:var(--primary-light); }
         .sighting-error { display:flex; align-items:center; gap:var(--sp-2); margin-bottom:var(--sp-3); padding:var(--sp-2) var(--sp-3); color:var(--alert); background:color-mix(in srgb,var(--alert) 8%,var(--surface-2)); border-radius:var(--r-md); font-size:var(--text-xs); }
@@ -259,15 +291,13 @@ function SightingFormAndList({ petId, guestSiteKey, initialCenter, feed, onShowO
         .map-hint { margin-bottom:var(--sp-2); }
         .sighting-item-map { margin-top:var(--sp-2); }
         .sighting-photo-preview { display:flex; flex-wrap:wrap; gap:var(--sp-2); align-items:center; }
-        .sighting-photo { display:block; width:fit-content; max-width:100%; margin-top:var(--sp-2); }
-        .sighting-photo :global(img), .sighting-photo-preview :global(img) {
-          display:block; max-width:100%; height:auto; border-radius:var(--r-sm);
-        }
+        .sighting-photo { display:block; width:clamp(72px, 16vw, 132px); }
+        .sighting-photo :global(img) { display:block; width:100%; height:auto; aspect-ratio:4/3; object-fit:cover; border-radius:var(--r-sm); }
+        .sighting-photo-preview :global(img) { display:block; max-width:100%; height:auto; border-radius:var(--r-sm); }
         .sightings-empty { margin:0; padding:var(--sp-2) 0; color:var(--text-secondary); font-size:var(--text-sm); }
         .sighting-list { display:grid; gap:var(--sp-2); }
-        .sighting-item { padding:var(--sp-2) 0; border-bottom:1px solid var(--border-subtle); }
-        .sighting-item:last-child { border-bottom:0; }
-        .sighting-item > p:first-child { color:var(--text-primary); font-size:var(--text-sm); line-height:1.6; white-space:pre-wrap; }
+        .sighting-item { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:start; gap:var(--sp-3); padding:var(--sp-3); border:1px solid var(--border-subtle); border-radius:var(--r-md); }
+        .sighting-copy > p:first-child { color:var(--text-primary); font-size:var(--text-sm); line-height:1.6; white-space:pre-wrap; overflow-wrap:anywhere; }
         .sighting-meta { display:flex; align-items:center; gap:var(--sp-3); flex-wrap:wrap; margin-top:var(--sp-2); color:var(--text-tertiary); font-size:var(--text-xs); }
         .sighting-meta span { display:inline-flex; align-items:center; gap:var(--sp-1); }
         @media(max-width:560px){.sightings-section{margin-top:var(--sp-4);padding:var(--sp-3);border-radius:var(--r-md)}.sightings-header{gap:var(--sp-2)}.sighting-toggle{flex-shrink:0}}
