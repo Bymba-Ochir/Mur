@@ -1,7 +1,17 @@
 // lib/clinicService.ts
 // Мал эмнэлгийн газрын байршил, хайх, ойролцоох функцууд
 import { VET_CLINICS } from './vetClinics';
-import type { VetClinic, VetService } from './types';
+import { DISTRICTS } from './districts';
+import type { MappedVetClinic, VetClinic, VetService } from './types';
+
+const CITY = 'Улаанбаатар';
+const clinicDistricts = new Set(VET_CLINICS.map((clinic) => clinic.district));
+clinicDistricts.delete(CITY);
+export const CLINIC_AREAS = [CITY, ...[...clinicDistricts].sort((a, b) => a.localeCompare(b, 'mn'))];
+
+export function isMappedClinic(clinic: VetClinic): clinic is MappedVetClinic {
+  return !clinic.source;
+}
 
 /**
  * Haversine formulas — хоёр цэгийн хоорондын зай (км)
@@ -18,7 +28,7 @@ export function haversineKm(lat1: number, lng1: number, lat2: number, lng2: numb
   return R * c;
 }
 
-export type ClinicWithDistance = VetClinic & { distanceKm: number };
+export type ClinicWithDistance = MappedVetClinic & { distanceKm: number };
 
 /**
  * Хамгийн ойр N эмнэлгийг haversine-аар эрэмбэлээд буцаана
@@ -30,6 +40,7 @@ export function findNearestClinics(
   limit = 5,
 ): ClinicWithDistance[] {
   return clinics
+    .filter(isMappedClinic)
     .map((c) => ({ ...c, distanceKm: haversineKm(lat, lng, c.lat, c.lng) }))
     .sort((a, b) => a.distanceKm - b.distanceKm)
     .slice(0, limit);
@@ -46,7 +57,9 @@ export function searchClinics(opts: {
   let result = [...VET_CLINICS];
 
   if (opts.district) {
-    result = result.filter((c) => c.district === opts.district);
+    result = result.filter((c) =>
+      c.district === opts.district || (opts.district === CITY && DISTRICTS.some((district) => district === c.district)),
+    );
   }
   if (opts.service) {
     const svc = opts.service as VetService;

@@ -162,7 +162,7 @@ export type VetService =
   | 'Туулгалт'
   | 'Арчилгаа';
 
-export interface VetClinic {
+interface VetClinicDetails {
   id: string;
   name: string;
   district: string;
@@ -173,14 +173,29 @@ export interface VetClinic {
   hoursEn?: string;
   noteEn?: string;
   note?: string;
-  lat: number;
-  lng: number;
   services: VetService[];
   websiteUrl?: string;
+}
+
+export interface MappedVetClinic extends VetClinicDetails {
+  source?: never;
+  lat: number;
+  lng: number;
   mapUrl: string;
   verifiedAt: string;
   serviceDetailsVerified: boolean;
 }
+
+export interface ListedVetClinic extends VetClinicDetails {
+  source: {
+    publisher: string;
+    publishedAt: string;
+    url: string;
+  };
+  serviceDetailsVerified: false;
+}
+
+export type VetClinic = MappedVetClinic | ListedVetClinic;
 
 export type AppointmentStatus = 'pending' | 'confirmed' | 'completed' | 'cancelled';
 

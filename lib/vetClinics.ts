@@ -1,8 +1,9 @@
 import type { VetClinic } from './types';
+import { AZTAI_SAVAR_CLINICS } from './vetClinicsAztaiSavar';
 
 /**
  * Google Maps болон тухайн эмнэлгийн нийтэлсэн мэдээллийг тулгаж
- * 2026-09-03-нд шинэчилсэн жагсаалт. Нотлогдоогүй үйлчилгээг таамгаар нэмэхгүй.
+ * 2026-09-03-нд шалгасан эмнэлгүүдийг эхэнд, эх сурвалжтай бусад эмнэлгийг дараа нь харуулна.
  */
 export const VET_CLINICS: VetClinic[] = [
   {
@@ -79,4 +80,5 @@ export const VET_CLINICS: VetClinic[] = [
     mapUrl: 'https://www.google.com/maps/place/%D0%9E%D0%A7%D0%98%D0%A0+%D0%BC%D0%B0%D0%BB+%D1%8D%D0%BC%D0%BD%D1%8D%D0%BB%D1%8D%D0%B3/data=!4m7!3m6!1s0xac516e3c00610821:0x204c7634be8fb67e!8m2!3d47.9149154!4d106.8511918!16s%2Fg%2F11y3zfwnw3',
     verifiedAt: '2026-09-03', serviceDetailsVerified: false,
   },
+  ...AZTAI_SAVAR_CLINICS,
 ];

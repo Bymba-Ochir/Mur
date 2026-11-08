@@ -2,29 +2,49 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { VET_CLINICS } from '../../lib/vetClinics';
-import { searchClinics } from '../../lib/clinicService';
+import { CLINIC_AREAS, findNearestClinics, isMappedClinic, searchClinics } from '../../lib/clinicService';
 
 function source(path: string) {
   return readFileSync(resolve(process.cwd(), path), 'utf8');
 }
 
-describe('verified veterinary clinic data', () => {
+describe('veterinary clinic directory', () => {
   it('finds services and formatted phone numbers while respecting filters', () => {
     expect(searchClinics({ query: 'Рентген' }).map((c) => c.id)).toContain('enerekh-vet');
     expect(searchClinics({ query: '9590-9987' }).map((c) => c.id)).toContain('enerekh-vet');
     expect(searchClinics({ query: '95909987', district: 'Баянзүрх' })).toHaveLength(0);
   });
   it('keeps every clinic traceable and directly contactable', () => {
-    expect(VET_CLINICS.length).toBeGreaterThanOrEqual(6);
+    expect(VET_CLINICS.filter(isMappedClinic).length).toBeGreaterThanOrEqual(6);
+    expect(new Set(VET_CLINICS.map((clinic) => clinic.id)).size).toBe(VET_CLINICS.length);
 
     for (const clinic of VET_CLINICS) {
       expect(clinic.name.trim()).not.toBe('');
       expect(clinic.address.trim()).not.toBe('');
       expect(clinic.phone).toMatch(/^\d{8}$/);
       expect(clinic.phones?.length).toBeGreaterThan(0);
-      expect(clinic.mapUrl).toMatch(/^https:\/\/www\.google\.com\/maps\/place\//);
-      expect(clinic.verifiedAt).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+      expect(clinic.phones).toContain(clinic.phone);
+      expect(clinic.phones?.every((phone) => /^\d{8}$/.test(phone))).toBe(true);
+      if (isMappedClinic(clinic)) {
+        expect(clinic.mapUrl).toMatch(/^https:\/\/www\.google\.com\/maps\/place\//);
+        expect(clinic.verifiedAt).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+      } else {
+        expect(clinic.source).toMatchObject({ publishedAt: '2026-08-17', url: 'https://aztaisavar.mn/mn' });
+        expect(clinic).not.toHaveProperty('lat');
+        expect(clinic).not.toHaveProperty('lng');
+        expect(clinic.serviceDetailsVerified).toBe(false);
+      }
     }
+  });
+
+  it('finds city and regional clinics while excluding unpinned clinics from distance calculations', () => {
+    expect(CLINIC_AREAS).toEqual(expect.arrayContaining(['Улаанбаатар', 'Дархан-Уул', 'Ховд']));
+    expect(searchClinics({ district: 'Улаанбаатар' }).map((clinic) => clinic.id)).toContain('city-paws');
+    expect(searchClinics({ district: 'Улаанбаатар' }).map((clinic) => clinic.id)).not.toContain('vetmon');
+    expect(searchClinics({ district: 'Дархан-Уул', service: 'Цусны шинжилгээ' }).map((clinic) => clinic.id)).toEqual(['vetmon']);
+    expect(searchClinics({ query: '9953-9357' }).map((clinic) => clinic.id)).toEqual(['khovd-pet-clinic']);
+    expect(searchClinics({ query: '76001950' }).map((clinic) => clinic.id)).toEqual(['sos-pet-care']);
+    expect(findNearestClinics(47.9184, 106.9177, searchClinics({ district: 'Дархан-Уул' }))).toEqual([]);
   });
 
   it('only marks documented detailed services as verified', () => {

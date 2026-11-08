@@ -3,8 +3,7 @@ import { useMemo, useState } from 'react';
 import { useAuth } from '../lib/useAuth';
 import { useLanguage } from '../lib/i18n';
 import { useToast } from './Toast';
-import { DISTRICTS } from '../lib/districts';
-import { searchClinics, findNearestClinics } from '../lib/clinicService';
+import { CLINIC_AREAS, searchClinics, findNearestClinics, isMappedClinic } from '../lib/clinicService';
 import ClinicMap from './ClinicMap';
 import ClinicCard from './ClinicCard';
 import AppointmentModal from './AppointmentModal';
@@ -13,10 +12,12 @@ import LoginModal from './LoginModal';
 import EmptyState from './ui/EmptyState';
 import Button from './ui/Button';
 import Icon from './ui/icons';
-import type { VetClinic, VetService } from '../lib/types';
+import type { MappedVetClinic, VetClinic, VetService } from '../lib/types';
 import type { TranslationKey } from '../lib/i18n';
 
 const SERVICE_OPTIONS: VetService[] = ['Үзлэг', 'Вакцин', 'Мэс засал', 'Шүд арчилгаа', 'Рентген', 'ЭХО', 'Цусны шинжилгээ', 'Микрочип', 'Туулгалт', 'Арчилгаа'];
+const PAGE_SIZE = 8;
+const DEFAULT_FILTERS = { district: '', service: '' as VetService | '', query: '' };
 const SERVICE_I18N: Record<VetService, TranslationKey> = {
   'Үзлэг': 'service_exam', 'Вакцин': 'service_vaccination', 'Мэс засал': 'service_surgery', 'Шүд арчилгаа': 'service_dental',
   'Рентген': 'service_xray', 'ЭХО': 'service_ultrasound', 'Цусны шинжилгээ': 'service_blood_test',
@@ -25,18 +26,32 @@ const SERVICE_I18N: Record<VetService, TranslationKey> = {
 
 export default function VetClinicList({ embedded = false }: { embedded?: boolean }) {
   const { user } = useAuth(); const { t, lang } = useLanguage(); const showToast = useToast();
-  const [district, setDistrict] = useState(''); const [service, setService] = useState<VetService | ''>(''); const [query, setQuery] = useState('');
+  const [filters, setFilters] = useState(DEFAULT_FILTERS);
+  const { district, service, query } = filters;
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const [userCoords, setUserCoords] = useState<[number, number] | null>(null); const [locating, setLocating] = useState(false); const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [bookingClinic, setBookingClinic] = useState<VetClinic | null>(null); const [showLogin, setShowLogin] = useState(false); const [apptRefreshKey, setApptRefreshKey] = useState(0);
+  const [bookingClinic, setBookingClinic] = useState<MappedVetClinic | null>(null); const [showLogin, setShowLogin] = useState(false); const [apptRefreshKey, setApptRefreshKey] = useState(0);
   const hasFilters = Boolean(district || service || query || userCoords);
-  const filtered = useMemo(() => { const result = searchClinics({ district, service, query }); return userCoords ? findNearestClinics(userCoords[0], userCoords[1], result, 20) : result; }, [district, service, query, userCoords]);
+  const filtered = useMemo<(VetClinic & { distanceKm?: number })[]>(() => {
+    const result = searchClinics(filters);
+    if (!userCoords) return result;
+    const mapped = result.filter(isMappedClinic);
+    return [...findNearestClinics(...userCoords, mapped, mapped.length), ...result.filter((clinic) => !isMappedClinic(clinic))];
+  }, [filters, userCoords]);
+  const mappedClinics = useMemo(() => filtered.filter(isMappedClinic), [filtered]);
+
+  function updateFilters(changes: Partial<typeof DEFAULT_FILTERS>) {
+    setFilters((current) => ({ ...current, ...changes }));
+    setVisibleCount(PAGE_SIZE);
+    setSelectedId(null);
+  }
 
   function handleLocation() {
     if (!navigator.geolocation) { showToast(t('clinics_nearby_none'), 'error'); return; }
-    setLocating(true); navigator.geolocation.getCurrentPosition((position) => { setUserCoords([position.coords.latitude, position.coords.longitude]); setLocating(false); }, () => { setLocating(false); showToast(t('clinics_nearby_none'), 'error'); }, { timeout: 10000, maximumAge: 60000 });
+    setLocating(true); navigator.geolocation.getCurrentPosition((position) => { setUserCoords([position.coords.latitude, position.coords.longitude]); setVisibleCount(PAGE_SIZE); setSelectedId(null); setLocating(false); }, () => { setLocating(false); showToast(t('clinics_nearby_none'), 'error'); }, { timeout: 10000, maximumAge: 60000 });
   }
-  function resetFilters() { setDistrict(''); setService(''); setQuery(''); setUserCoords(null); setSelectedId(null); }
-  function handleBook(clinic: VetClinic) { if (!user) { setShowLogin(true); return; } setBookingClinic(clinic); }
+  function resetFilters() { updateFilters(DEFAULT_FILTERS); setUserCoords(null); }
+  function handleBook(clinic: MappedVetClinic) { if (!user) { setShowLogin(true); return; } setBookingClinic(clinic); }
 
   return (
     <div className={embedded ? 'clinic-embedded' : 'page-shell'}>
@@ -46,20 +61,43 @@ export default function VetClinicList({ embedded = false }: { embedded?: boolean
       <section className="filters-panel" aria-labelledby="clinic-filters-title">
         <div className="filters-heading"><div><p className="filter-kicker">{t('clinics_filter_kicker')}</p><h2 id="clinic-filters-title">{t('clinics_filters_title')}</h2></div>{hasFilters && <button type="button" className="reset-filters" onClick={resetFilters}>{t('clinics_clear_filters')}</button>}</div>
         <div className="filter-grid">
-          <label htmlFor="clinic-search"><span>{t('clinics_search_label')}</span><span className="input-wrap"><Icon name="search" size={18} /><input id="clinic-search" type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder={lang === 'mn' ? 'Нэр, хаяг, утас, үйлчилгээ' : 'Name, address, phone, service'} /></span></label>
-          <label htmlFor="clinic-district"><span>{t('clinics_district_label')}</span><select id="clinic-district" value={district} onChange={(event) => setDistrict(event.target.value)}><option value="">{t('filter_all_districts')}</option>{DISTRICTS.map((value) => <option key={value}>{value}</option>)}</select></label>
-          <label htmlFor="clinic-service"><span>{t('clinics_service_label')}</span><select id="clinic-service" value={service} onChange={(event) => setService(event.target.value as VetService | '')}><option value="">{t('clinics_service_filter')}</option>{SERVICE_OPTIONS.map((value) => <option key={value} value={value}>{t(SERVICE_I18N[value])}</option>)}</select></label>
+          <label htmlFor="clinic-search"><span>{t('clinics_search_label')}</span><span className="input-wrap"><Icon name="search" size={18} /><input id="clinic-search" type="search" value={query} onChange={(event) => updateFilters({ query: event.target.value })} placeholder={lang === 'mn' ? 'Нэр, хаяг, утас, үйлчилгээ' : 'Name, address, phone, service'} /></span></label>
+          <label htmlFor="clinic-district"><span>{t('clinics_district_label')}</span><select id="clinic-district" value={district} onChange={(event) => updateFilters({ district: event.target.value })}><option value="">{t('clinics_all_areas')}</option>{CLINIC_AREAS.map((value) => <option key={value}>{value}</option>)}</select></label>
+          <label htmlFor="clinic-service"><span>{t('clinics_service_label')}</span><select id="clinic-service" value={service} onChange={(event) => updateFilters({ service: event.target.value as VetService | '' })}><option value="">{t('clinics_service_filter')}</option>{SERVICE_OPTIONS.map((value) => <option key={value} value={value}>{t(SERVICE_I18N[value])}</option>)}</select></label>
           <div className="location-action"><span>{t('clinics_map_title')}</span><Button variant="ghost" onClick={handleLocation} disabled={locating} aria-busy={locating}><Icon name="pin" size={17} />{locating ? t('clinics_locating') : t('clinics_use_location')}</Button></div>
         </div>
       </section>
 
-      <div className="quick-actions" role="group" aria-label={t('clinics_service_label')}>{(['Рентген', 'ЭХО', 'Вакцин'] as VetService[]).map((value) => <Button key={value} variant={service === value ? 'primary' : 'ghost'} aria-pressed={service === value} onClick={() => setService(service === value ? '' : value)}>{t(SERVICE_I18N[value])}</Button>)}</div>
+      <div className="quick-actions" role="group" aria-label={t('clinics_service_label')}>{(['Рентген', 'ЭХО', 'Вакцин'] as VetService[]).map((value) => <Button key={value} variant={service === value ? 'primary' : 'ghost'} aria-pressed={service === value} onClick={() => updateFilters({ service: service === value ? '' : value })}>{t(SERVICE_I18N[value])}</Button>)}</div>
       <div className="clinic-explorer">
         <section className="clinic-results" aria-labelledby="clinic-results-title">
           <div className="results-heading"><h2 id="clinic-results-title">{t('clinics_results_title')}</h2><p aria-live="polite">{filtered.length} {t(filtered.length === 1 ? 'clinics_results_count_one' : 'clinics_results_count')}</p></div>
-          {filtered.length === 0 ? <EmptyState icon={<Icon name="cross" size={30} />} title={t('empty_no_results_title')} description={t('clinics_empty_desc')}><Button variant="secondary" onClick={resetFilters}>{t('clinics_clear_filters')}</Button></EmptyState> : <div className="clinic-list">{filtered.map((clinic) => <ClinicCard key={clinic.id} clinic={clinic} distanceKm={'distanceKm' in clinic ? (clinic as VetClinic & { distanceKm: number }).distanceKm : undefined} selected={selectedId === clinic.id} onSelect={() => setSelectedId(selectedId === clinic.id ? null : clinic.id)} onBook={() => handleBook(clinic)} />)}</div>}
+          {filtered.length === 0 ? (
+            <EmptyState icon={<Icon name="cross" size={30} />} title={t('empty_no_results_title')} description={t('clinics_empty_desc')}><Button variant="secondary" onClick={resetFilters}>{t('clinics_clear_filters')}</Button></EmptyState>
+          ) : (
+            <div className="clinic-list">
+              {filtered.slice(0, visibleCount).map((clinic) => (
+                <ClinicCard
+                  key={clinic.id}
+                  clinic={clinic}
+                  distanceKm={clinic.distanceKm}
+                  selected={selectedId === clinic.id}
+                  onSelect={isMappedClinic(clinic) ? () => setSelectedId(selectedId === clinic.id ? null : clinic.id) : undefined}
+                  onBook={isMappedClinic(clinic) ? () => handleBook(clinic) : undefined}
+                />
+              ))}
+              {visibleCount < filtered.length && (
+                <Button variant="secondary" onClick={() => setVisibleCount((count) => count + PAGE_SIZE)}>{t('load_more')}</Button>
+              )}
+            </div>
+          )}
         </section>
-        <section className="map-panel sticky-sidebar" aria-labelledby="clinic-map-title"><div className="map-heading"><span className="map-icon"><Icon name="pin" size={18} /></span><h2 id="clinic-map-title">{t('clinics_map_title')}</h2></div><ClinicMap clinics={filtered} selectedId={selectedId} userCoords={userCoords} onSelect={setSelectedId} label={t('clinics_map_label')} userLocationLabel={t('clinics_user_location')} /></section>
+        <section className="map-panel sticky-sidebar" aria-labelledby="clinic-map-title">
+          <div className="map-heading"><span className="map-icon"><Icon name="pin" size={18} /></span><h2 id="clinic-map-title">{t('clinics_map_title')}</h2></div>
+          {mappedClinics.length > 0 ? (
+            <ClinicMap clinics={mappedClinics} selectedId={selectedId} userCoords={userCoords} onSelect={setSelectedId} label={t('clinics_map_label')} userLocationLabel={t('clinics_user_location')} />
+          ) : <p>{t('clinics_map_no_locations')}</p>}
+        </section>
       </div>
 
       {user && <AppointmentsSection refreshKey={apptRefreshKey} onChange={() => setApptRefreshKey((key) => key + 1)} />}

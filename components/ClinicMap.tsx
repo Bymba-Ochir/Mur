@@ -1,11 +1,11 @@
 'use client';
 import { useEffect, useRef } from 'react';
-import type { VetClinic } from '../lib/types';
+import type { MappedVetClinic } from '../lib/types';
 import { addMapTiles, mapMarkerIcon } from '../lib/leafletMap';
 
 const UB_CENTER: [number, number] = [47.9184, 106.9177];
 
-export default function ClinicMap({ clinics, selectedId, userCoords, onSelect, label, userLocationLabel }: { clinics: VetClinic[]; selectedId?: string | null; userCoords?: [number, number] | null; onSelect?: (id: string) => void; label?: string; userLocationLabel?: string; }) {
+export default function ClinicMap({ clinics, selectedId, userCoords, onSelect, label, userLocationLabel }: { clinics: MappedVetClinic[]; selectedId?: string | null; userCoords?: [number, number] | null; onSelect?: (id: string) => void; label?: string; userLocationLabel?: string; }) {
   const containerRef = useRef<HTMLDivElement>(null); const mapRef = useRef<ReturnType<typeof import('leaflet').map> | null>(null); const leafletRef = useRef<typeof import('leaflet') | null>(null); const layerRef = useRef<ReturnType<typeof import('leaflet').layerGroup> | null>(null);
 
   useEffect(() => {
@@ -31,7 +31,7 @@ export default function ClinicMap({ clinics, selectedId, userCoords, onSelect, l
   return <div ref={containerRef} className="clinic-map" role="application" aria-label={label || 'Veterinary clinic map'}><style jsx>{`.clinic-map{width:100%;height:clamp(17rem,42vw,32rem);overflow:hidden;border:1px solid var(--line);border-radius:var(--r-lg);background:var(--surface-2)}@media(max-width:640px){.clinic-map{height:20rem;border-radius:var(--r-md)}}`}</style></div>;
 }
 
-function renderMarkers(leaflet: typeof import('leaflet'), layer: ReturnType<typeof import('leaflet').layerGroup>, clinics: VetClinic[], selectedId: string | null | undefined, onSelect: ((id: string) => void) | undefined, userCoords: [number, number] | null | undefined, userLocationLabel = 'Your location') {
+function renderMarkers(leaflet: typeof import('leaflet'), layer: ReturnType<typeof import('leaflet').layerGroup>, clinics: MappedVetClinic[], selectedId: string | null | undefined, onSelect: ((id: string) => void) | undefined, userCoords: [number, number] | null | undefined, userLocationLabel = 'Your location') {
   for (const clinic of clinics) {
     const marker = leaflet.marker([clinic.lat, clinic.lng], { icon: mapMarkerIcon(leaflet), alt: clinic.name }); const popup = document.createElement('div');
     const title = document.createElement('strong'); title.textContent = clinic.name; const address = document.createElement('p'); address.textContent = clinic.address; const services = document.createElement('small'); services.textContent = clinic.services.join(', ');
