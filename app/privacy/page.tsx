@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 const PRIVACY_MN: LegalDoc = {
   title: 'Нууцлалын бодлого',
-  updated: '2026 оны 11-р сарын 5',
+  updated: '2026 оны 11-р сарын 8',
   sections: [
     {
       heading: '1. Танилцуулга',
@@ -22,7 +22,7 @@ const PRIVACY_MN: LegalDoc = {
       heading: '2. Бидний цуглуулдаг мэдээлэл',
       paragraphs: [
         'Таны нийтэлсэн мэдээлэл: Зар үүсгэхдээ амьтны тухай мэдээлэл, зураг, байршил болон холбоо барих сонголтоо оруулна. Зарын мэдээлэл олон нийтэд харагдана. Алдсан/олдсон, үрчлүүлэх, асрах бүх төрлийн зарт «Утсаа нуух — зөвхөн чатаар холбогдох» сонголт бий. Утсаа нуусан бол дугаар оруулах шаардлагагүй; өмнө оруулсан дугаарыг нийтэд харуулахгүй, хамгаалагдсан хэсэгт хадгална.',
-        'Нэвтрэлтийн мэдээлэл: Нэвтрэхдээ имэйл хаягаа оруулна. Нууц үг бидэнд хадгалагдахгүй — зөвхөн нэг удаагийн нэвтрэх холбоос имэйлээр илгээгдэнэ.',
+        'Нэвтрэлтийн мэдээлэл: Google-ээр нэвтрэхэд Supabase Auth нь Google бүртгэлийн таних дугаар, имэйл хаяг, имэйл баталгаажсан эсэх болон Google-ээс өгсөн нэр, профайлын зургийн хаягийг хүлээн авна. Имэйлээр нэвтрэх сонголт идэвхтэй үед таны оруулсан хаягт нэг удаагийн нэвтрэх холбоос илгээнэ.',
         'Байршлын мэдээлэл: Таны зөвшөөрлөөр төхөөрөмжийн байршлыг авч дүүрэг болон газрын зургийн цэгийг бөглөж болно. Зар нийтлэхэд сонгосон газрын тайлбар, дүүрэг, координат зартай хамт хадгалагдаж, олон нийтэд харагдана. Нийтлэхийн өмнө цэгээ шалгаж, гэрийнхээ нарийн байршлыг хуваалцах эсэхээ шийднэ үү.',
         'Төхөөрөмжийн мэдээлэл: Хэрэв та мэдэгдэл хүлээн авахаар бүртгүүлбэл push subscription мэдээлэл (төхөөрөмжийн түлхүүр) хадгалагдана.',
         'Үйл ажиллагааны мэдээлэл: Үрчлүүлэх хүсэлт, асрах захиалга, үйлчилгээний үнэлгээ болон тэдгээрийн төлөвийг үйлчилгээ үзүүлэх, маргаан шалгах зорилгоор хадгална.',
@@ -36,7 +36,7 @@ const PRIVACY_MN: LegalDoc = {
       heading: '3. Мэдээллийг хэрхэн ашигладаг вэ',
       paragraphs: [
         'Оруулсан бичлэгийн мэдээллийг алдсан/олдсон амьтныг олоход туслах, ижил төстэй бичлэгүүдийг санал болгох (зургийн дүн шинжилгээ), тухайн дүүргийн хэрэглэгчдэд мэдэгдэл илгээхэд ашиглана.',
-        'Таны имэйл хаягийг зөвхөн нэвтрэх холбоос илгээхэд ашиглана. Имэйл хаягийг сурталчилгаанд ашиглахгүй.',
+        'Supabase Auth нь Google-ээс авсан мэдээллийг МӨР-ийн бүртгэл үүсгэх, өмнөх бүртгэлтэй холбох, хэн нэвтэрснийг баталгаажуулахад ашиглаж, бүртгэлтэй тань хамт хадгална. МӨР таны имэйлийг бүртгэлийг таних болон имэйлээр нэвтрэх холбоос илгээхэд ашиглана. Профайлын анхны харагдах нэрийг имэйл хаягийн @ тэмдгийн өмнөх хэсгээс үүсгэж болно. Та нэрээ профайл дээрээс сольж болно. Google-ээс авсан мэдээллийг сурталчилгаанд ашиглахгүй.',
       ],
     },
     {
@@ -52,7 +52,7 @@ const PRIVACY_MN: LegalDoc = {
       paragraphs: [
         'Бид Supabase (бүртгэл, мэдээлэл, зураг, чат), Vercel (хостинг), QPay (хандивын төлбөр), Hugging Face (зургийн шинжилгээний загвар татах), OpenStreetMap (газрын зураг) үйлчилгээг ашиглана. AI зөвлөхийн Groq холболт идэвхтэй үед таны асуулт болон сонгосон амьтны тухай мэдээллийг хариулт боловсруулахын тулд Groq руу дамжуулна. Асуултдаа нууц үг, төлбөрийн мэдээлэл болон бусдын хувийн мэдээллийг оруулахгүй байна уу.',
         'Алдааг оношлоход Sentry ашиглана. Алдааны техникийн мэдээллийг илгээхээс өмнө имэйл, утас, token зэрэг мэдээллийг шүүх тохиргоо ашигладаг. Хэрэглээний хэмжилтийг зөвшөөрсөн үед Vercel Analytics болон Speed Insights-д хуудасны хэрэглээ, гүйцэтгэлийн мэдээлэл дамжуулна. Зөвшөөрлийн сонголтыг энэ хөтчийн хадгалалтад бүртгэнэ. Энэ хуудасны «Хэрэглээний хэмжилт» хэсгээс зөвшөөрөх эсвэл татгалзах сонголтоо хүссэн үедээ өөрчилж болно.',
-        'Эдгээр үйлчилгээ тус бүр өөрийн нууцлалын бодлоготой бөгөөд та тэдгээрийг танилцахыг уриалж байна.',
+        'Google болон Supabase Auth нь Google-ээр нэвтрэх үйлдлийг боловсруулна. Эдгээр үйлчилгээ тус бүр өөрийн нууцлалын бодлоготой.',
       ],
     },
     {
@@ -81,7 +81,7 @@ const PRIVACY_MN: LegalDoc = {
 
 const PRIVACY_EN: LegalDoc = {
   title: 'Privacy Policy',
-  updated: 'November 5, 2026',
+  updated: 'November 8, 2026',
   sections: [
     {
       heading: '1. Introduction',
@@ -94,7 +94,7 @@ const PRIVACY_EN: LegalDoc = {
       heading: '2. Information we collect',
       paragraphs: [
         'Information you post: When creating a listing, you provide pet details, photos, location, and contact preferences. Listing details are public. Lost/found, adoption, and sitting listings all offer Hide phone — contact by chat only. With this option enabled, a phone number is optional; any previously supplied number is kept in protected storage and hidden from the public.',
-        'Account information: When logging in, you provide your email address. We do not store passwords — a one-time login link is sent to your email.',
+        'Sign-in information: When you sign in with Google, Supabase Auth receives your Google account identifier, email address, email verification status, and any name and profile picture URL Google provides. When email sign-in is available, we send a one-time sign-in link to the address you enter.',
         'Location information: With your permission, device location can fill the district and map marker. Publishing a listing stores the selected location description, district, and coordinates with the public listing. Check the marker before posting and decide whether to disclose your exact home location.',
         'Device information: If you subscribe to notifications, we store your push subscription data (device key).',
         'Activity information: We store adoption applications, sitting bookings, service reviews, and their statuses to provide the service and investigate disputes.',
@@ -108,7 +108,7 @@ const PRIVACY_EN: LegalDoc = {
       heading: '3. How we use your information',
       paragraphs: [
         'Listing information is used to help find lost/found pets, suggest similar listings (photo analysis), and send notifications to users in the relevant district.',
-        'Your email address is used only to send login links. We do not use your email for promotional marketing.',
+        'Supabase Auth uses information from Google to create or link your Mur account and verify your sign-in. It stores that information with your account. Mur uses your email address to identify your account and deliver email sign-in links. The part of your email address before the @ sign may become your initial display name. You can change that name on your profile. We do not use information from Google for advertising.',
       ],
     },
     {
@@ -124,7 +124,7 @@ const PRIVACY_EN: LegalDoc = {
       paragraphs: [
         'We use Supabase (accounts, data, photos, and chat), Vercel (hosting), QPay (donation payments), Hugging Face (downloading photo-analysis models), and OpenStreetMap (maps). When the Groq integration for the AI assistant is enabled, your question and selected pet context are sent to Groq to generate a response. Do not include passwords, payment details, or other people’s personal information in your question.',
         'We use Sentry to diagnose errors and apply filters for information such as email addresses, phone numbers, and tokens before sending technical error reports. With your analytics consent, Vercel Analytics and Speed Insights receive page usage and performance information. Your consent choice is saved in this browser. You can allow or stop analytics at any time in the Usage analytics section on this page.',
-        'Each of these services has its own privacy policy, which we encourage you to review.',
+        'Google and Supabase Auth process Google sign-in. Each of these services has its own privacy policy.',
       ],
     },
     {
