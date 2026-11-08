@@ -93,7 +93,7 @@ async function executeJob(admin: AdminClient, job: BackgroundJob): Promise<strin
       id: sightingId, user_id: ownerId, type: 'sighting',
       title: 'Таны амьтныг харсан мэдээлэл ирлээ',
       body: place ? `${place} орчим харсан мэдээлэл нэмэгдлээ.` : 'Шинэ харсан мэдээлэл нэмэгдлээ.',
-      href: `/pets/${petId}`,
+      href: `/pets/${petId}${job.payload.guest === true ? '#guest-sightings' : ''}`,
     });
     // Unique IDs make crash/retry delivery idempotent. A deleted recipient no
     // longer needs the notification (the only FK here is notifications.user_id).

@@ -1,4 +1,4 @@
-import { expect, it } from 'vitest';
+import { expect, it, vi } from 'vitest';
 import { NextRequest } from 'next/server';
 import { contentSecurityPolicy } from '../../lib/contentSecurityPolicy';
 import { proxy } from '../../proxy';
@@ -13,6 +13,18 @@ it('restricts production scripts to nonce-authorized code without JavaScript eva
   expect(script).not.toContain("'unsafe-inline'");
   expect(policy).not.toContain('*.supabase.co');
   expect(policy).toContain("style-src-attr 'unsafe-inline'");
+});
+
+it('permits only the Turnstile origin when configured, including after client navigation', () => {
+  vi.stubEnv('TURNSTILE_SITE_KEY', 'widget-key');
+  try {
+    const policy = proxy(new NextRequest('http://localhost/')).headers.get('Content-Security-Policy');
+    expect(policy).toContain('frame-src https://challenges.cloudflare.com;');
+    expect(policy).toContain("frame-ancestors 'none'");
+    expect(contentSecurityPolicy('generated', false, false)).not.toContain('challenges.cloudflare.com');
+  } finally {
+    vi.unstubAllEnvs();
+  }
 });
 
 it('replaces forged nonce/CSP even on prefetch requests and prevents shared caching', () => {

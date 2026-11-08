@@ -78,6 +78,7 @@ export interface UpdatePetFields {
 
 export interface Sighting {
   id: string;
+  guestReport?: boolean;
   message: string;
   place: string | null;
   lat: number | null;

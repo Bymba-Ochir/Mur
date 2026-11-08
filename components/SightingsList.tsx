@@ -3,7 +3,9 @@ import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { compressImage } from '../lib/imageCompress';
 import { SIGHTING_PHOTO_LIMIT, SIGHTING_PHOTO_TYPES } from '../lib/sightingPhoto';
-import { createSighting } from '../lib/sightingService';
+import { createGuestSighting, createSighting } from '../lib/sightingService';
+import { getConsentStatus } from '../lib/analyticsConsent';
+import GuestSightingChallenge from './GuestSightingChallenge';
 import type { SightingFeed } from '../lib/useSightingFeed';
 import { sightingMapPinId } from '../lib/sightingPresentation';
 import { dateTimeFormat, EMPTY_DATE_TIME, parseDateTimeInput } from '../lib/dateTime';
@@ -21,6 +23,7 @@ import { createIdempotencyKey } from '../lib/idempotency';
 type MapPoint = { lat: number; lng: number };
 type SightingFeedProps = {
   petId: string;
+  guestSiteKey?: string;
   initialCenter?: MapPoint | null;
   feed: SightingFeed;
   onShowOnMap: (pinId: string) => void;
@@ -30,7 +33,7 @@ export default function SightingsList(props: SightingFeedProps) {
   return <SightingFormAndList key={props.petId} {...props} />;
 }
 
-function SightingFormAndList({ petId, initialCenter, feed, onShowOnMap }: SightingFeedProps) {
+function SightingFormAndList({ petId, guestSiteKey, initialCenter, feed, onShowOnMap }: SightingFeedProps) {
   const showToast = useToast();
   const { t, lang } = useLanguage();
   const { user } = useAuth();
@@ -43,6 +46,23 @@ function SightingFormAndList({ petId, initialCenter, feed, onShowOnMap }: Sighti
   const [submitting, setSubmitting] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const submitKey = useRef<string | null>(null);
+  const countedGuestOpen = useRef(false);
+  const [challengeToken, setChallengeToken] = useState<string | null>(null);
+  const [challengeAttempt, setChallengeAttempt] = useState(0);
+  const guest = !user && Boolean(guestSiteKey);
+
+  function toggleForm() {
+    if (!user && !guest) {
+      showToast(t('sightings_login'), 'error');
+      return;
+    }
+    if (!showForm && guest && !countedGuestOpen.current && getConsentStatus() === 'accepted') {
+      countedGuestOpen.current = true;
+      void fetch('/api/sightings/guest', { method: 'PATCH', keepalive: true }).catch(() => undefined);
+    }
+    if (showForm) setChallengeToken(null);
+    setShowForm(!showForm);
+  }
   const [photo, setPhoto] = useState<{ file: File; preview: string } | null>(null);
   const [preparingPhoto, setPreparingPhoto] = useState(false);
   const previewUrl = photo?.preview;
@@ -74,7 +94,7 @@ function SightingFormAndList({ petId, initialCenter, feed, onShowOnMap }: Sighti
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (submitting || preparingPhoto || !message.trim()) return;
+    if (submitting || preparingPhoto || !message.trim() || (!user && (!guest || !challengeToken))) return;
     if (Boolean(observedAt.date) !== Boolean(observedAt.time)) {
       showToast(t('date_time_incomplete'), 'error');
       return;
@@ -88,10 +108,12 @@ function SightingFormAndList({ petId, initialCenter, feed, onShowOnMap }: Sighti
     try {
       const key = submitKey.current ?? createIdempotencyKey();
       submitKey.current = key;
-      await createSighting(petId, {
+      const details = {
         message, place, lat: pin?.lat ?? null, lng: pin?.lng ?? null,
         sightedAt: observed?.toISOString() ?? null,
-      }, key, photo?.file);
+      };
+      if (guest && challengeToken) await createGuestSighting(petId, details, key, challengeToken);
+      else await createSighting(petId, details, key, photo?.file);
       submitKey.current = null;
       setMessage('');
       setPlace('');
@@ -100,11 +122,15 @@ function SightingFormAndList({ petId, initialCenter, feed, onShowOnMap }: Sighti
       setPhoto(null);
       setShowPicker(false);
       setShowForm(false);
-      await load();
-      showToast(t('sightings_thanks'), 'success');
+      if (!guest) await load();
+      showToast(t(guest ? 'guest_sighting_thanks' : 'sightings_thanks'), 'success');
     } catch (err) {
       showToast(getErrorMessage(err), 'error');
     } finally {
+      if (guest) {
+        setChallengeToken(null);
+        setChallengeAttempt(current => current + 1);
+      }
       setSubmitting(false);
     }
   }
@@ -123,7 +149,7 @@ function SightingFormAndList({ petId, initialCenter, feed, onShowOnMap }: Sighti
           {t('sightings_title')} ({sightings.length}{hasMore ? '+' : ''})
         </h2>
         <button
-          onClick={() => user ? setShowForm((s) => !s) : showToast(t('sightings_login'), 'error')}
+          onClick={toggleForm}
           className="sighting-toggle"
           aria-expanded={showForm}
           aria-controls="sighting-form"
@@ -136,6 +162,7 @@ function SightingFormAndList({ petId, initialCenter, feed, onShowOnMap }: Sighti
 
       {showForm && (
         <form id="sighting-form" onSubmit={handleSubmit} className="sighting-form">
+          {guest && <p className="sighting-hint">{t('guest_sighting_privacy')}</p>}
           <label htmlFor="sighting-message">{t('sightings_message_label')}</label>
           <textarea id="sighting-message" className="field" value={message} onChange={(e) => { submitKey.current = null; setMessage(e.target.value); }} placeholder={t('sightings_placeholder')} required maxLength={1000} rows={3} />
           <DateTimeField id="sighting" label={t('sightings_time_label')} value={observedAt}
@@ -147,11 +174,11 @@ function SightingFormAndList({ petId, initialCenter, feed, onShowOnMap }: Sighti
               <Icon name="pin" size={16} aria-hidden="true" />
               {showPicker ? t('sightings_map_hide') : t('sightings_map_pick')}
             </Button>
-            <label className="sighting-photo-picker">
+            {!guest && <label className="sighting-photo-picker">
               <input id="sighting-photo" type="file" accept={SIGHTING_PHOTO_TYPES.join(',')}
                 aria-label={t('sightings_photo_optional')} disabled={submitting || preparingPhoto} onChange={selectPhoto} />
               <Icon name="camera" size={16} aria-hidden="true" />{t('sightings_photo_add')}
-            </label>
+            </label>}
             {pin && <>
               <span className="sighting-hint" role="status">{t('sightings_map_selected')}</span>
               <Button variant="ghost" size="sm" onClick={() => pickLocation(null)}>{t('sightings_map_clear')}</Button>
@@ -159,7 +186,7 @@ function SightingFormAndList({ petId, initialCenter, feed, onShowOnMap }: Sighti
           </div>
           <div id="sighting-picker" hidden={!showPicker}>
             {showPicker && <>
-              <p className="sighting-hint map-hint">{t('sightings_map_hint')}</p>
+              <p className="sighting-hint map-hint">{t(guest ? 'guest_sighting_map_hint' : 'sightings_map_hint')}</p>
               <LocationMap lat={pin?.lat} lng={pin?.lng} initialCenter={initialCenter} editable markerVariant="sighting" onPick={pickLocation} label={t('map_label')} />
             </>}
           </div>
@@ -169,8 +196,9 @@ function SightingFormAndList({ petId, initialCenter, feed, onShowOnMap }: Sighti
             <Button variant="ghost" size="sm" disabled={submitting || preparingPhoto}
               onClick={() => { submitKey.current = null; setPhoto(null); }}>{t('photo_remove')}</Button>
           </div>}
+          {guest && guestSiteKey && <GuestSightingChallenge key={challengeAttempt} siteKey={guestSiteKey} onToken={setChallengeToken} />}
           <div className="sighting-submit">
-            <Button type="submit" disabled={submitting || preparingPhoto} aria-busy={submitting} variant="primary">
+            <Button type="submit" disabled={submitting || preparingPhoto || (guest && !challengeToken)} aria-busy={submitting} variant="primary">
               {submitting ? t('sightings_submitting') : t('sightings_submit')}
             </Button>
           </div>
@@ -185,7 +213,7 @@ function SightingFormAndList({ petId, initialCenter, feed, onShowOnMap }: Sighti
             const pinId = sightingMapPinId(s);
             return (
             <article key={s.id} className="sighting-item">
-              <p>{s.message}</p>
+              <p>{s.guestReport ? t('guest_sighting_public') : s.message}</p>
               {s.photoUrl && <a className="sighting-photo" href={s.photoUrl} target="_blank" rel="noopener noreferrer">
                 <Image src={s.photoUrl} alt={t('sightings_photo_alt')} width={240} height={160} unoptimized />
               </a>}

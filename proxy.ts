@@ -3,7 +3,9 @@ import { contentSecurityPolicy } from './lib/contentSecurityPolicy';
 
 export function proxy(request: NextRequest) {
   const nonce = Buffer.from(crypto.randomUUID()).toString('base64');
-  const policy = contentSecurityPolicy(nonce, process.env.NEXT_PUBLIC_DATABASE_MODE === 'hosted', process.env.NODE_ENV === 'development');
+  const policy = contentSecurityPolicy(nonce, process.env.NEXT_PUBLIC_DATABASE_MODE === 'hosted', process.env.NODE_ENV === 'development',
+    // Client navigation keeps the CSP of the original document.
+    Boolean(process.env.TURNSTILE_SITE_KEY?.trim()));
   const headers = new Headers(request.headers);
   // Never trust the browser's nonce or CSP headers.
   headers.set('x-nonce', nonce);

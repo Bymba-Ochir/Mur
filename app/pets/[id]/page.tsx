@@ -4,6 +4,7 @@
 import type { Metadata } from 'next';
 import { supabase } from '../../../lib/supabase';
 import PetDetailClient from './PetDetailClient';
+import { getTurnstileConfig } from '../../../lib/turnstile';
 import { fetchServerListingPhotoUrls } from '../../../lib/serverPhotoRepository';
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
@@ -44,5 +45,5 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 
 export default async function PetDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  return <PetDetailClient id={id} />;
+  return <PetDetailClient id={id} guestSightingSiteKey={getTurnstileConfig()?.siteKey} />;
 }

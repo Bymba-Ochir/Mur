@@ -5,6 +5,8 @@ import { apiError, authenticatedFetch } from './apiClient';
 import { createIdempotencyKey, idempotencyHeaders } from './idempotency';
 import { COMPACT_PAGE_SIZE, finalizePage } from './pagination';
 import { sightingPhotoUrl } from './sightingPhoto';
+import type { GuestSightingAction, GuestSightingDetails, GuestSightingSummary } from './guestSightings';
+import type { PageResult } from './pagination';
 
 export async function createSighting(
   petId: string,
@@ -27,8 +29,42 @@ export async function createSighting(
   if (!response.ok) throw await apiError(response);
 }
 
+export async function createGuestSighting(
+  petId: string,
+  details: Pick<Sighting, 'message' | 'place' | 'lat' | 'lng' | 'sightedAt'>,
+  key: string,
+  turnstileToken: string,
+) {
+  const response = await fetch('/api/sightings/guest', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...idempotencyHeaders(key) },
+    body: JSON.stringify({ petId, ...details, turnstileToken }),
+  });
+  if (!response.ok) throw await apiError(response);
+}
+
+export async function fetchGuestSightings(petId: string, before?: GuestSightingSummary): Promise<PageResult<GuestSightingSummary>> {
+  const params = new URLSearchParams({ petId });
+  if (before) {
+    params.set('beforeId', before.id);
+    params.set('beforeCreated', before.created_at);
+  }
+  const response = await authenticatedFetch(`/api/sightings/guest/review?${params}`, { cache: 'no-store' });
+  if (!response.ok) throw await apiError(response);
+  return response.json();
+}
+
+export async function reviewGuestSighting(petId: string, id: string, action: GuestSightingAction): Promise<GuestSightingDetails> {
+  const response = await authenticatedFetch('/api/sightings/guest/review', {
+    method: 'POST',
+    body: JSON.stringify({ petId, id, action }),
+  });
+  if (!response.ok) throw await apiError(response);
+  return response.json();
+}
+
 export async function fetchSightingsPage(petId: string, before?: Pick<Sighting, 'id' | 'createdAt'>) {
-  let query = supabase.from('sightings').select('id,message,place,lat,lng,sighted_at,photo_path,created_at')
+  let query = supabase.from('sightings').select('id,message,place,lat,lng,sighted_at,photo_path,created_at,guest_report')
     .eq('pet_id', petId).order('created_at', { ascending: false }).order('id', { ascending: false });
   if (before) {
     if (!/^[a-f0-9]{8}-(?:[a-f0-9]{4}-){3}[a-f0-9]{12}$/i.test(before.id)
@@ -39,7 +75,7 @@ export async function fetchSightingsPage(petId: string, before?: Pick<Sighting, 
   const { data, error } = await query.limit(COMPACT_PAGE_SIZE + 1);
   if (error) throw error;
   const rows = (data ?? []).map((s): Sighting => ({
-    id: s.id, message: s.message, place: s.place, lat: s.lat, lng: s.lng,
+    id: s.id, guestReport: s.guest_report, message: s.message, place: s.place, lat: s.lat, lng: s.lng,
     sightedAt: s.sighted_at, photoUrl: sightingPhotoUrl(s.photo_path), createdAt: s.created_at,
   }));
   return finalizePage(rows, 0, COMPACT_PAGE_SIZE);

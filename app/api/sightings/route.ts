@@ -3,14 +3,13 @@ import { limitIpRequest, limitUserRequest } from '../../../lib/apiRateLimit';
 import { reportError } from '../../../lib/errorTracking';
 import { NextResponse } from 'next/server';
 import { requireRequestUser } from '../../../lib/serverAuth';
-import { cleanText, InputValidationError, isInputValidationError, optionalCoordinate } from '../../../lib/inputValidation';
+import { isInputValidationError } from '../../../lib/inputValidation';
+import { readSightingDetails } from '../../../lib/sightingInput';
 import { readIdempotencyKey } from '../../../lib/idempotency';
 import { scheduleBackgroundJobs } from '../../../lib/backgroundJobs';
 import { readSightingSubmission, uploadSightingPhoto } from '../../../lib/serverSightingPhoto';
 
 export const maxDuration = 60;
-
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 interface ExistingSighting {
   id: string;
@@ -24,27 +23,9 @@ interface ExistingSighting {
   photo_path: string | null;
 }
 
-function readCoordinate(value: unknown, kind: 'lat' | 'lng') {
-  if (value != null && typeof value !== 'number') throw new InputValidationError('Газрын зургийн координат буруу байна.');
-  return optionalCoordinate(value, kind);
-}
-
-// PostgREST may round the last digits of double precision coordinates.
 function matchesCoordinate(stored: number | null | undefined, requested: number | null) {
   if (stored == null || requested == null) return stored == null && requested == null;
   return Math.abs(stored - requested) <= 1e-10;
-}
-
-function readSightedAt(value: unknown): string | null {
-  if (value == null) return null;
-  if (typeof value !== 'string' || !/^[1-9]\d{3}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(value)) {
-    throw new InputValidationError('Харсан огноо, цаг буруу байна.');
-  }
-  const date = new Date(value);
-  if (!Number.isFinite(date.getTime()) || date.toISOString() !== value || date.getTime() > Date.now()) {
-    throw new InputValidationError('Харсан огноо, цаг хүчинтэй бөгөөд ирээдүйд биш байх ёстой.');
-  }
-  return value;
 }
 
 export async function POST(request: Request) {
@@ -57,15 +38,7 @@ export async function POST(request: Request) {
     const { user, admin } = await requireRequestUser(request);
 
     const { body, photo } = await readSightingSubmission(request);
-    if (typeof body.petId !== 'string' || !UUID.test(body.petId)) return NextResponse.json({ error: 'Зарын дугаар буруу байна.' }, { status: 400 });
-    const petId = body.petId.toLowerCase();
-    const message = cleanText(typeof body.message === 'string' ? body.message : '', 1000, 'Харсан мэдээлэл', true);
-    const place = cleanText(typeof body.place === 'string' ? body.place : '', 300, 'Байршил') || null;
-
-    const lat = readCoordinate(body.lat, 'lat');
-    const lng = readCoordinate(body.lng, 'lng');
-    if ((lat === null) !== (lng === null)) throw new InputValidationError('Газрын зураг дээр байршлаа дахин сонгоно уу.');
-    const sightedAt = readSightedAt(body.sightedAt);
+    const { petId, message, place, lat, lng, sightedAt } = readSightingDetails(body);
 
     const sameRequest = (row: ExistingSighting) => row.pet_id === petId
       && row.reporter_id === user.id

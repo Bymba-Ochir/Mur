@@ -14,6 +14,7 @@ import { useSightingFeed } from '../../../lib/useSightingFeed';
 import { sightingMapPinId } from '../../../lib/sightingPresentation';
 import ReportButton from '../../../components/ReportButton';
 import SightingsList from '../../../components/SightingsList';
+import GuestSightingInbox from '../../../components/GuestSightingInbox';
 import PetIcon from '../../../components/PetIcon';
 import Button from '../../../components/ui/Button';
 import PetEditForm from '../../../components/PetEditForm';
@@ -30,12 +31,14 @@ import Icon from '../../../components/ui/icons';
 import ListingContact from '../../../components/ListingContact';
 import { getOwnListingPhone } from '../../../lib/listingContact';
 
-export default function PetDetailClient({ id }: { id: string }) {
+type PetDetailProps = { id: string; guestSightingSiteKey?: string };
+
+export default function PetDetailClient(props: PetDetailProps) {
   const { user } = useAuth();
-  return <PetDetailClientContent key={`${id}:${user?.id ?? 'guest'}`} id={id} />;
+  return <PetDetailClientContent key={`${props.id}:${user?.id ?? 'guest'}`} {...props} />;
 }
 
-function PetDetailClientContent({ id }: { id: string }) {
+function PetDetailClientContent({ id, guestSightingSiteKey }: PetDetailProps) {
   const returnPath = useListingReturnPath("/listings");
   const { user } = useAuth();
   const router = useRouter();
@@ -213,7 +216,9 @@ function PetDetailClientContent({ id }: { id: string }) {
         <ReportButton petId={pet.id} />
       </section>
 
+      {isOwner && <GuestSightingInbox petId={pet.id} resolved={Boolean(pet.resolved)} onPublicChange={feed.load} />}
       <SightingsList petId={pet.id} feed={feed} onShowOnMap={pinId => setMapFocus({ pinId })}
+        guestSiteKey={pet.createdBy && !pet.resolved ? guestSightingSiteKey : undefined}
         initialCenter={pet.lat != null && pet.lng != null ? { lat: pet.lat, lng: pet.lng } : null} />
 
       <style jsx>{`

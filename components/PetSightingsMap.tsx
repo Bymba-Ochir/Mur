@@ -26,7 +26,7 @@ export default function PetSightingsMap({ lat, lng, sightings, focus }: {
         groups.set(id, group);
       }
       group.details.push({
-        message: sighting.message,
+        message: sighting.guestReport ? t('guest_sighting_approximate') : sighting.message,
         photo: sighting.photoUrl ? { src: sighting.photoUrl, alt: t('sightings_photo_alt') } : undefined,
         lines: [
           ...(sighting.place ? [`${t('sightings_place_label')}: ${sighting.place}`] : []),

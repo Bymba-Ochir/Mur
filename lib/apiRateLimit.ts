@@ -5,7 +5,7 @@ import { checkRateLimit, getClientIp } from './rateLimit';
 import { reportError } from './errorTracking';
 
 interface Rule { limit: number; windowSeconds: number; }
-interface Policy { ip?: Rule; user?: Rule; service?: Rule; requiresUser?: boolean; }
+interface Policy { resourceIp?: Rule; ip?: Rule; user?: Rule; service?: Rule; requiresUser?: boolean; }
 const minute = (limit: number): Rule => ({ limit, windowSeconds: 60 });
 const hour = (limit: number): Rule => ({ limit, windowSeconds: 3600 });
 
@@ -23,6 +23,9 @@ export const API_RATE_POLICIES = {
   'feedback-create': { ip: hour(10) },
   sightings: { ip: minute(30), requiresUser: true },
   'sighting-new': { ip: hour(20), user: hour(10) },
+  'guest-sighting': { ip: minute(60), resourceIp: hour(20) },
+  'guest-sighting-open': { ip: minute(30) },
+  'guest-sighting-review': { ip: minute(120), user: minute(60), requiresUser: true },
   'donation-create': { ip: minute(30) },
   'donation-new': { ip: minute(5) },
   'donation-status': { ip: minute(60) },
@@ -97,6 +100,12 @@ export async function limitIpRequest(request: Request, name: ApiRatePolicy, admi
   }
   if (!policy.ip) throw new Error(`Missing IP rate policy: ${name}`);
   return consumeBudget(`${name}:ip`, getClientIp(request), policy.ip, admin);
+}
+
+export async function limitResourceIpRequest(request: Request, name: ApiRatePolicy, resourceId: string, admin?: AdminClient) {
+  const policy: Policy = API_RATE_POLICIES[name];
+  if (!policy.resourceIp) throw new Error(`Missing resource IP rate policy: ${name}`);
+  return consumeBudget(`${name}:resource-ip`, `${resourceId}:${getClientIp(request)}`, policy.resourceIp, admin);
 }
 
 /** userId must come from Supabase auth.getUser(), never request JSON/headers. */
