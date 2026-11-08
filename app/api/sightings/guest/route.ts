@@ -49,10 +49,10 @@ export async function POST(request: Request) {
     if (quota) return quota;
 
     const photoPath = photo ? await uploadSightingPhoto(admin, key, photo, GUEST_SIGHTING_PHOTO_BUCKET) : null;
-    const { data, error } = await admin.rpc('submit_guest_sighting', {
+    const { data, error } = await admin.rpc(photoPath ? 'submit_guest_sighting_with_photo_consent' : 'submit_guest_sighting', {
       target_key: key, target_pet: petId, target_message: message, target_place: place,
       target_lat: lat, target_lng: lng, target_sighted_at: sightedAt,
-      ...(photoPath ? { target_photo_path: photoPath } : {}),
+      ...(photoPath ? { target_photo_path: photoPath, allow_public_photo: body.allowPublicPhoto === true } : {}),
     });
     if (error?.message === 'PET_NOT_ACTIVE') {
       return NextResponse.json({ error: 'Идэвхтэй зар олдсонгүй.' }, { status: 404 });

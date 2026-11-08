@@ -25,6 +25,7 @@ export const API_RATE_POLICIES = {
   'sighting-new': { ip: hour(20), user: hour(10) },
   'guest-sighting': { ip: minute(60), resourceIp: hour(20) },
   'guest-sighting-open': { ip: minute(30) },
+  'guest-sighting-photo': { ip: minute(240) },
   'guest-sighting-review': { ip: minute(120), user: minute(60), requiresUser: true },
   'donation-create': { ip: minute(30) },
   'donation-new': { ip: minute(5) },

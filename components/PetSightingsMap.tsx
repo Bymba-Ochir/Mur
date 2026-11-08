@@ -37,7 +37,7 @@ export default function PetSightingsMap({ lat, lng, sightings, focus, ownerPetId
       group.details.push({
         message: sighting.guestReport ? t('guest_sighting_approximate') : sighting.message,
         photo: sighting.photoUrl ? { src: sighting.photoUrl, alt: t('sightings_photo_alt') } : undefined,
-        privatePhotoId: ownerPetId && sighting.guestReport ? sighting.id : undefined,
+        privatePhotoId: ownerPetId && sighting.guestReport && !sighting.photoUrl ? sighting.id : undefined,
         lines: [
           ...(sighting.place ? [`${t('sightings_place_label')}: ${sighting.place}`] : []),
           ...(sighting.sightedAt ? [`${t('sightings_time_seen')} ${formatter.format(new Date(sighting.sightedAt))}`] : []),

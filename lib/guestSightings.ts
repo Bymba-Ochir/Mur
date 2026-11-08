@@ -1,6 +1,6 @@
 export const GUEST_SIGHTING_CHALLENGE = 'guest_sighting';
 
-export type GuestSightingAction = 'view' | 'useful' | 'publish' | 'hide';
+export type GuestSightingAction = 'view' | 'useful' | 'publish' | 'hide' | 'publish_photo' | 'hide_photo';
 
 export interface GuestSightingSummary {
   id: string;
@@ -17,4 +17,6 @@ export interface GuestSightingDetails extends GuestSightingSummary {
   lng: number | null;
   sighted_at: string | null;
   hasPhoto: boolean;
+  photo_share_allowed: boolean;
+  photoPublic: boolean;
 }

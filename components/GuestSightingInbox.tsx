@@ -53,7 +53,7 @@ export default function GuestSightingInbox({ petId, resolved, onPublicChange, on
       const row = await reviewGuestSighting(petId, id, action);
       setDetails(row);
       setItems(current => current.map(item => item.id === id ? row : item));
-      if (action === 'publish' || action === 'hide') await onPublicChange();
+      if (action !== 'view' && action !== 'useful') await onPublicChange();
     } catch (error) {
       toast(getErrorMessage(error), 'error');
     } finally {
@@ -90,6 +90,10 @@ export default function GuestSightingInbox({ petId, resolved, onPublicChange, on
           {item.state !== 'published' && !resolved && <Button variant="ghost" size="sm" disabled={busy} onClick={() => void act(item.id, 'publish')}>
             {t('guest_sighting_publish')}
           </Button>}
+          {details.photo_share_allowed && !details.photoPublic && !resolved && <Button variant="secondary" size="sm" disabled={busy}
+            onClick={() => void act(item.id, 'publish_photo')}>{t('guest_sighting_publish_photo')}</Button>}
+          {details.photoPublic && <Button variant="ghost" size="sm" disabled={busy}
+            onClick={() => void act(item.id, 'hide_photo')}>{t('guest_sighting_hide_photo')}</Button>}
           {item.state !== 'hidden' && <Button variant="ghost" size="sm" disabled={busy} onClick={() => void act(item.id, 'hide')}>
             {t('guest_sighting_hide')}
           </Button>}

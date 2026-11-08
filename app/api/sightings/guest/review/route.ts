@@ -4,7 +4,8 @@ import { reportError } from '../../../../../lib/errorTracking';
 import { requireRequestUser } from '../../../../../lib/serverAuth';
 import { jsonBodyErrorResponse, readJsonBody } from '../../../../../lib/requestJson';
 import { SIGHTING_UUID } from '../../../../../lib/sightingInput';
-import { GUEST_SIGHTING_PHOTO_BUCKET, sightingPhotoPathParts } from '../../../../../lib/sightingPhoto';
+import { sightingPhotoPathParts } from '../../../../../lib/sightingPhoto';
+import { guestSightingPhotoResponse } from '../../../../../lib/serverGuestSightingPhoto';
 import { COMPACT_PAGE_SIZE, finalizePage } from '../../../../../lib/pagination';
 
 const CURSOR_TIME = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,6})?(?:Z|[+-]\d{2}:\d{2})$/;
@@ -31,12 +32,7 @@ async function review(request: Request) {
           target_pet: petId, target_id: photoId, target_owner: user.id,
         });
         if (error) throw error;
-        if (typeof path !== 'string' || !sightingPhotoPathParts(path)) return reply({ error: 'Зураг олдсонгүй.' }, 404);
-        const photo = await admin.storage.from(GUEST_SIGHTING_PHOTO_BUCKET).download(path);
-        if (photo.error) throw photo.error;
-        return new Response(photo.data, {
-          headers: { 'Content-Type': 'image/jpeg', 'Cache-Control': 'private, no-store', 'X-Content-Type-Options': 'nosniff' },
-        });
+        return await guestSightingPhotoResponse(admin, path);
       }
       const beforeId = params.get('beforeId');
       const beforeCreated = params.get('beforeCreated');
@@ -54,13 +50,14 @@ async function review(request: Request) {
 
     const { petId, id, action } = await readJsonBody(request, { requireJsonContentType: true });
     if (typeof petId !== 'string' || !SIGHTING_UUID.test(petId) || typeof id !== 'string' || !SIGHTING_UUID.test(id)
-      || typeof action !== 'string' || !['view', 'useful', 'publish', 'hide'].includes(action)) {
+      || typeof action !== 'string' || !['view', 'useful', 'publish', 'hide', 'publish_photo', 'hide_photo'].includes(action)) {
       return reply({ error: 'Хүсэлт буруу байна.' }, 400);
     }
-    const { data, error } = await admin.rpc('review_guest_sighting', {
+    const { data, error } = await admin.rpc('review_guest_sighting_with_photo', {
       target_pet: petId, target_owner: user.id, target_id: id, action,
     });
     if (error?.message === 'PET_NOT_ACTIVE') return reply({ error: 'Зар идэвхгүй болсон байна.' }, 409);
+    if (error?.message === 'GUEST_PHOTO_CONSENT_REQUIRED') return reply({ error: 'Зургийг нийтэд харуулах зөвшөөрөл байхгүй байна.' }, 409);
     if (error) throw error;
     if (!data) return reply({ error: 'Мэдээлэл олдсонгүй.' }, 404);
     const { photo_path: path, ...details } = data;

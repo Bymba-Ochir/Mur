@@ -178,7 +178,7 @@ test('optional sighting photo, pin and time can be published and read after relo
   await expect(plain.locator('time')).toHaveCount(1);
 });
 
-test('guest photos open on the main map for the owner only', async ({ page }) => {
+test('guest photos respect owner publication on the main map', async ({ page }) => {
   const admin = createAdminClient();
   const fixtureId = randomUUID();
   const key = randomUUID();
@@ -195,9 +195,9 @@ test('guest photos open on the main map for the owner only', async ({ page }) =>
     const image = await sharp({ create: { width: 32, height: 24, channels: 3, background: '#625bf6' } }).jpeg().toBuffer();
     const savedPhoto = await admin.storage.from(GUEST_SIGHTING_PHOTO_BUCKET).upload(photoPath, image, { contentType: 'image/jpeg' });
     if (savedPhoto.error) throw savedPhoto.error;
-    const submitted = await admin.rpc('submit_guest_sighting', {
+    const submitted = await admin.rpc('submit_guest_sighting_with_photo_consent', {
       target_key: key, target_pet: fixtureId, target_message: message, target_place: 'Private address',
-      target_lat: 47.91523, target_lng: 106.92073, target_sighted_at: null, target_photo_path: photoPath,
+      target_lat: 47.91523, target_lng: 106.92073, target_sighted_at: null, target_photo_path: photoPath, allow_public_photo: true,
     });
     expect(submitted.error).toBeNull();
     const { data: report, error } = await admin.from('guest_sightings').select('id').eq('submission_key', key).single();
@@ -231,6 +231,32 @@ test('guest photos open on the main map for the owner only', async ({ page }) =>
     await expect(popup.getByText('Зочны тэмдэглэсэн яг байршил')).toBeVisible();
     await expect(popup.getByText(message)).toBeVisible();
     await expect.poll(() => popup.getByRole('img', { name: photoAlt }).evaluate((img: HTMLImageElement) => img.naturalWidth)).toBe(32);
+
+    const publicPhoto = `/api/sightings/guest/photo?petId=${fixtureId}&id=${report.id}`;
+    expect((await page.request.get(publicPhoto)).status()).toBe(404);
+    await inbox.getByRole('button', { name: 'Зурагтай нь нийтлэх' }).click();
+    await expect(inbox.getByRole('button', { name: 'Зургийг нийтэд харуулахгүй болгох' })).toBeEnabled();
+
+    const viewer = await page.context().browser()!.newPage({ baseURL: new URL(page.url()).origin });
+    try {
+      await viewer.route('https://tile.openstreetmap.org/**', route => route.abort());
+      await viewer.goto(`/pets/${fixtureId}`);
+      const visitorMap = viewer.locator('.map-section .location-map');
+      await visitorMap.locator('img[src="/sighting-map-marker.svg"]').click();
+      const visitorPopup = visitorMap.locator('.leaflet-popup-content');
+      await expect.poll(() => visitorPopup.getByRole('img', { name: photoAlt }).evaluate((img: HTMLImageElement) => img.naturalWidth)).toBe(32);
+      await expect(visitorPopup.getByText(message)).toHaveCount(0);
+      expect((await viewer.request.get(publicPhoto)).status()).toBe(200);
+      await inbox.getByRole('button', { name: 'Зургийг нийтэд харуулахгүй болгох' }).click();
+      await expect(inbox.getByRole('button', { name: 'Зурагтай нь нийтлэх' })).toBeEnabled();
+      expect((await viewer.request.get(publicPhoto)).status()).toBe(404);
+    } finally {
+      await viewer.close();
+    }
+
+    await page.getByRole('button', { name: 'Би харсан', exact: true }).click();
+    await expect(page.locator('#sighting-form')).toBeVisible();
+    await expect(page.locator('#sighting-form')).toBeFocused();
   } finally {
     await admin.from('pets').delete().eq('id', fixtureId);
     await admin.storage.from(GUEST_SIGHTING_PHOTO_BUCKET).remove([photoPath]);

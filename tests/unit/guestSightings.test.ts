@@ -1,15 +1,16 @@
 // @vitest-environment node
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { POST } from '../../app/api/sightings/guest/route';
+import { GET as getPublishedPhoto } from '../../app/api/sightings/guest/photo/route';
 import { GET as reviewGet, POST as review } from '../../app/api/sightings/guest/review/route';
 import sharp from 'sharp';
 
-const { rpc, schedule, limitResourceIpRequest, from, insert, storageFrom, upload, download } = vi.hoisted(() => ({
-  rpc: vi.fn(), schedule: vi.fn(), limitResourceIpRequest: vi.fn(),
+const { rpc, schedule, limitIpRequest, limitResourceIpRequest, from, insert, storageFrom, upload, download } = vi.hoisted(() => ({
+  rpc: vi.fn(), schedule: vi.fn(), limitIpRequest: vi.fn(), limitResourceIpRequest: vi.fn(),
   from: vi.fn(), insert: vi.fn(), storageFrom: vi.fn(), upload: vi.fn(), download: vi.fn(),
 }));
 vi.mock('../../lib/supabaseAdmin', () => ({ createAdminClient: () => ({ rpc, from, storage: { from: storageFrom } }) }));
-vi.mock('../../lib/apiRateLimit', () => ({ limitIpRequest: async () => null, limitUserRequest: async () => null, limitResourceIpRequest }));
+vi.mock('../../lib/apiRateLimit', () => ({ limitIpRequest, limitUserRequest: async () => null, limitResourceIpRequest }));
 vi.mock('../../lib/backgroundJobs', () => ({ scheduleBackgroundJobs: schedule }));
 vi.mock('../../lib/errorTracking', () => ({ reportError: vi.fn() }));
 vi.mock('../../lib/serverAuth', () => ({
@@ -75,7 +76,7 @@ it('uploads a valid guest image to private storage only after CAPTCHA passes', a
   const png = await sharp({ create: { width: 2, height: 2, channels: 3, background: 'red' } }).png().toBuffer();
   const request = () => {
     const form = new FormData();
-    form.set('details', JSON.stringify({ petId, message: 'Seen', turnstileToken: 'token' }));
+    form.set('details', JSON.stringify({ petId, message: 'Seen', turnstileToken: 'token', allowPublicPhoto: true }));
     form.set('photo', new Blob([new Uint8Array(png)], { type: 'image/png' }), 'test.png');
     return new Request('https://mur.example/api/sightings/guest', {
       method: 'POST', headers: { 'Idempotency-Key': key }, body: form,
@@ -93,7 +94,7 @@ it('uploads a valid guest image to private storage only after CAPTCHA passes', a
   expect(path).toMatch(new RegExp(`^${key}/`));
   expect((await sharp(bytes).metadata()).format).toBe('jpeg');
   expect(insert).toHaveBeenCalledWith(expect.objectContaining({ payload: { guestSightingPhotoPath: path } }));
-  expect(rpc).toHaveBeenCalledWith('submit_guest_sighting', expect.objectContaining({ target_photo_path: path }));
+  expect(rpc).toHaveBeenCalledWith('submit_guest_sighting_with_photo_consent', expect.objectContaining({ target_photo_path: path, allow_public_photo: true }));
 });
 
 it('requires listing ownership on each private image request', async () => {
@@ -115,6 +116,23 @@ it('requires listing ownership on each private image request', async () => {
   });
 });
 
+it('serves only published photo bytes and never redirects to private storage', async () => {
+  const request = new Request(`https://mur.example/api/sightings/guest/photo?petId=${petId}&id=${key}`);
+  rpc.mockResolvedValue({ data: null, error: null });
+  expect((await getPublishedPhoto(request)).status).toBe(404);
+  expect(download).not.toHaveBeenCalled();
+
+  const path = `${key}/${petId}/${'b'.repeat(64)}.jpg`;
+  rpc.mockResolvedValue({ data: path, error: null });
+  download.mockResolvedValue({ data: new Blob(['image'], { type: 'image/jpeg' }), error: null });
+  const response = await getPublishedPhoto(request);
+  expect(response.status).toBe(200);
+  expect(response.headers.get('Cache-Control')).toContain('no-store');
+  expect(response.headers.get('Location')).toBeNull();
+  expect(await response.text()).toBe('image');
+  expect(rpc).toHaveBeenLastCalledWith('read_published_guest_sighting_photo', { target_pet: petId, target_id: key });
+});
+
 it('uses the verified identity for moderation and disables caching of private details', async () => {
   rpc.mockResolvedValue({ data: null, error: null });
   const response = await review(new Request('https://mur.example/api/sightings/guest/review', {
@@ -123,7 +141,7 @@ it('uses the verified identity for moderation and disables caching of private de
   }));
   expect(response.status).toBe(404);
   expect(response.headers.get('Cache-Control')).toBe('private, no-store');
-  expect(rpc).toHaveBeenCalledExactlyOnceWith('review_guest_sighting', {
+  expect(rpc).toHaveBeenCalledExactlyOnceWith('review_guest_sighting_with_photo', {
     target_pet: petId, target_id: key, target_owner: 'verified-owner', action: 'publish',
   });
 });

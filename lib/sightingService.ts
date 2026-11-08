@@ -38,11 +38,12 @@ export async function createGuestSighting(
   key: string,
   turnstileToken: string,
   photo?: File,
+  allowPublicPhoto = false,
 ) {
   const response = await fetch('/api/sightings/guest', {
     method: 'POST',
     headers: photo ? idempotencyHeaders(key) : { 'Content-Type': 'application/json', ...idempotencyHeaders(key) },
-    body: sightingRequestBody({ petId, ...details, turnstileToken }, photo),
+    body: sightingRequestBody({ petId, ...details, turnstileToken, allowPublicPhoto }, photo),
   });
   if (!response.ok) throw await apiError(response);
 }
@@ -76,7 +77,7 @@ export async function fetchGuestSightingPhoto(petId: string, id: string, signal:
 }
 
 export async function fetchSightingsPage(petId: string, before?: Pick<Sighting, 'id' | 'createdAt'>) {
-  let query = supabase.from('sightings').select('id,message,place,lat,lng,sighted_at,photo_path,created_at,guest_report')
+  let query = supabase.from('sightings').select('id,message,place,lat,lng,sighted_at,photo_path,created_at,guest_report,guest_photo_public')
     .eq('pet_id', petId).order('created_at', { ascending: false }).order('id', { ascending: false });
   if (before) {
     if (!/^[a-f0-9]{8}-(?:[a-f0-9]{4}-){3}[a-f0-9]{12}$/i.test(before.id)
@@ -88,7 +89,11 @@ export async function fetchSightingsPage(petId: string, before?: Pick<Sighting, 
   if (error) throw error;
   const rows = (data ?? []).map((s): Sighting => ({
     id: s.id, guestReport: s.guest_report, message: s.message, place: s.place, lat: s.lat, lng: s.lng,
-    sightedAt: s.sighted_at, photoUrl: sightingPhotoUrl(s.photo_path), createdAt: s.created_at,
+    sightedAt: s.sighted_at,
+    photoUrl: s.guest_report && s.guest_photo_public
+      ? `/api/sightings/guest/photo?${new URLSearchParams({ petId, id: s.id })}`
+      : sightingPhotoUrl(s.photo_path),
+    createdAt: s.created_at,
   }));
   return finalizePage(rows, 0, COMPACT_PAGE_SIZE);
 }

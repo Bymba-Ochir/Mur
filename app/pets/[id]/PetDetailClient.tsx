@@ -1,6 +1,6 @@
 'use client';
 import { useListingReturnPath } from '../../../lib/useListingFilters';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useCurrentLocation } from '../../../lib/useCurrentLocation';
 import { fetchPetById, markResolved, updatePet, deletePet } from '../../../lib/petService';
 import { useAuth } from '../../../lib/useAuth';
@@ -13,7 +13,7 @@ import type { LocationMapFocus } from '../../../components/LocationMap';
 import { useSightingFeed } from '../../../lib/useSightingFeed';
 import { guestSightingMapPinId, sightingMapPinId } from '../../../lib/sightingPresentation';
 import ReportButton from '../../../components/ReportButton';
-import SightingsList from '../../../components/SightingsList';
+import SightingsList, { type SightingsFormHandle } from '../../../components/SightingsList';
 import GuestSightingInbox from '../../../components/GuestSightingInbox';
 import type { GuestSightingDetails } from '../../../lib/guestSightings';
 import PetIcon from '../../../components/PetIcon';
@@ -47,6 +47,7 @@ function PetDetailClientContent({ id, guestSightingSiteKey }: PetDetailProps) {
   const { t, lang } = useLanguage();
   const [pet, setPet] = useState<Pet | null>(null);
   const feed = useSightingFeed(pet?.id);
+  const sightingsForm = useRef<SightingsFormHandle>(null);
   const [mapFocus, setMapFocus] = useState<LocationMapFocus | null>(null);
   const [privateSighting, setPrivateSighting] = useState<GuestSightingDetails | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -131,6 +132,7 @@ function PetDetailClientContent({ id, guestSightingSiteKey }: PetDetailProps) {
   const typeLabel = pet.type === 'Нохой' ? t('type_dog') : pet.type === 'Муур' ? t('type_cat') : t('type_other');
   const title = `${pet.status === 'lost' ? t('nav_lost') : t('nav_found')} ${typeLabel}${pet.name ? ' — ' + pet.name : ''}`;
   const isOwner = user && pet.createdBy && user.id === pet.createdBy;
+  const guestReportKey = pet.createdBy && !pet.resolved ? guestSightingSiteKey : undefined;
 
   return (
     <div className="page-shell page-shell--detail">
@@ -147,7 +149,14 @@ function PetDetailClientContent({ id, guestSightingSiteKey }: PetDetailProps) {
         </div>
       )}
 
-      <a className="contact-shortcut" href="#listing-contact">{t('detail_contact_heading')}</a>
+      <div className="detail-entry-actions">
+        <a className="contact-shortcut" href="#listing-contact">{t('detail_contact_heading')}</a>
+        {!pet.resolved && (user || guestReportKey) && <Button variant="primary" aria-controls="sighting-form"
+          onClick={() => sightingsForm.current?.open()}>
+          <Icon name="pin" size={18} aria-hidden="true" /> {t('sightings_title')}
+        </Button>}
+        {!user && guestReportKey && <p>{t('sightings_guest_hint')}</p>}
+      </div>
       <div className="detail-grid">
         <figure className={`detail-media${pet.resolved ? ' is-resolved' : ''}`}>
           <div className="media-frame">
@@ -213,11 +222,11 @@ function PetDetailClientContent({ id, guestSightingSiteKey }: PetDetailProps) {
         </section>
       )}
 
-      <SightingsList petId={pet.id} feed={feed} onShowOnMap={pinId => {
+      <SightingsList ref={sightingsForm} petId={pet.id} feed={feed} onShowOnMap={pinId => {
           setPrivateSighting(null);
           setMapFocus({ pinId });
         }}
-        guestSiteKey={pet.createdBy && !pet.resolved ? guestSightingSiteKey : undefined}
+        guestSiteKey={guestReportKey}
         initialCenter={pet.lat != null && pet.lng != null ? { lat: pet.lat, lng: pet.lng } : null}
         ownerPanel={isOwner ? <GuestSightingInbox petId={pet.id} resolved={Boolean(pet.resolved)}
           onPublicChange={feed.load} onShowOnMap={report => {
@@ -234,6 +243,9 @@ function PetDetailClientContent({ id, guestSightingSiteKey }: PetDetailProps) {
       <style jsx>{`
         .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
         .detail-back { margin-bottom: var(--sp-3); }
+        .detail-entry-actions { display:flex; flex-wrap:wrap; align-items:center; gap:var(--sp-2); margin-bottom:var(--sp-4); }
+        .detail-entry-actions .contact-shortcut { margin-bottom:0; }
+        .detail-entry-actions p { width:100%; color:var(--text-secondary); font-size:var(--text-xs); }
         .resolved-banner {
           display: flex; align-items: center; gap: var(--sp-2); min-height: 48px;
           margin-bottom: var(--sp-4); padding: var(--sp-2) var(--sp-3);
