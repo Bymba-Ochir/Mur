@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { VET_CLINICS } from '../../lib/vetClinics';
-import { CLINIC_AREAS, findNearestClinics, isMappedClinic, searchClinics } from '../../lib/clinicService';
+import { CLINIC_AREAS, clinicMapSearchUrl, findNearestClinics, isMappedClinic, searchClinics } from '../../lib/clinicService';
 
 function source(path: string) {
   return readFileSync(resolve(process.cwd(), path), 'utf8');
@@ -25,14 +25,19 @@ describe('veterinary clinic directory', () => {
       expect(clinic.phones?.length).toBeGreaterThan(0);
       expect(clinic.phones).toContain(clinic.phone);
       expect(clinic.phones?.every((phone) => /^\d{8}$/.test(phone))).toBe(true);
-      if (isMappedClinic(clinic)) {
-        expect(clinic.mapUrl).toMatch(/^https:\/\/www\.google\.com\/maps\/place\//);
+      if (!clinic.source) {
+        expect(clinic.location.mapUrl).toMatch(/^https:\/\/www\.google\.com\/maps\/place\//);
         expect(clinic.verifiedAt).toMatch(/^\d{4}-\d{2}-\d{2}$/);
       } else {
         expect(clinic.source).toMatchObject({ publishedAt: '2026-08-17', url: 'https://aztaisavar.mn/mn' });
-        expect(clinic).not.toHaveProperty('lat');
-        expect(clinic).not.toHaveProperty('lng');
         expect(clinic.serviceDetailsVerified).toBe(false);
+      }
+      if (isMappedClinic(clinic)) {
+        expect(clinic.location.lat).toBeGreaterThan(41);
+        expect(clinic.location.lat).toBeLessThan(53);
+        expect(clinic.location.lng).toBeGreaterThan(87);
+        expect(clinic.location.lng).toBeLessThan(120);
+        expect(clinic.location.mapUrl).toMatch(/^https:\/\//);
       }
     }
   });
@@ -45,6 +50,17 @@ describe('veterinary clinic directory', () => {
     expect(searchClinics({ query: '9953-9357' }).map((clinic) => clinic.id)).toEqual(['khovd-pet-clinic']);
     expect(searchClinics({ query: '76001950' }).map((clinic) => clinic.id)).toEqual(['sos-pet-care']);
     expect(findNearestClinics(47.9184, 106.9177, searchClinics({ district: 'Дархан-Уул' }))).toEqual([]);
+  });
+
+  it('includes sourced clinic pins in nearby results and builds a named search for unpinned clinics', () => {
+    const closest = findNearestClinics(47.9262375, 106.9117031, VET_CLINICS, 1);
+    expect(closest).toMatchObject([{ id: 'city-paws', distanceKm: 0, source: { publishedAt: '2026-08-17' } }]);
+
+    const [vetmon] = searchClinics({ district: 'Дархан-Уул', query: 'Ветмон' });
+    expect(isMappedClinic(vetmon)).toBe(false);
+    const url = new URL(clinicMapSearchUrl(vetmon));
+    expect(url.origin).toBe('https://www.google.com');
+    expect(url.searchParams.get('query')).toBe('Ветмон мал эмнэлэг, Хуучин Дархан, 18-р буудлын чанх ард, Дархан-Уул, Монгол');
   });
 
   it('only marks documented detailed services as verified', () => {
@@ -65,7 +81,7 @@ describe('veterinary clinic directory', () => {
 
     expect(card).toContain('className="phone-list"');
     expect(card).toContain('href={`tel:${phone}`}');
-    expect(card).toContain('href={clinic.mapUrl}');
+    expect(card).toContain('href={clinic.location?.mapUrl ?? clinicMapSearchUrl(clinic)}');
     expect(card).toContain('href={clinic.websiteUrl}');
     expect(card).not.toMatch(/revealPhone|showPhone|setShowPhone/);
     expect(list).toContain("'Рентген'");

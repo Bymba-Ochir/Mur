@@ -10,7 +10,12 @@ clinicDistricts.delete(CITY);
 export const CLINIC_AREAS = [CITY, ...[...clinicDistricts].sort((a, b) => a.localeCompare(b, 'mn'))];
 
 export function isMappedClinic(clinic: VetClinic): clinic is MappedVetClinic {
-  return !clinic.source;
+  return clinic.location !== undefined;
+}
+
+export function clinicMapSearchUrl(clinic: VetClinic): string {
+  const query = `${clinic.name}, ${clinic.address}, ${clinic.district}, Монгол`;
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
 }
 
 /**
@@ -41,7 +46,7 @@ export function findNearestClinics(
 ): ClinicWithDistance[] {
   return clinics
     .filter(isMappedClinic)
-    .map((c) => ({ ...c, distanceKm: haversineKm(lat, lng, c.lat, c.lng) }))
+    .map((c) => ({ ...c, distanceKm: haversineKm(lat, lng, c.location.lat, c.location.lng) }))
     .sort((a, b) => a.distanceKm - b.distanceKm)
     .slice(0, limit);
 }

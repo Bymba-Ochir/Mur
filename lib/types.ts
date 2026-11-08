@@ -177,16 +177,21 @@ interface VetClinicDetails {
   websiteUrl?: string;
 }
 
-export interface MappedVetClinic extends VetClinicDetails {
-  source?: never;
+interface ClinicLocation {
   lat: number;
   lng: number;
   mapUrl: string;
+}
+
+export interface CheckedVetClinic extends VetClinicDetails {
+  source?: never;
+  location: ClinicLocation;
   verifiedAt: string;
   serviceDetailsVerified: boolean;
 }
 
 export interface ListedVetClinic extends VetClinicDetails {
+  location?: ClinicLocation;
   source: {
     publisher: string;
     publishedAt: string;
@@ -195,7 +200,8 @@ export interface ListedVetClinic extends VetClinicDetails {
   serviceDetailsVerified: false;
 }
 
-export type VetClinic = MappedVetClinic | ListedVetClinic;
+export type VetClinic = CheckedVetClinic | ListedVetClinic;
+export type MappedVetClinic = VetClinic & { location: ClinicLocation };
 
 export type AppointmentStatus = 'pending' | 'confirmed' | 'completed' | 'cancelled';
 

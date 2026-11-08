@@ -2,7 +2,7 @@
 import { useLanguage } from '../lib/i18n';
 import Button from './ui/Button';
 import Icon from './ui/icons';
-import { distanceLabel } from '../lib/clinicService';
+import { clinicMapSearchUrl, distanceLabel } from '../lib/clinicService';
 import type { VetClinic, VetService } from '../lib/types';
 import type { TranslationKey } from '../lib/i18n';
 
@@ -35,11 +35,11 @@ export default function ClinicCard({ clinic, distanceKm, selected, onSelect, onB
             <time dateTime={clinic.source.publishedAt}>{clinic.source.publishedAt}</time>
           </span>
         ) : (
-          <>
-            <span><Icon name="check" size={13} />{t('clinics_verified')}: {clinic.verifiedAt}</span>
-            <a href={clinic.mapUrl} target="_blank" rel="noopener noreferrer"><Icon name="pin" size={14} />{t('clinics_open_maps')}</a>
-          </>
+          <span><Icon name="check" size={13} />{t('clinics_verified')}: {clinic.verifiedAt}</span>
         )}
+        <a href={clinic.location?.mapUrl ?? clinicMapSearchUrl(clinic)} target="_blank" rel="noopener noreferrer">
+          <Icon name="pin" size={14} />{t(clinic.location ? 'clinics_open_maps' : 'clinics_search_maps')}
+        </a>
         {clinic.websiteUrl && <a href={clinic.websiteUrl} target="_blank" rel="noopener noreferrer"><Icon name="externalLink" size={14} />{t('clinics_open_page')}</a>}
       </div>
       <div className="clinic-actions">

@@ -12,7 +12,7 @@ import LoginModal from './LoginModal';
 import EmptyState from './ui/EmptyState';
 import Button from './ui/Button';
 import Icon from './ui/icons';
-import type { MappedVetClinic, VetClinic, VetService } from '../lib/types';
+import type { CheckedVetClinic, VetClinic, VetService } from '../lib/types';
 import type { TranslationKey } from '../lib/i18n';
 
 const SERVICE_OPTIONS: VetService[] = ['Үзлэг', 'Вакцин', 'Мэс засал', 'Шүд арчилгаа', 'Рентген', 'ЭХО', 'Цусны шинжилгээ', 'Микрочип', 'Туулгалт', 'Арчилгаа'];
@@ -30,7 +30,7 @@ export default function VetClinicList({ embedded = false }: { embedded?: boolean
   const { district, service, query } = filters;
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const [userCoords, setUserCoords] = useState<[number, number] | null>(null); const [locating, setLocating] = useState(false); const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [bookingClinic, setBookingClinic] = useState<MappedVetClinic | null>(null); const [showLogin, setShowLogin] = useState(false); const [apptRefreshKey, setApptRefreshKey] = useState(0);
+  const [bookingClinic, setBookingClinic] = useState<CheckedVetClinic | null>(null); const [showLogin, setShowLogin] = useState(false); const [apptRefreshKey, setApptRefreshKey] = useState(0);
   const hasFilters = Boolean(district || service || query || userCoords);
   const filtered = useMemo<(VetClinic & { distanceKm?: number })[]>(() => {
     const result = searchClinics(filters);
@@ -51,7 +51,7 @@ export default function VetClinicList({ embedded = false }: { embedded?: boolean
     setLocating(true); navigator.geolocation.getCurrentPosition((position) => { setUserCoords([position.coords.latitude, position.coords.longitude]); setVisibleCount(PAGE_SIZE); setSelectedId(null); setLocating(false); }, () => { setLocating(false); showToast(t('clinics_nearby_none'), 'error'); }, { timeout: 10000, maximumAge: 60000 });
   }
   function resetFilters() { updateFilters(DEFAULT_FILTERS); setUserCoords(null); }
-  function handleBook(clinic: MappedVetClinic) { if (!user) { setShowLogin(true); return; } setBookingClinic(clinic); }
+  function handleBook(clinic: CheckedVetClinic) { if (!user) { setShowLogin(true); return; } setBookingClinic(clinic); }
 
   return (
     <div className={embedded ? 'clinic-embedded' : 'page-shell'}>
@@ -83,7 +83,7 @@ export default function VetClinicList({ embedded = false }: { embedded?: boolean
                   distanceKm={clinic.distanceKm}
                   selected={selectedId === clinic.id}
                   onSelect={isMappedClinic(clinic) ? () => setSelectedId(selectedId === clinic.id ? null : clinic.id) : undefined}
-                  onBook={isMappedClinic(clinic) ? () => handleBook(clinic) : undefined}
+                  onBook={!clinic.source ? () => handleBook(clinic) : undefined}
                 />
               ))}
               {visibleCount < filtered.length && (

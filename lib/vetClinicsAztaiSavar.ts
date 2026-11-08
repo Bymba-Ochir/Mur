@@ -12,6 +12,8 @@ const entries: (Omit<ListedVetClinic, 'source' | 'serviceDetailsVerified' | 'pho
   {
     id: 'city-paws', name: 'City Paws', district: 'Чингэлтэй',
     address: '5-р сургуулийн зүүн хойно, Чингэлтэй дүүргийн нийгмийн даатгалын хэлтсийн зүүн талд',
+    // Cybo дахь 9907 8300 дугаартай бүртгэлийн WWG6+FMW Plus Code.
+    location: { lat: 47.9262375, lng: 106.9117031, mapUrl: 'https://plus.codes/8PV8WWG6+FMW' },
     phones: ['99078300'], services: [],
     hours: 'Өдөр бүр 10:00–19:00', hoursEn: 'Daily 10:00–19:00',
   },
@@ -25,6 +27,7 @@ const entries: (Omit<ListedVetClinic, 'source' | 'serviceDetailsVerified' | 'pho
   {
     id: 'jonon-vet', name: 'Жонон', district: 'Чингэлтэй',
     address: 'Баянбүрдийн тойрог, авто баазын байр, Чикаго клубийн зүүн талд',
+    location: { lat: 47.9279117, lng: 106.907311, mapUrl: 'https://loca.mn/business/jonon-mal-emneleg-41pkf9' },
     phones: ['77776680'], services: ['Цусны шинжилгээ', 'Рентген'],
     hours: 'Ажлын өдрүүдэд 09:00–19:00, амралтын өдрүүдэд 10:00–18:00',
     hoursEn: 'Weekdays 09:00–19:00, weekends 10:00–18:00',
@@ -34,6 +37,7 @@ const entries: (Omit<ListedVetClinic, 'source' | 'serviceDetailsVerified' | 'pho
   {
     id: 'amar-vet', name: 'Амар', district: 'Улаанбаатар',
     address: 'Баруун 4 зам, Өгөөж ХХК-ийн урд, 39-р байр, 1-р орц',
+    location: { lat: 47.912716, lng: 106.8978847, mapUrl: 'https://www.openstreetmap.org/node/3907862259' },
     phones: ['91151471', '96651195'], services: ['Цусны шинжилгээ'],
     hours: 'Өдөр бүр 09:00–18:00', hoursEn: 'Daily 09:00–18:00',
   },
@@ -44,8 +48,9 @@ const entries: (Omit<ListedVetClinic, 'source' | 'serviceDetailsVerified' | 'pho
     hours: 'Өдөр бүр 09:00–19:00', hoursEn: 'Daily 09:00–19:00',
   },
   {
-    id: 'sonor-vet', name: 'Сонор', district: 'Улаанбаатар',
-    address: 'Хавдар судлалын үндэсний төвийн хашаан дотор, баруун талд',
+    id: 'sonor-vet', name: 'Сонор', district: 'Баянзүрх',
+    address: '14-р хороо, Нам Ян Жүгийн гудамж 192, Баясах трейд төвийн урд',
+    location: { lat: 47.9165001, lng: 106.9456405, mapUrl: 'https://loca.mn/business/sonor-amtny-emneleg-vg0wmv' },
     phones: ['89070547', '91170547'], services: ['Цусны шинжилгээ'],
     hours: 'Даваа, Лхагва–Баасан 09:00–18:00, Бямба–Ням 09:00–17:00, Мягмар амарна',
     hoursEn: 'Mon, Wed–Fri 09:00–18:00, Sat–Sun 09:00–17:00, Tue closed',
@@ -53,13 +58,15 @@ const entries: (Omit<ListedVetClinic, 'source' | 'serviceDetailsVerified' | 'pho
   {
     id: 'bayandemberel-vet', name: 'Баяндэмбэрэл жижиг амьтны эмнэлэг', district: 'Баянзүрх',
     address: '13-р хороо, Амгалан амаржих газрын хойно',
+    location: { lat: 47.9155065, lng: 106.9673637, mapUrl: 'https://loca.mn/business/bayandemberel-3mqogp' },
     phones: ['72005656'], services: [],
     hours: 'Даваа–Баасан 09:00–18:00, Бямба 10:00–16:00, Ням амарна',
     hoursEn: 'Mon–Fri 09:00–18:00, Sat 10:00–16:00, Sun closed',
   },
   {
     id: 'sos-animal-health', name: 'SOS Animal Health', district: 'Баянгол',
-    address: '11-р хороо, Хувьсгалчдын Д 1-15 тоот',
+    address: '11-р хороо, Зурагтын зам 150',
+    location: { lat: 47.9312696, lng: 106.8866582, mapUrl: 'https://loca.mn/business/sos-mal-emneleg-bzqzi2' },
     phones: ['70111950', '70171950', '89001950', '80001950'], services: ['Рентген'],
     hours: 'Өдөр бүр 09:00–19:00', hoursEn: 'Daily 09:00–19:00',
   },
@@ -85,6 +92,7 @@ const entries: (Omit<ListedVetClinic, 'source' | 'serviceDetailsVerified' | 'pho
   {
     id: 'dolgoon-vet', name: 'Дөлгөөн', district: 'Сонгинохайрхан',
     address: '16-р хороо, 26-р байр, хөндлөн цагаан 9 давхар байрны зүүн талд',
+    location: { lat: 47.9127461, lng: 106.8386608, mapUrl: 'https://mn.near-place.com/dlgn-mal-emneleg-ulaanbaatar' },
     phones: ['88681575', '99217946'], services: ['Цусны шинжилгээ'],
     hours: 'Өдөр бүр 09:00–18:00', hoursEn: 'Daily 09:00–18:00',
   },
