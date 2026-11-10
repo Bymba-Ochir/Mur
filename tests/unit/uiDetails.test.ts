@@ -16,7 +16,7 @@ describe('page detail safeguards', () => {
   it('keeps primary navigation available at medium desktop widths', () => {
     const navbar = source('components/Navbar.tsx');
     const globals = source('app/globals.css');
-    expect(navbar).toContain('@media (min-width: 1041px) and (max-width: 1180px)');
+    expect(globals).toContain('@media (width > 1040px) and (width <= 1180px)');
     expect(navbar).not.toContain('@media (max-width: 1180px) {\n          .nav-links { display: none; }');
     expect(navbar).not.toContain('<header className="navbar">');
     expect(globals).toContain('.navbar-wrap .nav-link');

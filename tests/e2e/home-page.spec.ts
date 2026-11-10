@@ -2,6 +2,7 @@ import { test, expect } from './fixtures';
 
 const scenarios = [
   { width: 1440, lang: 'mn', theme: 'light', motion: 'no-preference' },
+  { width: 1041, lang: 'en', theme: 'dark', motion: 'reduce' },
   { width: 768, lang: 'en', theme: 'dark', motion: 'reduce' },
   { width: 390, lang: 'mn', theme: 'light', motion: 'reduce' },
   { width: 320, lang: 'en', theme: 'dark', motion: 'no-preference' },
@@ -36,12 +37,34 @@ for (const scenario of scenarios) {
       expect((await action.boundingBox())!.height).toBeGreaterThanOrEqual(44 - 0.01);
     }
 
-    // A personal destination stays discoverable in navigation, outside public services.
     await expect(page.locator('.home a[href="/my-pets"]')).toHaveCount(0);
-    await page.locator('.mobile-menu-btn').click();
-    await expect(page.locator('.mobile-nav a[href="/my-pets"]')).toBeVisible();
-    await page.keyboard.press('Escape');
-    await expect(page.locator('.mobile-dropdown')).toHaveCount(0);
+    const mobileMenu = page.locator('.mobile-menu-btn');
+    const services = page.locator('.services-trigger');
+    if (scenario.width > 1040) {
+      await expect(mobileMenu).toBeHidden();
+      await services.click();
+      await expect(services).toHaveAttribute('aria-expanded', 'true');
+      const links = page.locator('#nav-services a');
+      for (const [index, href] of ['/adoptions', '/sitting', '/clinics'].entries()) {
+        await expect(links.nth(index)).toHaveAttribute('href', href);
+        await expect(links.nth(index)).toBeVisible();
+      }
+      await expect(links).toHaveCount(3);
+      await expect(page.locator('.mobile-backdrop')).toHaveCount(0);
+      await expect(page.locator('body')).not.toHaveCSS('overflow', 'hidden');
+      await page.keyboard.press('Tab');
+      await expect(links.first()).toBeFocused();
+      await page.keyboard.press('Escape');
+      await expect(services).toHaveAttribute('aria-expanded', 'false');
+      await expect(services).toBeFocused();
+    } else {
+      await expect(services).toBeHidden();
+      await mobileMenu.click();
+      await expect(page.locator('.mobile-nav a[href="/my-pets"]')).toBeVisible();
+      await page.keyboard.press('Escape');
+      await expect(page.locator('.mobile-dropdown')).toHaveCount(0);
+      await expect(mobileMenu).toBeFocused();
+    }
 
     const steps = page.locator('.how ol > li');
     await expect(steps).toHaveCount(3);

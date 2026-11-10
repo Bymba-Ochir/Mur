@@ -48,19 +48,21 @@ test.describe('Үндсэн навигаци', () => {
 });
 
 test.describe('Хэл, theme сэлгэх', () => {
-  test('EN/MN товч дарахад текст солигдоно', async ({ page }) => {
+  test('EN/MN товч дарахад текст солигдоно', async ({ page, isMobile }) => {
     await page.goto('/');
     const heroBefore = await page.locator('h1').textContent();
-    await page.locator('.mobile-menu-btn').click();
-    await page.locator('.lang-btn').last().click();
+    if (isMobile) await page.locator('.mobile-menu-btn').click();
+    const tools = page.locator(isMobile ? '.mobile-menu-row' : '.nav-tools');
+    await tools.locator('.lang-btn').click();
     await expect(page.locator('h1')).not.toHaveText(heroBefore || '');
   });
 
-  test('Dark mode товч дарахад html[data-theme] солигдоно', async ({ page }) => {
+  test('Dark mode товч дарахад html[data-theme] солигдоно', async ({ page, isMobile }) => {
     await page.goto('/');
     const before = await page.locator('html').getAttribute('data-theme');
-    await page.locator('.mobile-menu-btn').click();
-    await page.locator('.theme-btn').last().click();
+    if (isMobile) await page.locator('.mobile-menu-btn').click();
+    const tools = page.locator(isMobile ? '.mobile-menu-row' : '.nav-tools');
+    await tools.locator('.theme-btn').click();
     const after = await page.locator('html').getAttribute('data-theme');
     expect(after).not.toBe(before);
   });
@@ -101,8 +103,12 @@ test.describe('UI regression', () => {
     test.skip(!isMobile, 'mobile project only');
     await page.goto('/');
     await page.locator('.mobile-menu-btn').click();
-    const lost = page.locator('.mobile-nav-link').first();
+    const menu = page.locator('.mobile-nav');
+    const lost = menu.locator('a[href="/report-lost"]');
+    const found = menu.locator('a[href="/report-found"]');
     await expect(lost).toBeVisible();
+    await expect(found).toBeVisible();
+    expect((await found.boundingBox())!.y).toBeGreaterThan((await lost.boundingBox())!.y);
     await expect(lost).toHaveCSS('display', 'flex');
     expect((await lost.boundingBox())?.height).toBeGreaterThanOrEqual(40);
   });
