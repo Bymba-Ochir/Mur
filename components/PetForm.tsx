@@ -22,16 +22,30 @@ import { usePetDraft } from '../lib/usePetDraft';
 type FieldErrors = Partial<Record<'color' | 'place' | 'phone', string>>;
 
 export default function PetForm({ status }: { status: PetStatus }) {
-  const { lang } = useLanguage();
+  const { lang, t } = useLanguage();
   const { user } = useAuth();
+  const lost = status === 'lost';
   return (
-    <AuthRequired
-      title={lang === 'mn' ? 'Зар оруулахын тулд нэвтэрнэ үү' : 'Sign in to create a report'}
-      description={lang === 'mn' ? 'Нэвтэрсний дараа энэ хуудаснаас зургаа оруулж, мэдээллээ бөглөнө.' : 'After signing in, continue on this page to add photos and details.'}
-      icon={<Icon name="lock" size={28} />}
-    >
-      <AuthenticatedPetForm key={`${user?.id}:${status}`} status={status} userId={user?.id ?? ''} />
-    </AuthRequired>
+    <div className="page-shell">
+      <header className="report-header">
+        <p className="report-type">{t(lost ? 'report_lost_eyebrow' : 'report_found_eyebrow')}</p>
+        <h1>{t(lost ? 'report_lost_title' : 'report_found_title')}</h1>
+        <p className="report-intro">{t(lost ? 'report_lost_desc' : 'report_found_desc')}</p>
+      </header>
+      <AuthRequired
+        title={lang === 'mn' ? 'Зар оруулахын тулд нэвтэрнэ үү' : 'Sign in to create a report'}
+        description={lang === 'mn' ? 'Нэвтэрсний дараа энэ хуудаснаас зургаа оруулж, мэдээллээ бөглөнө.' : 'After signing in, continue on this page to add photos and details.'}
+        icon={<Icon name="lock" size={28} />}
+      >
+        <AuthenticatedPetForm key={`${user?.id}:${status}`} status={status} userId={user?.id ?? ''} />
+      </AuthRequired>
+      <style jsx>{`
+        .report-header { padding-bottom:16px; margin-bottom:20px; border-bottom:1px solid var(--border-subtle); }
+        .report-type { color:var(--text-secondary); font-size:var(--text-xs); font-weight:600; }
+        .report-header h1 { margin:4px 0 8px; font-size:clamp(1.625rem, 4vw, 2.375rem); line-height:1.2; font-weight:700; }
+        .report-intro { max-width:60ch; color:var(--text-secondary); font-size:var(--text-sm); }
+      `}</style>
+    </div>
   );
 }
 
@@ -178,7 +192,7 @@ function AuthenticatedPetForm({ status, userId }: { status: PetStatus; userId: s
               role="button"
               tabIndex={0}
               aria-labelledby="photo-label"
-              aria-describedby="photo-hint photo-details"
+              aria-describedby={photo.previews.length || photo.compressing ? undefined : 'photo-hint'}
               aria-busy={photo.compressing}
             >
               {photo.compressing ? (
@@ -201,11 +215,11 @@ function AuthenticatedPetForm({ status, userId }: { status: PetStatus; userId: s
                 <span id="photo-hint" className="upload-message"><Icon name="camera" size={24} />{t('photo_upload_action')}<small>{t('photo_hint')}</small></span>
               )}
             </div>
-            <div id="photo-details" className="photo-quality" role="note">
-              <p className="pq-title">{t('photo_requirements_title')}</p>
+            <details className="photo-quality">
+              <summary className="pq-title">{t('photo_requirements_title')}</summary>
               <ul><li>{t('photo_quality_bright')}</li><li>{t('photo_quality_close')}</li></ul>
               <p className="pq-match">{t('photo_quality_match')}</p>
-            </div>
+            </details>
             <input id="photo-input" className="sr-only" type="file" accept="image/*" multiple onChange={photo.handlePhoto} disabled={photo.compressing} aria-label={t('photo_label')} />
             <FieldHint mn="1–4 зураг сонгоно. Нүүр, бүтэн бие, онцлог шинж болон сүүлд харагдсан орчны зургийг оруулбал танихад хялбар." en="Choose 1–4 photos: face, full body, distinctive markings, and the last-seen area." />
           </fieldset>
@@ -278,7 +292,7 @@ function AuthenticatedPetForm({ status, userId }: { status: PetStatus; userId: s
 
         <div className="nav-row">
           {step > 0 && <Button type="button" onClick={() => { setFieldErrors({}); setStep((current) => current - 1); }} variant="ghost"><Icon name="arrowLeft" size={18} />{t('form_back_plain')}</Button>}
-          {step < steps.length - 1 && <Button type="button" onClick={goNext} disabled={photo.compressing} variant="accent">{t('form_next_plain')}<Icon name="arrowRight" size={18} /></Button>}
+          {step < steps.length - 1 && <Button type="button" onClick={goNext} disabled={photo.compressing} variant="primary">{t('form_next_plain')}<Icon name="arrowRight" size={18} /></Button>}
         </div>
       </form>
 
@@ -287,22 +301,27 @@ function AuthenticatedPetForm({ status, userId }: { status: PetStatus; userId: s
       </aside>
 
       <style jsx>{`
-        .form-layout { display: grid; grid-template-columns: minmax(0, 35rem) minmax(17rem, 20rem); justify-content: center; align-items: start; gap: var(--sp-8); width: 100%; }
-        .pet-form { display: flex; flex-direction: column; min-width: 0; padding: var(--sp-7); background: var(--card); border: 1px solid var(--line); border-radius: var(--r-xl); box-shadow: var(--shadow-md); }
+        .form-layout { display: grid; grid-template-columns: minmax(0, 35rem) minmax(17rem, 20rem); justify-content: center; align-items: start; gap: var(--sp-6); width: 100%; }
+        .pet-form { display: flex; flex-direction: column; min-width: 0; padding: 24px; background: var(--card); border: 1px solid var(--line); border-radius: 16px; }
         .draft-status { margin: 0 0 var(--sp-4); color: var(--muted); font-size: var(--text-xs); line-height: 1.5; }
         .draft-status[role="alert"] { color: var(--alert); }
         .form-step { display: flex; flex-direction: column; min-width: 0; margin: 0; padding: 0; border: 0; }
         .preview-col { position: sticky; top: 6.5rem; width: 100%; min-width: 0; }
-        .progress-text { margin: var(--sp-3) 0 var(--sp-6); color: var(--muted); font-family: var(--font-mono); font-size: var(--text-xs); text-align: center; letter-spacing: 0.02em; }
-        label { display: block; margin-top: var(--sp-5); color: var(--primary); font-size: var(--text-sm); font-weight: 700; letter-spacing: 0.01em; }
+        .progress-text { margin: 12px 0 20px; color: var(--text-secondary); font-size: var(--text-sm); font-weight: 600; }
+        .pet-form :global(.paw.active), .pet-form :global(.paw.done) {
+          background: var(--primary-dark); color: #fff; border-color: var(--primary-dark); box-shadow: none;
+        }
+        .pet-form :global(.trail-line.filled) { background: var(--primary-dark); }
+        .pet-form :global(.trail-label) { font-size: var(--text-xs); }
+        label { display: block; margin-top: var(--sp-5); color: var(--text-primary); font-size: var(--text-sm); font-weight: 600; }
         .form-step > label:first-of-type { margin-top: 0; }
         input, select { width: 100%; min-height: var(--touch-target); padding: var(--sp-3) var(--sp-4); color: var(--ink); background: var(--card); border: 1.5px solid var(--line); border-radius: var(--r-sm); font: inherit; transition: border-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out); }
         input:hover, select:hover { border-color: var(--muted); }
-        input:focus-visible, select:focus-visible { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent); }
+        input:focus-visible, select:focus-visible { outline: none; border-color: var(--border-focus); box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 18%, transparent); }
         input[aria-invalid='true'] { border-color: var(--alert); }
-        .upload-zone { display: flex; align-items: center; justify-content: center; min-height: 11rem; padding: var(--sp-4); color: var(--muted); background: var(--overcast); border: 1.5px dashed var(--line); border-radius: var(--r-md); text-align: center; cursor: pointer; transition: border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out); }
-        .upload-zone:hover { border-color: var(--accent); background: var(--eyebrow-bg); }
-        .upload-zone:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+        .upload-zone { display: flex; align-items: center; justify-content: center; min-height: 8rem; padding: 16px; color: var(--muted); background: var(--overcast); border: 1.5px dashed var(--line); border-radius: var(--r-md); text-align: center; cursor: pointer; transition: border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out); }
+        .upload-zone:hover { border-color: var(--border-strong); background: var(--surface-3); }
+        .upload-zone:focus-visible { outline: 2px solid var(--border-focus); outline-offset: 3px; }
         .upload-message { display: flex; flex-direction: column; align-items: center; gap: var(--sp-2); font-weight: 700; }
         .upload-message small { color: var(--muted); font-size: var(--text-xs); font-weight: 500; }
         .selected-photos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-2); width: 100%; }
@@ -312,8 +331,9 @@ function AuthenticatedPetForm({ status, userId }: { status: PetStatus; userId: s
         .photo-remove { position: absolute; top: var(--sp-2); right: var(--sp-2); display: grid; place-items: center; width: var(--touch-target); height: var(--touch-target); padding: 0; color: var(--text-on-accent); background: color-mix(in srgb, var(--ink) 78%, transparent); border: 0; border-radius: 50%; cursor: pointer; }
         .photo-remove:hover { background: var(--alert); }
         .photo-remove:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-        .photo-quality { margin-top: var(--sp-3); padding: var(--sp-4); color: var(--muted); background: var(--eyebrow-bg); border: 1px solid var(--line); border-radius: var(--r-md); font-size: var(--text-xs); }
-        .pq-title { margin: 0 0 var(--sp-2); color: var(--primary); font-weight: 800; }
+        .photo-quality { margin: 8px 0 4px; color: var(--text-secondary); font-size: var(--text-xs); }
+        .pq-title { padding: 8px 0; min-height: 36px; color: var(--text-primary); font-weight: 600; cursor: pointer; }
+        .pq-title:focus-visible { outline: 2px solid var(--border-focus); outline-offset: 2px; }
         .photo-quality ul { display: grid; gap: var(--sp-1); margin: 0; padding-left: var(--sp-5); }
         .photo-quality li { margin: 0; line-height: 1.5; }
         .pq-match { margin: var(--sp-2) 0 0; }
@@ -323,17 +343,18 @@ function AuthenticatedPetForm({ status, userId }: { status: PetStatus; userId: s
         .field-error, .submit-error { display: flex; align-items: flex-start; gap: var(--sp-2); margin: var(--sp-2) 0 0; color: var(--alert); font-size: var(--text-sm); font-weight: 600; }
         .field-error :global(svg), .submit-error :global(svg) { flex: 0 0 auto; margin-top: 0.1rem; }
         .reward-check { display: flex; align-items: center; gap: var(--sp-2); min-height: var(--touch-target); margin-top: 0; cursor: pointer; }
-        .reward-check input { width: 1.25rem; min-height: 1.25rem; margin: 0; accent-color: var(--accent); }
-        .locate-btn { display: inline-flex; align-items: center; justify-content: center; align-self: flex-start; gap: var(--sp-2); min-height: var(--touch-target); padding: var(--sp-2) var(--sp-4); color: var(--primary); background: transparent; border: 1.5px solid var(--primary); border-radius: var(--r-pill); font: inherit; font-weight: 700; cursor: pointer; }
+        .reward-check input { width: 1.25rem; min-height: 1.25rem; margin: 0; accent-color: var(--primary-dark); }
+        .locate-btn { display: inline-flex; align-items: center; justify-content: center; align-self: flex-start; gap: var(--sp-2); min-height: var(--touch-target); padding: var(--sp-2) var(--sp-4); color: var(--primary); background: transparent; border: 1px solid var(--border-subtle); border-radius: 10px; font: inherit; font-weight: 600; cursor: pointer; }
         .locate-btn:hover { background: var(--eyebrow-bg); }
         .locate-btn:disabled { opacity: 0.6; cursor: wait; }
         .locate-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-        .form-submit { margin-top: var(--sp-6); }
-        .nav-row { display: flex; gap: var(--sp-3); margin-top: var(--sp-6); }
+        .form-submit { margin-top: 20px; }
+        .pet-form :global(.btn-base[data-variant="primary"]) { background: var(--primary-dark); border-radius: 10px; box-shadow: none; }
+        .nav-row { display: flex; gap: var(--sp-3); margin-top: 20px; }
         .nav-row :global(.btn-base) { flex: 1; }
         .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
         @media (max-width: 900px) { .form-layout { grid-template-columns: minmax(0, 38rem); gap: 0; } .preview-col { display: none; } }
-        @media (max-width: 640px) { .pet-form { padding: var(--sp-5); border-radius: var(--r-lg); } .progress-text { margin-bottom: var(--sp-5); } input, select { font-size: 1rem; } .upload-zone { min-height: 9.5rem; } .locate-btn { width: 100%; } }
+        @media (max-width: 640px) { .pet-form { padding: var(--sp-5); border-radius: var(--r-lg); } input, select { font-size: 1rem; } .locate-btn { width: 100%; } }
         @media (max-width: 420px) { .pet-form { padding: var(--sp-4); border-radius: var(--r-md); } .nav-row { gap: var(--sp-2); } .selected-photo, .selected-photo img { min-height: 6.5rem; } }
         @media (prefers-reduced-motion: reduce) { input, select, .upload-zone { transition: none; } }
       `}</style>

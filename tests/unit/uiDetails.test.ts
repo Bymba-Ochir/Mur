@@ -154,8 +154,9 @@ describe('page detail safeguards', () => {
     expect(form).toContain('@media (max-width: 900px)');
     expect(form).not.toContain('style={{');
     expect(form).not.toMatch(/⏳|📍|🎁/);
-    expect(lost).toContain('<p className="eyebrow">');
-    expect(found).toContain('<p className="eyebrow">');
+    expect(lost).toContain('<PetForm status="lost" />');
+    expect(found).toContain('<PetForm status="found" />');
+    expect(form).toContain('<header className="report-header">');
   });
 
   it('report form status messages are localized and reusable', () => {
