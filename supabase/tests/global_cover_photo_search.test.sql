@@ -1,7 +1,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
-select plan(10);
+select plan(13);
 
 select ok(not has_function_privilege('authenticated','public.save_pet_cover_fingerprint(uuid,uuid,text)','EXECUTE'), 'browser cannot write cover fingerprints');
 select ok(not has_function_privilege('anon','public.queue_missing_pet_cover_fingerprints()','EXECUTE'), 'browser cannot enqueue the backfill');
@@ -43,11 +43,62 @@ do $$begin
   perform public.queue_missing_pet_cover_fingerprints();
   perform public.queue_missing_pet_cover_fingerprints();
 end;$$;
-select is((select count(*)::int from public.background_jobs where payload->>'petId'='a6080000-0000-4000-8000-000000000030' and payload->>'coverOnly'='true'),1,'backfill queues an old cover only once');
+select is((select count(*)::int from public.background_jobs where payload->>'petId'='a6080000-0000-4000-8000-000000000030' and payload->>'coverOnly'='false'),1,'backfill queues a missing vector only once');
 set local role authenticated;
 set local "request.jwt.claim.sub" = 'a6080000-0000-4000-8000-000000000001';
 update public.pets set cover_fingerprint=repeat('1',64)::bit(64) where id='a6080000-0000-4000-8000-000000000030';
 select ok((select cover_fingerprint is null from public.pets where id='a6080000-0000-4000-8000-000000000030'),'listing owner cannot forge a fingerprint');
 reset role;
+-- A legacy listing with a working vector but no bound source must recompute it.
+update public.pets
+set embedding_revision = null, embedding_photo_url = null,
+    dino_embedding = array_prepend(1::real, array_fill(0::real, array[383]))::extensions.vector(384),
+    embedding_version = 'dinov2-small-q8-v1'
+where id = 'a6080000-0000-4000-8000-000000000030';
+select public.queue_missing_pet_cover_fingerprints();
+select is(
+  (select j.payload->>'coverOnly' from public.background_jobs j join public.pets p
+    on j.dedupe_key = 'pet-cover-v2:' || p.embedding_revision::text
+    where p.id = 'a6080000-0000-4000-8000-000000000030'),
+  'false',
+  'rebinding the legacy cover queues a new vector'
+);
+
+-- The previous deployment may already have finished a cover-only job without a vector.
+update public.pets set cover_fingerprint = repeat('1',64)::bit(64)
+where id = 'a6080000-0000-4000-8000-000000000030';
+insert into public.background_jobs(kind,dedupe_key,payload,status)
+select 'pet-image-embedding', 'pet-cover:' || p.embedding_revision::text,
+  jsonb_build_object('petId',p.id,'revision',p.embedding_revision,'coverOnly',true), 'done'
+from public.pets p where p.id = 'a6080000-0000-4000-8000-000000000030';
+delete from public.background_jobs j using public.pets p
+where j.dedupe_key = 'pet-cover-v2:' || p.embedding_revision::text
+  and p.id = 'a6080000-0000-4000-8000-000000000030';
+select public.queue_missing_pet_cover_fingerprints();
+select is(
+  (select j.payload->>'coverOnly' from public.background_jobs j join public.pets p
+    on j.dedupe_key = 'pet-cover-v2:' || p.embedding_revision::text
+    where p.id = 'a6080000-0000-4000-8000-000000000030'),
+  'false',
+  'repairs a completed cover-only job that left the vector missing'
+);
+
+-- A current vector for the unchanged source is kept while only the hash is backfilled.
+update public.pets set cover_fingerprint = null,
+  dino_embedding = array_prepend(1::real, array_fill(0::real, array[383]))::extensions.vector(384),
+  embedding_version = 'dinov2-small-q8-v1'
+where id = 'a6080000-0000-4000-8000-000000000030';
+delete from public.background_jobs j using public.pets p
+where j.dedupe_key = 'pet-cover-v2:' || p.embedding_revision::text
+  and p.id = 'a6080000-0000-4000-8000-000000000030';
+select public.queue_missing_pet_cover_fingerprints();
+select is(
+  (select j.payload->>'coverOnly' from public.background_jobs j join public.pets p
+    on j.dedupe_key = 'pet-cover-v2:' || p.embedding_revision::text
+    where p.id = 'a6080000-0000-4000-8000-000000000030'),
+  'true',
+  'retains an existing current vector and queues only the fingerprint'
+);
+
 select * from finish();
 rollback;
