@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ChangeEvent } from 'react';
 import { fetchPets, fetchPetMatches, rankBySimilarity } from '../../lib/petService';
 import { getImageEmbedding, getImageHash } from '../../lib/similarity';
@@ -23,6 +23,13 @@ import { useListingFilters } from '../../lib/useListingFilters';
 // Шүүлтүүрийн "Бүгд" сонголт (хоосон) 9 дүүргийн өмнө явна
 const DISTRICTS: (District | '')[] = ['', ...DISTRICT_VALUES];
 
+type ImageMatch = { query: string } & (
+  | { phase: 'matching'; progress?: string }
+  | { phase: 'database'; pets: Pet[] }
+  | { phase: 'browser'; embedding: number[] }
+  | { phase: 'error'; message: string }
+);
+
 export default function ListingsPage() {
   const { t } = useLanguage();
   const { user } = useAuth();
@@ -33,11 +40,7 @@ export default function ListingsPage() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(false);
-  const [matchFile, setMatchFile] = useState<File | null>(null);
-  const [matching, setMatching] = useState<boolean | string>(false);
-  const [matchError, setMatchError] = useState<string | null>(null);
-  const [matchedCount, setMatchedCount] = useState<number | null>(null);
-  const [matchSource, setMatchSource] = useState<'database' | 'browser' | null>(null);
+  const [match, setMatch] = useState<ImageMatch | null>(null);
   const [loadError, setLoadError] = useState('');
   const [savingSearch, setSavingSearch] = useState(false);
   const matchAbortRef = useRef<AbortController | null>(null);
@@ -55,6 +58,15 @@ export default function ListingsPage() {
     try { sessionStorage.setItem('mur-listings-scroll:' + query, String(window.scrollY)); } catch { /* optional */ }
   }
   const hasFilters = Boolean(status || type || district || search.trim());
+  if (match && match.query !== query) setMatch(null);
+  const activeMatch = match?.query === query ? match : null;
+  const matching = activeMatch?.phase === 'matching';
+  const rankedPets = useMemo(() => {
+    if (activeMatch?.phase === 'database') return activeMatch.pets;
+    if (activeMatch?.phase === 'browser') return rankBySimilarity(activeMatch.embedding, pets);
+    return null;
+  }, [activeMatch, pets]);
+  const visiblePets = rankedPets?.length ? rankedPets : pets;
 
   useEffect(() => {
     // Шүүлтүүр өөрчлөгдөхөд эхний хуудаснаас дахин ачаална
@@ -62,6 +74,8 @@ export default function ListingsPage() {
     return () => { clearTimeout(timer); requestVersion.current += 1; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status, type, district, search]);
+
+  useEffect(() => () => matchAbortRef.current?.abort(), [query]);
 
   async function load(pageToLoad = 0) {
     const version = ++requestVersion.current;
@@ -106,53 +120,41 @@ export default function ListingsPage() {
   async function handleMatchUpload(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-    setMatchFile(file);
-    setMatching(true);
-    setMatchError(null);
-    setMatchedCount(null);
-    setMatchSource(null);
+    e.target.value = '';
+    setMatch({ query, phase: 'matching' });
     matchAbortRef.current?.abort();
     const controller = new AbortController();
     matchAbortRef.current = controller;
     try {
       const [embedding, imageHash] = await Promise.all([
-        getImageEmbedding(file, (msg) => setMatching(msg), controller.signal),
+        getImageEmbedding(file, progress => {
+          if (!controller.signal.aborted) setMatch({ query, phase: 'matching', progress });
+        }, controller.signal),
         getImageHash(file),
       ]);
-      setMatching(t('listings_match_searching'));
+      if (controller.signal.aborted) return;
+      setMatch({ query, phase: 'matching', progress: t('listings_match_searching') });
       const databaseMatches = await fetchPetMatches({
         embedding,
         imageHash,
+        signal: controller.signal,
         status: status || undefined,
         type: type || undefined,
         district: district || undefined,
       });
       if (controller.signal.aborted) return;
-      if (databaseMatches) {
-        setPets(databaseMatches);
-        setMatchedCount(databaseMatches.length);
-        setMatchSource('database');
-        setHasMore(false);
-      } else {
-        setPets((prev) => {
-          const ranked = rankBySimilarity(embedding, prev);
-          setMatchedCount(ranked.length);
-          return ranked;
-        });
-        setMatchSource('browser');
-      }
+      setMatch(databaseMatches === null
+        ? { query, phase: 'browser', embedding }
+        : { query, phase: 'database', pets: databaseMatches });
     } catch (err) {
-      if (err instanceof DOMException && err.name === 'AbortError') return;
-      setMatchError(getErrorMessage(err, t('listings_match_error')));
-    } finally {
-      if (!controller.signal.aborted) setMatching(false);
+      if (controller.signal.aborted) return;
+      setMatch({ query, phase: 'error', message: getErrorMessage(err, t('listings_match_error')) });
     }
   }
 
-  function cancelMatching() {
+  function clearImageMatch() {
     matchAbortRef.current?.abort();
-    setMatching(false);
-    setMatchError(null);
+    setMatch(null);
   }
 
   return (
@@ -232,24 +234,22 @@ export default function ListingsPage() {
         </div>
         <input
           type="file" id="match-file" accept="image/*"
-          onChange={handleMatchUpload} disabled={!!matching} className="file-input"
+          onChange={handleMatchUpload} disabled={matching} className="file-input"
           aria-label={t('listings_match_file_label')}
         />
         <div className="match-actions">
           <Button as="label" htmlFor="match-file" variant="ghost" size="sm">
             <Icon name="camera" size={16} aria-hidden="true" /> {t('listings_match_file_label')}
           </Button>
-          {matching && <Button variant="ghost" size="sm" onClick={cancelMatching}>{t('match_cancel')}</Button>}
+          {activeMatch && <Button variant="ghost" size="sm" onClick={clearImageMatch}>{t(matching ? 'match_cancel' : 'listings_match_clear')}</Button>}
         </div>
         <div className="match-feedback" aria-live="polite">
-        {matching && <p className="match-status">{typeof matching === 'string' ? matching : t('listings_match_initial')}</p>}
-        {matchFile && !matching && !matchError && matchedCount === 0 && (
-          <p className="match-status err">{t('listings_match_none')}</p>
+        {activeMatch?.phase === 'matching' && <p className="match-status">{activeMatch.progress ?? t('listings_match_initial')}</p>}
+        {rankedPets?.length === 0 && <p className="match-status">{t(pets.length ? 'listings_match_none_keep' : 'listings_match_none')}</p>}
+        {rankedPets && rankedPets.length > 0 && (
+          <p className="match-status success">{rankedPets.length} {t('match_results')} · {activeMatch?.phase === 'database' ? t('match_all_database') : t('match_browser_fallback')}</p>
         )}
-        {matchFile && !matching && !matchError && matchedCount != null && matchedCount > 0 && (
-          <p className="match-status success">{matchedCount} {t('match_results')} · {matchSource === 'database' ? t('match_all_database') : t('match_browser_fallback')}</p>
-        )}
-        {matchError && <p className="match-status err">{matchError}</p>}
+        {activeMatch?.phase === 'error' && <p className="match-status err">{activeMatch.message}</p>}
         </div>
       </section>
 
@@ -268,7 +268,7 @@ export default function ListingsPage() {
           {Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)}
           </div>
         </>
-      ) : pets.length === 0 ? (
+      ) : visiblePets.length === 0 ? (
         <div className="empty-state">
           <div className="empty-icon" aria-hidden="true">
             <svg width="34" height="34" viewBox="0 0 48 48" fill="currentColor" focusable="false">
@@ -288,11 +288,11 @@ export default function ListingsPage() {
         </div>
       ) : (
         <>
-          <p className="result-count" aria-live="polite">{pets.length} {t(pets.length === 1 ? 'results_count_one' : 'results_count')}</p>
+          <p className="result-count" aria-live="polite">{visiblePets.length} {t(visiblePets.length === 1 ? 'results_count_one' : 'results_count')}</p>
           <div className="listings-grid">
-            {pets.map((p) => <PetCard key={p.id} pet={p} />)}
+            {visiblePets.map((p) => <PetCard key={p.id} pet={p} />)}
           </div>
-          {hasMore && !matchFile && (
+          {hasMore && !(activeMatch?.phase === 'database' && rankedPets?.length) && (
             <div className="load-more-wrap">
               <Button onClick={handleLoadMore} disabled={loadingMore} variant="ghost">
                 {loadingMore ? t('loading_more') : t('load_more')}

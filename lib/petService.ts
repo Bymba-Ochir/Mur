@@ -218,7 +218,7 @@ export function rankBySimilarity(targetEmbedding: number[] | null, pets: Pet[]):
  * Migration ажиллаагүй бол null буцааж UI хуучин browser fallback ашиглана.
  */
 export async function fetchPetMatches({
-  embedding, imageHash, status, type, breed, color, district, lat, lng, limit = 20,
+  embedding, imageHash, status, type, breed, color, district, lat, lng, limit = 20, signal,
 }: {
   embedding: number[];
   imageHash?: string;
@@ -230,11 +230,13 @@ export async function fetchPetMatches({
   lat?: number;
   lng?: number;
   limit?: number;
+  signal?: AbortSignal;
 }): Promise<Pet[] | null> {
-  const { data, error } = await supabase.rpc('match_pets_hybrid', {
+  const query = supabase.rpc('match_pets_hybrid', {
     query_embedding: embedding,
     query_image_hash: imageHash || null,
-    query_status: status ?? null,
+    // The RPC excludes the status supplied by a source listing.
+    query_status: status ? (status === 'lost' ? 'found' : 'lost') : null,
     query_type: type ?? null,
     query_breed: breed || null,
     query_color: color || null,
@@ -244,6 +246,7 @@ export async function fetchPetMatches({
     match_count: limit,
     min_image_similarity: 0.15,
   });
+  const { data, error } = await (signal ? query.abortSignal(signal) : query);
 
   if (error) {
     if (/function .*match_pets_hybrid|schema cache|image_embedding/i.test(error.message)) return null;
