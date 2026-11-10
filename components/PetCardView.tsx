@@ -27,12 +27,10 @@ export interface PetCardViewProps extends HTMLAttributes<HTMLDivElement> {
   /** Зурган node (next/image эсвэл img); өгөхгүй бол PetIcon дүрс харагдана */
   imageNode?: ReactNode;
   createdAt?: string;
-  similarity?: number | null;
-  hybridScore?: number | null;
+  photoMatchLabel?: string;
   /** "Шагналтай" гэж харуулах (дүнг нууц — зөвхөн тэмдэг харагдана) */
   hasReward?: boolean;
   rewardLabel?: string;
-  similarityLabel?: string;
   showPhoneLabel?: string;
   callPhoneLabel?: string;
   detailHref?: string;
@@ -47,8 +45,8 @@ export interface PetCardViewProps extends HTMLAttributes<HTMLDivElement> {
 
 export default function PetCardView({
   status, badgeLabel, name, type, typeLabel, breed, color, district, place, phone,
-  imageNode, createdAt, similarity, hybridScore, hasReward, rewardLabel = 'Шагналтай',
-  similarityLabel = 'тохирол', showPhoneLabel = 'Дугаар харах', callPhoneLabel = 'Утсаар холбогдох',
+  imageNode, createdAt, photoMatchLabel, hasReward, rewardLabel = 'Шагналтай',
+  showPhoneLabel = 'Дугаар харах', callPhoneLabel = 'Утсаар холбогдох',
   detailHref, detailLabel = 'Дэлгэрэнгүй үзэх', language = 'mn',
   revealed = true, onRevealPhone, interactive = true,
   ...containerProps
@@ -63,7 +61,7 @@ export default function PetCardView({
         {imageNode ?? (
           <span className="emoji" aria-hidden="true"><PetIcon type={type} size={56} /></span>
         )}
-        {(hybridScore ?? similarity) != null && <span className="similarity">{hybridScore ?? similarity}% {similarityLabel}</span>}
+        {photoMatchLabel && <span className="similarity">{photoMatchLabel}</span>}
       </div>
       <div className="info">
         <h3><ListingCardLink href={interactive ? detailHref : undefined} label={detailLabel}>{name || typeLabel || type}</ListingCardLink></h3>

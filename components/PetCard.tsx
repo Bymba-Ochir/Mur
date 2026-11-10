@@ -7,7 +7,7 @@ import type { Pet } from '../lib/types';
 import { getBreedLabel } from '../lib/petBreeds';
 import PetImageGallery from './PetImageGallery';
 
-export default function PetCard({ pet }: { pet: Pet }) {
+export default function PetCard({ pet, photoMatchLabel }: { pet: Pet; photoMatchLabel?: string }) {
   const { t, lang } = useLanguage();
   const { query } = useListingFilters();
   const [revealed, setRevealed] = useState(false);
@@ -29,11 +29,9 @@ export default function PetCard({ pet }: { pet: Pet }) {
       place={pet.place}
       phone={pet.phoneHidden ? '' : pet.phone}
       createdAt={pet.createdAt || undefined}
-      similarity={pet.similarity}
-      hybridScore={pet.hybridScore}
+      photoMatchLabel={photoMatchLabel}
       hasReward={pet.hasReward}
       rewardLabel={t('reward_prefix')}
-      similarityLabel={t('listings_card_similarity')}
       showPhoneLabel={t('listings_card_show_phone')}
       callPhoneLabel={t('listings_card_call')}
       detailHref={detailHref}

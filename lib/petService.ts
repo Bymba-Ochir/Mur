@@ -3,6 +3,7 @@
 import { supabase } from './supabase';
 import { listingPhone } from './listingContact';
 import { cosineSimilarityScore } from './similarity';
+import { MIN_LISTING_PHOTO_SIMILARITY } from './imageEmbedding';
 import { mapPetRow } from './petMapping';
 import type { Pet, PetStatus, PetFilters, PetReportInput, UpdatePetFields } from './types';
 import { cleanText, optionalCoordinate, optionalInteger } from './inputValidation';
@@ -263,7 +264,7 @@ export async function fetchPetMatches({
     query_lat: lat ?? null,
     query_lng: lng ?? null,
     match_count: limit,
-    min_image_similarity: 0.15,
+    min_image_similarity: MIN_LISTING_PHOTO_SIMILARITY / 100,
   });
   const { data, error } = await (signal ? query.abortSignal(signal) : query);
 
@@ -272,13 +273,12 @@ export async function fetchPetMatches({
     throw error;
   }
 
-  const rows = (data ?? []) as Array<{ pet: Record<string, unknown> & { id: string }; image_similarity: number; hybrid_score: number }>;
+  const rows = (data ?? []) as Array<{ pet: Record<string, unknown> & { id: string }; image_similarity: number }>;
   const visibleRows = rows.filter(({ pet }) => pet.is_hidden !== true && pet.archived_at == null);
   const hydratedPets = await hydrateListingPhotos('pet', visibleRows.map((row) => row.pet));
   const petById = new Map(hydratedPets.map((pet) => [pet.id, pet]));
   return visibleRows.map((row) => ({
     ...mapPetRow((petById.get(row.pet.id) ?? row.pet) as never),
     similarity: Math.round(Number(row.image_similarity) * 100),
-    hybridScore: Math.round(Number(row.hybrid_score)),
   }));
 }

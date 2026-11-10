@@ -33,10 +33,8 @@ export interface Pet {
   resolved: boolean;
   createdBy: string | null;
   createdAt: string;
-  /** rankBySimilarity нэмдэг; DB-ийн шинэ мөрөнд байхгүй */
+  /** Зургийн хайлтад ашиглах төстэй байдлын оноо. */
   similarity?: number;
-  /** Зураг, төрөл, үүлдэр, өнгө, байршлыг нэгтгэсэн тохирлын оноо */
-  hybridScore?: number;
   embeddingVersion?: string | null;
 }
 

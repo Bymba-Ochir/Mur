@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ChangeEvent } from 'react';
 import { fetchPets, fetchPetMatches, rankBySimilarity } from '../../lib/petService';
 import { getImageEmbedding, getImageHash } from '../../lib/similarity';
+import { HIGH_LISTING_PHOTO_SIMILARITY, MIN_LISTING_PHOTO_SIMILARITY } from '../../lib/imageEmbedding';
 import { findSameListingPhotos } from '../../lib/listingPhotoMatch';
 import PetCard from '../../components/PetCard';
 import NotifySubscribe from '../../components/NotifySubscribe';
@@ -64,11 +65,20 @@ export default function ListingsPage() {
   const activeMatch = match?.query === query ? match : null;
   const matching = activeMatch?.phase === 'matching';
   const rankedPets = useMemo(() => {
-    if (activeMatch?.phase === 'database' || activeMatch?.phase === 'same-photos') return activeMatch.pets;
-    if (activeMatch?.phase === 'browser') return rankBySimilarity(activeMatch.embedding, pets);
-    return null;
+    if (activeMatch?.phase === 'same-photos') return activeMatch.pets;
+    const candidates = activeMatch?.phase === 'database' ? activeMatch.pets
+      : activeMatch?.phase === 'browser' ? rankBySimilarity(activeMatch.embedding, pets) : null;
+    return candidates?.filter(pet => (pet.similarity ?? 0) >= MIN_LISTING_PHOTO_SIMILARITY) ?? null;
   }, [activeMatch, pets]);
+  const hasImageResults = Boolean(rankedPets?.length);
   const visiblePets = rankedPets?.length ? rankedPets : pets;
+
+  function photoMatchLabel(pet: Pet) {
+    if (!hasImageResults) return undefined;
+    if (activeMatch?.phase === 'same-photos') return t('listings_card_same_photo');
+    return t((pet.similarity ?? 0) >= HIGH_LISTING_PHOTO_SIMILARITY
+      ? 'listings_card_very_similar' : 'listings_card_similar');
+  }
 
   useEffect(() => {
     // Шүүлтүүр өөрчлөгдөхөд эхний хуудаснаас дахин ачаална
@@ -244,6 +254,7 @@ export default function ListingsPage() {
           <div>
             <h2 id="match-upload-heading">{t('listings_match_group')}</h2>
             <p>{t('match_label')}</p>
+            <p className="match-note">{t('listings_match_privacy')}</p>
           </div>
         </div>
         <input
@@ -258,12 +269,17 @@ export default function ListingsPage() {
           {activeMatch && <Button variant="ghost" size="sm" onClick={clearImageMatch}>{t(matching ? 'match_cancel' : 'listings_match_clear')}</Button>}
         </div>
         <div className="match-feedback" aria-live="polite">
-        {activeMatch?.phase === 'matching' && <p className="match-status">{activeMatch.progress ?? t('listings_match_initial')}</p>}
-        {rankedPets?.length === 0 && <p className="match-status">{t(pets.length ? 'listings_match_none_keep' : 'listings_match_none')}</p>}
-        {rankedPets && rankedPets.length > 0 && (
-          <p className="match-status success">{rankedPets.length} {t('match_results')} · {activeMatch?.phase === 'same-photos' ? t('match_same_photo') : activeMatch?.phase === 'database' ? t('match_all_database') : t('match_browser_fallback')}</p>
-        )}
-        {activeMatch?.phase === 'error' && <p className="match-status err">{activeMatch.message}</p>}
+          {activeMatch?.phase === 'matching' && <p className="match-status">{activeMatch.progress ?? t('listings_match_initial')}</p>}
+          {rankedPets?.length === 0 && (
+            <p className="match-status">{t(pets.length ? 'listings_match_none_keep' : 'listings_match_none')}</p>
+          )}
+          {rankedPets && rankedPets.length > 0 && (
+            <p className="match-status success">{activeMatch?.phase === 'same-photos'
+              ? t('match_same_photo')
+              : `${rankedPets.length} ${t(rankedPets.length === 1 ? 'match_results_one' : 'match_results')}`}</p>
+          )}
+          {activeMatch?.phase === 'browser' && <p className="match-note">{t('match_browser_fallback')}</p>}
+          {activeMatch?.phase === 'error' && <p className="match-status err">{activeMatch.message}</p>}
         </div>
       </section>
 
@@ -302,11 +318,12 @@ export default function ListingsPage() {
         </div>
       ) : (
         <>
-          <p className="result-count" aria-live="polite">{visiblePets.length} {t(visiblePets.length === 1 ? 'results_count_one' : 'results_count')}</p>
+          {!hasImageResults && <p className="result-count" aria-live="polite">{visiblePets.length} {t(visiblePets.length === 1 ? 'results_count_one' : 'results_count')}</p>}
           <div className="listings-grid">
-            {visiblePets.map((p) => <PetCard key={p.id} pet={p} />)}
+            {visiblePets.map((pet) => <PetCard key={pet.id} pet={pet} photoMatchLabel={photoMatchLabel(pet)} />)}
           </div>
-          {hasMore && !(rankedPets?.length && (activeMatch?.phase === 'database' || activeMatch?.phase === 'same-photos')) && (
+          {hasImageResults && <p className="match-note">{t('listings_match_review')}</p>}
+          {hasMore && !(hasImageResults && (activeMatch?.phase === 'database' || activeMatch?.phase === 'same-photos')) && (
             <div className="load-more-wrap">
               <Button onClick={handleLoadMore} disabled={loadingMore} variant="ghost">
                 {loadingMore ? t('loading_more') : t('load_more')}
@@ -363,7 +380,8 @@ export default function ListingsPage() {
           color: var(--primary); background: var(--eyebrow-bg); border-radius: var(--r-md);
         }
         .match-heading h2 { margin-bottom: var(--sp-1); font-size: var(--text-base); }
-        .match-heading p { max-width: 62ch; color: var(--text-secondary); font-size: var(--text-xs); line-height: 1.5; }
+        .match-heading p, .match-note { max-width: 62ch; color: var(--text-secondary); font-size: var(--text-xs); line-height: 1.5; }
+        .match-note { margin-top: var(--sp-2); }
         .match-actions { display: flex; align-items: center; justify-content: flex-end; gap: var(--sp-2); flex-wrap: wrap; }
         .match-feedback { grid-column: 1 / -1; min-height: 0; }
         .match-feedback:empty { display: none; }
