@@ -4,12 +4,13 @@ import ListingsPage from '../../app/listings/page';
 
 const mocks = vi.hoisted(() => ({
   fetchPets: vi.fn(), fetchPetMatches: vi.fn(), rankBySimilarity: vi.fn(),
-  getImageEmbedding: vi.fn(), getImageHash: vi.fn(), toast: vi.fn(),
+  getImageEmbedding: vi.fn(), getImageHash: vi.fn(), findSameListingPhotos: vi.fn(), toast: vi.fn(),
 }));
 vi.mock('../../lib/petService', () => ({
   fetchPets: mocks.fetchPets, fetchPetMatches: mocks.fetchPetMatches, rankBySimilarity: mocks.rankBySimilarity,
 }));
 vi.mock('../../lib/similarity', () => ({ getImageEmbedding: mocks.getImageEmbedding, getImageHash: mocks.getImageHash }));
+vi.mock('../../lib/listingPhotoMatch', () => ({ findSameListingPhotos: mocks.findSameListingPhotos }));
 vi.mock('../../lib/i18n', () => ({ useLanguage: () => ({ t: (key: string) => key }) }));
 vi.mock('../../lib/useAuth', () => ({ useAuth: () => ({ user: null }) }));
 vi.mock('../../lib/listingService', () => ({ saveSearch: vi.fn() }));
@@ -28,6 +29,7 @@ beforeEach(() => {
   vi.resetAllMocks();
   window.history.replaceState(null, '', '/listings');
   mocks.fetchPets.mockResolvedValue({ pets: [{ id: 'existing', name: 'Existing dog' }], hasMore: true });
+  mocks.findSameListingPhotos.mockResolvedValue([]);
   mocks.getImageEmbedding.mockResolvedValue([0.1]);
   mocks.getImageHash.mockResolvedValue('hash');
 });
@@ -78,4 +80,23 @@ it('ignores a photo response when the user changes the listing filter', async ()
   expect(mocks.fetchPetMatches.mock.calls[0][0].signal.aborted).toBe(true);
   expect(screen.queryByText('Stale result')).not.toBeInTheDocument();
   expect(screen.queryByText('listings_match_searching')).not.toBeInTheDocument();
+});
+
+it('finds a re-encoded listing photo without waiting for the model or database index', async () => {
+  const matchingPet = { id: 'same', name: 'Matching cover photo' };
+  mocks.fetchPets.mockResolvedValue({
+    pets: [{ id: 'existing', name: 'Existing dog' }, matchingPet],
+    hasMore: true,
+  });
+  mocks.findSameListingPhotos.mockResolvedValue([matchingPet]);
+  render(<ListingsPage />);
+  await screen.findByText('Existing dog');
+
+  uploadPhoto();
+
+  await screen.findByText('1 match_results · match_browser_fallback');
+  expect(screen.getByText('Matching cover photo')).toBeVisible();
+  expect(screen.queryByText('Existing dog')).not.toBeInTheDocument();
+  expect(mocks.getImageEmbedding).not.toHaveBeenCalled();
+  expect(mocks.fetchPetMatches).not.toHaveBeenCalled();
 });

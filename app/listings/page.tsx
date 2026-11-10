@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ChangeEvent } from 'react';
 import { fetchPets, fetchPetMatches, rankBySimilarity } from '../../lib/petService';
 import { getImageEmbedding, getImageHash } from '../../lib/similarity';
+import { findSameListingPhotos } from '../../lib/listingPhotoMatch';
 import PetCard from '../../components/PetCard';
 import NotifySubscribe from '../../components/NotifySubscribe';
 import VolunteerBadge from '../../components/VolunteerBadge';
@@ -25,7 +26,7 @@ const DISTRICTS: (District | '')[] = ['', ...DISTRICT_VALUES];
 
 type ImageMatch = { query: string } & (
   | { phase: 'matching'; progress?: string }
-  | { phase: 'database'; pets: Pet[] }
+  | { phase: 'database' | 'page-photos'; pets: Pet[] }
   | { phase: 'browser'; embedding: number[] }
   | { phase: 'error'; message: string }
 );
@@ -45,6 +46,7 @@ export default function ListingsPage() {
   const [savingSearch, setSavingSearch] = useState(false);
   const matchAbortRef = useRef<AbortController | null>(null);
   const requestVersion = useRef(0);
+  const loadedQuery = useRef<string | null>(null);
   const restoredScroll = useRef(false);
   useEffect(() => {
     if (loading || loadError || restoredScroll.current) return;
@@ -62,7 +64,7 @@ export default function ListingsPage() {
   const activeMatch = match?.query === query ? match : null;
   const matching = activeMatch?.phase === 'matching';
   const rankedPets = useMemo(() => {
-    if (activeMatch?.phase === 'database') return activeMatch.pets;
+    if (activeMatch?.phase === 'database' || activeMatch?.phase === 'page-photos') return activeMatch.pets;
     if (activeMatch?.phase === 'browser') return rankBySimilarity(activeMatch.embedding, pets);
     return null;
   }, [activeMatch, pets]);
@@ -92,6 +94,7 @@ export default function ListingsPage() {
       });
       if (version !== requestVersion.current) return;
       setPets((prev) => (pageToLoad === 0 ? data : [...prev, ...data]));
+      loadedQuery.current = query;
       setHasMore(more);
       setPage(pageToLoad);
     } catch (err) {
@@ -126,6 +129,14 @@ export default function ListingsPage() {
     const controller = new AbortController();
     matchAbortRef.current = controller;
     try {
+      if (loadedQuery.current === query) {
+        const samePhotos = await findSameListingPhotos(file, pets, controller.signal);
+        if (controller.signal.aborted) return;
+        if (samePhotos.length) {
+          setMatch({ query, phase: 'page-photos', pets: samePhotos });
+          return;
+        }
+      }
       const [embedding, imageHash] = await Promise.all([
         getImageEmbedding(file, progress => {
           if (!controller.signal.aborted) setMatch({ query, phase: 'matching', progress });
@@ -292,7 +303,7 @@ export default function ListingsPage() {
           <div className="listings-grid">
             {visiblePets.map((p) => <PetCard key={p.id} pet={p} />)}
           </div>
-          {hasMore && !(activeMatch?.phase === 'database' && rankedPets?.length) && (
+          {hasMore && !(rankedPets?.length && (activeMatch?.phase === 'database' || activeMatch?.phase === 'page-photos')) && (
             <div className="load-more-wrap">
               <Button onClick={handleLoadMore} disabled={loadingMore} variant="ghost">
                 {loadingMore ? t('loading_more') : t('load_more')}
