@@ -4,9 +4,10 @@ import { createAdminClient } from './supabaseAdmin';
 import { ownedPetPhotoStoragePath } from './storageObjectPath';
 import { limitServiceRequest } from './apiRateLimit';
 import { reportError } from './errorTracking';
+import { fingerprintStoredCover } from './serverCoverPhotoFingerprint';
 
 type AdminClient = ReturnType<typeof createAdminClient>;
-interface ImageJob { id: string; lease_token: string; payload: { petId: string; revision: string }; }
+interface ImageJob { id: string; lease_token: string; payload: { petId: string; revision: string; coverOnly?: boolean }; }
 const MAX_PHOTO_BYTES = 8 * 1024 * 1024;
 
 export async function runPetImageJob(admin: AdminClient = createAdminClient()): Promise<boolean> {
@@ -29,14 +30,20 @@ export async function runPetImageJob(admin: AdminClient = createAdminClient()): 
       const photo = await bucket.download(path, {}, { signal: AbortSignal.timeout(10_000) });
       if (photo.error) throw photo.error;
       if (!photo.data.size || photo.data.size > MAX_PHOTO_BYTES) throw new Error('Invalid stored image size');
-      const { embedStoredImage } = await import('./serverImageEmbedding');
-      const embedding = await embedStoredImage(photo.data);
-      const hash = createHash('sha256').update(Buffer.from(await photo.data.arrayBuffer())).digest('hex');
-      const completed = await admin.rpc('complete_pet_image_embedding', {
-        target_job: job.id, target_lease: job.lease_token, target_embedding: embedding, target_hash: hash,
+      const fingerprint = await fingerprintStoredCover(photo.data);
+      const indexed = await admin.rpc('save_pet_cover_fingerprint', {
+        target_job: job.id, target_lease: job.lease_token, target_fingerprint: fingerprint,
       });
-      if (completed.error) throw completed.error;
-      // A false result means the photo changed or the lease expired. Finish is fenced below.
+      if (indexed.error) throw indexed.error;
+      if (indexed.data && !job.payload.coverOnly) {
+        const { embedStoredImage } = await import('./serverImageEmbedding');
+        const embedding = await embedStoredImage(photo.data);
+        const hash = createHash('sha256').update(Buffer.from(await photo.data.arrayBuffer())).digest('hex');
+        const completed = await admin.rpc('complete_pet_image_embedding', {
+          target_job: job.id, target_lease: job.lease_token, target_embedding: embedding, target_hash: hash,
+        });
+        if (completed.error) throw completed.error;
+      }
     }
   } catch {
     outcome = 'retry';
@@ -50,13 +57,18 @@ export async function runPetImageJob(admin: AdminClient = createAdminClient()): 
   return true;
 }
 
-export function schedulePetImageJob(): void {
+export function schedulePetImageJob(backfillCovers = false): void {
   after(async () => {
     try {
       if (await limitServiceRequest('pet-image-worker')) return;
+      const admin = createAdminClient();
+      if (backfillCovers) {
+        const { error } = await admin.rpc('queue_missing_pet_cover_fingerprints');
+        if (error) throw error;
+      }
       const deadline = Date.now() + 40_000;
       for (let count = 0; count < 3 && Date.now() < deadline; count += 1) {
-        if (!await runPetImageJob()) break;
+        if (!await runPetImageJob(admin)) break;
       }
     } catch {
       reportError(new Error('Pet image worker failed'), { area: 'backend', operation: 'pet-image-worker' });

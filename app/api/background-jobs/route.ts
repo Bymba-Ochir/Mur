@@ -19,6 +19,6 @@ export async function GET(request: Request) {
   const limited = await limitServiceRequest('background-jobs');
   if (limited) return limited;
   scheduleBackgroundJobs(true);
-  schedulePetImageJob();
+  schedulePetImageJob(true);
   return NextResponse.json({ accepted: true }, { status: 202, headers: { 'Cache-Control': 'no-store' } });
 }

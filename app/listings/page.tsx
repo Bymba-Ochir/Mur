@@ -26,7 +26,7 @@ const DISTRICTS: (District | '')[] = ['', ...DISTRICT_VALUES];
 
 type ImageMatch = { query: string } & (
   | { phase: 'matching'; progress?: string }
-  | { phase: 'database' | 'page-photos'; pets: Pet[] }
+  | { phase: 'database' | 'same-photos'; pets: Pet[] }
   | { phase: 'browser'; embedding: number[] }
   | { phase: 'error'; message: string }
 );
@@ -64,7 +64,7 @@ export default function ListingsPage() {
   const activeMatch = match?.query === query ? match : null;
   const matching = activeMatch?.phase === 'matching';
   const rankedPets = useMemo(() => {
-    if (activeMatch?.phase === 'database' || activeMatch?.phase === 'page-photos') return activeMatch.pets;
+    if (activeMatch?.phase === 'database' || activeMatch?.phase === 'same-photos') return activeMatch.pets;
     if (activeMatch?.phase === 'browser') return rankBySimilarity(activeMatch.embedding, pets);
     return null;
   }, [activeMatch, pets]);
@@ -129,13 +129,16 @@ export default function ListingsPage() {
     const controller = new AbortController();
     matchAbortRef.current = controller;
     try {
-      if (loadedQuery.current === query) {
-        const samePhotos = await findSameListingPhotos(file, pets, controller.signal);
-        if (controller.signal.aborted) return;
-        if (samePhotos.length) {
-          setMatch({ query, phase: 'page-photos', pets: samePhotos });
-          return;
-        }
+      const samePhotos = await findSameListingPhotos(file, loadedQuery.current === query ? pets : [], {
+        status: status || undefined,
+        type: type || undefined,
+        district: district || undefined,
+        search: search || undefined,
+      }, controller.signal);
+      if (controller.signal.aborted) return;
+      if (samePhotos.length) {
+        setMatch({ query, phase: 'same-photos', pets: samePhotos });
+        return;
       }
       const [embedding, imageHash] = await Promise.all([
         getImageEmbedding(file, progress => {
@@ -258,7 +261,7 @@ export default function ListingsPage() {
         {activeMatch?.phase === 'matching' && <p className="match-status">{activeMatch.progress ?? t('listings_match_initial')}</p>}
         {rankedPets?.length === 0 && <p className="match-status">{t(pets.length ? 'listings_match_none_keep' : 'listings_match_none')}</p>}
         {rankedPets && rankedPets.length > 0 && (
-          <p className="match-status success">{rankedPets.length} {t('match_results')} · {activeMatch?.phase === 'database' ? t('match_all_database') : t('match_browser_fallback')}</p>
+          <p className="match-status success">{rankedPets.length} {t('match_results')} · {activeMatch?.phase === 'same-photos' ? t('match_same_photo') : activeMatch?.phase === 'database' ? t('match_all_database') : t('match_browser_fallback')}</p>
         )}
         {activeMatch?.phase === 'error' && <p className="match-status err">{activeMatch.message}</p>}
         </div>
@@ -303,7 +306,7 @@ export default function ListingsPage() {
           <div className="listings-grid">
             {visiblePets.map((p) => <PetCard key={p.id} pet={p} />)}
           </div>
-          {hasMore && !(rankedPets?.length && (activeMatch?.phase === 'database' || activeMatch?.phase === 'page-photos')) && (
+          {hasMore && !(rankedPets?.length && (activeMatch?.phase === 'database' || activeMatch?.phase === 'same-photos')) && (
             <div className="load-more-wrap">
               <Button onClick={handleLoadMore} disabled={loadingMore} variant="ghost">
                 {loadingMore ? t('loading_more') : t('load_more')}

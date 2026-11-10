@@ -82,10 +82,10 @@ it('ignores a photo response when the user changes the listing filter', async ()
   expect(screen.queryByText('listings_match_searching')).not.toBeInTheDocument();
 });
 
-it('finds a re-encoded listing photo without waiting for the model or database index', async () => {
+it('shows a matching cover from outside the loaded page before running the model', async () => {
   const matchingPet = { id: 'same', name: 'Matching cover photo' };
   mocks.fetchPets.mockResolvedValue({
-    pets: [{ id: 'existing', name: 'Existing dog' }, matchingPet],
+    pets: [{ id: 'existing', name: 'Existing dog' }],
     hasMore: true,
   });
   mocks.findSameListingPhotos.mockResolvedValue([matchingPet]);
@@ -94,7 +94,7 @@ it('finds a re-encoded listing photo without waiting for the model or database i
 
   uploadPhoto();
 
-  await screen.findByText('1 match_results · match_browser_fallback');
+  await screen.findByText('1 match_results · match_same_photo');
   expect(screen.getByText('Matching cover photo')).toBeVisible();
   expect(screen.queryByText('Existing dog')).not.toBeInTheDocument();
   expect(mocks.getImageEmbedding).not.toHaveBeenCalled();

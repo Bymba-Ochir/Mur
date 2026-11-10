@@ -1,9 +1,10 @@
 import { ownedPetPhotoStoragePath } from './storageObjectPath';
 import { databaseFetch } from './supabaseClient';
-import type { Pet } from './types';
+import { COVER_SAMPLE_SIZE, coverPhotoFingerprint } from './coverPhotoFingerprint';
+import { fetchPetCoverCandidates } from './petService';
+import type { Pet, PetFilters } from './types';
 
-const SAMPLE_SIZE = 32;
-const MAX_CANDIDATES = 6;
+const LOCAL_FALLBACK_LIMIT = 6;
 const MAX_CANDIDATE_BYTES = 2 * 1024 * 1024;
 const MAX_SOURCE_BYTES = 12 * 1024 * 1024;
 
@@ -11,17 +12,17 @@ async function samplePhoto(photo: Blob) {
   const bitmap = await createImageBitmap(photo);
   try {
     const canvas = document.createElement('canvas');
-    canvas.width = canvas.height = SAMPLE_SIZE;
+    canvas.width = canvas.height = COVER_SAMPLE_SIZE;
     const context = canvas.getContext('2d');
     if (!context) return null;
     // Match the black matte used when the upload canvas exports a JPEG.
     context.imageSmoothingQuality = 'high';
     context.fillStyle = '#000';
-    context.fillRect(0, 0, SAMPLE_SIZE, SAMPLE_SIZE);
-    context.drawImage(bitmap, 0, 0, SAMPLE_SIZE, SAMPLE_SIZE);
+    context.fillRect(0, 0, COVER_SAMPLE_SIZE, COVER_SAMPLE_SIZE);
+    context.drawImage(bitmap, 0, 0, COVER_SAMPLE_SIZE, COVER_SAMPLE_SIZE);
     return {
       aspect: bitmap.width / bitmap.height,
-      pixels: context.getImageData(0, 0, SAMPLE_SIZE, SAMPLE_SIZE).data,
+      pixels: context.getImageData(0, 0, COVER_SAMPLE_SIZE, COVER_SAMPLE_SIZE).data,
     };
   } finally {
     bitmap.close();
@@ -41,7 +42,7 @@ function isSamePhoto(source: PhotoSample, candidate: PhotoSample) {
       squaredDifference += delta * delta;
     }
   }
-  const channels = SAMPLE_SIZE * SAMPLE_SIZE * 3;
+  const channels = COVER_SAMPLE_SIZE * COVER_SAMPLE_SIZE * 3;
   // Allow small encoding differences while rejecting changes to the composition.
   return difference / channels <= 5 && squaredDifference / channels <= 100;
 }
@@ -72,31 +73,39 @@ async function readPhoto(response: Response) {
   }
 }
 
-/** Compare a small batch of already loaded cover photos without sending the search image. */
-export async function findSameListingPhotos(file: File, pets: Pet[], signal: AbortSignal): Promise<Pet[]> {
-  const projectUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  if (!projectUrl || signal.aborted || file.size > MAX_SOURCE_BYTES) return [];
-  const candidates = pets.filter(pet => pet.photoURL).slice(0, MAX_CANDIDATES);
-  if (!candidates.length) return [];
-
-  const source = await samplePhoto(file).catch(() => null);
-  if (!source || signal.aborted) return [];
-
+async function verifyCandidates(source: PhotoSample, candidates: Pet[], projectUrl: string, signal: AbortSignal) {
   const fetchPhoto = databaseFetch(projectUrl);
-  const deadline = AbortSignal.any([signal, AbortSignal.timeout(3000)]);
   const matches = await Promise.all(candidates.map(async pet => {
     const path = ownedPetPhotoStoragePath(pet.photoURL, pet.createdBy, projectUrl);
     if (!path) return null;
     const objectPath = path.split('/').map(encodeURIComponent).join('/');
     const url = new URL('/storage/v1/object/public/pet-photos/' + objectPath, projectUrl);
     try {
-      const response = await fetchPhoto(url, { signal: deadline, credentials: 'omit', redirect: 'error' });
+      const response = await fetchPhoto(url, { signal, credentials: 'omit', redirect: 'error' });
       const photo = await readPhoto(response);
-      const candidate = photo && !deadline.aborted ? await samplePhoto(photo) : null;
-      return candidate && !deadline.aborted && isSamePhoto(source, candidate) ? pet : null;
+      const candidate = photo && !signal.aborted ? await samplePhoto(photo) : null;
+      return candidate && !signal.aborted && isSamePhoto(source, candidate) ? pet : null;
     } catch {
       return null;
     }
   }));
   return signal.aborted ? [] : matches.filter(pet => pet !== null);
+}
+
+/** Search indexed active covers first, with a small fallback while older photos are being indexed. */
+export async function findSameListingPhotos(file: File, pets: Pet[], filters: PetFilters, signal: AbortSignal): Promise<Pet[]> {
+  const projectUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  if (!projectUrl || signal.aborted || file.size > MAX_SOURCE_BYTES) return [];
+  const source = await samplePhoto(file).catch(() => null);
+  if (!source || signal.aborted) return [];
+
+  const fingerprint = coverPhotoFingerprint(source.pixels, 4);
+  const candidates = await fetchPetCoverCandidates(fingerprint, filters, signal).catch(() => []);
+  if (signal.aborted) return [];
+  const matches = await verifyCandidates(source, candidates, projectUrl, AbortSignal.any([signal, AbortSignal.timeout(3000)]));
+  if (matches.length || signal.aborted) return matches;
+
+  const checked = new Set(candidates.map(pet => pet.id));
+  const fallback = pets.filter(pet => pet.photoURL && !checked.has(pet.id)).slice(0, LOCAL_FALLBACK_LIMIT);
+  return verifyCandidates(source, fallback, projectUrl, AbortSignal.any([signal, AbortSignal.timeout(3000)]));
 }

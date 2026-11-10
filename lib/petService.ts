@@ -130,7 +130,7 @@ export async function fetchPetById(id: string): Promise<Pet> {
  */
 export async function fetchPets(filters: PetFilters = {}): Promise<{ pets: Pet[]; hasMore: boolean }> {
   const { status, district, type, search, includeResolved = false, page = 0 } = filters;
-  let q = supabase.from(TABLE).select('*').order('created_at', { ascending: false });
+  let q = supabase.from(TABLE).select('*').eq('is_hidden', false).is('archived_at', null).order('created_at', { ascending: false });
   if (status) q = q.eq('status', status);
   if (district) q = q.eq('district', district);
   if (type) q = q.eq('type', type);
@@ -213,6 +213,25 @@ export function rankBySimilarity(targetEmbedding: number[] | null, pets: Pet[]):
     .sort((a, b) => b.similarity - a.similarity);
 }
 
+export async function fetchPetCoverCandidates(fingerprint: string, filters: PetFilters, signal: AbortSignal): Promise<Pet[]> {
+  const { data, error } = await supabase.rpc('match_pet_cover_ids', {
+    query_fingerprint: fingerprint,
+    query_status: filters.status || null,
+    query_type: filters.type || null,
+    query_district: filters.district || null,
+    query_text: filters.search || null,
+  }).abortSignal(signal);
+  if (error) throw error;
+  const ids = ((data ?? []) as { id: string }[]).map(row => row.id);
+  if (!ids.length || signal.aborted) return [];
+  const { data: rows, error: rowsError } = await supabase.from(TABLE).select('*').in('id', ids)
+    .eq('resolved', false).eq('is_hidden', false).is('archived_at', null).abortSignal(signal);
+  if (rowsError) throw rowsError;
+  const pets = (await hydrateListingPhotos('pet', rows ?? [])).map(mapPetRow);
+  const byId = new Map(pets.map(pet => [pet.id, pet]));
+  return ids.flatMap(id => byId.get(id) ?? []);
+}
+
 /**
  * pgvector RPC ашиглан бүх идэвхтэй зараас hybrid тохирол хайна.
  * Migration ажиллаагүй бол null буцааж UI хуучин browser fallback ашиглана.
@@ -254,9 +273,10 @@ export async function fetchPetMatches({
   }
 
   const rows = (data ?? []) as Array<{ pet: Record<string, unknown> & { id: string }; image_similarity: number; hybrid_score: number }>;
-  const hydratedPets = await hydrateListingPhotos('pet', rows.map((row) => row.pet));
+  const visibleRows = rows.filter(({ pet }) => pet.is_hidden !== true && pet.archived_at == null);
+  const hydratedPets = await hydrateListingPhotos('pet', visibleRows.map((row) => row.pet));
   const petById = new Map(hydratedPets.map((pet) => [pet.id, pet]));
-  return rows.map((row) => ({
+  return visibleRows.map((row) => ({
     ...mapPetRow((petById.get(row.pet.id) ?? row.pet) as never),
     similarity: Math.round(Number(row.image_similarity) * 100),
     hybridScore: Math.round(Number(row.hybrid_score)),

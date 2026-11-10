@@ -2,6 +2,7 @@ import { Blob as NodeBlob } from 'node:buffer';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 vi.mock('next/server', () => ({ after: vi.fn() }));
 vi.mock('../../lib/supabaseAdmin', () => ({ createAdminClient: vi.fn() }));
+vi.mock('../../lib/serverCoverPhotoFingerprint', () => ({ fingerprintStoredCover: vi.fn(async () => '1'.repeat(64)) }));
 vi.mock('../../lib/serverImageEmbedding', () => ({ embedStoredImage: vi.fn() }));
 vi.mock('../../lib/apiRateLimit', () => ({ limitServiceRequest: vi.fn() }));
 vi.mock('../../lib/errorTracking', () => ({ reportError: vi.fn() }));
@@ -39,6 +40,9 @@ afterEach(() => vi.unstubAllEnvs());
 it('uses only the database-owned storage path and completes with its lease and hash', async () => {
   expect(await runPetImageJob(admin)).toBe(true);
   expect(download).toHaveBeenCalledWith(`${owner}/lost/photo.jpg`, {}, { signal: expect.any(AbortSignal) });
+  expect(rpc).toHaveBeenCalledWith('save_pet_cover_fingerprint', {
+    target_job: petId, target_lease: owner, target_fingerprint: '1'.repeat(64),
+  });
   expect(rpc).toHaveBeenCalledWith('complete_pet_image_embedding', expect.objectContaining({
     target_job: petId, target_lease: owner, target_embedding: expect.any(Array),
     target_hash: 'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad',
@@ -71,4 +75,14 @@ it('defers inference until after the response and bounds a run to three jobs', a
 it('does no processing when the shared service budget is exhausted', async () => {
   vi.mocked(limitServiceRequest).mockResolvedValue(Response.json({}, { status: 429 }) as Awaited<ReturnType<typeof limitServiceRequest>>);
   schedulePetImageJob(); await tasks[0](); expect(rpc).not.toHaveBeenCalled();
+});
+
+it('backfills a cover under the existing lease without running the image model', async () => {
+  rpc.mockImplementation(async (name: string) => ({
+    error: null,
+    data: name === 'claim_pet_image_job' ? [{ ...job, payload: { ...job.payload, coverOnly: true } }] : true,
+  }));
+  await runPetImageJob(admin);
+  expect(rpc).toHaveBeenCalledWith('save_pet_cover_fingerprint', expect.anything());
+  expect(embedStoredImage).not.toHaveBeenCalled();
 });
