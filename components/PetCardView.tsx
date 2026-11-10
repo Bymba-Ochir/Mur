@@ -39,7 +39,7 @@ export interface PetCardViewProps extends HTMLAttributes<HTMLDivElement> {
   /** false + onRevealPhone = утас далд (masked) эхэлнэ */
   revealed?: boolean;
   onRevealPhone?: () => void;
-  /** false бол hover lift / pointer-г унтраана (жишээ: preview карт) */
+  /** false бол preview картын холбоос болон hover өнгийг унтраана. */
   interactive?: boolean;
 }
 
@@ -96,34 +96,20 @@ export default function PetCardView({
 
       <style jsx>{`
         .pet-card {
-          background: var(--card); border: 1px solid var(--line); border-radius: var(--r-lg);
-          overflow: hidden; box-shadow: var(--shadow-sm);
-          transition: transform var(--dur-base) var(--ease-out), box-shadow var(--dur-base) var(--ease-out), border-color var(--dur-base) var(--ease-out);
+          background: var(--surface-2); border: 1px solid var(--border-subtle); border-radius: 16px;
+          overflow: hidden; transition: border-color var(--dur-fast) var(--ease-out);
           display: flex; flex-direction: column; min-width: 0; align-self: start;
         }
-        @media (max-width: 640px) {
-          .pet-card { border-radius: var(--r-md); }
-        }
-        @media (min-width: 1025px) {
-          .pet-card { border-radius: var(--r-xl); }
-        }
         @media (hover: hover) and (pointer: fine) {
-          .pet-card:not(.static):hover { box-shadow: var(--shadow-lift); transform: translateY(-4px); border-color: var(--primary-light); }
-          .pet-card:not(.static):hover .thumb :global(img) { transform: scale(1.045); }
+          .pet-card:not(.static):hover { border-color: var(--border-strong); }
         }
-        .pet-card:focus-within { border-color: var(--primary-light); box-shadow: var(--shadow-md); }
-        .pet-card.static:hover { transform: none; box-shadow: var(--shadow-sm); border-color: var(--line); }
+        .pet-card:focus-within { border-color: var(--border-focus); }
         .thumb {
           background: var(--thumb-bg); position: relative;
           display: flex; align-items: center; justify-content: center; overflow: hidden;
           flex-shrink: 0;
         }
-        .thumb::after {
-          content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 50%;
-          background: linear-gradient(to top, rgba(0,0,0,0.45) 0%, transparent 100%);
-          pointer-events: none; z-index: 1;
-        }
-        .thumb :global(img) { transition: transform 0.4s cubic-bezier(.16,1,.3,1); object-fit: cover; width: 100%; height: 100%; }
+        .thumb :global(img) { object-fit: cover; width: 100%; height: 100%; }
         .emoji {
           color: var(--primary);
           display: flex;
@@ -138,34 +124,16 @@ export default function PetCardView({
         @media (min-width: 1025px) {
           .emoji { width: 96px; height: 96px; }
         }
-        .badge {
-          position: absolute; bottom: 10px; left: 10px; z-index: 2; font-family: var(--font-mono); font-size: 9.5px;
-          padding: 5px 10px; border-radius: var(--r-pill); font-weight: 700; letter-spacing: 0.03em;
-          backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-          background: var(--surface-2); color: var(--text-primary);
+        .badge, .similarity {
+          position: absolute; z-index: 2; font-size: var(--text-xs); font-weight: 600;
+          padding: 4px 8px; border-radius: 6px; background: var(--surface-2); color: var(--text-primary);
           border: 1px solid var(--border-subtle);
-          box-shadow: var(--shadow-xs);
         }
-        @media (max-width: 480px) {
-          .badge { font-size: 10px; padding: 5px 11px; bottom: 12px; left: 12px; }
-        }
-        @media (min-width: 1025px) {
-          .badge { font-size: 10.5px; padding: 6px 12px; bottom: 14px; left: 14px; }
-        }
-        .badge.lost { background: var(--accent); color: var(--text-on-accent); border-color: transparent; }
-        .badge.found { background: var(--success); color: var(--text-on-accent); border-color: transparent; }
-        .similarity {
-          position: absolute; bottom: 10px; right: 10px; font-family: var(--font-mono); font-size: 10.5px; font-weight: 600;
-          background: var(--surface-3); color: var(--accent); padding: 3px 9px; border-radius: var(--r-pill);
-          border: 1px solid var(--border-subtle);
-          -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
-        }
-        @media (max-width: 480px) {
-          .similarity { font-size: 11px; padding: 4px 10px; bottom: 12px; right: 12px; }
-        }
-        @media (min-width: 1025px) {
-          .similarity { font-size: 11px; padding: 4px 11px; bottom: 14px; right: 14px; }
-        }
+        .badge { bottom: 12px; left: 12px; display: inline-flex; align-items: center; gap: 6px; }
+        .badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; }
+        .badge.lost::before { background: var(--alert); }
+        .badge.found::before { background: var(--found-deep); }
+        .similarity { top: 12px; right: 12px; max-width: 60%; text-align: end; }
         .info { padding: 14px 15px; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
         @media (max-width: 480px) {
           .info { padding: 12px 14px; }
@@ -219,7 +187,7 @@ export default function PetCardView({
         .reveal-btn { cursor: pointer; font-family: inherit; width: 100%; }
         .reveal-btn:focus-visible, .phone:focus-visible { outline: 2px solid var(--border-focus); outline-offset: 2px; }
         @media (prefers-reduced-motion: reduce) {
-          .pet-card, .thumb :global(img) { transition: none; }
+          .pet-card { transition: none; }
         }
       `}</style>
     </div>

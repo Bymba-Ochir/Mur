@@ -56,7 +56,7 @@ export default function PetPreviewCard({
 
       <style jsx>{`
         .preview-wrap { width: 100%; max-width: 20rem; }
-        .preview-label { margin: 0 0 var(--sp-2); color: var(--muted); font-size: var(--text-xs); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+        .preview-label { margin: 0 0 var(--sp-2); color: var(--muted); font-size: var(--text-xs); font-weight: 600; }
       `}</style>
     </div>
   );

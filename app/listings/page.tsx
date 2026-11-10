@@ -184,10 +184,13 @@ export default function ListingsPage() {
   return (
     <div onClickCapture={(event) => { if ((event.target as HTMLElement).closest('a[href^="/pets/"]')) rememberScroll(); }} className="page-shell">
       <div className="page-header">
-        <p className="eyebrow">{t('listings_eyebrow')}</p>
+        <p className="listings-kicker">{t('listings_eyebrow')}</p>
         <h1>{t('listings_title')}</h1>
         <p>{t('listings_desc')}</p>
-        <div className="quick-actions"><Button as="link" href="/report-lost" variant="accent">{t('hero_btn_lost')}</Button><Button as="link" href="/report-found" variant="secondary">{t('hero_btn_found')}</Button></div>
+        <div className="listings-report-actions">
+          <Button as="link" href="/report-lost" variant="ghost">{t('hero_btn_lost')}</Button>
+          <Button as="link" href="/report-found" variant="ghost">{t('hero_btn_found')}</Button>
+        </div>
       </div>
 
       <section className="filters-panel content-panel" aria-labelledby="listings-filters-heading">
@@ -250,7 +253,6 @@ export default function ListingsPage() {
 
       <section className="match-upload" aria-labelledby="match-upload-heading">
         <div className="match-heading">
-          <span className="match-icon" aria-hidden="true"><Icon name="camera" size={19} /></span>
           <div>
             <h2 id="match-upload-heading">{t('listings_match_group')}</h2>
             <p>{t('match_label')}</p>
@@ -263,7 +265,7 @@ export default function ListingsPage() {
           aria-label={t('listings_match_file_label')}
         />
         <div className="match-actions">
-          <Button as="label" htmlFor="match-file" variant="ghost" size="sm">
+          <Button as="label" htmlFor="match-file" variant="ghost">
             <Icon name="camera" size={16} aria-hidden="true" /> {t('listings_match_file_label')}
           </Button>
           {activeMatch && <Button variant="ghost" size="sm" onClick={clearImageMatch}>{t(matching ? 'match_cancel' : 'listings_match_clear')}</Button>}
@@ -312,7 +314,7 @@ export default function ListingsPage() {
             {search || district || status || type ? t('empty_no_results_desc') : t('empty_no_posts_desc')}
           </p>
           <div className="empty-actions">
-            <Button as="link" href="/report-lost" variant="accent">{t('hero_btn_lost')}</Button>
+            <Button as="link" href="/report-lost" variant="primary">{t('hero_btn_lost')}</Button>
             <Button as="link" href="/report-found" variant="ghost">{t('hero_btn_found')}</Button>
           </div>
         </div>
@@ -339,18 +341,25 @@ export default function ListingsPage() {
           position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
           overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
         }
-        .filters-panel { margin-bottom: var(--sp-3); }
+        .page-header { margin-bottom: 16px; padding-bottom: 16px; }
+        .page-header h1 { margin-top: 4px; font-weight: 700; }
+        .listings-kicker { font-size: var(--text-xs); font-weight: 600; }
+        .listings-report-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+        .listings-report-actions :global(.btn-base), .match-actions :global(.btn-base) {
+          min-height: var(--touch-target); border-radius: 10px; color: var(--text-primary);
+        }
+        .filters-panel { margin-bottom: 8px; padding: 12px; border-radius: 16px; box-shadow: none; }
         .filters-panel .filter-bar {
           display: grid; grid-template-columns: minmax(240px, 1.6fr) repeat(3, minmax(140px, 1fr));
-          align-items: end; gap: var(--sp-3); margin: 0;
+          align-items: end; gap: 8px 12px; margin: 0;
         }
-        .filter-field { display: grid; min-width: 0; gap: var(--sp-2); }
+        .filter-field { display: grid; min-width: 0; gap: 4px; }
         .filter-label { color: var(--text-secondary); font-size: var(--text-xs); font-weight: 650; }
         .filter-field .filter { width: 100%; min-width: 0; margin: 0; }
         .search-control {
           display: flex; align-items: center; min-height: var(--touch-target); padding-inline: var(--sp-3);
           color: var(--text-tertiary); background: var(--card); border: 1.5px solid var(--line);
-          border-radius: var(--r-md); transition: border-color var(--dur-fast) ease, box-shadow var(--dur-fast) ease;
+          border-radius: 10px; transition: border-color var(--dur-fast) ease;
         }
         .search-control:hover { border-color: var(--muted); }
         .search-control:focus-within { border-color: var(--border-focus); box-shadow: 0 0 0 3px rgba(98, 91, 246, 0.12); }
@@ -358,28 +367,23 @@ export default function ListingsPage() {
         .search-control .filter:focus-visible { outline: none; box-shadow: none; }
         .filter-actions {
           display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3);
-          flex-wrap: wrap; margin: 0 0 var(--sp-5); padding-inline: var(--sp-1);
+          flex-wrap: wrap; margin: 0 0 16px;
         }
         .saved-link {
-          min-height: 36px; display: inline-flex; align-items: center; color: var(--primary);
+          min-height: var(--touch-target); display: inline-flex; align-items: center; color: var(--text-secondary);
           font-size: var(--text-xs); font-weight: 650; text-decoration: underline;
           text-decoration-color: transparent; text-underline-offset: 4px;
           transition: color var(--dur-fast) ease, text-decoration-color var(--dur-fast) ease;
         }
-        .saved-link:hover { color: var(--primary-deep); text-decoration-color: currentColor; }
+        .saved-link:hover { color: var(--text-primary); text-decoration-color: currentColor; }
         .district-tools { display: grid; gap: var(--sp-2); margin-bottom: var(--sp-4); }
         .match-upload {
           display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center;
-          gap: var(--sp-3) var(--sp-5); margin-bottom: var(--sp-5); padding: var(--sp-4);
-          background: color-mix(in srgb, var(--primary) 4%, var(--surface-2));
-          border: 1px solid var(--border-subtle); border-radius: var(--r-lg);
+          gap: 12px 20px; margin-bottom: 16px; padding: 16px;
+          background: var(--surface-2); border: 1px solid var(--border-subtle); border-radius: 16px;
         }
-        .match-heading { display: flex; align-items: flex-start; gap: var(--sp-3); min-width: 0; }
-        .match-icon {
-          width: 40px; height: 40px; flex: 0 0 40px; display: grid; place-items: center;
-          color: var(--primary); background: var(--eyebrow-bg); border-radius: var(--r-md);
-        }
-        .match-heading h2 { margin-bottom: var(--sp-1); font-size: var(--text-base); }
+        .match-heading { min-width: 0; }
+        .match-heading h2 { margin-bottom: 4px; font-size: var(--text-base); font-weight: 600; }
         .match-heading p, .match-note { max-width: 62ch; color: var(--text-secondary); font-size: var(--text-xs); line-height: 1.5; }
         .match-note { margin-top: var(--sp-2); }
         .match-review {
@@ -402,7 +406,7 @@ export default function ListingsPage() {
           font-size: var(--text-xs); line-height: 1.5;
         }
         .match-status.err { color: var(--alert); background: color-mix(in srgb, var(--alert) 8%, var(--surface-2)); }
-        .match-status.success { color: var(--success); background: color-mix(in srgb, var(--success) 8%, var(--surface-2)); }
+        .match-status.success { color: var(--success-text); background: var(--success-bg); }
         .results-section { min-height: 240px; }
         .listings-grid {
           display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -420,39 +424,36 @@ export default function ListingsPage() {
           .listings-grid { grid-template-columns: 1fr; }
         }
         @media (max-width: 560px) {
-          .filters-panel .filter-bar { grid-template-columns: 1fr; }
-          .filter-actions { align-items: stretch; flex-direction: column; }
-          .filter-actions :global(.btn-base), .saved-link { width: 100%; justify-content: center; }
+          .filters-panel .filter-bar { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+          .filter-field--search, .filter-field:last-child { grid-column: 1 / -1; }
+          .filter-actions { gap: 4px 8px; }
+          .filter-actions :global(.btn-base) { padding-inline: 8px; }
+          .listings-report-actions :global(.btn-base) { flex: 1 1 8rem; padding: 8px; }
           .match-upload { padding: var(--sp-3); border-radius: var(--r-md); }
           .match-actions { align-items: stretch; flex-direction: column; }
           .match-actions :global(.btn-base) { width: 100%; white-space: normal; text-align: center; }
           .match-status { font-size: 13px; }
         }
         .empty-state {
-          text-align: center; padding: 52px 24px; margin-top: var(--sp-2);
-          background: var(--card); border: 1px solid var(--line); border-radius: var(--r-xl);
-          box-shadow: var(--shadow-sm); position: relative; overflow: hidden;
+          text-align: center; padding: 40px 24px; margin-top: 8px;
+          background: var(--surface-2); border: 1px solid var(--border-subtle); border-radius: 16px;
         }
-        .empty-state::before {
-          content: ''; position: absolute; inset: -40% -20% auto; height: 80%;
-          background: radial-gradient(60% 60% at 50% 0%, color-mix(in srgb, var(--accent) 8%, transparent), transparent 70%);
-          pointer-events: none;
-        }
+        .empty-actions :global([data-variant="primary"]) { background: var(--primary-dark); box-shadow: none; }
         @media (max-width: 640px) {
-          .empty-state { padding: 40px 20px; margin-top: var(--sp-3); border-radius: var(--r-lg); }
+          .empty-state { padding: 40px 20px; margin-top: var(--sp-3); }
         }
         @media (max-width: 480px) {
           .empty-state { padding: 32px 16px; }
         }
         .empty-icon {
           position: relative;
-          width: 72px; height: 72px; margin: 0 auto var(--sp-3);
+          width: 48px; height: 48px; margin: 0 auto var(--sp-3);
           display: flex; align-items: center; justify-content: center;
           background: var(--eyebrow-bg); color: var(--primary);
           border: 1px solid var(--glass-border); border-radius: 50%;
         }
         @media (max-width: 480px) {
-          .empty-icon { width: 76px; height: 76px; margin-bottom: var(--sp-4); }
+          .empty-icon { margin-bottom: 12px; }
         }
         .empty-title { font-weight: 700; color: var(--primary); font-size: 16px; margin-bottom: var(--sp-2); position: relative; }
         @media (max-width: 480px) {
