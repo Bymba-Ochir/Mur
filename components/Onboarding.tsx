@@ -111,7 +111,7 @@ export default function Onboarding() {
               {Array.from({ length: TOTAL_STEPS }, (_, item) => <span key={item} className={item <= step ? 'active' : ''} />)}
             </div>
           </div>
-          <button className="onb-close" type="button" onClick={close} aria-label={t('close')}>×</button>
+          <button className="onb-close" type="button" onClick={close} aria-label={t('close')}><UiIcon name="close" size={20} /></button>
         </div>
 
         {step === 0 && <>
@@ -142,7 +142,6 @@ export default function Onboarding() {
         </>}
 
         {step === 2 && intent && <>
-          <span className="large-icon" aria-hidden="true"><UiIcon name={guideIcons[intent]} size={30} /></span>
           <h2 id="onb-title" tabIndex={-1}>{t(`onb_${intent}_title`)}</h2>
           <p className="onb-lead" id="onb-description">{t(`onb_${intent}_next`)}</p>
           {needsDistrict && <>
@@ -163,41 +162,46 @@ export default function Onboarding() {
       </div>
 
       <style jsx>{`
-        .onb-overlay { position: fixed; inset: 0; z-index: 500; display: grid; place-items: center; padding: 20px; background: var(--overlay); backdrop-filter: blur(8px); }
-        .onb-card { width: min(100%, 570px); max-height: min(760px, calc(100dvh - 32px)); overflow-y: auto; padding: 28px; border: 1px solid var(--border-subtle); border-radius: var(--r-xl); background: var(--card); box-shadow: var(--shadow-lift); animation: onb-pop .22s var(--ease-out); }
-        @keyframes onb-pop { from { opacity: 0; transform: translateY(12px) scale(.98); } }
-        .onb-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px; }
-        .onb-progress-wrap { flex: 1; max-width: 180px; }
-        .onb-step-label { display: block; margin-bottom: 7px; color: var(--text-secondary); font-size: var(--text-xs); font-weight: 600; }
-        .onb-progress { display: flex; gap: 7px; }
-        .onb-progress span { width: 100%; height: 5px; border-radius: 999px; background: var(--surface-3); }
+        .onb-overlay { position: fixed; inset: 0; z-index: 500; display: grid; place-items: center; padding: 16px; background: var(--overlay); }
+        .onb-card { width: min(100%, 490px); max-height: calc(100dvh - 32px); overflow-y: auto; overscroll-behavior: contain; padding: 28px; border: 1px solid var(--border-subtle); border-radius: var(--r-lg); background: var(--card); box-shadow: var(--shadow-md); }
+        .onb-top { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 16px; }
+        .onb-progress-wrap { width: 120px; }
+        .onb-step-label { display: block; margin-bottom: 6px; color: var(--text-secondary); font-size: var(--text-xs); font-weight: 600; }
+        .onb-progress { display: flex; gap: 4px; }
+        .onb-progress span { flex: 1; height: 4px; border-radius: 999px; background: var(--surface-3); }
         .onb-progress span.active { background: var(--primary); }
-        .onb-close { width: var(--touch-target); height: var(--touch-target); border: 1px solid var(--border-subtle); border-radius: 50%; color: var(--text-secondary); background: var(--surface-2); font-size: 26px; line-height: 1; cursor: pointer; }
-        h2 { margin: 0; color: var(--text-primary); font-family: var(--font-display); font-size: clamp(1.45rem, 4vw, 2rem); line-height: 1.2; }
-        .onb-lead { margin: 10px 0 22px; color: var(--text-secondary); font-size: 14px; line-height: 1.6; }
-        .onb-choices { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .onb-choices button { position: relative; display: flex; align-items: center; gap: 12px; min-height: 82px; padding: 14px; text-align: left; color: var(--text-primary); background: var(--surface-2); border: 1px solid var(--border-subtle); border-radius: var(--r-md); cursor: pointer; transition: .18s ease; }
-        .onb-choices button:hover, .onb-choices button.selected { border-color: var(--primary); background: color-mix(in srgb, var(--primary) 9%, var(--surface-2)); transform: translateY(-1px); }
-        .choice-icon, .large-icon { display: grid; place-items: center; flex: 0 0 auto; width: 44px; height: 44px; border-radius: 14px; color: var(--primary); background: color-mix(in srgb, var(--primary) 12%, transparent); }
+        .onb-close { display: grid; place-items: center; width: var(--touch-target); height: var(--touch-target); border: 0; border-radius: var(--r-sm); color: var(--text-secondary); background: transparent; cursor: pointer; }
+        .onb-close:hover { background: var(--surface-2); }
+        h2 { margin: 0; color: var(--text-primary); font-family: var(--font-display); font-size: clamp(1.4rem, 4vw, 1.75rem); line-height: 1.2; }
+        .onb-lead { margin: 8px 0 18px; color: var(--text-secondary); font-size: var(--text-sm); line-height: 1.6; }
+        .onb-choices { display: grid; gap: 6px; }
+        .onb-choices button { display: grid; grid-template-columns: 32px minmax(0, 1fr) 18px; align-items: center; gap: 10px; min-height: 58px; padding: 8px 10px; text-align: left; color: var(--text-primary); background: var(--card); border: 1px solid var(--border-subtle); border-radius: var(--r-sm); cursor: pointer; }
+        .onb-choices button:hover { background: var(--surface-2); }
+        .onb-choices button.selected { border-color: var(--primary); background: var(--eyebrow-bg); }
+        .choice-icon { display: grid; place-items: center; flex: 0 0 32px; width: 32px; height: 32px; color: var(--primary); }
         strong, small { display: block; }
-        strong { font-size: 14px; }
-        small { margin-top: 4px; color: var(--text-secondary); font-size: 11px; line-height: 1.35; }
-        .choice-check { position: absolute; top: 8px; right: 10px; color: var(--primary); opacity: 0; }
-        .selected .choice-check { opacity: 1; }
-        .onb-overview { display: grid; gap: 8px; list-style: none; margin: 0; padding: 0; }
-        .onb-overview li { display: flex; align-items: center; gap: 12px; padding: 10px 12px; background: var(--surface-2); border-radius: var(--r-md); color: var(--text-primary); font-size: 14px; line-height: 1.45; }
-        .large-icon { width: 56px; height: 56px; margin-bottom: 14px; border-radius: 18px; }
-        label { display: block; margin: 0 0 7px; color: var(--text-secondary); font-size: 12px; font-weight: 700; text-align: left; }
-        select { width: 100%; height: 52px; padding: 0 14px; color: var(--text-primary); background: var(--surface-2); border: 1px solid var(--border-subtle); border-radius: var(--r-md); font: inherit; }
-        .onb-actions { display: grid; grid-template-columns: 1fr 1.5fr; gap: 10px; margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border-subtle); }
-        .onb-actions button { min-height: 48px; border-radius: var(--r-md); font-weight: 700; cursor: pointer; }
-        .onb-actions .secondary { color: var(--text-secondary); background: transparent; border: 1px solid var(--border-subtle); }
-        .onb-actions .primary { color: var(--text-on-accent); background: var(--primary); border: 0; }
-        .onb-actions .primary:disabled { opacity: .45; cursor: not-allowed; }
-        button:focus-visible, select:focus-visible { outline: 3px solid var(--border-focus); outline-offset: 2px; }
-        @media (max-width: 560px) { .onb-overlay { align-items: end; padding: 0; } .onb-card { max-height: 92dvh; padding: 18px 16px calc(16px + var(--safe-bottom)); border-radius: 24px 24px 0 0; overscroll-behavior:contain; } .onb-top{margin-bottom:14px}.onb-lead{margin:8px 0 16px;line-height:1.5}.onb-choices { grid-template-columns: 1fr; gap:8px } .onb-choices button { min-height:64px;padding:10px 12px }.large-icon{width:54px;height:54px;margin-bottom:12px}.onb-actions{position:sticky;bottom:calc(-16px - var(--safe-bottom));margin:18px -16px 0;padding:12px 16px calc(12px + var(--safe-bottom));background:var(--card)} }
-        @media (max-width: 370px) { .choice-icon{width:40px;height:40px}.onb-actions{grid-template-columns:1fr 1.25fr} }
-        @media (prefers-reduced-motion: reduce) { .onb-card { animation: none; } }
+        strong { font-size: var(--text-sm); }
+        small { margin-top: 2px; color: var(--text-secondary); font-size: var(--text-xs); line-height: 1.4; }
+        .choice-check { display: grid; place-items: center; color: var(--primary); visibility: hidden; }
+        .selected .choice-check { visibility: visible; }
+        .onb-overview { display: grid; list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--border-subtle); }
+        .onb-overview li { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 1px solid var(--border-subtle); color: var(--text-primary); font-size: var(--text-sm); line-height: 1.45; }
+        label { display: block; margin: 0 0 6px; color: var(--text-secondary); font-size: var(--text-sm); font-weight: 600; }
+        select { width: 100%; min-height: var(--touch-target); padding: 0 10px; color: var(--text-primary); background: var(--surface-2); border: 1px solid var(--border-subtle); border-radius: var(--r-sm); font: inherit; font-size: 16px; }
+        .onb-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
+        .onb-actions button { min-height: var(--touch-target); padding: 8px 16px; border: 1px solid transparent; border-radius: var(--r-sm); font: inherit; font-size: var(--text-sm); font-weight: 700; cursor: pointer; }
+        .onb-actions .secondary { color: var(--text-secondary); background: transparent; }
+        .onb-actions .secondary:hover { background: var(--surface-2); }
+        .onb-actions .primary { color: var(--text-on-accent); background: var(--primary-dark); }
+        .onb-actions .primary:disabled { opacity: .55; cursor: not-allowed; }
+        button:focus-visible, select:focus-visible { outline: 2px solid var(--border-focus); outline-offset: 2px; }
+        @media (max-width: 560px) {
+          .onb-overlay { align-items: end; padding: 0; }
+          .onb-card { max-height: 92dvh; padding: 16px 16px calc(14px + var(--safe-bottom)); border-radius: var(--r-lg) var(--r-lg) 0 0; }
+          .onb-top { margin-bottom: 10px; }
+          .onb-actions { position: sticky; bottom: calc(-14px - var(--safe-bottom)); margin: 12px -16px calc(-14px - var(--safe-bottom)); padding: 10px 16px calc(14px + var(--safe-bottom)); background: var(--card); }
+          .onb-actions .primary { flex: 1; }
+        }
       `}</style>
     </div>
   );

@@ -94,16 +94,18 @@ export default function AdoptionsPage() {
 
   return (
     <div className="page-shell">
-      <header className="page-header adoption-header">
+      <header className="page-header page-header--split">
+        <div>
         <p className="eyebrow">{t('adoptions_eyebrow')}</p>
         <h1>{t('adoptions_title')}</h1>
         <p>{t('adoptions_desc')}</p>
-        <Button as="link" href="/adoptions/new" variant="accent" className="header-action"><Icon name="plus" size={18} />{t('adoptions_new_btn_plain')}</Button>
+        </div>
+        <Button as="link" href="/adoptions/new" variant="primary"><Icon name="plus" size={18} />{t('adoptions_new_btn_plain')}</Button>
       </header>
 
       <section className="filters-panel" aria-labelledby="adoption-filters-title">
         <div className="filters-heading">
-          <div><p className="filter-kicker">{t('adoptions_filter_kicker')}</p><h2 id="adoption-filters-title">{t('adoptions_filters_title')}</h2></div>
+          <div><h2 id="adoption-filters-title">{t('adoptions_filters_title')}</h2></div>
           {hasFilters && <button type="button" className="reset-filters" onClick={resetFilters}>{t('adoptions_clear_filters')}</button>}
         </div>
         <div className="filter-grid">
@@ -127,7 +129,7 @@ export default function AdoptionsPage() {
         <div className="adoption-grid" aria-busy="true" aria-label={t('adoptions_loading_label')}>{Array.from({ length: 6 }, (_, index) => <SkeletonCard key={index} />)}</div>
       ) : adoptions.length === 0 ? (
         <EmptyState icon={<Icon name="heart" size={30} />} title={hasFilters ? t('empty_no_results_title') : t('adoptions_empty_title')} description={hasFilters ? t('empty_no_results_desc') : t('adoptions_empty_desc')}>
-          {hasFilters ? <Button variant="ghost" onClick={resetFilters}>{t('adoptions_clear_filters')}</Button> : <Button as="link" href="/adoptions/new" variant="accent">{t('adoptions_new_btn')}</Button>}
+          {hasFilters && <Button variant="ghost" onClick={resetFilters}>{t('adoptions_clear_filters')}</Button>}
         </EmptyState>
       ) : (
         <section aria-labelledby="adoption-results-title">
@@ -138,11 +140,11 @@ export default function AdoptionsPage() {
       )}
 
       <style jsx>{`
-        .adoption-header { position: relative; padding-right: 14rem; }
-        .header-action { position: absolute; top: var(--sp-2); right: 0; }
-        .filters-panel { margin-bottom: var(--sp-7); padding: var(--sp-5); background: var(--card); border: 1px solid var(--line); border-radius: var(--r-xl); box-shadow: var(--shadow-sm); }
+
+
+        .filters-panel {margin-bottom:var(--sp-5);padding:var(--sp-4); background: var(--card); border: 1px solid var(--line);border-radius:var(--r-lg); }
         .filters-heading, .results-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--sp-4); margin-bottom: var(--sp-4); }
-        .filter-kicker { margin: 0 0 var(--sp-1); color: var(--accent-deep); font-family: var(--font-mono); font-size: var(--text-xs); font-weight: 800; text-transform: uppercase; letter-spacing: .06em; }
+
         h2 { margin: 0; color: var(--ink); font-family: var(--font-heading); font-size: var(--text-xl); }
         .reset-filters { min-height: var(--touch-target); padding: var(--sp-2) var(--sp-3); color: var(--primary); background: transparent; border: 0; border-radius: var(--r-sm); font: inherit; font-size: var(--text-sm); font-weight: 700; cursor: pointer; }
         .reset-filters:hover { background: var(--eyebrow-bg); }
@@ -159,7 +161,7 @@ export default function AdoptionsPage() {
         .adoption-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--sp-5); }
         .load-more-row { display: flex; justify-content: center; margin-top: var(--sp-6); }
         @media (max-width: 1000px) { .filter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .adoption-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-        @media (max-width: 700px) { .adoption-header { padding-right: 0; } .header-action { position: static; margin-top: var(--sp-4); } .filters-panel { padding: var(--sp-4); border-radius: var(--r-lg); } }
+        @media (max-width: 700px) { .filters-panel {padding:var(--sp-3); border-radius: var(--r-lg); } }
         @media (max-width: 560px) { .filter-grid, .adoption-grid { grid-template-columns: 1fr; } .filters-heading { align-items: flex-start; } .results-heading { align-items: flex-start; flex-direction: column; gap: var(--sp-1); } }
       `}</style>
     </div>

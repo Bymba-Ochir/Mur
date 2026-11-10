@@ -255,7 +255,7 @@ function AuthenticatedSittingForm() {
         <div className="nav-row">
           {step > 0 && <Button type="button" onClick={() => setStep(step - 1)} variant="secondary">{t('form_back_plain')}</Button>}
           {step < STEPS.length - 1 && (
-            <Button type="button" onClick={goNext} variant="accent">{t('form_next_plain')}</Button>
+            <Button type="button" onClick={goNext} variant="primary">{t('form_next_plain')}</Button>
           )}
         </div>
       </form>
@@ -291,12 +291,11 @@ function AuthenticatedSittingForm() {
         @media (min-width: 860px) { .preview-col { display: block; } }
         .pet-form {
           display: flex; flex-direction: column; gap: var(--sp-1); max-width: 440px; flex: 1; min-width: 0;
-          background: var(--card); border: 1px solid var(--line); border-radius: var(--r-xl);
-          padding: var(--sp-6); box-shadow: var(--shadow-md);
+          background: var(--card); border: 1px solid var(--line);border-radius:var(--r-lg);padding:clamp(16px, 4vw, 28px);
         }
-        @media (min-width: 1025px) { .pet-form { max-width: 520px; padding: var(--sp-7); } }
-        @media (max-width: 640px) { .pet-form { padding: var(--sp-5); border-radius: var(--r-lg); max-width: 100%; } }
-        @media (max-width: 480px) { .pet-form { padding: var(--sp-4); border-radius: var(--r-md); } }
+        @media (min-width: 1025px) { .pet-form { max-width: 520px; } }
+        @media (max-width: 640px) { .pet-form { border-radius: var(--r-lg); max-width: 100%; } }
+        @media (max-width: 480px) { .pet-form { border-radius: var(--r-md); } }
         label { font-size: 12.5px; font-weight: 600; color: var(--primary); margin-top: var(--sp-4); display: block; }
         label:first-child { margin-top: 0; }
         input, select, textarea {

@@ -85,15 +85,14 @@ export default function AdoptionCardView({
 
       <style jsx>{`
         .pet-card {
-          background: var(--card); border: 1px solid var(--line); border-radius: var(--r-lg);
-          overflow: hidden; cursor: pointer; box-shadow: var(--shadow-sm);
-          transition: transform var(--dur-base) var(--ease-out), box-shadow var(--dur-base) var(--ease-out), border-color var(--dur-base) var(--ease-out);
+          background: var(--card); border: 1px solid var(--line);border-radius:var(--r-lg);
+          overflow: hidden; cursor: pointer;transition:border-color var(--dur-fast);
           display: flex; flex-direction: column; height: 100%;
         }
         @media (max-width: 640px) { .pet-card { border-radius: var(--r-md); } }
         @media (min-width: 1025px) { .pet-card { border-radius: var(--r-xl); } }
         @media (hover: hover) and (pointer: fine) { .pet-card:not(.static):hover { box-shadow: var(--shadow-lift); transform: translateY(-4px); border-color: var(--primary-light); } .pet-card:not(.static):hover .thumb :global(img) { transform: scale(1.045); } }
-        .pet-card:focus-within { border-color: var(--primary-light); box-shadow: var(--shadow-md); }
+        .pet-card:focus-within {border-color:var(--primary-light)}
         .pet-card.static { cursor: default; }
         .pet-card.static:hover { transform: none; box-shadow: var(--shadow-sm); border-color: var(--line); }
         .thumb {

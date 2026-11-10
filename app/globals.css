@@ -548,6 +548,12 @@ select.filter:focus-visible, input.filter:focus-visible {
 .detail-meta { display:flex; align-items:center; gap:var(--sp-2); flex-wrap:wrap; color:var(--text-tertiary); font-size:var(--text-xs); }
 .detail-meta svg { flex:0 0 auto; }
 .detail-actions { display:flex; align-items:center; gap:var(--sp-2); flex-wrap:wrap; }
+.detail-facts { margin: 0; }
+.detail-facts > div { display: grid; grid-template-columns: minmax(7.5rem, 1fr) minmax(0, 1.5fr); gap: var(--sp-2); padding: var(--sp-2) 0; border-bottom: 1px solid var(--border-subtle); }
+.detail-facts > div:last-child { border-bottom: 0; }
+.detail-facts dt { grid-column: 1; grid-row: 1; }
+.detail-facts dd { grid-column: 2; margin: 0; overflow-wrap: anywhere; }
+@media (max-width: 380px) { .detail-facts > div { grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr); } }
 .detail-surface { background:var(--surface-2); border:1px solid var(--border-subtle); border-radius:var(--r-lg); box-shadow:var(--shadow-sm); }
 .section-heading { display:flex; align-items:flex-end; justify-content:space-between; gap:var(--sp-4); margin-bottom:var(--sp-4); }
 .section-heading h2 { font-size:var(--text-xl); }
@@ -891,7 +897,7 @@ body:has([data-floating-notice='analytics']) [data-floating-notice='install'] {
 @media (max-width: 480px) {
   .navbar-wrap .mobile-dropdown { top: 64px; left: var(--sp-2); right: var(--sp-2); max-height: calc(100dvh - 72px); }
 }
-/* Login modal is portalled to document.body, so its styles must be global. */
+/* Shared modal styles for dialogs portalled to document.body. */
 .ui-modal-overlay {
   position: fixed; inset: 0; z-index: 2000;
   display: flex; align-items: center; justify-content: center;
@@ -923,92 +929,6 @@ body:has([data-floating-notice='analytics']) [data-floating-notice='install'] {
 @media (max-width: 480px) {
   .ui-modal-overlay { align-items: flex-start; padding: max(12px, 5vh) 12px 12px; }
   .ui-modal-panel { max-height: calc(100dvh - 24px); padding: 20px 16px; border-radius: var(--r-md); }
-}
-
-.login-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 2000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: var(--sp-4);
-  overflow-y: auto;
-  background: rgba(23, 26, 43, 0.58);
-  -webkit-backdrop-filter: blur(5px);
-  backdrop-filter: blur(5px);
-  animation: login-overlay-in 150ms ease-out;
-}
-@keyframes login-overlay-in { from { opacity: 0; } to { opacity: 1; } }
-.login-modal-panel {
-  position: relative;
-  width: min(100%, 380px);
-  padding: 28px;
-  color: var(--ink);
-  background: var(--card);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--r-lg);
-  box-shadow: var(--shadow-lift);
-  animation: login-modal-in 220ms var(--ease-out);
-}
-@keyframes login-modal-in {
-  from { opacity: 0; transform: translateY(14px) scale(0.97); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
-}
-.login-modal-title {
-  margin: 0 0 var(--sp-4);
-  padding-right: 34px;
-  color: var(--text-primary);
-  font-family: var(--font-display);
-  font-size: var(--text-xl);
-}
-.login-modal-panel label {
-  display: block;
-  margin-bottom: 6px;
-  color: var(--primary);
-  font-size: 13px;
-  font-weight: 600;
-}
-.login-modal-panel input {
-  width: 100%;
-  min-height: var(--touch-target);
-  margin-bottom: var(--sp-3);
-  padding: var(--sp-2) var(--sp-3);
-  color: var(--ink);
-  background: var(--card);
-  border: 1.5px solid var(--line);
-  border-radius: var(--r-sm);
-  font-family: var(--font-body);
-  font-size: var(--text-base);
-}
-.login-modal-panel input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(98, 91, 246, 0.14); }
-.login-modal-panel .btn-base { width: 100%; min-height: var(--touch-target); }
-.login-sent { color: var(--text-secondary); line-height: 1.65; }
-.login-error { margin-bottom: 8px; color: var(--alert); font-size: 12.5px; }
-.login-modal-close {
-  position: absolute;
-  top: 14px;
-  right: 14px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 36px;
-  min-height: 36px;
-  padding: 0 8px;
-  color: var(--muted);
-  background: var(--surface-3);
-  border: 0;
-  border-radius: var(--r-pill);
-  font-family: var(--font-body);
-  font-size: 12px;
-  cursor: pointer;
-}
-.login-modal-close:hover { color: var(--text-primary); background: var(--border-subtle); }
-@media (max-width: 480px) {
-  .login-overlay { align-items: flex-start; padding: max(16px, 8vh) 12px 16px; }
-  .login-modal-panel { width: 100%; padding: 24px 18px; border-radius: var(--r-md); }
-  .login-modal-panel label { font-size: 14px; }
-  .login-modal-panel input { padding: 12px 14px; font-size: 16px; }
 }
 
 /* Reserve the same photo proportions in listing, form preview and loading cards. */

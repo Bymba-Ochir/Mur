@@ -1,0 +1,61 @@
+.panel:global(.ui-modal-panel) {
+  max-width: 400px;
+  padding: clamp(20px, 6vw, 28px);
+  background: var(--card);
+  animation: none;
+}
+
+.panel :global(.ui-modal-title) {
+  margin-bottom: 8px;
+  padding-right: 44px;
+  line-height: 1.2;
+}
+
+.lead {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+  line-height: 1.6;
+}
+
+.panel label {
+  display: block;
+  margin: 16px 0 4px;
+  color: var(--text-primary);
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.panel input {
+  width: 100%;
+  min-height: var(--touch-target);
+  margin-top: 10px;
+  padding: 10px 12px;
+  color: var(--text-primary);
+  background: var(--surface-2);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-sm);
+  font: inherit;
+  font-size: max(16px, var(--text-base));
+}
+
+.panel input:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+
+.panel .submit[data-variant='primary'] {
+  width: 100%;
+  margin-top: 16px;
+  background: var(--primary-dark);
+  box-shadow: none;
+}
+
+.panel .submit:not(:disabled):hover { background: color-mix(in srgb, var(--primary-dark) 90%, #000); }
+
+.error {
+  margin: 10px 0 0;
+  color: var(--alert-deep);
+  font-size: var(--text-sm);
+  line-height: 1.5;
+}

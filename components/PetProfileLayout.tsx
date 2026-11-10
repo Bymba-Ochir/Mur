@@ -163,9 +163,7 @@ export default function PetProfileLayout({
       <style jsx>{`
         .profile-page { max-width: 640px; margin: 0 auto; }
 
-        .profile-header {
-          text-align: center; padding: var(--sp-5) 0 var(--sp-4);
-        }
+        .profile-header {padding:var(--sp-4) 0;border-bottom:1px solid var(--border-subtle);margin-bottom:var(--sp-3);text-align:center;}
         .avatar {
           width: 128px; height: 128px; border-radius: 50%; overflow: hidden;
           background: var(--thumb-bg); position: relative; margin: 0 auto var(--sp-3);
@@ -194,7 +192,7 @@ export default function PetProfileLayout({
 
         .tab-bar {
           display: flex; gap: 2px; margin-bottom: var(--sp-4);
-          background: var(--eyebrow-bg); border-radius: var(--r-pill); padding: 3px;
+          background: var(--eyebrow-bg);border-radius:var(--r-md); padding: 3px;
         }
         .tab {
           flex: 1; padding: 8px 12px; border: none; border-radius: var(--r-pill);
@@ -202,7 +200,7 @@ export default function PetProfileLayout({
           font-weight: 600; color: var(--muted); cursor: pointer;
           transition: all 0.15s ease;
         }
-        .tab.active { background: var(--card); color: var(--primary); box-shadow: var(--shadow-sm); }
+        .tab.active {background:var(--eyebrow-bg); color: var(--primary); }
         .tab:hover:not(.active) { color: var(--primary); }
 
         .tab-content { margin-bottom: var(--sp-4); }
@@ -243,7 +241,7 @@ export default function PetProfileLayout({
           .chips{gap:5px}
           .chip{padding:4px 9px;font-size:11px}
           .vax-status{max-width:100%;align-items:flex-start;flex-wrap:wrap;justify-content:center;line-height:1.45}
-          .tab-bar{position:sticky;top:calc(var(--nav-h) + 8px);z-index:8;margin-inline:calc(var(--sp-3) * -1);padding:4px var(--sp-3);overflow-x:auto;border-radius:0;background:color-mix(in srgb,var(--surface-1) 90%,transparent);backdrop-filter:blur(14px);scrollbar-width:none}
+          .tab-bar{position:sticky;top:calc(var(--nav-h) + 8px);z-index:8;margin-inline:calc(var(--sp-3) * -1);padding:4px var(--sp-3);overflow-x:auto;border-radius:0;background:var(--surface-1);scrollbar-width:none}
           .tab{min-width:max-content;min-height:var(--touch-target);padding-inline:var(--sp-3)}
           .photo-box{aspect-ratio:1;border-radius:var(--r-md)}
           .description,.history-card,.contact-card{font-size:14px}

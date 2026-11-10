@@ -182,7 +182,7 @@ describe('page detail safeguards', () => {
     const detail = source('app/adoptions/[id]/AdoptionDetailClient.tsx');
     const form = source('components/AdoptionForm.tsx');
     const edit = source('components/AdoptionEditForm.tsx');
-    expect(detail).toContain('className="adoption-facts"');
+    expect(detail).toContain('<dl className="detail-facts">');
     expect(detail).toContain('className="description-block"');
     expect(detail).not.toContain('style={{');
     expect(form).toContain('<fieldset className="form-step">');
@@ -213,7 +213,7 @@ describe('page detail safeguards', () => {
     const form = source('components/SittingForm.tsx');
     const edit = source('components/SittingEditForm.tsx');
     const booking = source('components/SittingBookingPanel.tsx');
-    expect(detail).toContain('className="facts"');
+    expect(detail).toContain('<dl className="detail-facts">');
     expect(detail).toContain('className="description-block"');
     expect(detail).not.toContain('style={{');
     expect(form).toContain('aria-invalid={Boolean(fieldErrors.description)}');
@@ -416,7 +416,7 @@ describe('page detail safeguards', () => {
     expect(notFound).toContain('aria-label={t(\'nf_actions_label\')}');
     expect(notFound).toContain("href: '/report-lost'");
     expect(notFound).toContain("href: '/report-found'");
-    expect(notFound).toContain('@media(max-width:520px)');
+    expect(notFound).toContain('href="/"');
     expect(notFound).not.toContain('style={{');
   });
 });

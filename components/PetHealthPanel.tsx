@@ -87,8 +87,8 @@ export default function PetHealthPanel({ pet, onProfileUpdated, onClose }: { pet
       ) : null}
 
       <style jsx>{`
-        .health-panel{margin-top:var(--sp-4);overflow:hidden;background:var(--card);border:1px solid var(--line);border-radius:var(--r-xl);box-shadow:var(--shadow-md)}
-        .panel-header{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:var(--sp-3);align-items:start;padding:var(--sp-5);background:linear-gradient(135deg,var(--eyebrow-bg),color-mix(in srgb,var(--found) 12%,var(--card)));border-bottom:1px solid var(--line)}
+        .health-panel{margin-top:var(--sp-4);overflow:hidden;background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);}
+        .panel-header{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:var(--sp-3);align-items:start;padding:var(--sp-4);background:var(--card);border-bottom:1px solid var(--line)}
         .panel-icon{display:grid;width:44px;height:44px;place-items:center;color:var(--primary);background:var(--card);border:1px solid var(--line);border-radius:var(--r-md);box-shadow:var(--shadow-xs)}
         .panel-heading{min-width:0}.panel-heading .eyebrow{margin-bottom:3px;color:var(--primary);font-size:var(--text-xs);font-weight:750;letter-spacing:.08em;text-transform:uppercase}.panel-heading h2{color:var(--text);font-family:var(--font-display);font-size:clamp(20px,3vw,26px);line-height:1.15}.panel-heading>p:last-child{max-width:620px;margin-top:5px;color:var(--muted);font-size:var(--text-sm);line-height:1.55}
         .close-button{display:grid;width:40px;height:40px;place-items:center;color:var(--muted);background:var(--card);border:1px solid var(--line);border-radius:999px;cursor:pointer;transition:color var(--dur-fast),border-color var(--dur-fast),background var(--dur-fast)}.close-button:hover{color:var(--primary);background:var(--eyebrow-bg);border-color:var(--primary-light)}.close-button:focus-visible{outline:2.5px solid var(--border-focus);outline-offset:2px}

@@ -6,6 +6,7 @@ import { useLanguage } from '../lib/i18n';
 import { fireConfetti } from '../lib/confetti';
 import { getErrorMessage } from '../lib/utils';
 import Modal from './ui/Modal';
+import Button from './ui/Button';
 import FieldHint from './ui/FieldHint';
 import { createIdempotencyKey, idempotencyHeaders } from '../lib/idempotency';
 
@@ -111,6 +112,7 @@ export default function DonateModal({ onClose }: { onClose: () => void }) {
               {AMOUNTS.map((a) => (
                 <button
                   type="button" key={a}
+                  aria-pressed={amount === a && !customAmount}
                   className={`amount-btn ${amount === a && !customAmount ? 'active' : ''}`}
                   onClick={() => { createKeyRef.current = null; setAmount(a); setCustomAmount(''); }}
                 >
@@ -138,7 +140,7 @@ export default function DonateModal({ onClose }: { onClose: () => void }) {
               {t('donate_anonymous')}
             </label>
 
-            <button type="submit" className="submit-btn">{t('donate_pay_btn')}</button>
+            <Button type="submit" className="submit-btn" fullWidth>{t('donate_pay_btn')}</Button>
           </form>
         )}
 
@@ -172,30 +174,31 @@ export default function DonateModal({ onClose }: { onClose: () => void }) {
             </div>
             <p className="paid-title">{t('donate_thanks')}</p>
             <p className="hint">{finalAmount.toLocaleString()}₮ {t('donate_paid_hint')}</p>
-            <button className="submit-btn" onClick={onClose}>{t('donate_close')}</button>
+            <Button className="submit-btn" fullWidth onClick={onClose}>{t('donate_close')}</Button>
           </div>
         )}
 
         {stage === 'error' && (
           <div className="donation-error">
             <p role="alert">{errorMsg}</p>
-            <button className="submit-btn" onClick={() => setStage('form')}>{t('donate_retry')}</button>
+            <Button className="submit-btn" fullWidth onClick={() => setStage('form')}>{t('donate_retry')}</Button>
           </div>
         )}
       <style jsx>{`
         .hint { font-size: 12.5px; color: var(--muted); margin-bottom: 12px; }
+        :global(.donate-modal .submit-btn) { margin-top: var(--sp-4); }
         .amounts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
         .amount-btn { padding: 10px; border-radius: var(--r-sm); border: 1.5px solid var(--line); background: var(--bg); color: var(--ink); font-weight: 600; cursor: pointer; font-family: var(--font-body); transition: all 0.15s ease; }
-        .amount-btn:hover { border-color: var(--accent); }
-        .amount-btn.active { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+        .amount-btn:hover {border-color:var(--primary-light)}
+        .amount-btn.active {background:var(--eyebrow-bg);border-color:var(--primary);color:var(--text-primary)}
         label { font-size: 12.5px; font-weight: 600; color: var(--primary); display: block; margin-top: 10px; margin-bottom: 4px; }
         input, textarea { width: 100%; padding: var(--sp-2) var(--sp-3); border: 1.5px solid var(--line); border-radius: var(--r-sm); font-size: var(--text-base); background: var(--card); color: var(--ink); font-family: inherit; }
         .checkbox-row { display: flex; align-items: center; gap: 8px; font-weight: 400; color: var(--ink); }
         .checkbox-row input { width: auto; }
-        .submit-btn { width: 100%; margin-top: 16px; padding: 13px; border-radius: var(--r-md); border: none; background: var(--grad-brand); color: var(--text-on-accent); font-weight: 700; cursor: pointer; font-size: 14px; font-family: var(--font-body); transition: transform 0.15s ease, box-shadow 0.2s ease, filter 0.2s ease; box-shadow: var(--shadow-sm); }
-        .submit-btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: var(--shadow-md); filter: saturate(1.08); }
-        .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
-        .submit-btn:focus-visible { outline: 2.5px solid var(--accent); outline-offset: 2px; }
+
+
+
+
         .qr-box, .paid-box { text-align: center; }
         .paid-icon { display: flex; justify-content: center; margin-bottom: 8px; color: var(--success); }
         .paid-title { color: var(--success); font-weight: 700; }

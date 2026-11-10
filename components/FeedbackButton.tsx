@@ -88,9 +88,9 @@ export function FeedbackProvider({ children }: { children: ReactNode }) {
   return (
     <FeedbackContext.Provider value={feedback}>
       {children}
-      <Modal open={open} onClose={close} title={t('feedback_title')} closeLabel={t('close')} width="sm">
+      <Modal open={open} onClose={close} title={t('feedback_title')} closeLabel={t('close')} width="md">
         <form className="feedback-form" onSubmit={submit}>
-          <p>{t('feedback_intro')}</p>
+          <p className="feedback-intro">{t('feedback_intro')}</p>
           <Select id="feedback-category" label={t('feedback_category')} value={category} disabled={sending} onChange={(event) => {
             if (isFeedbackCategory(event.target.value)) setCategory(event.target.value);
           }}>
@@ -107,7 +107,7 @@ export function FeedbackProvider({ children }: { children: ReactNode }) {
       </Modal>
       <style jsx>{`
         .feedback-form { display: grid; gap: var(--sp-3); }
-        .feedback-form p { color: var(--text-secondary); }
+        .feedback-intro { margin: 0; color: var(--text-secondary); font-size: var(--text-sm); line-height: 1.6; }
         .feedback-form .feedback-error { color: var(--danger); }
       `}</style>
     </FeedbackContext.Provider>

@@ -139,7 +139,7 @@ function AdoptionDetailClientContent({ id }: { id: string }) {
 
           <section className="info-card" aria-labelledby="adoption-facts-title">
             <h2 id="adoption-facts-title">{t('detail_information')}</h2>
-            <dl className="adoption-facts">
+            <dl className="detail-facts">
               <div><dt>{t('detail_type').replace(':', '')}</dt><dd>{typeLabel}</dd></div>
               {adoption.breed && <div><dt>{t('detail_breed').replace(':', '')}</dt><dd>{getBreedLabel(adoption.breed, lang)}</dd></div>}
               {adoption.age && <div><dt>{t('detail_age').replace(':', '')}</dt><dd>{formatPetAge(adoption.age, lang)}</dd></div>}
@@ -167,7 +167,7 @@ function AdoptionDetailClientContent({ id }: { id: string }) {
       )}
 
       <div className="profile-action">
-        <Button as="link" href={`/profiles/adoption/${adoption.id}`} variant="accent">
+        <Button as="link" href={`/profiles/adoption/${adoption.id}`} variant="secondary">
           {t('adoption_view_profile')}
         </Button>
       </div>
@@ -190,16 +190,16 @@ function AdoptionDetailClientContent({ id }: { id: string }) {
         @media (max-width: 640px) { .media-box { border-radius: var(--r-md); } }
         @media (min-width: 1025px) { .media-box { border-radius: var(--r-xl); } }
         .info-card {
-          background: var(--card); border: 1px solid var(--line); border-radius: var(--r-lg);
-          padding: var(--sp-6); display: flex; flex-direction: column; gap: var(--sp-3); box-shadow:var(--shadow-sm);
+          background: var(--card); border: 1px solid var(--line);border-radius:var(--r-lg);
+          padding: var(--sp-6); display: flex; flex-direction: column; gap: var(--sp-3);
         }
         @media (max-width: 640px) { .info-card { border-radius: var(--r-md); padding: var(--sp-4); } }
         @media (min-width: 1025px) { .info-card { border-radius: var(--r-xl); padding: var(--sp-6); } }
         .info-card h2 { margin:0;font-family:var(--font-heading);font-size:var(--text-xl); }
-        .adoption-facts { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-2);margin:0; }
-        .adoption-facts div { padding:var(--sp-3);background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r-sm); }
+
+
         dt { color:var(--muted);font-size:var(--text-xs);font-weight:700; }
-        dd { margin:var(--sp-1) 0 0;color:var(--ink);font-size:var(--text-sm);font-weight:700; }
+        dd {color:var(--ink);font-size:var(--text-sm);font-weight:600; }
         .description-block { padding-top:var(--sp-3);border-top:1px solid var(--line); }
         .description-block h3 { margin:0 0 var(--sp-2);color:var(--primary);font-size:var(--text-sm); }
         .description-block p { margin:0;color:var(--muted);font-size:var(--text-sm);line-height:1.7;white-space:pre-wrap; }
@@ -216,7 +216,7 @@ function AdoptionDetailClientContent({ id }: { id: string }) {
         .share-section { margin-top: var(--sp-6); text-align: center; }
         .share-hint { font-size: 12px; color: var(--muted); margin-top: var(--sp-2); }
         @media(max-width:900px){.detail-grid{grid-template-columns:1fr}.media-box{aspect-ratio:16/11}.info-card{padding:var(--sp-5)}}
-        @media(max-width:520px){.adoption-facts{grid-template-columns:1fr}.owner-actions{flex-direction:column}.owner-actions :global(.btn-base){width:100%}}
+        @media(max-width:520px){.owner-actions{flex-direction:column}.owner-actions :global(.btn-base){width:100%}}
       `}</style>
     </div>
   );

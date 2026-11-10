@@ -6,6 +6,7 @@ import LoginModal from '../../../components/LoginModal';
 import Button from '../../../components/ui/Button';
 import { useAuth } from '../../../lib/useAuth';
 import { useLanguage } from '../../../lib/i18n';
+import styles from '../../recovery.module.css';
 
 export default function AuthCompletePage() {
   const router = useRouter();
@@ -21,16 +22,23 @@ export default function AuthCompletePage() {
   }, [loading, router, user]);
 
   return (
-    <div className="page-shell page-shell--narrow">
-      <div className="state-panel">
-        {loading || user ? <p role="status">{t('login_finishing')}</p> : (
-          <>
-            <p role="alert">{t('login_google_error')}</p>
-            <Button onClick={() => setShowLogin(true)}>{t('nav_login')}</Button>
-          </>
-        )}
-      </div>
+    <section className={styles.panel} aria-labelledby="login-complete-title">
+      {loading || user ? (
+        <>
+          <h1 id="login-complete-title">{t('login_title')}</h1>
+          <p className={styles.desc} role="status">{t('login_finishing')}</p>
+        </>
+      ) : (
+        <>
+          <h1 id="login-complete-title">{t('login_complete_failed')}</h1>
+          <p className={styles.desc} role="alert">{t('login_complete_hint')}</p>
+          <div className={styles.actions}>
+            <Button className={styles.action + ' ' + styles.primary} onClick={() => setShowLogin(true)}>{t('nav_login')}</Button>
+            <Button as="link" href="/" className={styles.action} variant="ghost">{t('nf_home')}</Button>
+          </div>
+        </>
+      )}
       {showLogin && <LoginModal onClose={() => setShowLogin(false)} />}
-    </div>
+    </section>
   );
 }
