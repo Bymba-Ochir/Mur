@@ -31,6 +31,18 @@ async function samplePhoto(photo: Blob) {
 
 type PhotoSample = NonNullable<Awaited<ReturnType<typeof samplePhoto>>>;
 
+function mirrorSample(source: PhotoSample): PhotoSample {
+  const pixels = new Uint8ClampedArray(source.pixels.length);
+  for (let y = 0; y < COVER_SAMPLE_SIZE; y += 1) {
+    for (let x = 0; x < COVER_SAMPLE_SIZE; x += 1) {
+      const original = (y * COVER_SAMPLE_SIZE + x) * 4;
+      const mirrored = (y * COVER_SAMPLE_SIZE + COVER_SAMPLE_SIZE - 1 - x) * 4;
+      pixels.set(source.pixels.subarray(original, original + 4), mirrored);
+    }
+  }
+  return { aspect: source.aspect, pixels };
+}
+
 function isSamePhoto(source: PhotoSample, candidate: PhotoSample) {
   if (Math.abs(Math.log(source.aspect / candidate.aspect)) > 0.03) return false;
   let difference = 0;
@@ -73,7 +85,7 @@ async function readPhoto(response: Response) {
   }
 }
 
-async function verifyCandidates(source: PhotoSample, candidates: Pet[], projectUrl: string, signal: AbortSignal) {
+async function verifyCandidates(sources: PhotoSample[], candidates: Pet[], projectUrl: string, signal: AbortSignal) {
   const fetchPhoto = databaseFetch(projectUrl);
   const matches = await Promise.all(candidates.map(async pet => {
     const path = ownedPetPhotoStoragePath(pet.photoURL, pet.createdBy, projectUrl);
@@ -84,7 +96,7 @@ async function verifyCandidates(source: PhotoSample, candidates: Pet[], projectU
       const response = await fetchPhoto(url, { signal, credentials: 'omit', redirect: 'error' });
       const photo = await readPhoto(response);
       const candidate = photo && !signal.aborted ? await samplePhoto(photo) : null;
-      return candidate && !signal.aborted && isSamePhoto(source, candidate) ? pet : null;
+      return candidate && !signal.aborted && sources.some(sample => isSamePhoto(sample, candidate)) ? pet : null;
     } catch {
       return null;
     }
@@ -99,13 +111,16 @@ export async function findSameListingPhotos(file: File, pets: Pet[], filters: Pe
   const source = await samplePhoto(file).catch(() => null);
   if (!source || signal.aborted) return [];
 
-  const fingerprint = coverPhotoFingerprint(source.pixels, 4);
-  const candidates = await fetchPetCoverCandidates(fingerprint, filters, signal).catch(() => []);
+  const sources = [source, mirrorSample(source)];
+  const fingerprints = new Set(sources.map(sample => coverPhotoFingerprint(sample.pixels, 4)));
+  const batches = await Promise.all(Array.from(fingerprints, fingerprint =>
+    fetchPetCoverCandidates(fingerprint, filters, signal).catch(() => []),
+  ));
   if (signal.aborted) return [];
-  const matches = await verifyCandidates(source, candidates, projectUrl, AbortSignal.any([signal, AbortSignal.timeout(3000)]));
+  const byId = new Map(batches.flat().map(pet => [pet.id, pet]));
+  const matches = await verifyCandidates(sources, [...byId.values()], projectUrl, AbortSignal.any([signal, AbortSignal.timeout(3000)]));
   if (matches.length || signal.aborted) return matches;
 
-  const checked = new Set(candidates.map(pet => pet.id));
-  const fallback = pets.filter(pet => pet.photoURL && !checked.has(pet.id)).slice(0, LOCAL_FALLBACK_LIMIT);
-  return verifyCandidates(source, fallback, projectUrl, AbortSignal.any([signal, AbortSignal.timeout(3000)]));
+  const fallback = pets.filter(pet => pet.photoURL && !byId.has(pet.id)).slice(0, LOCAL_FALLBACK_LIMIT);
+  return verifyCandidates(sources, fallback, projectUrl, AbortSignal.any([signal, AbortSignal.timeout(3000)]));
 }

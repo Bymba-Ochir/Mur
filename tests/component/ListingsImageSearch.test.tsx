@@ -4,12 +4,12 @@ import ListingsPage from '../../app/listings/page';
 
 const mocks = vi.hoisted(() => ({
   fetchPets: vi.fn(), fetchPetMatches: vi.fn(), rankBySimilarity: vi.fn(),
-  getImageEmbedding: vi.fn(), getImageHash: vi.fn(), findSameListingPhotos: vi.fn(), toast: vi.fn(),
+  getImageEmbeddings: vi.fn(), getImageHash: vi.fn(), findSameListingPhotos: vi.fn(), toast: vi.fn(),
 }));
 vi.mock('../../lib/petService', () => ({
   fetchPets: mocks.fetchPets, fetchPetMatches: mocks.fetchPetMatches, rankBySimilarity: mocks.rankBySimilarity,
 }));
-vi.mock('../../lib/similarity', () => ({ getImageEmbedding: mocks.getImageEmbedding, getImageHash: mocks.getImageHash }));
+vi.mock('../../lib/similarity', () => ({ getImageEmbeddings: mocks.getImageEmbeddings, getImageHash: mocks.getImageHash }));
 vi.mock('../../lib/listingPhotoMatch', () => ({ findSameListingPhotos: mocks.findSameListingPhotos }));
 vi.mock('../../lib/i18n', () => ({ useLanguage: () => ({ t: (key: string) => key }) }));
 vi.mock('../../lib/useAuth', () => ({ useAuth: () => ({ user: null }) }));
@@ -34,7 +34,7 @@ beforeEach(() => {
   window.history.replaceState(null, '', '/listings');
   mocks.fetchPets.mockResolvedValue({ pets: [pet('existing', 'Existing dog')], hasMore: true });
   mocks.findSameListingPhotos.mockResolvedValue([]);
-  mocks.getImageEmbedding.mockResolvedValue([0.1]);
+  mocks.getImageEmbeddings.mockResolvedValue([[0.1], [0.2]]);
   mocks.getImageHash.mockResolvedValue('hash');
 });
 
@@ -117,6 +117,6 @@ it('shows a matching cover from outside the loaded page before running the model
   expect(screen.getByText('listings_card_same_photo')).toBeVisible();
   expect(screen.getByText('Matching cover photo')).toBeVisible();
   expect(screen.queryByText('Existing dog')).not.toBeInTheDocument();
-  expect(mocks.getImageEmbedding).not.toHaveBeenCalled();
+  expect(mocks.getImageEmbeddings).not.toHaveBeenCalled();
   expect(mocks.fetchPetMatches).not.toHaveBeenCalled();
 });

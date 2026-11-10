@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ChangeEvent } from 'react';
 import { fetchPets, fetchPetMatches, rankBySimilarity } from '../../lib/petService';
-import { getImageEmbedding, getImageHash } from '../../lib/similarity';
+import { getImageEmbeddings, getImageHash } from '../../lib/similarity';
 import { HIGH_LISTING_PHOTO_SIMILARITY, MIN_LISTING_PHOTO_SIMILARITY } from '../../lib/imageEmbedding';
 import { findSameListingPhotos } from '../../lib/listingPhotoMatch';
 import PetCard from '../../components/PetCard';
@@ -28,7 +28,7 @@ const DISTRICTS: (District | '')[] = ['', ...DISTRICT_VALUES];
 type ImageMatch = { query: string } & (
   | { phase: 'matching'; progress?: string }
   | { phase: 'database' | 'same-photos'; pets: Pet[] }
-  | { phase: 'browser'; embedding: number[] }
+  | { phase: 'browser'; embeddings: number[][] }
   | { phase: 'error'; message: string }
 );
 
@@ -67,7 +67,7 @@ export default function ListingsPage() {
   const rankedPets = useMemo(() => {
     if (activeMatch?.phase === 'same-photos') return activeMatch.pets;
     const candidates = activeMatch?.phase === 'database' ? activeMatch.pets
-      : activeMatch?.phase === 'browser' ? rankBySimilarity(activeMatch.embedding, pets) : null;
+      : activeMatch?.phase === 'browser' ? rankBySimilarity(activeMatch.embeddings, pets) : null;
     return candidates?.filter(pet => (pet.similarity ?? 0) >= MIN_LISTING_PHOTO_SIMILARITY) ?? null;
   }, [activeMatch, pets]);
   const hasImageResults = Boolean(rankedPets?.length);
@@ -150,8 +150,8 @@ export default function ListingsPage() {
         setMatch({ query, phase: 'same-photos', pets: samePhotos });
         return;
       }
-      const [embedding, imageHash] = await Promise.all([
-        getImageEmbedding(file, progress => {
+      const [embeddings, imageHash] = await Promise.all([
+        getImageEmbeddings(file, progress => {
           if (!controller.signal.aborted) setMatch({ query, phase: 'matching', progress });
         }, controller.signal),
         getImageHash(file),
@@ -159,7 +159,7 @@ export default function ListingsPage() {
       if (controller.signal.aborted) return;
       setMatch({ query, phase: 'matching', progress: t('listings_match_searching') });
       const databaseMatches = await fetchPetMatches({
-        embedding,
+        embeddings,
         imageHash,
         signal: controller.signal,
         status: status || undefined,
@@ -168,7 +168,7 @@ export default function ListingsPage() {
       });
       if (controller.signal.aborted) return;
       setMatch(databaseMatches === null
-        ? { query, phase: 'browser', embedding }
+        ? { query, phase: 'browser', embeddings }
         : { query, phase: 'database', pets: databaseMatches });
     } catch (err) {
       if (controller.signal.aborted) return;

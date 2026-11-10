@@ -50,12 +50,12 @@ async function getEmbedder(onProgress?: (message: string) => void): Promise<any>
   return embedderPromise;
 }
 
-export async function getImageEmbedding(file: File, onProgress?: (message: string) => void, signal?: AbortSignal): Promise<number[]> {
+async function getImageEmbedding(photo: Blob, onProgress?: (message: string) => void, signal?: AbortSignal): Promise<number[]> {
   if (signal?.aborted) throw new DOMException('AI хайлт цуцлагдлаа', 'AbortError');
   const embedder = await getEmbedder(onProgress);
   if (signal?.aborted) throw new DOMException('AI хайлт цуцлагдлаа', 'AbortError');
   onProgress?.('Зургийг шинжилж байна...');
-  const url = URL.createObjectURL(file);
+  const url = URL.createObjectURL(photo);
   try {
     const output = await embedder(url);
     if (signal?.aborted) throw new DOMException('AI хайлт цуцлагдлаа', 'AbortError');
@@ -63,6 +63,34 @@ export async function getImageEmbedding(file: File, onProgress?: (message: strin
   } finally {
     URL.revokeObjectURL(url);
   }
+}
+
+async function mirrorPhoto(photo: Blob): Promise<Blob | null> {
+  const bitmap = await createImageBitmap(photo);
+  try {
+    const maxEdge = 768;
+    const scale = Math.min(1, maxEdge / Math.max(bitmap.width, bitmap.height));
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.max(1, Math.round(bitmap.width * scale));
+    canvas.height = Math.max(1, Math.round(bitmap.height * scale));
+    const context = canvas.getContext('2d');
+    if (!context) return null;
+    context.imageSmoothingQuality = 'high';
+    context.translate(canvas.width, 0);
+    context.scale(-1, 1);
+    context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+    return new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+  } finally {
+    bitmap.close();
+  }
+}
+
+export async function getImageEmbeddings(file: File, onProgress?: (message: string) => void, signal?: AbortSignal): Promise<number[][]> {
+  const original = await getImageEmbedding(file, onProgress, signal);
+  const mirror = await mirrorPhoto(file).catch(() => null);
+  if (!mirror) return [original];
+  const reflected = await getImageEmbedding(mirror, onProgress, signal);
+  return [original, reflected];
 }
 
 /** Яг ижил файлыг загварын онооноос үл хамааран найдвартай таних SHA-256. */

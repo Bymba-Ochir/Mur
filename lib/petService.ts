@@ -203,13 +203,13 @@ export async function reportPet(petId: string, reason: string): Promise<void> {
  * тооцоолсон хуучин бичлэг) харьцуулалтгүйгээр жагсаалтаас хасна — эс тэгвээс
  * "0% төстэй" гэсэн буруу дүн гарна.
  */
-export function rankBySimilarity(targetEmbedding: number[] | null, pets: Pet[]): Pet[] {
-  if (!targetEmbedding) return pets;
-  return [...pets]
-    .filter((p) => Array.isArray(p.embedding) && p.embedding.length === targetEmbedding.length)
-    .map((p) => ({
-      ...p,
-      similarity: cosineSimilarityScore(targetEmbedding, p.embedding),
+export function rankBySimilarity(embeddings: number[][], pets: Pet[]): Pet[] {
+  if (!embeddings.length) return pets;
+  return pets
+    .filter((pet) => Array.isArray(pet.embedding) && embeddings.some(vector => vector.length === pet.embedding?.length))
+    .map((pet) => ({
+      ...pet,
+      similarity: Math.max(...embeddings.map(vector => cosineSimilarityScore(vector, pet.embedding))),
     }))
     .sort((a, b) => b.similarity - a.similarity);
 }
@@ -238,9 +238,9 @@ export async function fetchPetCoverCandidates(fingerprint: string, filters: PetF
  * Migration ажиллаагүй бол null буцааж UI хуучин browser fallback ашиглана.
  */
 export async function fetchPetMatches({
-  embedding, imageHash, status, type, breed, color, district, lat, lng, limit = 20, signal,
+  embeddings, imageHash, status, type, breed, color, district, lat, lng, limit = 20, signal,
 }: {
-  embedding: number[];
+  embeddings: number[][];
   imageHash?: string;
   status?: PetStatus;
   type?: Pet['type'];
@@ -252,9 +252,7 @@ export async function fetchPetMatches({
   limit?: number;
   signal?: AbortSignal;
 }): Promise<Pet[] | null> {
-  const query = supabase.rpc('match_pets_hybrid', {
-    query_embedding: embedding,
-    query_image_hash: imageHash || null,
+  const filters = {
     // The RPC excludes the status supplied by a source listing.
     query_status: status ? (status === 'lost' ? 'found' : 'lost') : null,
     query_type: type ?? null,
@@ -265,19 +263,44 @@ export async function fetchPetMatches({
     query_lng: lng ?? null,
     match_count: limit,
     min_image_similarity: MIN_LISTING_PHOTO_SIMILARITY / 100,
-  });
-  const { data, error } = await (signal ? query.abortSignal(signal) : query);
+  };
+  const results = await Promise.all(embeddings.map((embedding, index) => {
+    const query = supabase.rpc('match_pets_hybrid', {
+      ...filters,
+      query_embedding: embedding,
+      query_image_hash: index === 0 ? imageHash || null : null,
+    });
+    return signal ? query.abortSignal(signal) : query;
+  }));
 
-  if (error) {
-    if (/function .*match_pets_hybrid|schema cache|image_embedding/i.test(error.message)) return null;
-    throw error;
+  type MatchRow = {
+    pet: Record<string, unknown> & { id: string; created_at: string };
+    image_similarity: number;
+    hybrid_score: number;
+  };
+  const bestById = new Map<string, MatchRow>();
+  for (const { data, error } of results) {
+    if (error) {
+      if (/function .*match_pets_hybrid|schema cache|image_embedding/i.test(error.message)) return null;
+      throw error;
+    }
+    for (const row of (data ?? []) as MatchRow[]) {
+      if (row.pet.is_hidden === true || row.pet.archived_at != null) continue;
+      const current = bestById.get(row.pet.id);
+      if (!current || row.hybrid_score > current.hybrid_score
+        || (row.hybrid_score === current.hybrid_score && row.image_similarity > current.image_similarity)) {
+        bestById.set(row.pet.id, row);
+      }
+    }
   }
 
-  const rows = (data ?? []) as Array<{ pet: Record<string, unknown> & { id: string }; image_similarity: number }>;
-  const visibleRows = rows.filter(({ pet }) => pet.is_hidden !== true && pet.archived_at == null);
-  const hydratedPets = await hydrateListingPhotos('pet', visibleRows.map((row) => row.pet));
+  const rankedRows = [...bestById.values()]
+    .sort((a, b) => b.hybrid_score - a.hybrid_score || b.pet.created_at.localeCompare(a.pet.created_at))
+    .slice(0, limit);
+  if (signal?.aborted) return [];
+  const hydratedPets = await hydrateListingPhotos('pet', rankedRows.map((row) => row.pet));
   const petById = new Map(hydratedPets.map((pet) => [pet.id, pet]));
-  return visibleRows.map((row) => ({
+  return rankedRows.map((row) => ({
     ...mapPetRow((petById.get(row.pet.id) ?? row.pet) as never),
     similarity: Math.round(Number(row.image_similarity) * 100),
   }));
