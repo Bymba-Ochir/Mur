@@ -23,6 +23,8 @@ for (const scenario of [
     await page.goto('/');
     await page.locator('.how-guide').click();
     const dialog = page.getByRole('dialog');
+    await expect(dialog.getByRole('heading', { name: scenario.lang === 'mn' ? 'МӨР гэж юу вэ?' : 'What is Mur?' })).toBeVisible();
+    await dialog.getByRole('button', { name: scenario.lang === 'mn' ? 'Эхлэх' : 'Start', exact: true }).click();
     await dialog.getByRole('button', { name: new RegExp('^' + scenario.choice) }).click();
     await dialog.getByRole('button', { name: scenario.lang === 'mn' ? 'Үргэлжлүүлэх' : 'Continue', exact: true }).click();
     await expect(dialog.locator('#onb-title')).toBeFocused();
@@ -41,7 +43,11 @@ for (const [choice, route] of [['Амьтнаа алдсан', '/report-lost'], 
     await page.goto('/');
     await page.locator('.how-guide').click();
     const dialog = page.getByRole('dialog');
+    await dialog.getByRole('button', { name: 'Эхлэх', exact: true }).click();
     await dialog.getByRole('button', { name: new RegExp('^' + choice) }).click();
+    await dialog.getByRole('button', { name: 'Үргэлжлүүлэх', exact: true }).click();
+    await expect(dialog.locator('#onb-description')).toContainText('Нэвтэрсний дараа');
+    await expect(dialog.getByRole('combobox')).toHaveCount(0);
     await dialog.getByRole('button', { name: 'Маягт нээх', exact: true }).click();
     await expect(page).toHaveURL(url => url.pathname === route && url.search === '');
     await expect(page.getByText('Зар оруулахын тулд нэвтэрнэ үү')).toBeVisible();
@@ -52,20 +58,23 @@ for (const [choice, route] of [['Амьтнаа алдсан', '/report-lost'], 
 test('guide contains keyboard focus, restores it on Escape and starts with a fresh choice', async ({ page }) => {
   await page.goto('/');
   const trigger = page.locator('.how-guide');
+  await expect(page.getByRole('dialog')).toHaveCount(0);
   await trigger.click();
-  let dialog = page.getByRole('dialog');
+  const dialog = page.getByRole('dialog');
   await expect(dialog.locator('#onb-title')).toBeFocused();
   await page.keyboard.press('Shift+Tab');
-  await expect(dialog.getByRole('button', { name: 'Алгасах', exact: true })).toBeFocused();
+  await expect(dialog.getByRole('button', { name: 'Эхлэх', exact: true })).toBeFocused();
   await page.keyboard.press('Tab');
   await expect(dialog.getByRole('button', { name: 'Хаах', exact: true })).toBeFocused();
+  await dialog.getByRole('button', { name: 'Эхлэх', exact: true }).click();
   await dialog.getByRole('button', { name: /^Зар хайх/ }).click();
   await page.keyboard.press('Escape');
   await expect(page.getByRole('dialog')).toHaveCount(0);
   await expect(trigger).toBeFocused();
   await expect(page.locator('body')).not.toHaveCSS('overflow', 'hidden');
   await trigger.click();
-  dialog = page.getByRole('dialog');
+  await expect(dialog.getByRole('heading', { name: 'МӨР гэж юу вэ?' })).toBeVisible();
+  await dialog.getByRole('button', { name: 'Эхлэх', exact: true }).click();
   await expect(dialog.getByRole('button', { name: 'Үргэлжлүүлэх', exact: true })).toBeDisabled();
   await expect(dialog.locator('[aria-pressed="true"]')).toHaveCount(0);
 });

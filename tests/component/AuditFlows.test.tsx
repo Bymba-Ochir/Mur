@@ -67,7 +67,10 @@ it.each([
   vi.stubGlobal('Notification', { requestPermission });
   render(<LanguageProvider><Onboarding /></LanguageProvider>);
   act(() => window.dispatchEvent(new Event('mur:open-onboarding')));
+  fireEvent.click(screen.getByRole('button', { name: 'Эхлэх' }));
   fireEvent.click(screen.getByRole('button', { name: new RegExp('^' + choice) }));
+  fireEvent.click(screen.getByRole('button', { name: 'Үргэлжлүүлэх' }));
+  expect(screen.queryByRole('combobox')).toBeNull();
   fireEvent.click(screen.getByRole('button', { name: 'Маягт нээх' }));
   expect(mock.push).toHaveBeenCalledWith(route);
   expect(screen.queryByRole('dialog')).toBeNull();
@@ -80,6 +83,7 @@ it.each([
 ])('applies the chosen district when opening %s', (choice, route) => {
   render(<LanguageProvider><Onboarding /></LanguageProvider>);
   act(() => window.dispatchEvent(new Event('mur:open-onboarding')));
+  fireEvent.click(screen.getByRole('button', { name: 'Эхлэх' }));
   fireEvent.click(screen.getByRole('button', { name: new RegExp('^' + choice) }));
   fireEvent.click(screen.getByRole('button', { name: 'Үргэлжлүүлэх' }));
   fireEvent.change(screen.getByRole('combobox'), { target: { value: 'Баянзүрх' } });

@@ -40,6 +40,10 @@ export default function Home() {
                 <Icon name="search" size={18} />{t('hero_action_search')}
               </Button>
             </nav>
+            <button type="button" className="how-guide" aria-haspopup="dialog" onClick={() => window.dispatchEvent(new Event('mur:open-onboarding'))}>
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 2-2.5 2-2.5 4M12 17h.01"/></svg>
+              {t('how_open_guide')}
+            </button>
             <ul className="hero-trust" aria-label={t('hero_trust_aria')}>
               <li><Icon name="pin" size={16} /><span>{t('hero_trust_location')}</span></li>
               <li><Icon name="search" size={16} /><span>{t('hero_trust_photo')}</span></li>
@@ -70,10 +74,6 @@ export default function Home() {
       <section className="how" aria-labelledby="how-heading">
         <div className="how-heading">
           <h2 id="how-heading" className="how-title">{t('how_it_works')}</h2>
-          <button type="button" className="how-guide" onClick={() => window.dispatchEvent(new Event('mur:open-onboarding'))}>
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 2-2.5 2-2.5 4M12 17h.01"/></svg>
-            {t('how_open_guide')}
-          </button>
         </div>
         <ol className="steps-grid" role="list" aria-labelledby="how-heading">
           {[
@@ -276,12 +276,12 @@ export default function Home() {
         .how { margin-top: 0; padding: clamp(48px, 7vw, 80px) 0; border-top: 1px solid var(--border-subtle); animation: rise-in 0.6s cubic-bezier(0.16,1,0.3,1) 0.55s backwards; }
         @media (max-width: 640px) { .how { padding: var(--sp-7) 0; } }
         @media (max-width: 480px) { .how { padding: var(--sp-6) 0; } }
-        .how-heading { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3); margin-bottom: var(--sp-5); }
+        .how-heading { margin-bottom: var(--sp-5); }
         .how-title { font-size: clamp(1.4rem, 3vw, 1.9rem); margin-bottom: 0; }
-        .how-guide { display: inline-flex; align-items: center; gap: 8px; min-height: 42px; padding: 0 16px; border: 1px solid var(--border-subtle); border-radius: 999px; color: var(--primary); background: var(--surface-2); font-weight: 700; cursor: pointer; }
+        .how-guide { display: inline-flex; align-items: center; gap: 8px; margin-top: var(--sp-4); min-height: var(--touch-target); padding: 0 16px; border: 1px solid var(--border-subtle); border-radius: 999px; color: var(--primary); background: var(--surface-2); font-weight: 700; cursor: pointer; }
         .how-guide:hover { border-color: var(--primary); background: color-mix(in srgb, var(--primary) 8%, var(--surface-2)); }
         .how-guide:focus-visible { outline: 3px solid var(--border-focus); outline-offset: 2px; }
-        @media (max-width: 640px) { .how-heading { align-items: flex-start; flex-direction: column; margin-bottom: var(--sp-4); } }
+        @media (max-width: 640px) { .how-heading { margin-bottom: var(--sp-4); } }
         @media (max-width: 480px) { .how-heading { margin-bottom: var(--sp-3); } .how-title { font-size: var(--text-xl); } .how-guide { width: 100%; justify-content: center; } }
         @media (min-width: 1025px) { .how-title { font-size: var(--text-3xl); } .how-heading { margin-bottom: var(--sp-6); } }
         .steps-grid { display: grid; list-style: none; margin: 0; padding: 0; gap: var(--sp-5); grid-template-columns: repeat(3, minmax(0, 1fr)); }

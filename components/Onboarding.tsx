@@ -13,27 +13,29 @@ const intentRoutes: Record<Intent, string> = {
   lost: '/report-lost', found: '/report-found', adopt: '/adoptions', browse: '/listings',
 };
 
-const guideIcons: Record<Intent | 'location', IconName> = {
-  lost: 'alert', found: 'eye', adopt: 'heart', browse: 'search', location: 'pin',
+const guideIcons: Record<Intent, IconName> = {
+  lost: 'alert', found: 'eye', adopt: 'heart', browse: 'search',
 };
 
-function Icon({ name }: { name: Intent | 'location' }) {
-  return <UiIcon name={guideIcons[name]} size={24} />;
-}
+const intents = ['lost', 'found', 'browse', 'adopt'] as const;
+const overview = [
+  { icon: 'pin', text: 'onb_overview_post' },
+  { icon: 'search', text: 'onb_overview_search' },
+  { icon: 'eye', text: 'onb_overview_help' },
+] as const;
+const TOTAL_STEPS = 3;
 
 export default function Onboarding() {
   const router = useRouter();
   const pathname = usePathname();
   const dialogRef = useRef<HTMLDivElement>(null);
-  const { lang } = useLanguage();
+  const { t } = useLanguage();
   const [manualRoute, setManualRoute] = useState<string | null>(null);
   const [step, setStep] = useState(0);
   const [intent, setIntent] = useState<Intent | null>(null);
   const [district, setDistrict] = useState<District | ''>('');
   const visible = manualRoute === pathname;
-  const en = lang === 'en';
   const needsDistrict = intent === 'browse' || intent === 'adopt';
-  const totalSteps = intent && !needsDistrict ? 1 : 2;
 
   useEffect(() => {
     const open = () => { setStep(0); setIntent(null); setDistrict(''); setManualRoute(pathname); };
@@ -72,7 +74,11 @@ export default function Onboarding() {
 
   useEffect(() => {
     if (!visible) return;
-    const frame = requestAnimationFrame(() => dialogRef.current?.querySelector<HTMLElement>('#onb-title')?.focus());
+    const frame = requestAnimationFrame(() => {
+      if (!dialogRef.current) return;
+      dialogRef.current.scrollTop = 0;
+      dialogRef.current.querySelector<HTMLElement>('#onb-title')?.focus({ preventScroll: true });
+    });
     return () => cancelAnimationFrame(frame);
   }, [visible, step]);
 
@@ -81,8 +87,8 @@ export default function Onboarding() {
   }
 
   function advance() {
+    if (step < TOTAL_STEPS - 1) { setStep(step + 1); return; }
     if (!intent) return;
-    if (step === 0 && needsDistrict) { setStep(1); return; }
     const params = new URLSearchParams();
     if (needsDistrict && DISTRICTS.includes(district as District)) params.set('district', district);
     const destination = intentRoutes[intent] + (params.size ? '?' + params.toString() : '');
@@ -92,59 +98,67 @@ export default function Onboarding() {
 
   if (!visible) return null;
 
-  const choices: Array<{ id: Intent; title: string; text: string }> = en ? [
-    { id: 'lost', title: 'I lost a pet', text: 'Create a lost-pet report' },
-    { id: 'found', title: 'I found a pet', text: 'Help locate its owner' },
-    { id: 'adopt', title: 'Adopt a pet', text: 'Browse adoption listings' },
-    { id: 'browse', title: 'Browse listings', text: 'Search and filter reports' },
-  ] : [
-    { id: 'lost', title: 'Амьтнаа алдсан', text: 'Алдсан амьтны зар оруулах' },
-    { id: 'found', title: 'Амьтан олсон', text: 'Эзнийг нь олоход туслах' },
-    { id: 'adopt', title: 'Амьтан үрчлэх', text: 'Үрчлүүлэх заруудыг үзэх' },
-    { id: 'browse', title: 'Зар хайх', text: 'Жагсаалтаас шүүж хайх' },
-  ];
+  const nextLabel = step === 0 ? t('onb_start') : step === 1 ? t('onb_continue')
+    : t(needsDistrict ? 'onb_view_listings' : 'onb_open_form');
 
   return (
-    <div className="onb-overlay" role="dialog" aria-modal="true" aria-labelledby="onb-title" onClick={close}>
+    <div className="onb-overlay" role="dialog" aria-modal="true" aria-labelledby="onb-title" aria-describedby="onb-description" onClick={close}>
       <div ref={dialogRef} className="onb-card" onClick={(event) => event.stopPropagation()}>
         <div className="onb-top">
-          <div className="onb-progress" role="progressbar" aria-label={en ? 'Guide progress' : 'Зааврын явц'} aria-valuemin={1} aria-valuemax={totalSteps} aria-valuenow={step + 1}>
-            {Array.from({ length: totalSteps }, (_, item) => item).map((item) => <span key={item} className={item <= step ? 'active' : ''} />)}
+          <div className="onb-progress-wrap">
+            <span className="onb-step-label" aria-hidden="true">{t('onb_step')} {step + 1} / {TOTAL_STEPS}</span>
+            <div className="onb-progress" role="progressbar" aria-label={t('onb_progress')} aria-valuemin={1} aria-valuemax={TOTAL_STEPS} aria-valuenow={step + 1}>
+              {Array.from({ length: TOTAL_STEPS }, (_, item) => <span key={item} className={item <= step ? 'active' : ''} />)}
+            </div>
           </div>
-          <button className="onb-close" type="button" onClick={close} aria-label={en ? 'Close' : 'Хаах'}>×</button>
+          <button className="onb-close" type="button" onClick={close} aria-label={t('close')}>×</button>
         </div>
 
         {step === 0 && <>
-          <span className="onb-kicker">{en ? 'WELCOME TO МӨР' : 'МӨР-Т ТАВТАЙ МОРИЛ'}</span>
-          <h2 id="onb-title" tabIndex={-1}>{en ? 'What would you like to do?' : 'Та юу хийх вэ?'}</h2>
-          <p className="onb-lead">{en ? 'Choose an action. For browsing or adoption, you can also filter by district.' : 'Хэрэгтэй үйлдлээ сонгоорой. Зар хайх, үрчлэх үед дүүргээр шүүж болно.'}</p>
+          <h2 id="onb-title" tabIndex={-1}>{t('onb_welcome_title')}</h2>
+          <p className="onb-lead" id="onb-description">{t('onb_welcome_desc')}</p>
+          <ul className="onb-overview">
+            {overview.map(({ icon, text }) => (
+              <li key={text}>
+                <span className="choice-icon" aria-hidden="true"><UiIcon name={icon} size={20} /></span>
+                <span>{t(text)}</span>
+              </li>
+            ))}
+          </ul>
+        </>}
+
+        {step === 1 && <>
+          <h2 id="onb-title" tabIndex={-1}>{t('onb_choose_title')}</h2>
+          <p className="onb-lead" id="onb-description">{t('onb_choose_desc')}</p>
           <div className="onb-choices">
-            {choices.map((choice) => (
-              <button key={choice.id} type="button" aria-pressed={intent === choice.id} className={intent === choice.id ? 'selected' : ''} onClick={() => setIntent(choice.id)}>
-                <span className="choice-icon"><Icon name={choice.id} /></span>
-                <span><strong>{choice.title}</strong><small>{choice.text}</small></span>
-                <span className="choice-check"><UiIcon name="check" size={15} /></span>
+            {intents.map((item) => (
+              <button key={item} type="button" aria-pressed={intent === item} className={intent === item ? 'selected' : ''} onClick={() => setIntent(item)}>
+                <span className="choice-icon" aria-hidden="true"><UiIcon name={guideIcons[item]} size={24} /></span>
+                <span><strong>{t(`onb_${item}_choice`)}</strong><small>{t(`onb_${item}_summary`)}</small></span>
+                <span className="choice-check" aria-hidden="true"><UiIcon name="check" size={15} /></span>
               </button>
             ))}
           </div>
         </>}
 
-        {step === 1 && <div className="onb-centered">
-          <span className="large-icon"><Icon name="location" /></span>
-          <h2 id="onb-title" tabIndex={-1}>{en ? 'Choose your district' : 'Байршлаа сонгоно уу'}</h2>
-          <p className="onb-lead">{en ? 'Filter this search by district, or leave it blank to search all districts.' : 'Энэ удаагийн хайлтыг дүүргээр шүүнэ. Бүх дүүргээс хайх бол сонгохгүй орхиж болно.'}</p>
-          <label htmlFor="onboarding-district">{en ? 'District' : 'Дүүрэг'}</label>
-          <select id="onboarding-district" value={district} onChange={(event) => setDistrict(event.target.value as District | '')}>
-            <option value="">{en ? 'All districts' : 'Бүх дүүрэг'}</option>
-            {DISTRICTS.map((item) => <option key={item} value={item}>{item}</option>)}
-          </select>
-        </div>}
+        {step === 2 && intent && <>
+          <span className="large-icon" aria-hidden="true"><UiIcon name={guideIcons[intent]} size={30} /></span>
+          <h2 id="onb-title" tabIndex={-1}>{t(`onb_${intent}_title`)}</h2>
+          <p className="onb-lead" id="onb-description">{t(`onb_${intent}_next`)}</p>
+          {needsDistrict && <>
+            <label htmlFor="onboarding-district">{t('onb_district')}</label>
+            <select id="onboarding-district" value={district} onChange={(event) => setDistrict(event.target.value as District | '')}>
+              <option value="">{t('filter_all_districts')}</option>
+              {DISTRICTS.map((item) => <option key={item} value={item}>{item}</option>)}
+            </select>
+          </>}
+        </>}
 
         <div className="onb-actions">
-          {step > 0 ? <button className="secondary" type="button" onClick={() => setStep(step - 1)}>{en ? 'Back' : 'Буцах'}</button> : <button className="secondary" type="button" onClick={close}>{en ? 'Skip' : 'Алгасах'}</button>}
-          <button className="primary" type="button" disabled={step === 0 && !intent} onClick={advance}>
-            {step === 1 ? (en ? 'View listings' : 'Зар үзэх') : intent && !needsDistrict ? (en ? 'Open form' : 'Маягт нээх') : (en ? 'Continue' : 'Үргэлжлүүлэх')}
-          </button>
+          {step > 0
+            ? <button className="secondary" type="button" onClick={() => setStep(step - 1)}>{t('onb_back')}</button>
+            : <button className="secondary" type="button" onClick={close}>{t('onb_skip')}</button>}
+          <button className="primary" type="button" disabled={step === 1 && !intent} onClick={advance}>{nextLabel}</button>
         </div>
       </div>
 
@@ -153,11 +167,12 @@ export default function Onboarding() {
         .onb-card { width: min(100%, 570px); max-height: min(760px, calc(100dvh - 32px)); overflow-y: auto; padding: 28px; border: 1px solid var(--border-subtle); border-radius: var(--r-xl); background: var(--card); box-shadow: var(--shadow-lift); animation: onb-pop .22s var(--ease-out); }
         @keyframes onb-pop { from { opacity: 0; transform: translateY(12px) scale(.98); } }
         .onb-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px; }
-        .onb-progress { display: flex; gap: 7px; flex: 1; max-width: 180px; }
+        .onb-progress-wrap { flex: 1; max-width: 180px; }
+        .onb-step-label { display: block; margin-bottom: 7px; color: var(--text-secondary); font-size: var(--text-xs); font-weight: 600; }
+        .onb-progress { display: flex; gap: 7px; }
         .onb-progress span { width: 100%; height: 5px; border-radius: 999px; background: var(--surface-3); }
         .onb-progress span.active { background: var(--primary); }
         .onb-close { width: var(--touch-target); height: var(--touch-target); border: 1px solid var(--border-subtle); border-radius: 50%; color: var(--text-secondary); background: var(--surface-2); font-size: 26px; line-height: 1; cursor: pointer; }
-        .onb-kicker { display: block; margin-bottom: 8px; color: var(--primary); font-family: var(--font-mono); font-size: 12px; font-weight: 700; letter-spacing: .08em; }
         h2 { margin: 0; color: var(--text-primary); font-family: var(--font-display); font-size: clamp(1.45rem, 4vw, 2rem); line-height: 1.2; }
         .onb-lead { margin: 10px 0 22px; color: var(--text-secondary); font-size: 14px; line-height: 1.6; }
         .onb-choices { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
@@ -169,9 +184,9 @@ export default function Onboarding() {
         small { margin-top: 4px; color: var(--text-secondary); font-size: 11px; line-height: 1.35; }
         .choice-check { position: absolute; top: 8px; right: 10px; color: var(--primary); opacity: 0; }
         .selected .choice-check { opacity: 1; }
-        .onb-centered { text-align: center; padding: 8px 12px; }
-        .large-icon { width: 64px; height: 64px; margin: 0 auto 18px; border-radius: 20px; }
-        .large-icon :global(svg) { width: 30px; height: 30px; }
+        .onb-overview { display: grid; gap: 8px; list-style: none; margin: 0; padding: 0; }
+        .onb-overview li { display: flex; align-items: center; gap: 12px; padding: 10px 12px; background: var(--surface-2); border-radius: var(--r-md); color: var(--text-primary); font-size: 14px; line-height: 1.45; }
+        .large-icon { width: 56px; height: 56px; margin-bottom: 14px; border-radius: 18px; }
         label { display: block; margin: 0 0 7px; color: var(--text-secondary); font-size: 12px; font-weight: 700; text-align: left; }
         select { width: 100%; height: 52px; padding: 0 14px; color: var(--text-primary); background: var(--surface-2); border: 1px solid var(--border-subtle); border-radius: var(--r-md); font: inherit; }
         .onb-actions { display: grid; grid-template-columns: 1fr 1.5fr; gap: 10px; margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border-subtle); }
@@ -180,8 +195,8 @@ export default function Onboarding() {
         .onb-actions .primary { color: var(--text-on-accent); background: var(--primary); border: 0; }
         .onb-actions .primary:disabled { opacity: .45; cursor: not-allowed; }
         button:focus-visible, select:focus-visible { outline: 3px solid var(--border-focus); outline-offset: 2px; }
-        @media (max-width: 560px) { .onb-overlay { align-items: end; padding: 0; } .onb-card { max-height: 92dvh; padding: 18px 16px calc(16px + var(--safe-bottom)); border-radius: 24px 24px 0 0; overscroll-behavior:contain; } .onb-top{margin-bottom:14px}.onb-lead{margin:8px 0 16px;line-height:1.5}.onb-choices { grid-template-columns: 1fr; gap:8px } .onb-choices button { min-height:64px;padding:10px 12px }.onb-centered{padding:2px}.large-icon{width:54px;height:54px;margin-bottom:12px}.onb-actions{position:sticky;bottom:calc(-16px - var(--safe-bottom));margin:18px -16px 0;padding:12px 16px calc(12px + var(--safe-bottom));background:var(--card)} }
-        @media (max-width: 370px) { .choice-icon{width:40px;height:40px}.onb-choices button small{display:none}.onb-actions{grid-template-columns:1fr 1.25fr} }
+        @media (max-width: 560px) { .onb-overlay { align-items: end; padding: 0; } .onb-card { max-height: 92dvh; padding: 18px 16px calc(16px + var(--safe-bottom)); border-radius: 24px 24px 0 0; overscroll-behavior:contain; } .onb-top{margin-bottom:14px}.onb-lead{margin:8px 0 16px;line-height:1.5}.onb-choices { grid-template-columns: 1fr; gap:8px } .onb-choices button { min-height:64px;padding:10px 12px }.large-icon{width:54px;height:54px;margin-bottom:12px}.onb-actions{position:sticky;bottom:calc(-16px - var(--safe-bottom));margin:18px -16px 0;padding:12px 16px calc(12px + var(--safe-bottom));background:var(--card)} }
+        @media (max-width: 370px) { .choice-icon{width:40px;height:40px}.onb-actions{grid-template-columns:1fr 1.25fr} }
         @media (prefers-reduced-motion: reduce) { .onb-card { animation: none; } }
       `}</style>
     </div>
