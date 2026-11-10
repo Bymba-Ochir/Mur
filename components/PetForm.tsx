@@ -311,6 +311,7 @@ function AuthenticatedPetForm({ status, userId }: { status: PetStatus; userId: s
         .pet-form :global(.paw.active), .pet-form :global(.paw.done) {
           background: var(--primary-dark); color: #fff; border-color: var(--primary-dark); box-shadow: none;
         }
+        .pet-form :global(.paw.active) { outline: 2px solid var(--primary-dark); outline-offset: 2px; }
         .pet-form :global(.trail-line.filled) { background: var(--primary-dark); }
         .pet-form :global(.trail-label) { font-size: var(--text-xs); }
         label { display: block; margin-top: var(--sp-5); color: var(--text-primary); font-size: var(--text-sm); font-weight: 600; }

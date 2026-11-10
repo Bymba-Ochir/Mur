@@ -35,15 +35,14 @@ export default function PawTrail({ labels, current, ariaLabel }: { labels: strin
       <style jsx>{`
         .paw-trail { display: flex; align-items: flex-start; width: 100%; }
         .trail-step { display: flex; flex-direction: column; align-items: center; flex: 1; gap: 6px; min-width: 0; }
-        .trail-node-row { display: flex; align-items: center; width: 100%; }
+        .trail-node-row { position: relative; display: flex; justify-content: center; width: 100%; }
         .trail-line {
-          flex: 1; height: 2px; background: var(--line); margin-right: -1px;
-          transition: background 0.25s ease;
+          position: absolute; inset-inline-end: 50%; top: 50%; transform: translateY(-50%);
+          width: 100%; height: 2px; background: var(--line); transition: background 0.25s ease;
         }
-        .trail-step:first-child .trail-node-row { justify-content: center; }
         .trail-line.filled { background: var(--accent); }
         .paw {
-          flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%;
+          position: relative; z-index: 1; flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%;
           display: flex; align-items: center; justify-content: center;
           background: var(--card); border: 2px solid var(--line); color: var(--line);
           transition: all 0.25s ease;
