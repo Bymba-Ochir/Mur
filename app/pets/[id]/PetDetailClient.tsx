@@ -137,8 +137,8 @@ function PetDetailClientContent({ id, guestSightingSiteKey }: PetDetailProps) {
   return (
     <div className="page-shell page-shell--detail">
       <div className="detail-back"><Button as="link" href={returnPath} variant="ghost" size="sm"><Icon name="arrowLeft" size={16} />{t('detail_back_listings')}</Button></div>
-      <div className="page-header">
-        <p className="eyebrow">{pet.status === 'lost' ? t('report_lost_eyebrow') : t('report_found_eyebrow')}</p>
+      <div className="detail-heading">
+        <p className="detail-status">{pet.status === 'lost' ? t('report_lost_eyebrow') : t('report_found_eyebrow')}</p>
         <h1>{title}</h1>
         {pet.createdAt && <p className="detail-meta"><Icon name="calendar" size={14} aria-hidden="true" /> {relativeTime(pet.createdAt, lang)}</p>}
       </div>
@@ -150,11 +150,11 @@ function PetDetailClientContent({ id, guestSightingSiteKey }: PetDetailProps) {
       )}
 
       <div className="detail-entry-actions">
-        <a className="contact-shortcut" href="#listing-contact">{t('detail_contact_heading')}</a>
         {!pet.resolved && (user || guestReportKey) && <Button variant="primary" aria-controls="sighting-form"
           onClick={() => sightingsForm.current?.open()}>
           <Icon name="pin" size={18} aria-hidden="true" /> {t('sightings_title')}
         </Button>}
+        <a className="contact-shortcut" href="#listing-contact">{t('detail_contact_heading')}</a>
         {!user && guestReportKey && <p>{t('sightings_guest_hint')}</p>}
       </div>
       <div className="detail-grid">
@@ -180,7 +180,7 @@ function PetDetailClientContent({ id, guestSightingSiteKey }: PetDetailProps) {
                 {pet.breed && <div><dt>{t('detail_breed').replace(':', '')}</dt><dd>{getBreedLabel(pet.breed, lang)}</dd></div>}
                 <div><dt>{t('detail_district').replace(':', '')}</dt><dd>{pet.district}</dd></div>
                 <div><dt>{t('detail_place').replace(':', '')}</dt><dd>{pet.place}</dd></div>
-                {pet.hasReward && <div className="reward-row"><dt>{t('reward_prefix')}</dt><dd><Icon name="sparkles" size={16} aria-hidden="true" /> {t('reward_prefix')}</dd></div>}
+                {pet.hasReward && <div className="reward-row"><dt>{t('reward_prefix')}</dt><dd><Icon name="check" size={18} aria-label={t('reward_prefix')} /></dd></div>}
               </dl>
 
               <div className="contact-block" id="listing-contact" tabIndex={-1}>
@@ -242,10 +242,17 @@ function PetDetailClientContent({ id, guestSightingSiteKey }: PetDetailProps) {
 
       <style jsx>{`
         .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
-        .detail-back { margin-bottom: var(--sp-3); }
-        .detail-entry-actions { display:flex; flex-wrap:wrap; align-items:center; gap:var(--sp-2); margin-bottom:var(--sp-4); }
-        .detail-entry-actions .contact-shortcut { margin-bottom:0; }
-        .detail-entry-actions p { width:100%; color:var(--text-secondary); font-size:var(--text-xs); }
+        .detail-back { margin-bottom: 8px; }
+        .detail-back :global(.btn-base) { padding-inline: 0; border-color: transparent; color: var(--text-secondary); }
+        .detail-heading { margin-bottom: 16px; }
+        .detail-heading h1 { margin: 4px 0 8px; font-size: clamp(1.625rem, 4vw, 2.375rem); line-height: 1.2; font-weight: 700; }
+        .detail-status { color: var(--text-secondary); font-size: var(--text-xs); font-weight: 600; }
+        .detail-entry-actions {
+          display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 16px;
+        }
+        .detail-entry-actions :global(.btn-base) { background: var(--primary-dark); box-shadow: none; border-radius: 10px; }
+        .detail-entry-actions .contact-shortcut { margin-bottom: 0; color: var(--text-primary); border-radius: 10px; }
+        .detail-entry-actions p { flex: 1 0 100%; color: var(--text-secondary); font-size: var(--text-xs); }
         .resolved-banner {
           display: flex; align-items: center; gap: var(--sp-2); min-height: 48px;
           margin-bottom: var(--sp-4); padding: var(--sp-2) var(--sp-3);
@@ -254,26 +261,26 @@ function PetDetailClientContent({ id, guestSightingSiteKey }: PetDetailProps) {
         }
         .detail-grid {
           display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(340px, .9fr);
-          gap: var(--sp-6); align-items: start; margin-bottom: var(--sp-6);
+          gap: var(--sp-4); align-items: start; margin-bottom: var(--sp-4);
         }
         .detail-media { min-width: 0; margin: 0; }
         .media-frame {
           position: relative; width: 100%; aspect-ratio: 4 / 3; display: grid; place-items: center;
           overflow: hidden; background: var(--thumb-bg); border: 1px solid var(--border-subtle);
-          border-radius: var(--r-xl); box-shadow: var(--shadow-sm);
+          border-radius: 16px;
         }
         .detail-media.is-resolved .media-frame { opacity: .72; filter: saturate(.75); }
         .media-placeholder { display: grid; justify-items: center; gap: var(--sp-3); color: var(--text-secondary); font-size: var(--text-sm); }
         .placeholder-icon {
           width: 124px; height: 124px; display: grid; place-items: center; color: var(--primary);
-          background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 50%; box-shadow: var(--shadow-sm);
+          background: var(--surface-2); border: 1px solid var(--border-subtle); border-radius: 50%;
         }
         .detail-info { min-width: 0; display: flex; flex-direction: column; gap: var(--sp-3); }
         .info-card, .owner-panel, .detail-section {
           padding: var(--sp-4); background: var(--surface-2); border: 1px solid var(--border-subtle);
-          border-radius: var(--r-lg); box-shadow: var(--shadow-sm);
+          border-radius: 16px;
         }
-        .info-card > h2, .owner-panel h2 { margin-bottom: var(--sp-3); font-size: var(--text-lg); }
+        .info-card > h2, .owner-panel h2 { margin-bottom: 8px; font-size: var(--text-lg); font-weight: 600; }
         .pet-facts { display: grid; margin: 0; }
         .pet-facts > div {
           display: grid; grid-template-columns: minmax(96px, .7fr) minmax(0, 1.3fr); gap: var(--sp-3);
@@ -284,13 +291,6 @@ function PetDetailClientContent({ id, guestSightingSiteKey }: PetDetailProps) {
         .reward-row dd { display: flex; align-items: center; gap: var(--sp-1); color: var(--accent); font-weight: 650; }
         .contact-block { padding-top: var(--sp-4); }
         .contact-block h3 { margin-bottom: var(--sp-2); font-size: var(--text-base); }
-        .phone-action {
-          width: 100%; min-height: var(--touch-target); display: flex; align-items: center; justify-content: center; gap: var(--sp-2);
-          padding: var(--sp-2) var(--sp-3); color: var(--text-on-accent); background: var(--grad-accent);
-          border: 0; border-radius: var(--r-md); font: 700 var(--text-sm) var(--font-body); cursor: pointer; text-decoration: none;
-          transition: transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
-        }
-        .phone-action:hover { transform: translateY(-1px); box-shadow: var(--shadow-md); }
         .contact-actions { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--sp-2); margin-top: var(--sp-2); }
         .owner-link {
           min-height: 40px; display: inline-flex; align-items: center; gap: var(--sp-1); margin-top: var(--sp-2);
@@ -298,12 +298,16 @@ function PetDetailClientContent({ id, guestSightingSiteKey }: PetDetailProps) {
           text-decoration-color: transparent; text-underline-offset: 4px;
         }
         .owner-link:hover { text-decoration-color: currentColor; }
-        .owner-panel { box-shadow: none; }
         .owner-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-2); }
         .owner-actions :global(.btn-base:last-child:nth-child(3)) { grid-column: 1 / -1; }
         .detail-section { margin-top: var(--sp-5); }
         .map-section { padding-bottom: var(--sp-4); }
-        .share-section { margin-top:var(--sp-5); box-shadow:none; }
+        .share-section :global(.share-btn) {
+          border: 1px solid var(--border-subtle); border-radius: 10px;
+          background: var(--surface-2); color: var(--text-primary);
+          transition: background-color var(--dur-fast) var(--ease-out);
+        }
+        .share-section :global(.share-btn:hover) { background: var(--surface-3); transform: none; box-shadow: none; filter: none; }
         .detail-skeleton { display: grid; grid-template-columns: 1.1fr .9fr; gap: var(--sp-6); align-items: start; }
         .skeleton-media { aspect-ratio: 4 / 3; border-radius: var(--r-xl); }
         .skeleton-copy { display: grid; gap: var(--sp-3); }
@@ -321,14 +325,14 @@ function PetDetailClientContent({ id, guestSightingSiteKey }: PetDetailProps) {
           .media-frame { aspect-ratio: 4 / 3; border-radius: var(--r-md); }
           .placeholder-icon { width: 96px; height: 96px; }
           .info-card, .owner-panel, .detail-section { padding: var(--sp-3); border-radius: var(--r-md); }
-          .pet-facts > div { grid-template-columns: 1fr; gap: var(--sp-1); }
+          .pet-facts > div { grid-template-columns: minmax(76px, .75fr) minmax(0, 1.25fr); gap: 8px; }
           .contact-actions { grid-template-columns: 1fr; }
           .owner-actions { grid-template-columns: 1fr; }
           .owner-actions :global(.btn-base) { width: 100%; }
           .owner-actions :global(.btn-base:last-child:nth-child(3)) { grid-column: auto; }
           .detail-section { margin-top: var(--sp-4); }
         }
-        @media (prefers-reduced-motion: reduce) { .phone-action { transition: none; } }
+        @media (prefers-reduced-motion: reduce) { .share-section :global(.share-btn) { transition: none; } }
       `}</style>
     </div>
   );

@@ -201,9 +201,9 @@ function SightingFormAndList({ petId, guestSiteKey, initialCenter, feed, onShowO
       </div>
 
       {ownerPanel && <div className="sighting-views" role="group" aria-label={t('sightings_views_label')}>
-        <Button variant={showInbox ? 'ghost' : 'secondary'} size="sm" aria-pressed={!showInbox}
+        <Button variant="ghost" size="sm" aria-pressed={!showInbox}
           aria-controls="sightings-public-panel" onClick={() => setOwnerView(false)}>{t('sightings_public_tab')}</Button>
-        <Button variant={showInbox ? 'secondary' : 'ghost'} size="sm" aria-pressed={showInbox}
+        <Button variant="ghost" size="sm" aria-pressed={showInbox}
           aria-controls="sightings-owner-panel" onClick={() => setOwnerView(true)}>{t('guest_sighting_inbox')}</Button>
       </div>}
       {ownerPanel && <div id="sightings-owner-panel" hidden={!showInbox}>{showInbox && ownerPanel}</div>}
@@ -213,13 +213,20 @@ function SightingFormAndList({ petId, guestSiteKey, initialCenter, feed, onShowO
 
       {showForm && (
         <form id="sighting-form" ref={formRef} tabIndex={-1} aria-label={t('sightings_message_label')} onSubmit={handleSubmit} className="sighting-form">
-          {guest && <p className="sighting-hint">{t('guest_sighting_privacy')}</p>}
-          <label htmlFor="sighting-message">{t('sightings_message_label')}</label>
-          <textarea id="sighting-message" className="field" value={message} onChange={(e) => { submitKey.current = null; setMessage(e.target.value); }} placeholder={t('sightings_placeholder')} required maxLength={1000} rows={3} />
+          {guest && <p className="sighting-privacy">
+            <Icon name="lock" size={16} />
+            <span>{t('guest_sighting_privacy')}</span>
+          </p>}
+          <div className="sighting-field">
+            <label htmlFor="sighting-message">{t('sightings_message_label')}</label>
+            <textarea id="sighting-message" className="field" value={message} onChange={(e) => { submitKey.current = null; setMessage(e.target.value); }} placeholder={t('sightings_placeholder')} required maxLength={1000} rows={3} />
+          </div>
           <DateTimeField id="sighting" label={t('sightings_time_label')} value={observedAt}
             onChange={value => { submitKey.current = null; setObservedAt(value); }} />
-          <label htmlFor="sighting-place">{t('sightings_place_label')} {t('map_optional')}</label>
-          <input id="sighting-place" className="field" value={place} onChange={(e) => { submitKey.current = null; setPlace(e.target.value); }} placeholder={t('sightings_place_placeholder')} maxLength={300} />
+          <div className="sighting-field">
+            <label htmlFor="sighting-place">{t('sightings_place_label')} {t('map_optional')}</label>
+            <input id="sighting-place" className="field" value={place} onChange={(e) => { submitKey.current = null; setPlace(e.target.value); }} placeholder={t('sightings_place_placeholder')} maxLength={300} />
+          </div>
           <div className="sighting-tools">
             <Button variant="ghost" size="sm" aria-expanded={showPicker} aria-controls="sighting-picker" onClick={() => setShowPicker(value => !value)}>
               <Icon name="pin" size={16} aria-hidden="true" />
@@ -297,27 +304,35 @@ function SightingFormAndList({ petId, guestSiteKey, initialCenter, feed, onShowO
       </Button>}
       </div>
       <style jsx>{`
-        .sightings-section { margin-top:var(--sp-5); padding:var(--sp-4); background:var(--surface-2); border:1px solid var(--border-subtle); border-radius:var(--r-lg); box-shadow:var(--shadow-sm); }
+        .sightings-section { margin-top:var(--sp-5); padding:var(--sp-4); background:var(--surface-2); border:1px solid var(--border-subtle); border-radius:16px; }
         .sightings-header { display:flex; align-items:center; justify-content:space-between; gap:var(--sp-3); margin-bottom:var(--sp-3); }
-        .sightings-header h2 { font-size:var(--text-lg); }
+        .sightings-header h2 { font-size:var(--text-lg); font-weight:600; }
         .sighting-views { display:flex; flex-wrap:wrap; gap:var(--sp-2); margin-bottom:var(--sp-3); padding-bottom:var(--sp-3); border-bottom:1px solid var(--border-subtle); }
-        .sighting-toggle { min-height:40px; padding:var(--sp-1) var(--sp-3); color:var(--primary); background:var(--eyebrow-bg); border:1px solid var(--glass-border); border-radius:var(--r-md); font:650 var(--text-xs) var(--font-body); cursor:pointer; }
-        .sighting-toggle:hover { border-color:var(--primary-light); }
+        .sighting-toggle {
+          min-height: var(--touch-target); padding: 4px 12px; color: var(--text-primary); background: var(--surface-2);
+          border: 1px solid var(--border-subtle); border-radius: 10px; font: 600 var(--text-sm) var(--font-body); cursor: pointer;
+        }
+        .sighting-toggle:hover, .sighting-views :global([aria-pressed="true"]) { background: var(--surface-3); border-color: var(--border-strong); }
         .sighting-error { display:flex; align-items:center; gap:var(--sp-2); margin-bottom:var(--sp-3); padding:var(--sp-2) var(--sp-3); color:var(--alert); background:color-mix(in srgb,var(--alert) 8%,var(--surface-2)); border-radius:var(--r-md); font-size:var(--text-xs); }
         .sighting-error span { flex:1; }
         .sighting-error button { color:var(--alert); background:none; border:0; font:650 inherit; text-decoration:underline; cursor:pointer; }
         .sighting-photo-consent { display:flex; align-items:flex-start; gap:var(--sp-2); cursor:pointer; }
         .sighting-photo-consent input { flex:none; margin-top:3px; }
-        .sighting-form { scroll-margin-top:calc(var(--nav-h) + 24px); display:grid; gap:var(--sp-2); margin-bottom:var(--sp-3); padding-bottom:var(--sp-3); border-bottom:1px solid var(--border-subtle); }
-        .sighting-form .sighting-photo-picker { position:relative; display:inline-flex; align-items:center; justify-content:center; gap:var(--sp-2); min-height:36px; padding:var(--sp-1) var(--sp-3); color:var(--primary); border:1.5px solid var(--border-subtle); border-radius:var(--r-md); cursor:pointer; }
+        .sighting-form { scroll-margin-top:calc(var(--nav-h) + 24px); display:grid; gap:16px; margin-bottom:16px; padding-bottom:16px; border-bottom:1px solid var(--border-subtle); }
+        .sighting-field { display:grid; gap:4px; min-width:0; }
+        .sighting-privacy { display:flex; align-items:flex-start; gap:8px; padding:12px; border-radius:8px; background:var(--surface-3); color:var(--text-secondary); font-size:var(--text-sm); }
+        .sighting-privacy :global(svg) { flex:none; margin-top:2px; }
+        .sighting-form .sighting-photo-picker { position:relative; display:inline-flex; align-items:center; justify-content:center; gap:var(--sp-2); min-height:var(--touch-target); padding:4px 12px; color:var(--text-primary); border:1px solid var(--border-subtle); border-radius:10px; cursor:pointer; }
         .sighting-photo-picker input { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); }
         .sighting-photo-picker:focus-within { outline:2px solid var(--border-focus); outline-offset:2px; }
         .sighting-photo-picker:has(input:disabled) { opacity:.55; cursor:not-allowed; }
         .sighting-submit { display:flex; justify-content:flex-end; margin-top:var(--sp-1); }
-        @media(pointer:coarse) { .sighting-photo-picker { min-height:44px; } }
+        .sighting-tools :global(.btn-base) { min-height:var(--touch-target); border-radius:10px; color:var(--text-primary); }
+        .sighting-submit :global(.btn-base) { background:var(--primary-dark); box-shadow:none; border-radius:10px; }
         .sighting-form label { color:var(--text-secondary); font-size:var(--text-xs); font-weight:650; }
         .sighting-form textarea { min-height:84px; resize:vertical; }
         .sighting-form input { min-width:0; }
+        :global([data-theme="dark"]) .sighting-form :global(input:is([type="date"], [type="time"])) { color-scheme:dark; }
         .sighting-tools { display:flex; align-items:center; flex-wrap:wrap; gap:var(--sp-2); }
         .sighting-hint { color:var(--text-secondary); font-size:var(--text-xs); }
         .map-hint { margin-bottom:var(--sp-2); }
@@ -332,7 +347,12 @@ function SightingFormAndList({ petId, guestSiteKey, initialCenter, feed, onShowO
         .sighting-copy > p:first-child { color:var(--text-primary); font-size:var(--text-sm); line-height:1.6; white-space:pre-wrap; overflow-wrap:anywhere; }
         .sighting-meta { display:flex; align-items:center; gap:var(--sp-3); flex-wrap:wrap; margin-top:var(--sp-2); color:var(--text-tertiary); font-size:var(--text-xs); }
         .sighting-meta span { display:inline-flex; align-items:center; gap:var(--sp-1); }
-        @media(max-width:560px){.sightings-section{margin-top:var(--sp-4);padding:var(--sp-3);border-radius:var(--r-md)}.sightings-header{gap:var(--sp-2)}.sighting-toggle{flex-shrink:0}}
+        @media (max-width:560px) {
+          .sightings-section { margin-top:16px; padding:12px; border-radius:14px; }
+          .sightings-header { gap:8px; }
+          .sighting-toggle { flex-shrink:0; }
+          .sighting-submit :global(.btn-base) { width:100%; }
+        }
       `}</style>
     </section>
   );
