@@ -46,25 +46,28 @@ describe('navbar account state',()=>{
   let resolveOld!: (value:boolean)=>void;
   mocks.admin.mockImplementationOnce(()=>new Promise<boolean>((resolve)=>{resolveOld=resolve;}));
   const {rerender,container}=render(<Navbar/>, { wrapper: Providers });
+  fireEvent.click(screen.getByRole('button', { name: 'Цэсийг нээх' }));
   mocks.user={id:'second',email:'second@example.com'};
   rerender(<Navbar/>);
   await act(async()=>{resolveOld(true);});
-  expect(container.querySelector('.icon-rail-btn.is-admin')).toBeNull();
+  expect(container.querySelector('.mobile-nav a[href="/admin"]')).toBeNull();
  });
  it('removes admin UI immediately on logout',async()=>{
   mocks.admin.mockResolvedValue(true);
   const {rerender,container}=render(<Navbar/>, { wrapper: Providers });
-  await waitFor(()=>expect(container.querySelector('.icon-rail-btn.is-admin')).not.toBeNull());
+  fireEvent.click(screen.getByRole('button', { name: 'Цэсийг нээх' }));
+  await waitFor(()=>expect(container.querySelector('.mobile-nav a[href="/admin"]')).not.toBeNull());
   mocks.user=null;
   rerender(<Navbar/>);
-  expect(container.querySelector('.icon-rail-btn.is-admin')).toBeNull();
+  expect(container.querySelector('.mobile-nav a[href="/admin"]')).toBeNull();
  });
  it('handles failed role and notification requests',async()=>{
   mocks.admin.mockRejectedValue(new Error('offline')); mocks.count.mockRejectedValue(new Error('offline'));
   const {container}=render(<Navbar/>, { wrapper: Providers });
+  fireEvent.click(screen.getByRole('button', { name: 'Цэсийг нээх' }));
   await act(async()=>{});
   expect(container.querySelector('.user-pill')).not.toBeNull();
-  expect(container.querySelector('.icon-rail-btn.is-admin')).toBeNull();
+  expect(container.querySelector('.mobile-nav a[href="/admin"]')).toBeNull();
   expect(container.querySelector('.notification-badge')).toBeNull();
  });
 });

@@ -5,7 +5,6 @@ import { usePathname } from 'next/navigation';
 import { useAuth } from '../lib/useAuth';
 import { isAdmin } from '../lib/adminService';
 import ThemeToggle from './ThemeToggle';
-import DonateButton, { type BankTransfer } from './DonateButton';
 import FeedbackButton from './FeedbackButton';
 import LanguageToggle from './LanguageToggle';
 import LoginModal from './LoginModal';
@@ -22,7 +21,7 @@ function truncateEmail(email: string): string {
   return local.length > 10 ? `${local.slice(0, 9)}…` : local;
 }
 
-export default function Navbar({ donationsEnabled = false, bankTransfer }: { donationsEnabled?: boolean; bankTransfer?: BankTransfer }) {
+export default function Navbar() {
   const { user, logout } = useAuth();
   const { t } = useLanguage();
   const pathname = usePathname();
@@ -67,13 +66,6 @@ export default function Navbar({ donationsEnabled = false, bankTransfer }: { don
     onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
-  }, []);
-
-  useEffect(() => {
-    const desktop = window.matchMedia('(min-width: 1041px)');
-    const closeMobile = () => { if (desktop.matches) setShowMobileMenu(false); };
-    desktop.addEventListener('change', closeMobile);
-    return () => desktop.removeEventListener('change', closeMobile);
   }, []);
 
   useEffect(() => {
@@ -193,9 +185,7 @@ export default function Navbar({ donationsEnabled = false, bankTransfer }: { don
     { href: '/my-pets', label: t('nav_mypets'), icon: 'paw' },
   ];
 
-  /* Desktop: primary text links (Алдсан/Олдсон/Жагсаалт/Үрчлүүлэх) + icon rail */
   const primaryLinks = allLinks.slice(0, 4);
-  const railLinks = allLinks.slice(4);
 
   const userMenuItems: UserMenuItem[] = [
     { href: '/profile', label: t('nav_profile'), isLink: true, icon: 'user' },
@@ -228,45 +218,9 @@ export default function Navbar({ donationsEnabled = false, bankTransfer }: { don
           ))}
         </nav>
 
-        <span className="nav-divider" aria-hidden="true" />
-
-        {/* Desktop: icon rail (compact circles) */}
-        <div className="icon-rail">
-          {railLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={`icon-rail-btn${isActiveRoute(link.href) ? ' active' : ''}`}
-              aria-current={isActiveRoute(link.href) ? 'page' : undefined}
-              data-tip={link.label}
-              title={link.label}
-              aria-label={link.label}
-            >
-              {link.icon && <Icon name={link.icon} size={17} />}
-              <span className="icon-rail-label">{link.label}</span>
-            </Link>
-          ))}
-          {admin && (
-            <Link
-              href="/admin"
-              className={`icon-rail-btn is-admin${pathname === '/admin' ? ' active' : ''}`}
-              data-tip={t('nav_admin')}
-              title={t('nav_admin')}
-              aria-label={t('nav_admin')}
-            >
-              <Icon name="shield" size={17} />
-              <span className="icon-rail-label">{t('nav_admin')}</span>
-            </Link>
-          )}
-        </div>
-
         <div className="nav-feedback"><FeedbackButton /></div>
 
-        {/* Right side: donate + toggles + user/account */}
         <div className="nav-right">
-          {(bankTransfer || donationsEnabled) && <DonateButton bankTransfer={bankTransfer} compactOnDesktop />}
-          <LanguageToggle />
-          <ThemeToggle />
           {user ? (
             <div className="user-menu" ref={userMenuRef} onBlur={(event) => {
               if (!event.currentTarget.contains(event.relatedTarget)) setShowUserMenu(false);
@@ -339,26 +293,25 @@ export default function Navbar({ donationsEnabled = false, bankTransfer }: { don
           )}
         </div>
 
-        {/* Mobile: hamburger only */}
         <div className="mobile-actions">
           <button
             ref={mobileMenuButtonRef}
             className={`mobile-menu-btn ${showMobileMenu ? 'active' : ''}`}
-            onClick={() => setShowMobileMenu((open) => !open)}
+            onClick={() => { setShowUserMenu(false); setShowMobileMenu((open) => !open); }}
+            aria-haspopup="dialog"
             aria-expanded={showMobileMenu}
             aria-controls="mobile-menu"
             aria-label={showMobileMenu ? t('nav_close_menu') : t('nav_open_menu')}
           >
-            <span className="menu-icon">
+            <span className="menu-icon" aria-hidden="true">
               <span className="menu-line" />
               <span className="menu-line" />
               <span className="menu-line" />
             </span>
+            <span className="nav-menu-label">{t('nav_menu_title')}</span>
           </button>
         </div>
       </div>
-
-      {/* Mobile Dropdown */}
       {showMobileMenu && (
         <>
           <button className="mobile-backdrop" type="button" aria-label={t('nav_close_menu')} onClick={() => setShowMobileMenu(false)} />
@@ -393,7 +346,8 @@ export default function Navbar({ donationsEnabled = false, bankTransfer }: { don
               {admin && (
                 <Link
                   href="/admin"
-                  className={`mobile-nav-link mobile-nav-link--admin${pathname === '/admin' ? ' active' : ''}`}
+                  className={`mobile-nav-link mobile-nav-link--admin${isActiveRoute('/admin') ? ' active' : ''}`}
+                  aria-current={isActiveRoute('/admin') ? 'page' : undefined}
                   onClick={handleMobileLinkClick}
                 >
                   <Icon name="shield" size={18} aria-hidden="true" />
@@ -402,11 +356,11 @@ export default function Navbar({ donationsEnabled = false, bankTransfer }: { don
               )}
             </nav>
             <div className="mobile-menu-actions">
-              {(bankTransfer || donationsEnabled) && <DonateButton bankTransfer={bankTransfer} />}
               <div className="mobile-menu-row">
                 <LanguageToggle />
                 <ThemeToggle />
               </div>
+              <div className="mobile-menu-account">
               {user ? (
                 <div className="mobile-user-section">
                   <div className="mobile-user-info">
@@ -429,6 +383,7 @@ export default function Navbar({ donationsEnabled = false, bankTransfer }: { don
                   {t('nav_login')}
                 </Button>
               )}
+              </div>
             </div>
             </div>
           </div>
@@ -529,82 +484,8 @@ export default function Navbar({ donationsEnabled = false, bankTransfer }: { don
           .navbar-wrap .navbar { gap: 8px; padding-inline: var(--sp-3); }
           .navbar-wrap .nav-links { gap: 0; padding-left: var(--sp-1); }
           .navbar-wrap .nav-link { padding-inline: 8px; font-size: 12.5px; }
-          .navbar-wrap .nav-divider { margin-inline: 0; }
-          .navbar-wrap .icon-rail { gap: 3px; padding-inline: 5px; }
-          .navbar-wrap .icon-rail-btn { width: 32px; height: 34px; }
           .navbar-wrap .nav-right { gap: 5px; }
         }
-
-        /* ─── Divider ─── */
-        .navbar-wrap .nav-divider {
-          width: 1px;
-          height: 20px;
-          background: var(--border-subtle);
-          flex-shrink: 0;
-          margin: 0 var(--sp-1);
-        }
-        /* ─── Desktop icon rail ─── */
-        .navbar-wrap .icon-rail {
-          display: flex;
-          align-items: center;
-          gap: clamp(4px, 0.45vw, 8px);
-          background: var(--surface-2);
-          border: 1px solid var(--border-subtle);
-          border-radius: var(--r-pill);
-          padding: 5px 7px;
-          flex-shrink: 0;
-        }
-        .navbar-wrap .icon-rail-btn {
-          min-width: 36px;
-          height: 36px;
-          flex: 0 0 auto;
-          border-radius: var(--r-pill);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: var(--text-secondary);
-          position: relative;
-          text-decoration: none;
-          transition: color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
-        }
-        .navbar-wrap .icon-rail-label {
-          display: none;
-          overflow: hidden;
-          font-size: 11.5px;
-          font-weight: 650;
-          line-height: 1;
-          text-overflow: ellipsis;
-          white-space: nowrap;
-        }
-        @media (min-width: 1281px) {
-          .navbar-wrap .icon-rail-btn { width: auto; gap: 6px; padding-inline: 10px; }
-          .navbar-wrap .icon-rail-label { display: inline; }
-          .navbar-wrap .icon-rail-btn[data-tip]::after { display: none; }
-        }
-        .navbar-wrap .icon-rail-btn:hover { color: var(--text-primary); background: var(--surface-3); }
-        .navbar-wrap .icon-rail-btn.active { color: var(--text-primary); background: var(--surface-3); }
-        .navbar-wrap .icon-rail-btn.is-admin { color: var(--primary-light); }
-
-        .navbar-wrap .icon-rail-btn[data-tip]:hover::after,
-        .navbar-wrap .icon-rail-btn[data-tip]:focus-visible::after {
-          content: attr(data-tip);
-          position: absolute;
-          top: calc(100% + 8px);
-          left: 50%;
-          transform: translateX(-50%);
-          background: var(--surface-2);
-          border: 1px solid var(--border-subtle);
-          color: var(--text-primary);
-          font-size: 11.5px;
-          font-weight: 500;
-          padding: 5px 9px;
-          border-radius: 7px;
-          white-space: nowrap;
-          box-shadow: var(--shadow-sm);
-          pointer-events: none;
-          z-index: 5;
-        }
-
 
         /* ─── Right side actions ─── */
         .navbar-wrap .nav-right {
@@ -760,16 +641,15 @@ export default function Navbar({ donationsEnabled = false, bankTransfer }: { don
         .navbar-wrap .dropdown-item:focus-visible,
         .navbar-wrap .mobile-menu-btn:focus-visible,
         .navbar-wrap .mobile-nav-link:focus-visible,
-        .navbar-wrap .nav-link:focus-visible,
-        .navbar-wrap .icon-rail-btn:focus-visible {
+        .navbar-wrap .nav-link:focus-visible {
           outline: 2.5px solid var(--border-focus);
           outline-offset: 2px;
           border-radius: var(--r-sm);
         }
 
-        /* ─── Mobile: hamburger ─── */
+        /* Menu trigger */
         .navbar-wrap .mobile-actions {
-          display: none;
+          display: flex;
           align-items: center;
           flex-shrink: 0;
         }
@@ -785,10 +665,12 @@ export default function Navbar({ donationsEnabled = false, bankTransfer }: { don
           border-radius: var(--r-pill);
           cursor: pointer;
           padding: 0;
-          transition: all 0.3s var(--ease-out);
+          color: var(--text-secondary);
+          transition: background-color var(--dur-fast) var(--ease-out);
         }
         .navbar-wrap .mobile-menu-btn:hover { background: var(--surface-3); border-color: var(--border-strong); }
-        .navbar-wrap .mobile-menu-btn:active { transform: scale(0.96); }
+        .navbar-wrap .nav-menu-label { display: none; }
+        .navbar-wrap .mobile-menu-account { display: none; }
 
         .navbar-wrap .menu-icon {
           display: flex;
@@ -886,12 +768,6 @@ export default function Navbar({ donationsEnabled = false, bankTransfer }: { don
           border-top: 1px solid var(--border-subtle);
           margin-top: var(--sp-3);
         }
-        .navbar-wrap .mobile-menu-actions .donate-btn {
-          width: 100%;
-          min-height: 44px;
-          font-size: 14px;
-          padding: 10px 16px;
-        }
         .navbar-wrap .mobile-menu-row {
           display: flex;
           gap: var(--sp-2);
@@ -938,18 +814,33 @@ export default function Navbar({ donationsEnabled = false, bankTransfer }: { don
           white-space: nowrap;
         }
 
-        /* ─── Responsive: ≤1040px hide desktop rails, show hamburger ─── */
+        @media (min-width: 1041px) {
+          .navbar-wrap .mobile-menu-btn {
+            flex-direction: row;
+            gap: 8px;
+            width: auto;
+            padding-inline: 12px;
+            border-radius: var(--r-sm);
+            font-size: var(--text-sm);
+            font-weight: 600;
+          }
+          .navbar-wrap .nav-menu-label { display: inline; }
+          .navbar-wrap .mobile-dropdown {
+            left: auto;
+            right: max(var(--sp-3), calc((100vw - var(--container-xl)) / 2));
+            width: 384px;
+          }
+        }
         @media (max-width: 1040px) {
-          .navbar-wrap .mobile-actions { display: flex; }
           .navbar-wrap .nav-feedback { margin-inline-start: auto; }
           .navbar-wrap .nav-right { margin-left: 0; }
-          .navbar-wrap .nav-links, .navbar-wrap .nav-divider, .navbar-wrap .icon-rail { display: none; }
-          .navbar-wrap .nav-right :global(.donate-btn) { display: none; }
+          .navbar-wrap .nav-links { display: none; }
         }
 
         /* ─── Responsive: ≤640px hide toggles from nav-right (use hamburger) ─── */
         @media (max-width: 640px) {
           .navbar-wrap .nav-right { display: none; }
+          .navbar-wrap .mobile-menu-account { display: block; }
           .navbar-wrap .mobile-dropdown { top: calc(max(12px, env(safe-area-inset-top)) + 52px + 8px); }
           .navbar-wrap .mobile-nav { grid-template-columns: 1fr; }
         }
@@ -965,10 +856,6 @@ export default function Navbar({ donationsEnabled = false, bankTransfer }: { don
 .navbar-wrap .navbar { min-width:0; }
 .navbar-wrap .nav-links { min-width:0; flex:1 1 auto; }
 .navbar-wrap .nav-link { min-height:44px; flex-shrink:0; }
-.navbar-wrap .icon-rail-label { display:none; }
-.navbar-wrap .icon-rail-btn { width:40px; min-width:40px; min-height:44px; padding-inline:0; }
-.navbar-wrap .icon-rail-btn[data-tip]:hover::after,
-.navbar-wrap .icon-rail-btn[data-tip]:focus-visible::after { display:block; }
 .navbar-wrap .dropdown-list { display:grid; }
 .navbar-wrap .dropdown-item { display:grid; grid-template-columns:30px minmax(0,1fr); width:100%; min-height:44px; gap:10px; }
 .navbar-wrap .user-dropdown { width:min(300px,calc(100vw - 32px)); max-height:calc(100dvh - 100px); overflow-y:auto; }
@@ -976,9 +863,6 @@ export default function Navbar({ donationsEnabled = false, bankTransfer }: { don
 @media (min-width:1041px) and (max-width:1280px) {
  .navbar-wrap .nav-link { padding-inline:8px; font-size:12px; }
  .navbar-wrap .navbar { gap:8px; }
-}
-@media (min-width:1041px) {
- .navbar-wrap .mobile-dropdown,.navbar-wrap .mobile-backdrop { display:none; }
 }
 `}</style>
     </header>

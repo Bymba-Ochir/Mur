@@ -31,7 +31,6 @@ describe('page detail safeguards', () => {
     expect(navbar).toContain('className="dropdown-list"');
     expect(navbar).toContain('role="menu"');
     expect(navbar).toContain('role="menuitem"');
-    expect(navbar).toContain('className="icon-rail-label"');
     expect(globals).toContain('.navbar-wrap .dropdown-item');
     expect(globals).toContain('grid-template-columns: 30px minmax(0, 1fr)');
   });

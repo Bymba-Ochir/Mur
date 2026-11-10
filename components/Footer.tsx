@@ -3,8 +3,9 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useLanguage } from '../lib/i18n';
 import BrandLogo from './ui/BrandLogo';
+import DonateButton, { type BankTransfer } from './DonateButton';
 
-export default function Footer() {
+export default function Footer({ donationsEnabled = false, bankTransfer }: { donationsEnabled?: boolean; bankTransfer?: BankTransfer }) {
   const { t } = useLanguage();
   const pathname = usePathname();
   const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
@@ -14,6 +15,7 @@ export default function Footer() {
         <div className="footer-brand">
           <BrandLogo />
           <p className="footer-tagline">{t('footer_tagline')}</p>
+          {(bankTransfer || donationsEnabled) && <div className="footer-support"><DonateButton bankTransfer={bankTransfer} /></div>}
         </div>
         <nav className="footer-links" aria-label={t('footer_nav_label')}>
           <Link href="/listings" aria-current={isActive('/listings') ? 'page' : undefined}>{t('nav_listings')}</Link>
@@ -49,6 +51,7 @@ export default function Footer() {
           .footer-inner { max-width: 1040px; gap: var(--sp-6); }
         }
         .footer-brand { --brand-logo-size: 36px; max-width: 340px; }
+        .footer-support { margin-top: var(--sp-2); }
         .footer-tagline {
           font-size: 13px; color: var(--text-tertiary); margin-top: 4px;
           line-height: 1.6; max-width: 340px;

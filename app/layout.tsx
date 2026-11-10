@@ -73,9 +73,9 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
               <DocumentLanguage />
               <ToastProvider>
                 <FeedbackProvider>
-                  <Navbar bankTransfer={bankTransfer} donationsEnabled={getQPayDonationConfig() !== null} />
+                  <Navbar />
                   <main id="main-content"><PageTransition>{children}</PageTransition></main>
-                  <Footer />
+                  <Footer bankTransfer={bankTransfer} donationsEnabled={getQPayDonationConfig() !== null} />
                 </FeedbackProvider>
                 <InstallPrompt />
                 <Onboarding />

@@ -38,15 +38,10 @@ for (const scenario of scenarios) {
 
     // A personal destination stays discoverable in navigation, outside public services.
     await expect(page.locator('.home a[href="/my-pets"]')).toHaveCount(0);
-    const mobileMenu = page.locator('.mobile-menu-btn');
-    if (await mobileMenu.isVisible()) {
-      await mobileMenu.click();
-      await expect(page.locator('.mobile-nav a[href="/my-pets"]')).toBeVisible();
-      await page.locator('.mobile-close-btn').click();
-      await expect(page.locator('.mobile-dropdown')).toHaveCount(0);
-    } else {
-      await expect(page.locator('.icon-rail-btn[href="/my-pets"]')).toBeVisible();
-    }
+    await page.locator('.mobile-menu-btn').click();
+    await expect(page.locator('.mobile-nav a[href="/my-pets"]')).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(page.locator('.mobile-dropdown')).toHaveCount(0);
 
     const steps = page.locator('.how ol > li');
     await expect(steps).toHaveCount(3);

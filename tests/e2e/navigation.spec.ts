@@ -12,8 +12,8 @@ test.describe('Үндсэн навигаци', () => {
       await expect(action).toBeInViewport();
     }
     await expect(page.getByText('Жишээ зар', { exact: true })).toBeVisible();
-    await page.getByRole('button', { name: 'Алхамчилсан заавар үзэх' }).click();
-    await expect(page.getByRole('dialog', { name: 'Та юу хийх вэ?' })).toBeVisible();
+    await page.getByRole('button', { name: /Заавар үзэх/ }).click();
+    await expect(page.getByRole('dialog', { name: 'МӨР гэж юу вэ?' })).toBeVisible();
     await page.keyboard.press('Escape');
     await expect(page.getByRole('dialog')).toHaveCount(0);
   });
@@ -48,24 +48,18 @@ test.describe('Үндсэн навигаци', () => {
 });
 
 test.describe('Хэл, theme сэлгэх', () => {
-  test('EN/MN товч дарахад текст солигдоно', async ({ page, isMobile }) => {
+  test('EN/MN товч дарахад текст солигдоно', async ({ page }) => {
     await page.goto('/');
     const heroBefore = await page.locator('h1').textContent();
-    if (isMobile) {
-      await page.locator('.mobile-menu-btn').click();
-      await page.locator('.mobile-nav').waitFor({ state: 'visible' });
-    }
+    await page.locator('.mobile-menu-btn').click();
     await page.locator('.lang-btn').last().click();
     await expect(page.locator('h1')).not.toHaveText(heroBefore || '');
   });
 
-  test('Dark mode товч дарахад html[data-theme] солигдоно', async ({ page, isMobile }) => {
+  test('Dark mode товч дарахад html[data-theme] солигдоно', async ({ page }) => {
     await page.goto('/');
     const before = await page.locator('html').getAttribute('data-theme');
-    if (isMobile) {
-      await page.locator('.mobile-menu-btn').click();
-      await page.locator('.mobile-nav').waitFor({ state: 'visible' });
-    }
+    await page.locator('.mobile-menu-btn').click();
     await page.locator('.theme-btn').last().click();
     const after = await page.locator('html').getAttribute('data-theme');
     expect(after).not.toBe(before);
@@ -99,7 +93,7 @@ test.describe('UI regression', () => {
     await page.goto('/');
     const card = page.locator('.service-card').first();
     await expect(card).toBeVisible();
-    await expect(card).toHaveCSS('display', 'block');
+    await expect(card).toHaveCSS('display', 'grid');
     await expect(card).not.toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
   });
 

@@ -3,11 +3,11 @@ import { useState } from 'react';
 import DonateModal from './DonateModal';
 import { useLanguage } from '../lib/i18n';
 import Modal from './ui/Modal';
-import Icon from './ui/icons';
+import Button from './ui/Button';
 
 export interface BankTransfer { iban: string; bank: string; recipient: string }
 
-export default function DonateButton({ compactOnDesktop = false, bankTransfer }: { compactOnDesktop?: boolean; bankTransfer?: BankTransfer }) {
+export default function DonateButton({ bankTransfer }: { bankTransfer?: BankTransfer }) {
   const { t } = useLanguage();
   const [open, setOpen] = useState(false);
   const [copyStatus, setCopyStatus] = useState<'copied' | 'failed' | null>(null);
@@ -15,11 +15,7 @@ export default function DonateButton({ compactOnDesktop = false, bankTransfer }:
   const label = t('donate_btn');
   return (
     <>
-      <button type="button" onClick={() => setOpen(true)} className={`donate-btn${compactOnDesktop ? ' donate-compact' : ''}`}
-        aria-label={label} aria-haspopup="dialog" title={label}>
-        <span className="donate-icon"><Icon name="heart" size={17} /></span>
-        <span className="donate-label">{label}</span>
-      </button>
+      <Button variant="ghost" onClick={() => setOpen(true)} aria-haspopup="dialog">{label}</Button>
       {open && (bankTransfer ? (
         <Modal open onClose={close} title={t('donate_title')} closeLabel={t('donate_close')} width="sm">
           <p>{t('donate_transfer_hint')}</p>
@@ -62,12 +58,6 @@ export default function DonateButton({ compactOnDesktop = false, bankTransfer }:
         .donate-btn:focus-visible {
           outline: 2.5px solid var(--accent);
           outline-offset: 2px;
-        }
-        .donate-icon { display: none; }
-        @media (min-width: 1041px) and (max-width: 1280px) {
-          .donate-compact { width: 44px; min-height: 44px; padding: 0; }
-          .donate-compact .donate-label { display: none; }
-          .donate-compact .donate-icon { display: inline-flex; }
         }
       `}</style>
     </>

@@ -38,30 +38,34 @@ export default function Home() {
               <Icon name="search" size={18} />{t('hero_action_search')}
             </Button>
           </nav>
-          <button type="button" className="how-guide" aria-haspopup="dialog" onClick={() => window.dispatchEvent(new Event('mur:open-onboarding'))}>
-            <Icon name="info" size={16} />
-            {t('how_open_guide')}
-          </button>
-          <ul className="hero-trust" aria-label={t('hero_trust_aria')}>
-            <li><Icon name="pin" size={16} />{t('hero_trust_location')}</li>
-            <li><Icon name="search" size={16} />{t('hero_trust_photo')}</li>
-            <li><Icon name="message" size={16} />{t('hero_trust_direct')}</li>
-          </ul>
+          <div className="hero-notes">
+            <button type="button" className="how-guide" aria-haspopup="dialog" onClick={() => window.dispatchEvent(new Event('mur:open-onboarding'))}>
+              <Icon name="info" size={16} />
+              {t('how_open_guide')}
+            </button>
+            <ul className="hero-trust" aria-label={t('hero_trust_aria')}>
+              <li><Icon name="pin" size={16} />{t('hero_trust_location')}</li>
+              <li><Icon name="search" size={16} />{t('hero_trust_photo')}</li>
+              <li><Icon name="message" size={16} />{t('hero_trust_direct')}</li>
+            </ul>
+          </div>
         </div>
 
-        <div className="hero-preview" aria-hidden="true">
+        <div className="hero-preview">
           <div className="preview-map">
-            <svg viewBox="0 0 480 240" preserveAspectRatio="xMidYMid slice" focusable="false">
+            <svg viewBox="0 0 480 240" preserveAspectRatio="none" aria-hidden="true" focusable="false">
               <path className="map-green" d="M0 0h136L82 87 0 75Zm353 151 127-36v125H324Z" />
               <path className="map-water" d="M-24 208c98 32 144-55 235-43s133 15 210-18l80-38" />
               <g className="map-streets">
                 <path d="m-24 115 128-18 95 17 141-61 167-6M-24 149l136-18 94 20 158-68 144-6M18 257l107-95L216-16M91 248l71-75 86-189M249 254l33-95 80-179M327 254l24-87 92-188M81 43l90 18 90-17M213 115l74 23 126 37 91-31M246 222l97-28 104 10 61-28" />
               </g>
-              <path className="map-route" d="m125 162 47-73 32 9 55 10" />
-              <circle cx="125" cy="162" r="5" className="map-origin" />
+              <path className="map-route" d="M120 156l54-67 85 19 101 31" />
             </svg>
             <span className="preview-label">{t('hero_preview_label')}</span>
-            <span className="map-pin"><BrandMark size={32} /></span>
+            <span className="map-pin" aria-hidden="true"><BrandMark size={32} /></span>
+            {['09:00', '18:30'].map(time => (
+              <span key={time} className="map-sighting">{t('hero_preview_sighting').replace('{time}', time)}</span>
+            ))}
           </div>
           <div className="preview-details">
             <div>
@@ -220,18 +224,47 @@ export default function Home() {
           stroke-dasharray: 2 7;
           stroke-linecap: round;
         }
-        .map-origin { fill: var(--surface-2); stroke: var(--home-link); stroke-width: 2; }
         .preview-label {
           position: absolute;
           top: 12px;
           left: 12px;
-          padding: 4px 8px;
-          border: 1px solid var(--border-subtle);
+          padding: 4px 10px;
           border-radius: 6px;
-          background: var(--surface-2);
-          color: var(--text-secondary);
-          font-size: var(--text-xs);
+          background: var(--home-action);
+          color: #fff;
+          font-size: var(--text-sm);
+          font-weight: 600;
         }
+        .map-sighting {
+          position: absolute;
+          top: 65%;
+          left: 25%;
+          transform: translate(-50%, -5px);
+          display: grid;
+          justify-items: center;
+          gap: 4px;
+          color: var(--text-primary);
+          font-size: var(--text-xs);
+          font-weight: 600;
+          white-space: nowrap;
+        }
+        .map-sighting::before {
+          content: '';
+          width: 10px;
+          height: 10px;
+          border: 2px solid var(--surface-2);
+          border-radius: 50%;
+          background: #c55d19;
+        }
+        .map-sighting::after {
+          content: '';
+          position: absolute;
+          inset: 10px -6px -2px;
+          z-index: -1;
+          border-radius: 4px;
+          background: var(--surface-2);
+        }
+        .map-sighting:last-child { top: 58%; left: 75%; }
         .map-pin {
           position: absolute;
           bottom: 55%;
@@ -351,6 +384,11 @@ export default function Home() {
           .services-grid { grid-template-columns: minmax(0, 1fr); }
         }
         @media (max-width: 480px) {
+          .hero { gap: 16px; padding-top: 16px; }
+          .hero-content { display: contents; }
+          .hero-kicker, .hero-title, .hero-desc { margin-bottom: 0; }
+          .hero-kicker, .hero-title, .hero-desc, .hero-actions { grid-column: 1; }
+          .hero-notes { order: 1; }
           .hero-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
           .hero-actions :global([data-variant="primary"]) { grid-column: 1 / -1; }
           .hero-actions :global(.btn-base) { font-size: var(--text-sm); }
