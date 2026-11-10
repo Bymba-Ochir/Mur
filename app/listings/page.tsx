@@ -77,7 +77,7 @@ export default function ListingsPage() {
     if (!hasImageResults) return undefined;
     if (activeMatch?.phase === 'same-photos') return t('listings_card_same_photo');
     return t((pet.similarity ?? 0) >= HIGH_LISTING_PHOTO_SIMILARITY
-      ? 'listings_card_very_similar' : 'listings_card_similar');
+      ? 'listings_card_similar_photo' : 'listings_card_slightly_similar_photo');
   }
 
   useEffect(() => {
@@ -319,10 +319,10 @@ export default function ListingsPage() {
       ) : (
         <>
           {!hasImageResults && <p className="result-count" aria-live="polite">{visiblePets.length} {t(visiblePets.length === 1 ? 'results_count_one' : 'results_count')}</p>}
+          {hasImageResults && <p className="match-review">{t('listings_match_review')}</p>}
           <div className="listings-grid">
             {visiblePets.map((pet) => <PetCard key={pet.id} pet={pet} photoMatchLabel={photoMatchLabel(pet)} />)}
           </div>
-          {hasImageResults && <p className="match-note">{t('listings_match_review')}</p>}
           {hasMore && !(hasImageResults && (activeMatch?.phase === 'database' || activeMatch?.phase === 'same-photos')) && (
             <div className="load-more-wrap">
               <Button onClick={handleLoadMore} disabled={loadingMore} variant="ghost">
@@ -382,6 +382,11 @@ export default function ListingsPage() {
         .match-heading h2 { margin-bottom: var(--sp-1); font-size: var(--text-base); }
         .match-heading p, .match-note { max-width: 62ch; color: var(--text-secondary); font-size: var(--text-xs); line-height: 1.5; }
         .match-note { margin-top: var(--sp-2); }
+        .match-review {
+          padding: var(--sp-3) var(--sp-4); color: var(--text-primary);
+          background: var(--surface-2); border: 1px solid var(--border-subtle); border-radius: var(--r-sm);
+          font-size: var(--text-xs); font-weight: 600; line-height: 1.5;
+        }
         .match-actions { display: flex; align-items: center; justify-content: flex-end; gap: var(--sp-2); flex-wrap: wrap; }
         .match-feedback { grid-column: 1 / -1; min-height: 0; }
         .match-feedback:empty { display: none; }

@@ -65,9 +65,12 @@ it.each(['database', 'browser'])('labels strong and borderline photos, dropping 
   uploadPhoto();
 
   await screen.findByText('2 match_results');
-  expect(screen.getByText('listings_card_very_similar')).toBeVisible();
-  expect(screen.getByText('listings_card_similar')).toBeVisible();
-  expect(screen.getByText('listings_match_review')).toBeVisible();
+  const review = screen.getByText('listings_match_review');
+  const similar = screen.getByText('listings_card_similar_photo');
+  expect(review).toBeVisible();
+  expect(review.nextElementSibling).toContainElement(similar);
+  expect(similar).toBeVisible();
+  expect(screen.getByText('listings_card_slightly_similar_photo')).toBeVisible();
   expect(screen.queryByText('Weak photo')).not.toBeInTheDocument();
   expect(screen.queryByText(/\d+%/)).not.toBeInTheDocument();
 });
