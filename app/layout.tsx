@@ -45,8 +45,7 @@ export const metadata: Metadata = {
 export default async function RootLayout({ children }: { children: ReactNode }) {
   const iban = process.env.DONATION_IBAN?.trim();
   const bank = process.env.DONATION_BANK?.trim();
-  const recipient = process.env.DONATION_RECIPIENT?.trim();
-  const bankTransfer = iban && bank && recipient ? { iban, bank, recipient } : undefined;
+  const bankTransfer = iban && bank ? { iban, bank } : undefined;
   const nonce = (await headers()).get('x-nonce') ?? '';
   return (
     <html lang="mn" suppressHydrationWarning>

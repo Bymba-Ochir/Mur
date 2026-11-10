@@ -5,7 +5,7 @@ import { useLanguage } from '../lib/i18n';
 import Modal from './ui/Modal';
 import Button from './ui/Button';
 
-export interface BankTransfer { iban: string; bank: string; recipient: string }
+export interface BankTransfer { iban: string; bank: string }
 
 export default function DonateButton({ bankTransfer }: { bankTransfer?: BankTransfer }) {
   const { t } = useLanguage();
@@ -19,7 +19,7 @@ export default function DonateButton({ bankTransfer }: { bankTransfer?: BankTran
       {open && (bankTransfer ? (
         <Modal open onClose={close} title={t('donate_title')} closeLabel={t('donate_close')} width="sm">
           <p>{t('donate_transfer_hint')}</p>
-          <p>{bankTransfer.bank} · {bankTransfer.recipient}</p>
+          <p>{bankTransfer.bank}</p>
           <p><code>{bankTransfer.iban}</code></p>
           <Button fullWidth onClick={async () => {
             try {
