@@ -10,6 +10,7 @@ import { relativeTime } from '../lib/relativeTime';
 import { vaccineStatus } from '../lib/vaccineService';
 import PetIcon from './PetIcon';
 import Button from './ui/Button';
+import ReportLostPetButton from './ReportLostPetButton';
 import { Icon, type IconName } from './ui';
 import ShareButtons from './ShareButtons';
 import type { PetProfileData, VaccineStatus } from '../lib/types';
@@ -84,6 +85,8 @@ export default function PetProfileLayout({
           </div>
         )}
       </div>
+
+      {data.kind === 'mypet' && data.isOwner && <div className="report-lost-action"><ReportLostPetButton petId={data.id} size="md" /></div>}
 
       {/* Tabs */}
       <div className="tab-bar" role="tablist">
@@ -162,6 +165,7 @@ export default function PetProfileLayout({
 
       <style jsx>{`
         .profile-page { max-width: 640px; margin: 0 auto; }
+        .report-lost-action { display:flex;justify-content:center;margin-bottom:var(--sp-4); }
 
         .profile-header {padding:var(--sp-4) 0;border-bottom:1px solid var(--border-subtle);margin-bottom:var(--sp-3);text-align:center;}
         .avatar {

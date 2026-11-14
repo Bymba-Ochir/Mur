@@ -62,13 +62,20 @@ export async function createMyPet({
   return mapMyPetRow(data);
 }
 
-export async function fetchMyPets(): Promise<MyPet[]> {
+export async function fetchMyPets(page?: { offset: number; limit: number }): Promise<MyPet[]> {
+  if (page && (!Number.isSafeInteger(page.offset) || page.offset < 0
+    || !Number.isSafeInteger(page.limit) || page.limit < 1 || page.limit > 50)) {
+    throw new Error('Invalid pet page');
+  }
   const userId = await requireUserId();
-  const { data, error } = await supabase
+  let query = supabase
     .from(TABLE)
     .select('*')
     .eq('user_id', userId)
-    .order('created_at', { ascending: false });
+    .order('created_at', { ascending: false })
+    .order('id', { ascending: false });
+  if (page) query = query.range(page.offset, page.offset + page.limit - 1);
+  const { data, error } = await query;
 
   if (error) throw error;
   return data.map(mapMyPetRow);
@@ -79,10 +86,12 @@ export async function fetchMyPets(): Promise<MyPet[]> {
  * RLS нь зөвхөн эзэмшигчид буцаана.
  */
 export async function fetchMyPetById(id: string): Promise<MyPet> {
+  const userId = await requireUserId();
   const { data, error } = await supabase
     .from(TABLE)
     .select('*')
     .eq('id', id)
+    .eq('user_id', userId)
     .maybeSingle();
 
   if (error) throw error;

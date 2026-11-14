@@ -1,5 +1,5 @@
 'use client';
-import { useMemo, useState } from 'react';
+import { Suspense, useMemo, useState } from 'react';
 import type { ChangeEvent, FormEvent, KeyboardEvent } from 'react';
 import { DISTRICTS } from '../lib/districts';
 import { useLanguage } from '../lib/i18n';
@@ -11,7 +11,8 @@ import PetPreviewCard from './PetPreviewCard';
 import PawTrail from './PawTrail';
 import { usePhotoUpload, usePetLocation, usePetSubmit, TYPE_VALUES } from '../lib/usePetForm';
 import type { PetFormData } from '../lib/usePetForm';
-import type { PetStatus, PetType } from '../lib/types';
+import type { MyPet, PetStatus, PetType } from '../lib/types';
+import MyPetReportPicker from './MyPetReportPicker';
 import BreedSelect from './BreedSelect';
 import FieldHint from './ui/FieldHint';
 import AuthRequired from './AuthRequired';
@@ -86,6 +87,12 @@ function AuthenticatedPetForm({ status, userId }: { status: PetStatus; userId: s
     location.setCoords(saved.coords);
     photo.restore(saved.photos);
     submit.restoreAttempt(saved.attempt);
+  }
+
+  function selectMyPet(pet: MyPet) {
+    setForm(current => ({ ...current, name: pet.name,
+      type: TYPE_VALUES.includes(pet.type as PetType) ? pet.type as PetType : 'Бусад',
+      breed: pet.breed ?? '' }));
   }
 
   function clearError(name: keyof FieldErrors) {
@@ -178,6 +185,7 @@ function AuthenticatedPetForm({ status, userId }: { status: PetStatus; userId: s
         <p className="draft-status" role={draft.error ? 'alert' : 'status'}>
           {t(draft.error || (draft.saving ? 'form_draft_saving' : draft.saved ? 'form_draft_saved' : 'form_draft_hint'))}
         </p>
+        {status === 'lost' && <Suspense fallback={null}><MyPetReportPicker onSelect={selectMyPet} /></Suspense>}
         <PawTrail labels={steps} current={step} ariaLabel={t('form_steps_aria')} />
         <p className="progress-text" aria-live="polite">{step + 1}/{steps.length}: {steps[step]}</p>
 

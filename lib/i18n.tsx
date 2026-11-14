@@ -6,6 +6,16 @@ import type { Locale } from './types';
 import { useLocalStorageValue, setLocalStorageValue } from './useLocalStorageState';
 
 const MN = {
+mypets_report_lost: 'Алдсан зар үүсгэх',
+form_mypet_title: 'Бүртгэлтэй амьтан байгаа юу?',
+form_mypet_choose: 'Миний амьтдаас сонгох',
+form_mypet_hint: 'Нэр, төрөл, үүлдрийг бөглөнө. Зураг, зүс, сүүлд харсан газраа шалгаж нэмээрэй. Эрүүл мэндийн мэдээлэл зар руу орохгүй.',
+form_mypet_use: 'Мэдээллийг ашиглах',
+form_mypet_selected: '«{name}»-ийн мэдээллийг бөглөлөө.',
+form_mypet_error: 'Өөрийн амьтны мэдээллийг ачаалж чадсангүй. Дахин оролдох эсвэл маягтаа шууд бөглөж болно.',
+form_mypet_previous: 'Өмнөх',
+form_mypet_next: 'Дараах',
+
 nav_lost: 'Алдсан', nav_found: 'Олдсон', nav_listings: 'Жагсаалт',
 nav_mypets: 'Миний амьтад', nav_admin: 'Админ', nav_login: 'Нэвтрэх',
 nav_logout_prefix: 'Гарах', nav_logout: 'Гарах', nav_user_menu_label: 'Хэрэглэгчийн цэс',
@@ -715,6 +725,16 @@ chat_deleted_listing: 'Зар устгагдсан',
 export type TranslationKey = keyof typeof MN;
 
 const EN: Record<TranslationKey, string> = {
+mypets_report_lost: 'Report as lost',
+form_mypet_title: 'Already registered your pet?',
+form_mypet_choose: 'Choose from My pets',
+form_mypet_hint: 'Fill in the name, type and breed. Check or add photos, markings and the last-seen location. Health information is not copied into the report.',
+form_mypet_use: 'Use these details',
+form_mypet_selected: 'Details filled in for {name}.',
+form_mypet_error: 'Could not load your pet. Try again or fill in the report manually.',
+form_mypet_previous: 'Previous',
+form_mypet_next: 'Next',
+
 nav_lost: 'Lost', nav_found: 'Found', nav_listings: 'Listings',
 nav_mypets: 'My Pets', nav_admin: 'Admin', nav_login: 'Log in',
 nav_logout_prefix: 'Log out', nav_logout: 'Log out', nav_user_menu_label: 'User menu',

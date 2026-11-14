@@ -9,6 +9,10 @@ function mount(onDateChange: (date:string)=>Promise<void>) {
   return render(<LanguageProvider><MyPetCard pet={pet} selected={false} onSelect={()=>{}} onDelete={()=>{}} onDateChange={onDateChange} /></LanguageProvider>);
 }
 describe('vaccine date editing',()=>{
+ it('links the pet directly to a lost report',()=>{
+  mount(vi.fn().mockResolvedValue(undefined));
+  expect(screen.getByRole('link',{name:'Алдсан зар үүсгэх'})).toHaveAttribute('href','/report-lost?myPetId=test');
+ });
  it('does not save until confirmed and cancel restores the date',()=>{
   const save=vi.fn().mockResolvedValue(undefined);mount(save);
   const input=screen.getByDisplayValue('2026-10-01');
