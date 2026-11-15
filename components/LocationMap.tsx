@@ -1,12 +1,18 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import type { ReactNode } from 'react';
 import type { Marker, Popup, PopupEvent } from 'leaflet';
 import { useLanguage } from '../lib/i18n';
 import { addMapTiles, createMapPinPopup, mapMarkerIcon } from '../lib/leafletMap';
 import type { MapPopupDetails } from '../lib/leafletMap';
+import { isRecentSighting } from '../lib/sightingPresentation';
+import type { SightingMapTimeLabel } from '../lib/sightingPresentation';
 
-export type LocationMapPin = { id: string; lat: number; lng: number; title: string; details: MapPopupDetails[] };
+export type LocationMapPin = {
+  id: string; lat: number; lng: number; title: string; details: MapPopupDetails[];
+  timeLabel?: SightingMapTimeLabel;
+  createdAt?: string;
+};
 export type LocationMapFocus = { pinId: string };
 const NO_PINS: readonly LocationMapPin[] = [];
 
@@ -38,8 +44,24 @@ export default function LocationMap({ lat, lng, initialCenter, editable = false,
   const markerRef = useRef<import('leaflet').Marker | null>(null);
   const LRef = useRef<typeof import('leaflet') | null>(null);
   const overlays = useRef(new Map<string, { marker: Marker; snapshot: string }>());
+  const highlightTimers = useRef(new Map<Marker, ReturnType<typeof setTimeout>>());
   const [ready, setReady] = useState(false);
   const [photoSlots, setPhotoSlots] = useState<{ elements: HTMLElement[]; update: () => void } | null>(null);
+
+  const highlight = useCallback((marker: Marker) => {
+    const element = marker.getElement();
+    if (!element) return;
+    const timers = highlightTimers.current;
+    clearTimeout(timers.get(marker));
+    element.classList.remove('sighting-marker-arrival');
+    // Restart the short highlight when the owner deliberately selects a pin.
+    void element.offsetWidth;
+    element.classList.add('sighting-marker-arrival');
+    timers.set(marker, setTimeout(() => {
+      element.classList.remove('sighting-marker-arrival');
+      timers.delete(marker);
+    }, 4800));
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -76,9 +98,12 @@ export default function LocationMap({ lat, lng, initialCenter, editable = false,
     });
 
     const overlayMarkers = overlays.current;
+    const timers = highlightTimers.current;
     return () => {
       cancelled = true;
       overlayMarkers.clear();
+      for (const timer of timers.values()) clearTimeout(timer);
+      timers.clear();
       if (mapRef.current) {
         mapRef.current.remove();
         mapRef.current = null;
@@ -115,6 +140,8 @@ export default function LocationMap({ lat, lng, initialCenter, editable = false,
     const ids = new Set(pins.map(pin => pin.id));
     for (const [id, { marker }] of markers) {
       if (!ids.has(id)) {
+        clearTimeout(highlightTimers.current.get(marker));
+        highlightTimers.current.delete(marker);
         marker.remove();
         markers.delete(id);
       }
@@ -126,18 +153,37 @@ export default function LocationMap({ lat, lng, initialCenter, editable = false,
       const current = markers.get(pin.id);
       if (current?.snapshot === snapshot) continue;
       const content = createMapPinPopup(pin.title, pin.details);
+      const applyTimeLabel = (marker: Marker) => {
+        marker.getElement()?.setAttribute('alt', pin.timeLabel ? `${pin.title} — ${pin.timeLabel.title}` : pin.title);
+        if (!pin.timeLabel) {
+          if (marker.getTooltip()) marker.unbindTooltip();
+          return;
+        }
+        const label = document.createElement('span');
+        label.textContent = pin.timeLabel.text;
+        label.title = pin.timeLabel.title;
+        if (marker.getTooltip()) marker.setTooltipContent(label);
+        else marker.bindTooltip(label, {
+          permanent: true, direction: 'top', offset: [0, -42], opacity: 1,
+          className: 'sighting-time-label',
+        });
+      };
       if (current) {
         if (!current.marker.getLatLng().equals([pin.lat, pin.lng], 0)) {
           current.marker.setLatLng([pin.lat, pin.lng]);
           positionsChanged = true;
         }
-        current.marker.getElement()?.setAttribute('alt', pin.title);
+        applyTimeLabel(current.marker);
         current.marker.setPopupContent(content);
+        const previous = JSON.parse(current.snapshot) as LocationMapPin;
+        if (pin.createdAt !== previous.createdAt && isRecentSighting(pin.createdAt)) highlight(current.marker);
         current.snapshot = snapshot;
       } else {
         const marker = L.marker([pin.lat, pin.lng], {
           icon: mapMarkerIcon(L, 'sighting'), alt: pin.title, zIndexOffset: 1000,
         }).bindPopup(content, { maxWidth: 260, maxHeight: Math.max(80, map.getSize().y - 120) }).addTo(map);
+        applyTimeLabel(marker);
+        if (isRecentSighting(pin.createdAt)) highlight(marker);
         markers.set(pin.id, { marker, snapshot });
         positionsChanged = true;
       }
@@ -147,9 +193,9 @@ export default function LocationMap({ lat, lng, initialCenter, editable = false,
     if (positionsChanged) {
       const bounds = L.latLngBounds(pins.map(pin => L.latLng(pin.lat, pin.lng)));
       if (lat != null && lng != null) bounds.extend([lat, lng]);
-      map.fitBounds(bounds, { padding: [34, 38], maxZoom: 15, animate: false });
+      map.fitBounds(bounds, { paddingTopLeft: [42, 80], paddingBottomRight: [42, 36], maxZoom: 15, animate: false });
     }
-  }, [ready, pins, lat, lng]);
+  }, [ready, pins, lat, lng, highlight]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -194,7 +240,8 @@ export default function LocationMap({ lat, lng, initialCenter, editable = false,
     map.panTo(marker.getLatLng(), { animate: false });
     marker.getElement()?.focus({ preventScroll: true });
     marker.openPopup();
-  }, [ready, focus]);
+    highlight(marker);
+  }, [ready, focus, highlight]);
 
   return <>
     {renderPrivatePhoto && photoSlots?.elements.map(element => {
@@ -211,6 +258,24 @@ export default function LocationMap({ lat, lng, initialCenter, editable = false,
       .location-map :global(.leaflet-popup-content-wrapper),
       .location-map :global(.leaflet-popup-tip) { background:var(--card); color:var(--ink); }
       .location-map :global(.leaflet-popup-close-button) { color:var(--muted); }
+      .location-map :global(.sighting-time-label) {
+        background:#fff3e6; color:#783b0d; border:1px solid #e9c39b;
+        border-radius:9px; padding:5px 9px; box-shadow:0 2px 7px #24170b12;
+        font:650 12px/1.3 var(--font-body, sans-serif); white-space:nowrap; max-width:210px;
+      }
+      .location-map :global(.sighting-time-label::before) { border-top-color:#e9c39b; }
+      .location-map :global(.sighting-marker-arrival) { animation:sighting-arrival 1600ms ease-out 3; }
+      @keyframes sighting-arrival {
+        0%, 100% { filter:drop-shadow(0 0 0 #d5640c00); }
+        45% { filter:drop-shadow(0 0 9px #d5640cbb) drop-shadow(0 0 15px #d5640c55); }
+      }
+      :global([data-theme="dark"]) .location-map :global(.sighting-time-label) {
+        background:#38291e; color:#ffd3a1; border-color:#89623d;
+      }
+      :global([data-theme="dark"]) .location-map :global(.sighting-time-label::before) { border-top-color:#89623d; }
+      @media (prefers-reduced-motion: reduce) {
+        .location-map :global(.sighting-marker-arrival) { animation:none; }
+      }
       .location-map :global(.leaflet-bar a),
       .location-map :global(.leaflet-control-attribution) { background:var(--card); color:var(--ink); }
       .location-map :global(.location-pin-popup) { overflow-wrap: anywhere; }

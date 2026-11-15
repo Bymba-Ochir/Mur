@@ -4,7 +4,7 @@ import { useCallback, useMemo } from 'react';
 import GuestSightingPhoto from './GuestSightingPhoto';
 import type { GuestSightingDetails } from '../lib/guestSightings';
 import { useLanguage } from '../lib/i18n';
-import { guestSightingMapPinId, sightingMapPinId } from '../lib/sightingPresentation';
+import { guestSightingMapPinId, sightingMapPinId, sightingMapTimeLabel } from '../lib/sightingPresentation';
 import { dateTimeFormat } from '../lib/dateTime';
 import type { Sighting } from '../lib/types';
 import LocationMap, { type LocationMapPin, type LocationMapFocus } from './LocationMap';
@@ -34,13 +34,16 @@ export default function PetSightingsMap({ lat, lng, sightings, focus, ownerPetId
         group = { id, lat: sighting.lat, lng: sighting.lng, title: t('sightings_title'), details: [] };
         groups.set(id, group);
       }
+      if (!group.createdAt || Date.parse(sighting.createdAt) > Date.parse(group.createdAt)) group.createdAt = sighting.createdAt;
+      const timeLabel = sightingMapTimeLabel(sighting, lang, t('sightings_seen_short'));
+      if (timeLabel && (!group.timeLabel || Date.parse(timeLabel.observedAt) > Date.parse(group.timeLabel.observedAt))) group.timeLabel = timeLabel;
       group.details.push({
         message: sighting.guestReport ? t('guest_sighting_approximate') : sighting.message,
         photo: sighting.photoUrl ? { src: sighting.photoUrl, alt: t('sightings_photo_alt') } : undefined,
         privatePhotoId: ownerPetId && sighting.guestReport && !sighting.photoUrl ? sighting.id : undefined,
         lines: [
-          ...(sighting.place ? [`${t('sightings_place_label')}: ${sighting.place}`] : []),
-          ...(sighting.sightedAt ? [`${t('sightings_time_seen')} ${formatter.format(new Date(sighting.sightedAt))}`] : []),
+          ...(!sighting.guestReport && sighting.place ? [`${t('sightings_place_label')}: ${sighting.place}`] : []),
+          ...(!sighting.guestReport && sighting.sightedAt ? [`${t('sightings_time_seen')} ${formatter.format(new Date(sighting.sightedAt))}`] : []),
           `${t('sightings_time_posted')} ${formatter.format(new Date(sighting.createdAt))}`,
         ],
       });
@@ -49,6 +52,8 @@ export default function PetSightingsMap({ lat, lng, sightings, focus, ownerPetId
       const id = guestSightingMapPinId(ownerReport.id);
       groups.set(id, {
         id, lat: ownerReport.lat, lng: ownerReport.lng, title: t('guest_sighting_exact'),
+        createdAt: ownerReport.created_at,
+        timeLabel: sightingMapTimeLabel({ sightedAt: ownerReport.sighted_at }, lang, t('sightings_seen_short')),
         details: [{
           message: ownerReport.message,
           privatePhotoId: ownerReport.hasPhoto ? ownerReport.id : undefined,
@@ -71,12 +76,14 @@ export default function PetSightingsMap({ lat, lng, sightings, focus, ownerPetId
       {hasOrigin && <li><span className="origin-dot" aria-hidden="true" />{t('detail_last_seen_loc')}</li>}
       <li><span className="sighting-dot" aria-hidden="true" />{t('sightings_title')}</li>
     </ul>}
+    {pins.length > 0 && <p className="map-read-hint">{t('sightings_map_read_hint')}</p>}
     <style jsx>{`
       .map-legend { display:flex; flex-wrap:wrap; gap:var(--sp-2) var(--sp-4); padding:0; margin:var(--sp-2) 0 0; list-style:none; color:var(--text-secondary); font-size:var(--text-xs); }
       .map-legend li { display:inline-flex; gap:var(--sp-1); align-items:center; }
       .map-legend span { width:10px; height:10px; border-radius:50%; flex:none; }
       .origin-dot { background:#625bf6; }
       .sighting-dot { background:#d5640c; }
+      .map-read-hint { margin:8px 0 0; color:var(--text-tertiary); font-size:var(--text-xs); line-height:1.5; }
     `}</style>
   </>;
 }
