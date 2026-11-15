@@ -1,9 +1,10 @@
-import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
+import { pageMetadata } from '../../lib/siteMetadata';
 
-export const metadata: Metadata = {
-  title: 'Алдсан амьтан мэдээлэх — МӨР',
-  description: 'Алдсан нохой, муур болон бусад амьтны зураг, байршил, холбоо барих мэдээллийг нийтлэх.',
-};
+export const metadata = pageMetadata({
+  path: '/report-lost',
+  title: 'Нохой, муураа алдсан бол зар оруулах | МӨР',
+  description: 'Нохойгоо эсвэл муураа алдсан уу? Зураг, сүүлд харсан газраа оруулж зараа хуваалцаарай. Харсан хүн бүртгэлгүйгээр мэдээлэл үлдээж болно.',
+});
 
 export default function ReportLostLayout({ children }: { children: ReactNode }) { return children; }

@@ -15,9 +15,8 @@ import { LanguageProvider } from '../lib/i18n';
 import { AuthProvider } from '../lib/AuthProvider';
 import AnalyticsProvider from '../components/AnalyticsProvider';
 import { getQPayDonationConfig } from '../lib/qpay';
+import { SITE_URL, siteBrandMetadata, websiteStructuredData } from '../lib/siteMetadata';
 import './globals.css';
-
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://mur-chi.vercel.app';
 
 const inter = Inter({ subsets: ['latin', 'cyrillic'], variable: '--font-body', display: 'swap' });
 // Unbounded-ийн Ө/Ү кирилл glyph хэт өвөрмөц харагддаг тул гарчигт
@@ -26,20 +25,11 @@ const montserrat = Montserrat({ subsets: ['latin', 'cyrillic'], variable: '--fon
 const jetBrainsMono = JetBrains_Mono({ subsets: ['latin', 'cyrillic'], variable: '--font-mono', display: 'swap' });
 
 export const metadata: Metadata = {
+  ...siteBrandMetadata,
   metadataBase: new URL(SITE_URL),
-  title: 'МӨР — Гэртээ буцах зам | Алдсан, олдсон нохой муур',
-  description: 'Улаанбаатар хотод алдсан, олдсон гэрийн тэжээвэр амьтныг (нохой, муур) хурдан олоход туслах платформ. Зураг оруулаад, ойр орчмынхонтой шууд холбогдоорой.',
   keywords: ['алдсан нохой', 'алдсан муур', 'олдсон нохой', 'олдсон муур', 'Улаанбаатар тэжээвэр амьтан', 'алдсан амьтан'],
   manifest: '/manifest.json',
   verification: { google: 'U9uX6mECTK3qOk3T2v7q-yoQcNeNtatSKve6Tk8yFAA' },
-  openGraph: {
-    title: 'МӨР — Гэртээ буцах зам',
-    description: 'Алдсан, олдсон гэрийн тэжээвэр амьтныг олоход туслах платформ',
-    url: SITE_URL,
-    siteName: 'МӨР',
-    locale: 'mn_MN',
-    type: 'website',
-  },
 };
 
 export default async function RootLayout({ children }: { children: ReactNode }) {
@@ -51,6 +41,8 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
     <html lang="mn" suppressHydrationWarning>
       <head>
         <meta property="csp-nonce" content={nonce} />
+        <script type="application/ld+json" nonce={nonce}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteStructuredData()).replace(/</g, '\\u003c') }} />
         <script nonce={nonce}
           dangerouslySetInnerHTML={{
             __html: `

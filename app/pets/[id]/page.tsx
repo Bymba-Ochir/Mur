@@ -6,6 +6,7 @@ import { supabase } from '../../../lib/supabase';
 import PetDetailClient from './PetDetailClient';
 import { getTurnstileConfig } from '../../../lib/turnstile';
 import { fetchServerListingPhotoUrls } from '../../../lib/serverPhotoRepository';
+import { pageMetadata, SITE_NAME, SITE_PREVIEW_IMAGE, SITE_URL } from '../../../lib/siteMetadata';
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params;
@@ -17,28 +18,32 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     .single();
 
   if (!pet) {
-    return { title: 'МӨР — Бичлэг олдсонгүй' };
+    return { title: 'Зар олдсонгүй | МӨР', robots: { index: false, follow: false } };
   }
 
   const photos = await fetchServerListingPhotoUrls(supabase, 'pet', id);
   const primaryPhoto = photos[0] ?? null;
   const title = `${pet.status === 'lost' ? 'Алдсан' : 'Олдсон'} ${pet.type}${pet.name ? ' — ' + pet.name : ''}`;
-  const description = `${pet.district} — ${pet.place}. ${pet.color ? 'Өнгө: ' + pet.color + '. ' : ''}Дэлгэрэнгүй мэдээлэл, холбоо барих дугаарыг үзнэ үү.`;
+  const location = [pet.district, pet.place].filter(Boolean).join(' — ');
+  const description = `${location ? location + '. ' : ''}${pet.color ? 'Өнгө: ' + pet.color + '. ' : ''}Дэлгэрэнгүй мэдээллийг үзэж, харсан бол «Би харсан» товчоор мэдээлээрэй.`;
+  const canonical = new URL(`/pets/${encodeURIComponent(id)}`, SITE_URL).href;
 
   return {
-    title: `${title} | МӨР`,
-    description,
+    ...pageMetadata({ path: `/pets/${encodeURIComponent(id)}`, title: `${title} | МӨР`, description }),
     openGraph: {
       title,
       description,
-      images: primaryPhoto ? [{ url: primaryPhoto, width: 800, height: 600 }] : [],
+      url: canonical,
+      siteName: SITE_NAME,
+      locale: 'mn_MN',
+      images: primaryPhoto ? [{ url: primaryPhoto, alt: title }] : [{ url: SITE_PREVIEW_IMAGE, width: 512, height: 512, alt: SITE_NAME }],
       type: 'website',
     },
     twitter: {
-      card: 'summary_large_image',
+      card: primaryPhoto ? 'summary_large_image' : 'summary',
       title,
       description,
-      images: primaryPhoto ? [primaryPhoto] : [],
+      images: [primaryPhoto || SITE_PREVIEW_IMAGE],
     },
   };
 }

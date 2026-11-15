@@ -1,9 +1,10 @@
-import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
+import { pageMetadata } from '../../lib/siteMetadata';
 
-export const metadata: Metadata = {
-  title: 'Алдсан ба олдсон амьтдын жагсаалт — МӨР',
-  description: 'Улаанбаатар хотод алдсан болон олдсон нохой, муур, бусад амьтны зарыг дүүрэг, төрөл, зургаар хайх.',
-};
+export const metadata = pageMetadata({
+  path: '/listings',
+  title: 'Алдсан, олдсон нохой муурын зарууд | МӨР',
+  description: 'Улаанбаатарт алдсан, олдсон нохой муурын зарыг дүүрэг, төрөл, байршил, зургаар хайж, эзэнтэй нь холбогдоорой.',
+});
 
 export default function ListingsLayout({ children }: { children: ReactNode }) { return children; }

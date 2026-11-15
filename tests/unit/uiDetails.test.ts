@@ -79,7 +79,7 @@ describe('page detail safeguards', () => {
   });
 
   it('home and footer define stable mobile grids', () => {
-    const home = source('app/page.tsx');
+    const home = source('app/HomePage.tsx');
     const footer = source('components/Footer.tsx');
     expect(home).toContain('@media (max-width: 720px)');
     expect(home).toContain('grid-template-columns: repeat(3, minmax(0, 1fr))');

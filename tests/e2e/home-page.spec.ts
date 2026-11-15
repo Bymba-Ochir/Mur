@@ -75,6 +75,11 @@ for (const scenario of scenarios) {
     }
     await expect(steps.last()).toContainText(scenario.lang === 'mn' ? 'Дугаар нь ил байвал' : 'if a phone number is shared');
     await expect(page.locator('.how [aria-current="step"]')).toHaveCount(0);
+    const questions = page.locator('.home-faq summary');
+    await expect(questions).toHaveCount(3);
+    await questions.first().click();
+    await expect(page.locator('.home-faq details').first().locator('a')).toBeVisible();
+    await questions.first().click();
     expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);
     expect(errors).toEqual([]);
   });
@@ -83,8 +88,8 @@ for (const scenario of scenarios) {
 test('every public home action opens an existing destination', async ({ page, request }) => {
   await page.addInitScript(() => localStorage.setItem('mur-analytics-consent', 'declined'));
   await page.goto('/');
-  const destinations = await page.locator('.home a').evaluateAll(nodes => nodes.map(node => node.getAttribute('href')));
-  expect(destinations).toEqual(['/report-lost', '/report-found', '/listings', '/adoptions', '/sitting', '/clinics', '/assistant']);
+  const destinations = [...new Set(await page.locator('.home a').evaluateAll(nodes => nodes.map(node => node.getAttribute('href'))))].sort();
+  expect(destinations).toEqual(['/report-lost', '/report-found', '/listings', '/adoptions', '/sitting', '/clinics', '/assistant'].sort());
   for (const destination of destinations) {
     const response = await request.get(destination!);
     expect(response.ok(), `${destination} must be available`).toBe(true);
