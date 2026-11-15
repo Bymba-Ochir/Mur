@@ -62,7 +62,7 @@ test('sitting availability and beginner status survive publishing and editing', 
     await expect(card.getByText('2030.04.15 18:30', { exact: true })).toBeVisible();
     await card.getByRole('link', { name: new RegExp(description) }).click();
 
-    const facts = page.locator('.facts');
+    const facts = page.getByRole('region', { name: 'Үйлчилгээний мэдээлэл', exact: true });
     await expect(facts.getByText('Саяхан эхэлсэн', { exact: true })).toBeVisible();
     await expect(facts.getByText('2030.04.15 18:30', { exact: true })).toBeVisible();
     await page.getByRole('button', { name: 'Засах', exact: true }).click();
