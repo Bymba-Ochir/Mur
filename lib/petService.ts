@@ -80,7 +80,7 @@ export async function createPetReport(
       name: cleanText(data.name, 100, 'Нэр'),
       type: data.type, // 'Нохой' | 'Муур' | 'Бусад'
       breed: cleanText(data.breed, 100, 'Үүлдэр'),
-      color: cleanText(data.color, 100, 'Өнгө', true),
+      color: cleanText(data.color, 100, 'Онцгой шинж тэмдэг', true),
       place: cleanText(data.place, 300, 'Байршил', true),
       district: data.district || '',
       phone,
@@ -165,7 +165,7 @@ export async function updatePet(id: string, fields: UpdatePetFields): Promise<vo
     .from(TABLE)
     .update({
       name: fields.name === undefined ? undefined : cleanText(fields.name, 100, 'Нэр'),
-      color: fields.color === undefined ? undefined : cleanText(fields.color, 100, 'Өнгө', true),
+      color: fields.color === undefined ? undefined : cleanText(fields.color, 100, 'Онцгой шинж тэмдэг', true),
       place: fields.place === undefined ? undefined : cleanText(fields.place, 300, 'Байршил', true),
       district: fields.district ?? undefined,
       phone: fields.phone === undefined ? undefined : listingPhone(fields.phone, fields.phoneHidden),

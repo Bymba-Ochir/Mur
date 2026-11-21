@@ -188,7 +188,7 @@ export function usePetSubmit({
           ...form,
           name: cleanText(form.name, 100, 'Нэр'),
           breed: cleanText(form.breed, 100, 'Үүлдэр'),
-          color: cleanText(form.color, 100, 'Өнгө', true),
+          color: cleanText(form.color, 100, 'Онцгой шинж тэмдэг', true),
           place: cleanText(form.place, 300, 'Байршил', true),
           phone: listingPhone(form.phone, form.phoneHidden),
           status,

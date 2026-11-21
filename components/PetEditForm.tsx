@@ -45,7 +45,7 @@ export default function PetEditForm({
       <input id="edit-name" className="field" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} maxLength={100} />
 
       <label htmlFor="edit-color">{t('color_label').replace(' *', '')}</label>
-      <input id="edit-color" className="field" value={form.color} onChange={(e) => setForm({ ...form, color: e.target.value })} maxLength={100} required />
+      <input id="edit-color" className="field" placeholder={t('color_placeholder')} value={form.color} onChange={(e) => setForm({ ...form, color: e.target.value })} maxLength={100} required />
 
       <label htmlFor="edit-district">{t('district_label')}</label>
       <select id="edit-district" className="field" value={form.district} onChange={(e) => setForm({ ...form, district: e.target.value as District })}>

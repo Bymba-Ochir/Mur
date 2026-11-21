@@ -25,7 +25,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const primaryPhoto = photos[0] ?? null;
   const title = `${pet.status === 'lost' ? 'Алдсан' : 'Олдсон'} ${pet.type}${pet.name ? ' — ' + pet.name : ''}`;
   const location = [pet.district, pet.place].filter(Boolean).join(' — ');
-  const description = `${location ? location + '. ' : ''}${pet.color ? 'Өнгө: ' + pet.color + '. ' : ''}Дэлгэрэнгүй мэдээллийг үзэж, харсан бол «Би харсан» товчоор мэдээлээрэй.`;
+  const description = `${location ? location + '. ' : ''}${pet.color ? 'Онцгой шинж тэмдэг: ' + pet.color + '. ' : ''}Дэлгэрэнгүй мэдээллийг үзэж, харсан бол «Би харсан» товчоор мэдээлээрэй.`;
   const canonical = new URL(`/pets/${encodeURIComponent(id)}`, SITE_URL).href;
 
   return {

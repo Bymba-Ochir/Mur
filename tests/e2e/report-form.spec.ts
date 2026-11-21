@@ -47,14 +47,14 @@ test.describe('Алдсан мэдэгдэх форм (4 алхам, submit хи
     // Алхам 1 (Зураг) -> Алхам 2 (Мэдээлэл)
     await page.getByRole('button', { name: /Дараах/ }).click();
     await page.getByRole('button', { name: /Дараах/ }).click();
-    await expect(page.getByText('Амьтны өнгийг оруулна уу.', { exact: true })).toBeVisible();
+    await expect(page.getByText('Амьтны онцгой шинж тэмдгийг оруулна уу.', { exact: true })).toBeVisible();
     await expect(page.locator('.progress-text')).toContainText('2/4');
   });
 
-  test('өнгө бөглөсний дараа байршлын алхам руу шилжинэ', async ({ page }) => {
+  test('онцгой шинж тэмдэг бөглөсний дараа байршлын алхам руу шилжинэ', async ({ page }) => {
     await page.goto('/report-lost');
     await page.getByRole('button', { name: /Дараах/ }).click();
-    await page.getByPlaceholder('Жишээ: Хар халзан').fill('хар халзан');
+    await page.getByLabel('Онцгой шинж тэмдэг *', { exact: true }).fill('хар халзан');
     await page.getByRole('button', { name: /Дараах/ }).click();
     await expect(page.locator('.progress-text')).toContainText('3/4');
   });

@@ -250,7 +250,7 @@ function AuthenticatedPetForm({ status, userId }: { status: PetStatus; userId: s
             <BreedSelect id="pet-breed" type={form.type} value={form.breed} onChange={(breed) => setForm((current) => ({ ...current, breed }))} />
 
             <label htmlFor="pet-color">{t('color_label')}</label>
-            <FieldHint mn="Үндсэн өнгө болон ялгарах шинжийг бичнэ. Жишээ: хар, цээж цагаан." en="Describe the main color and distinctive markings, e.g. black with a white chest." />
+            <FieldHint mn="Зүс, содон толбо, сорви, хүзүүвч зэрэг амьтныг таних шинжийг бичээрэй." en="Describe features that help identify the pet, such as coat markings, scars, or a collar." />
             <input id="pet-color" name="color" value={form.color} onChange={handleChange} placeholder={t('color_placeholder')} required maxLength={100} aria-invalid={Boolean(fieldErrors.color)} aria-describedby={fieldErrors.color ? 'pet-color-error' : undefined} />
             {fieldErrors.color && <p id="pet-color-error" className="field-error" role="alert"><Icon name="alert" size={16} />{fieldErrors.color}</p>}
           </fieldset>
