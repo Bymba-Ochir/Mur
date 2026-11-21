@@ -19,6 +19,7 @@ import AuthRequired from './AuthRequired';
 import PhonePrivacyField from './PhonePrivacyField';
 import { useAuth } from '../lib/useAuth';
 import { usePetDraft } from '../lib/usePetDraft';
+import { loadMyPetPhotoFile } from '../lib/myPetPhoto';
 
 type FieldErrors = Partial<Record<'color' | 'place' | 'phone', string>>;
 
@@ -56,6 +57,7 @@ function AuthenticatedPetForm({ status, userId }: { status: PetStatus; userId: s
   const typeLabels: Record<PetType, string> = { 'Нохой': t('type_dog'), 'Муур': t('type_cat'), 'Бусад': t('type_other') };
   const [step, setStep] = useState(0);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+  const [savedPhotoError, setSavedPhotoError] = useState(false);
   const [form, setForm] = useState<PetFormData>({
     name: '', type: 'Нохой', breed: '', color: '', place: '', district: DISTRICTS[0], phone: '', phoneHidden: false, hasReward: false, reward: '',
   });
@@ -67,6 +69,7 @@ function AuthenticatedPetForm({ status, userId }: { status: PetStatus; userId: s
     setForm({ name: '', type: 'Нохой', breed: '', color: '', place: '', district: DISTRICTS[0], phone: '', phoneHidden: false, hasReward: false, reward: '' });
     setStep(0);
     setFieldErrors({});
+    setSavedPhotoError(false);
     photo.reset();
     location.reset();
   }
@@ -92,7 +95,10 @@ function AuthenticatedPetForm({ status, userId }: { status: PetStatus; userId: s
   function selectMyPet(pet: MyPet) {
     setForm(current => ({ ...current, name: pet.name,
       type: TYPE_VALUES.includes(pet.type as PetType) ? pet.type as PetType : 'Бусад',
-      breed: pet.breed ?? '' }));
+      breed: pet.breed ?? '', color: current.color.trim() ? current.color : pet.markings || '' }));
+    if (pet.markings?.trim()) clearError('color');
+    setSavedPhotoError(false);
+    if (pet.photoUrl) void photo.importSavedPhoto(() => loadMyPetPhotoFile(pet.photoUrl!, userId)).catch(() => setSavedPhotoError(true));
   }
 
   function clearError(name: keyof FieldErrors) {
@@ -119,6 +125,7 @@ function AuthenticatedPetForm({ status, userId }: { status: PetStatus; userId: s
   }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    if (photo.compressing) { event.preventDefault(); return; }
     if (!form.color.trim()) { event.preventDefault(); setStep(1); validateStep(1); return; }
     if (!form.place.trim()) { event.preventDefault(); setStep(2); validateStep(2); return; }
     if (!validateStep(3)) {
@@ -186,6 +193,7 @@ function AuthenticatedPetForm({ status, userId }: { status: PetStatus; userId: s
           {t(draft.error || (draft.saving ? 'form_draft_saving' : draft.saved ? 'form_draft_saved' : 'form_draft_hint'))}
         </p>
         {status === 'lost' && <Suspense fallback={null}><MyPetReportPicker onSelect={selectMyPet} /></Suspense>}
+        {savedPhotoError && <p className="field-error" role="alert">{t('form_mypet_photo_error')}</p>}
         <PawTrail labels={steps} current={step} ariaLabel={t('form_steps_aria')} />
         <p className="progress-text" aria-live="polite">{step + 1}/{steps.length}: {steps[step]}</p>
 
@@ -291,7 +299,7 @@ function AuthenticatedPetForm({ status, userId }: { status: PetStatus; userId: s
             <PhonePrivacyField id="pet-phone" phone={form.phone} hidden={Boolean(form.phoneHidden)} onPhoneChange={phone => { setForm(current => ({ ...current, phone })); clearError('phone'); }} onHiddenChange={phoneHidden => { setForm(current => ({ ...current, phoneHidden })); clearError('phone'); }} error={fieldErrors.phone} />
             {submit.error && <p className="submit-error" role="alert"><Icon name="alert" size={17} />{submit.error}</p>}
 
-            <Button type="submit" disabled={submit.submitting} variant="primary" fullWidth className="form-submit" aria-busy={submit.submitting}>
+            <Button type="submit" disabled={submit.submitting || photo.compressing} variant="primary" fullWidth className="form-submit" aria-busy={submit.submitting || photo.compressing}>
               {submit.submitting ? submit.statusMsg || t('submitting') : status === 'lost' ? t('submit_lost') : t('submit_found')}
             </Button>
             {submit.submitting && submit.statusMsg.includes('AI') && <p className="ai-wait" aria-live="polite">{t('form_ai_wait')}</p>}

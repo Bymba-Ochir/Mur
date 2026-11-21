@@ -93,6 +93,7 @@ export interface MyPet {
   name: string;
   type: string;
   photoUrl: string | null;
+  markings?: string | null;
   age: string | null;
   breed: string | null;
   weight: number | null;
@@ -106,6 +107,8 @@ export type UpdateMyPetFields = Partial<{
   type: string;
   age: string | null;
   breed: string | null;
+  markings: string | null;
+  photoFile: File | null;
   weight: number | null;
   nextVaccineName: string | null;
   nextVaccineDate: string | null;

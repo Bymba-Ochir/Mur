@@ -69,6 +69,21 @@ export function usePhotoUpload() {
     setCompressStatus('');
   }
 
+  async function importSavedPhoto(load: () => Promise<File>) {
+    if (urls.current.length) return;
+    const currentGeneration = ++generation.current;
+    setCompressing(true);
+    setCompressStatus(t('photo_optimizing'));
+    try {
+      const file = await load();
+      if (mounted.current && currentGeneration === generation.current) replacePhotos([file]);
+    } catch (error) {
+      if (mounted.current && currentGeneration === generation.current) throw error;
+    } finally {
+      if (mounted.current && currentGeneration === generation.current) { setCompressing(false); setCompressStatus(''); }
+    }
+  }
+
   async function handlePhoto(e: ChangeEvent<HTMLInputElement>) {
     const selected = Array.from(e.target.files ?? []).slice(0, 4);
     if (!selected.length) return;
@@ -113,7 +128,7 @@ export function usePhotoUpload() {
     setPreviews((current) => current.filter((_, itemIndex) => itemIndex !== index));
   }
 
-  return { photoFiles, previews, photoFile: photoFiles[0] ?? null, preview: previews[0] ?? null, compressing, compressStatus, handlePhoto, openFilePicker, removePhoto, restore, reset };
+  return { photoFiles, previews, photoFile: photoFiles[0] ?? null, preview: previews[0] ?? null, compressing, compressStatus, handlePhoto, openFilePicker, removePhoto, importSavedPhoto, restore, reset };
 }
 
 // ---------- Байршил: geolocation + ойролцоо дүүрэг ----------

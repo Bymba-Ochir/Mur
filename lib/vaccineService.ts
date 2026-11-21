@@ -3,6 +3,8 @@
 import { supabase } from './supabase';
 import type { MyPet, UpdateMyPetFields, VaccineStatus } from './types';
 import { cleanText, optionalDecimal, optionalIsoDate } from './inputValidation';
+import { createIdempotencyKey } from './idempotency';
+import { uploadMyPetPhoto, removeMyPetPhoto, validateMyPetPhoto } from './myPetPhoto';
 
 const TABLE = 'my_pets';
 
@@ -13,6 +15,7 @@ function mapMyPetRow(row: Record<string, unknown>): MyPet {
     name: row.name as string,
     type: row.type as string,
     photoUrl: (row.photo_url as string) ?? null,
+    markings: (row.markings as string) ?? null,
     age: (row.age as string) ?? null,
     breed: (row.breed as string) ?? null,
     weight: row.weight != null ? Number(row.weight) : null,
@@ -29,12 +32,14 @@ async function requireUserId(): Promise<string> {
 }
 
 export async function createMyPet({
-  name, type, age, breed, weight, nextVaccineName, nextVaccineDate,
+  name, type, age, breed, markings, photoFile, weight, nextVaccineName, nextVaccineDate,
 }: {
   name: string;
   type: string;
   age?: string | null;
   breed?: string | null;
+  markings?: string | null;
+  photoFile?: File | null;
   weight?: number | null;
   nextVaccineName?: string | null;
   nextVaccineDate?: string | null;
@@ -43,22 +48,24 @@ export async function createMyPet({
   const cleanName = cleanText(name, 100, 'Амьтны нэр', true);
   const cleanType = cleanText(type, 50, 'Амьтны төрөл', true);
 
-  const { data, error } = await supabase
-    .from(TABLE)
-    .insert({
+  const payload = {
+      id: createIdempotencyKey(),
       user_id: userId,
       name: cleanName,
       type: cleanType,
       age: cleanText(age, 100, 'Нас') || null,
       breed: cleanText(breed, 100, 'Үүлдэр') || null,
+      markings: cleanText(markings, 100, 'Онцгой шинж тэмдэг') || null,
       weight: optionalDecimal(weight, { min: 0, max: 999.99, label: 'Жин' }),
       next_vaccine_name: cleanText(nextVaccineName, 200, 'Вакцины нэр') || null,
       next_vaccine_date: optionalIsoDate(nextVaccineDate, 'Дараагийн вакцины огноо'),
-    })
-    .select()
-    .single();
-
-  if (error) throw error;
+    };
+  const photoUrl = photoFile ? await uploadMyPetPhoto(photoFile, userId, payload.id) : null;
+  const { data, error } = await supabase.from(TABLE).insert({ ...payload, photo_url: photoUrl }).select().single();
+  if (error) {
+    if (photoUrl) await removeMyPetPhoto(photoUrl, userId).catch(() => {});
+    throw error;
+  }
   return mapMyPetRow(data);
 }
 
@@ -109,6 +116,7 @@ export async function updateMyPet(id: string, fields: UpdateMyPetFields): Promis
   if (fields.type !== undefined) updateData.type = cleanText(fields.type, 50, 'Амьтны төрөл', true);
   if (fields.age !== undefined) updateData.age = cleanText(fields.age, 100, 'Нас') || null;
   if (fields.breed !== undefined) updateData.breed = cleanText(fields.breed, 100, 'Үүлдэр') || null;
+  if (fields.markings !== undefined) updateData.markings = cleanText(fields.markings, 100, 'Онцгой шинж тэмдэг') || null;
   if (fields.weight !== undefined) updateData.weight = optionalDecimal(fields.weight, { min: 0, max: 999.99, label: 'Жин' });
   if (fields.nextVaccineName !== undefined) updateData.next_vaccine_name = cleanText(fields.nextVaccineName, 200, 'Вакцины нэр') || null;
   if (fields.nextVaccineDate !== undefined) {
@@ -117,12 +125,26 @@ export async function updateMyPet(id: string, fields: UpdateMyPetFields): Promis
     updateData.last_notified_date = null;
   }
 
-  const { error } = await supabase
+  let previousPhoto: string | null = null;
+  let uploadedPhoto: string | null = null;
+  if (fields.photoFile !== undefined) {
+    if (fields.photoFile) validateMyPetPhoto(fields.photoFile);
+    const owned = await fetchMyPetById(id);
+    previousPhoto = owned.photoUrl;
+    uploadedPhoto = fields.photoFile ? await uploadMyPetPhoto(fields.photoFile, userId, id) : null;
+    updateData.photo_url = uploadedPhoto;
+  }
+  const { data, error } = await supabase
     .from(TABLE)
     .update(updateData)
     .eq('id', id)
-    .eq('user_id', userId);
-  if (error) throw error;
+    .eq('user_id', userId)
+    .select('id').maybeSingle();
+  if (error || !data) {
+    if (uploadedPhoto) await removeMyPetPhoto(uploadedPhoto, userId).catch(() => {});
+    throw error || new Error('Амьтны мэдээллийг хадгалж чадсангүй.');
+  }
+  if (fields.photoFile !== undefined && previousPhoto) await removeMyPetPhoto(previousPhoto, userId).catch(() => {});
 }
 
 export async function updateVaccineDate(id: string, nextVaccineDate: string): Promise<void> {
@@ -131,8 +153,10 @@ export async function updateVaccineDate(id: string, nextVaccineDate: string): Pr
 
 export async function deleteMyPet(id: string): Promise<void> {
   const userId = await requireUserId();
+  const pet = await fetchMyPetById(id);
   const { error } = await supabase.from(TABLE).delete().eq('id', id).eq('user_id', userId);
   if (error) throw error;
+  if (pet.photoUrl) await removeMyPetPhoto(pet.photoUrl, userId).catch(() => {});
 }
 
 /**

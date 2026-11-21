@@ -3,19 +3,20 @@ import { fireEvent, render, screen, waitFor, within } from '@testing-library/rea
 import type { MyPet } from '../../lib/types';
 
 const mocks = vi.hoisted(() => ({
-  params: '', fetchMyPets: vi.fn(), fetchMyPetById: vi.fn(), submit: vi.fn(),
+  params: '', fetchMyPets: vi.fn(), fetchMyPetById: vi.fn(), submit: vi.fn(), importPhoto: vi.fn(), loadPhoto: vi.fn(),
   form: {} as Record<string, unknown>,
 }));
 vi.mock('next/navigation', () => ({ useSearchParams: () => new URLSearchParams(mocks.params) }));
 vi.mock('../../lib/useAuth', () => ({ useAuth: () => ({ user: { id: 'owner' }, loading: false }) }));
 vi.mock('../../lib/vaccineService', () => ({ fetchMyPets: mocks.fetchMyPets, fetchMyPetById: mocks.fetchMyPetById }));
+vi.mock('../../lib/myPetPhoto', () => ({ loadMyPetPhotoFile: mocks.loadPhoto }));
 vi.mock('../../lib/usePetDraft', () => ({ usePetDraft: () => ({
   phase: 'editing', pending: null, error: '', saving: false, saved: false,
   saveAttempt: vi.fn(), clear: vi.fn(), restart: vi.fn(),
 }) }));
 vi.mock('../../lib/usePetForm', () => ({
   TYPE_VALUES: ['Нохой', 'Муур', 'Бусад'],
-  usePhotoUpload: () => ({ photoFiles: [], previews: [], compressing: false, handlePhoto: vi.fn(), openFilePicker: vi.fn() }),
+  usePhotoUpload: () => ({ photoFiles: [], previews: [], compressing: false, handlePhoto: vi.fn(), openFilePicker: vi.fn(), importSavedPhoto: mocks.importPhoto }),
   usePetLocation: () => ({ coords: null, setCoords: vi.fn() }),
   usePetSubmit: ({ form }: { form: Record<string, unknown> }) => {
     mocks.form = form;
@@ -30,7 +31,7 @@ import PetForm from '../../components/PetForm';
 import { DICT, LanguageProvider } from '../../lib/i18n';
 
 const pet: MyPet = {
-  id: 'my-pet', name: 'Бор', type: 'Нохой', breed: 'Монгол банхар', photoUrl: null,
+  id: 'my-pet', name: 'Бор', type: 'Нохой', breed: 'Монгол банхар', photoUrl: 'https://example.invalid/pet.jpg', markings: 'Цээж цагаан',
   age: '4', weight: 20, nextVaccineName: 'private vaccine', nextVaccineDate: '2026-12-01', createdAt: '2026-11-01',
 };
 function mount(status: 'lost' | 'found' = 'lost') {
@@ -42,9 +43,31 @@ beforeEach(() => {
   mocks.form = {};
   mocks.fetchMyPets.mockResolvedValue([pet]);
   mocks.fetchMyPetById.mockResolvedValue(pet);
+  mocks.importPhoto.mockImplementation(load => load());
+  mocks.loadPhoto.mockResolvedValue(new File(['photo'], 'pet.jpg', { type: 'image/jpeg' }));
 });
 
 describe('lost reports from My pets', () => {
+  it('fills saved markings and imports the photo without copying health or incident details', async () => {
+    mocks.params = 'myPetId=my-pet';
+    mount();
+    fireEvent.click(await screen.findByRole('button', { name: 'Бор — ' + DICT.mn.form_mypet_use }));
+    expect(mocks.form).toMatchObject({ name: 'Бор', color: 'Цээж цагаан', place: '', phone: '' });
+    expect(mocks.loadPhoto).toHaveBeenCalledWith(pet.photoUrl, 'owner');
+    expect(mocks.form).not.toHaveProperty('nextVaccineDate');
+    expect(mocks.submit).not.toHaveBeenCalled();
+  });
+
+  it('keeps the form usable if a saved photo cannot be loaded', async () => {
+    mocks.params = 'myPetId=my-pet';
+    mocks.loadPhoto.mockRejectedValue(new Error('offline'));
+    mount();
+    fireEvent.click(await screen.findByRole('button', { name: 'Бор — ' + DICT.mn.form_mypet_use }));
+    expect(await screen.findByRole('alert')).toHaveTextContent(DICT.mn.form_mypet_photo_error);
+    expect(mocks.form.name).toBe('Бор');
+    expect(mocks.submit).not.toHaveBeenCalled();
+  });
+
   it('fills only public pet details after selection and preserves report edits', async () => {
     mount();
     expect(mocks.fetchMyPets).not.toHaveBeenCalled();

@@ -43,7 +43,7 @@ export default function MyPetProfileClient({ id }: { id: string }) {
     breed: pet.breed || null,
     gender: null,
     weight: pet.weight,
-    description: null,
+    description: pet.markings || null,
     photoUrl: pet.photoUrl,
     phone: null,
     district: null,
