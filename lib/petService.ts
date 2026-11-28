@@ -16,7 +16,7 @@ import { DEFAULT_PAGE_SIZE, finalizePage, pageWindow } from './pagination';
 const TABLE = 'pets';
 const BUCKET = 'pet-photos';
 const PET_SEARCH_FIELDS = ['name', 'breed', 'color', 'place', 'type'] as const;
-const HYBRID_CANDIDATE_LIMIT = 50;
+const LEGACY_HYBRID_CANDIDATE_LIMIT = 50;
 
 function petSearchTerm(search?: string) {
   return search?.trim().replace(/[%_]/g, '') ?? '';
@@ -227,6 +227,7 @@ export async function fetchPetMatches({
   signal?: AbortSignal;
 }): Promise<Pet[] | null> {
   const term = petSearchTerm(search).toLowerCase();
+  const hasListingFilters = Boolean(term || district);
   const filters = {
     // The RPC excludes the status supplied by a source listing.
     query_status: status ? (status === 'lost' ? 'found' : 'lost') : null,
@@ -236,15 +237,24 @@ export async function fetchPetMatches({
     query_district: district ?? null,
     query_lat: lat ?? null,
     query_lng: lng ?? null,
-    // The current RPC scores district and caps candidates before filtering text.
-    match_count: term || district ? HYBRID_CANDIDATE_LIMIT : limit,
+    match_count: limit,
     min_image_similarity: MIN_LISTING_PHOTO_SIMILARITY / 100,
   };
-  const results = await Promise.all(embeddings.map((embedding, index) => {
-    const query = supabase.rpc('match_pets_hybrid', {
+  const results = await Promise.all(embeddings.map(async (embedding, index) => {
+    const args = {
       ...filters,
       query_embedding: embedding,
       query_image_hash: index === 0 ? imageHash || null : null,
+    };
+    if (hasListingFilters) {
+      const query = supabase.rpc('match_listing_pets_hybrid', { ...args, query_text: term || null });
+      const result = await (signal ? query.abortSignal(signal) : query);
+      // During rollout an older database can still serve the legacy candidates.
+      if (result.error?.code !== 'PGRST202' || signal?.aborted) return result;
+    }
+    const query = supabase.rpc('match_pets_hybrid', {
+      ...args,
+      match_count: hasListingFilters ? LEGACY_HYBRID_CANDIDATE_LIMIT : limit,
     });
     return signal ? query.abortSignal(signal) : query;
   }));

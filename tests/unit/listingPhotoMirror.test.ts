@@ -87,11 +87,11 @@ it('keeps a mirror-only result in the browser fallback', () => {
   expect(rankBySimilarity([[1, 0], [0, 1]], [pet])).toEqual([{ ...pet, similarity: 100 }]);
 });
 
-it('filters image candidates by listing text and district before applying the result limit', async () => {
+it('uses database filtering for image search and falls back when the new RPC is unavailable', async () => {
   const match = (id: string, place: string, district: string, score: number) => ({
     pet: { ...petPhoto, id, place, district }, image_similarity: score / 100, hybrid_score: score,
   });
-  mocks.rpc.mockResolvedValue({ data: [
+  mocks.rpc.mockResolvedValueOnce({ data: null, error: { code: 'PGRST202' } }).mockResolvedValueOnce({ data: [
     match('wrong-text', 'River', 'Хан-Уул', 100),
     match('wrong-district', 'Old School', 'Баянгол', 95),
     match('matching', 'Old School', 'Хан-Уул', 80),
@@ -99,6 +99,18 @@ it('filters image candidates by listing text and district before applying the re
   const matches = await fetchPetMatches({ embeddings: [[1, 0]], search: ' sCHOOL ', district: 'Хан-Уул', limit: 1 });
 
   expect(matches?.map(pet => pet.id)).toEqual(['matching']);
-  expect(mocks.rpc).toHaveBeenCalledWith('match_pets_hybrid', expect.objectContaining({ match_count: 50 }));
+  expect(mocks.rpc).toHaveBeenNthCalledWith(1, 'match_listing_pets_hybrid', expect.objectContaining({
+    query_text: 'school', query_district: 'Хан-Уул', match_count: 1,
+  }));
+  expect(mocks.rpc).toHaveBeenNthCalledWith(2, 'match_pets_hybrid', expect.objectContaining({ match_count: 50 }));
   expect(mocks.hydrate.mock.calls[0][1].map((row: { id: string }) => row.id)).toEqual(['matching']);
+});
+
+it('uses the filtered RPC alone when it is available', async () => {
+  mocks.rpc.mockResolvedValue({ data: [], error: null });
+  expect(await fetchPetMatches({ embeddings: [[1, 0]], district: 'Хан-Уул' })).toEqual([]);
+  expect(mocks.rpc).toHaveBeenCalledOnce();
+  expect(mocks.rpc).toHaveBeenCalledWith('match_listing_pets_hybrid', expect.objectContaining({
+    query_text: null, query_district: 'Хан-Уул', match_count: 20,
+  }));
 });
