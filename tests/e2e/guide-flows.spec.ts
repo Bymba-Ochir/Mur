@@ -47,6 +47,11 @@ for (const [choice, route] of [['Амьтнаа алдсан', '/report-lost'], 
     await dialog.getByRole('button', { name: new RegExp('^' + choice) }).click();
     await dialog.getByRole('button', { name: 'Үргэлжлүүлэх', exact: true }).click();
     await expect(dialog.locator('#onb-description')).toContainText('Нэвтэрсний дараа');
+    await expect(dialog.locator('#onb-description')).toContainText(
+      route === '/report-lost'
+        ? 'Дүүргээ сонгоод, сүүлд харсан газраа бичээрэй.'
+        : 'Дүүргээ сонгоод, олсон газраа бичээрэй.',
+    );
     await expect(dialog.getByRole('combobox')).toHaveCount(0);
     await dialog.getByRole('button', { name: 'Маягт нээх', exact: true }).click();
     await expect(page).toHaveURL(url => url.pathname === route && url.search === '');

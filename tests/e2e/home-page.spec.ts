@@ -37,6 +37,14 @@ for (const scenario of scenarios) {
       expect((await action.boundingBox())!.height).toBeGreaterThanOrEqual(44 - 0.01);
     }
 
+    const guide = page.getByRole('button', { name: scenario.lang === 'mn' ? 'Заавар үзэх' : 'View guide', exact: true });
+    await expect(guide).toBeInViewport();
+    await expect(guide).toHaveAttribute('aria-haspopup', 'dialog');
+    expect((await guide.boundingBox())!.height).toBeGreaterThanOrEqual(44 - 0.01);
+    if (scenario.width <= 480) {
+      expect((await guide.boundingBox())!.y).toBeLessThan((await page.locator('.hero-preview').boundingBox())!.y);
+    }
+
     await expect(page.locator('.home a[href="/my-pets"]')).toHaveCount(0);
     const mobileMenu = page.locator('.mobile-menu-btn');
     const services = page.locator('.services-trigger');

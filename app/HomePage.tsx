@@ -39,10 +39,12 @@ export default function Home() {
             </Button>
           </nav>
           <div className="hero-notes">
-            <button type="button" className="how-guide" aria-haspopup="dialog" onClick={() => window.dispatchEvent(new Event('mur:open-onboarding'))}>
-              <Icon name="info" size={16} />
-              {t('how_open_guide')}
-            </button>
+            <div className="guide-row">
+              <span>{t('how_guide_intro')}</span>
+              <button type="button" className="how-guide" aria-haspopup="dialog" onClick={() => window.dispatchEvent(new Event('mur:open-onboarding'))}>
+                {t('how_open_guide')} <Icon name="arrowRight" size={16} aria-hidden="true" />
+              </button>
+            </div>
             <ul className="hero-trust" aria-label={t('hero_trust_aria')}>
               <li><Icon name="pin" size={16} />{t('hero_trust_location')}</li>
               <li><Icon name="search" size={16} />{t('hero_trust_photo')}</li>
@@ -186,21 +188,32 @@ export default function Home() {
           border-color: transparent;
           color: var(--home-link);
         }
+        .guide-row {
+          display: flex;
+          flex-wrap: wrap;
+          align-items: center;
+          column-gap: 12px;
+          row-gap: 4px;
+          margin-top: 12px;
+          color: var(--text-secondary);
+          font-size: var(--text-sm);
+        }
         .how-guide {
           display: inline-flex;
           align-items: center;
+          justify-content: center;
           gap: 8px;
           min-height: var(--touch-target);
-          margin-top: 8px;
-          padding: 4px 0;
-          text-align: start;
+          padding: 6px 12px;
           color: var(--home-link);
-          background: transparent;
-          border: 0;
+          background: var(--surface-2);
+          border: 1px solid var(--home-link);
+          border-radius: 10px;
           font-size: var(--text-sm);
-          font-weight: 600;
+          font-weight: 650;
           cursor: pointer;
         }
+        .how-guide:focus-visible { outline: 2px solid var(--home-link); outline-offset: 3px; }
         .how-guide :global(svg), .hero-trust :global(svg), .preview-location :global(svg) { flex: none; }
         .hero-trust {
           display: flex;
@@ -386,7 +399,7 @@ export default function Home() {
         @media (hover: hover) and (pointer: fine) {
           .hero-actions :global(.btn-base:hover), .services-grid :global(.service-card:hover) { background: var(--surface-3); box-shadow: none; }
           .hero-actions :global([data-variant="primary"]:hover) { background: var(--home-action-hover); }
-          .how-guide:hover { text-decoration: underline; }
+          .how-guide:hover { background: var(--surface-3); }
         }
         @media (max-width: 1100px) {
           .services-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -406,11 +419,12 @@ export default function Home() {
           .hero-content { display: contents; }
           .hero-kicker, .hero-title, .hero-desc { margin-bottom: 0; }
           .hero-kicker, .hero-title, .hero-desc, .hero-actions { grid-column: 1; }
-          .hero-notes { order: 1; }
+          .hero-notes { display: contents; }
+          .guide-row { margin-top: 0; }
           .hero-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
           .hero-actions :global([data-variant="primary"]) { grid-column: 1 / -1; }
           .hero-actions :global(.btn-base) { font-size: var(--text-sm); }
-          .hero-trust { column-gap: 12px; }
+          .hero-trust { order: 1; column-gap: 12px; margin-top: 0; }
           .preview-details { padding: 12px 16px; }
         }
         @media (prefers-reduced-motion: reduce) {
