@@ -161,6 +161,7 @@ it('shows loading immediately instead of displaying the previous filter’s card
   expect(mocks.fetchPets).toHaveBeenCalledOnce();
   await screen.findByText('Found example');
   expect(screen.getByRole('region', { name: 'listings_results_region' })).toHaveAttribute('aria-busy', 'false');
+  expect(screen.getByText('1 results_count_one', { selector: '[role="status"]' })).toBeInTheDocument();
 });
 
 it('does not display a previous search error while a different query is loading', async () => {

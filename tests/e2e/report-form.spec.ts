@@ -46,9 +46,11 @@ test.describe('Алдсан мэдэгдэх форм (4 алхам, submit хи
     await page.goto('/report-lost');
     // Алхам 1 (Зураг) -> Алхам 2 (Мэдээлэл)
     await page.getByRole('button', { name: /Дараах/ }).click();
+    await expect(page.getByRole('heading', { name: '2/4: Мэдээлэл' })).toBeFocused();
     await page.getByRole('button', { name: /Дараах/ }).click();
     await expect(page.getByText('Амьтны онцгой шинж тэмдгийг оруулна уу.', { exact: true })).toBeVisible();
     await expect(page.locator('.progress-text')).toContainText('2/4');
+    await expect(page.locator('#pet-color')).toBeFocused();
   });
 
   test('онцгой шинж тэмдэг бөглөсний дараа байршлын алхам руу шилжинэ', async ({ page }) => {
@@ -57,6 +59,7 @@ test.describe('Алдсан мэдэгдэх форм (4 алхам, submit хи
     await page.getByLabel('Онцгой шинж тэмдэг *', { exact: true }).fill('хар халзан');
     await page.getByRole('button', { name: /Дараах/ }).click();
     await expect(page.locator('.progress-text')).toContainText('3/4');
+    await expect(page.getByRole('heading', { name: '3/4: Байршил' })).toBeFocused();
   });
 
   test('явцын заагч (PawTrail) 4 алхмыг харуулна', async ({ page }) => {
@@ -72,6 +75,7 @@ test.describe('Алдсан мэдэгдэх форм (4 алхам, submit хи
     await expect(page.getByText('2/4')).toBeVisible();
     await page.getByRole('button', { name: /Буцах/ }).click();
     await expect(page.getByText('1/4')).toBeVisible();
+    await expect(page.getByRole('heading', { name: '1/4: Зураг' })).toBeFocused();
   });
 
   test('desktop дэлгэцэнд preview карт харагдана', async ({ page, isMobile }) => {

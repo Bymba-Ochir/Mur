@@ -127,20 +127,36 @@ describe('lost reports from My pets', () => {
     expect(mocks.fetchMyPetById).not.toHaveBeenCalled();
   });
 
-  it('requires a deliberate district choice before the contact step', () => {
+  it('focuses the step heading and the first invalid report field', () => {
     mount('found');
     const next = () => screen.getByRole('button', { name: DICT.mn.form_next_plain });
     fireEvent.click(next());
-    fireEvent.change(screen.getByLabelText(DICT.mn.color_label), { target: { value: 'Цагаан' } });
+    expect(screen.getByRole('heading', { name: `2/4: ${DICT.mn.form_step_info}` })).toHaveFocus();
+    const color = screen.getByLabelText(DICT.mn.color_label);
     fireEvent.click(next());
+    expect(color).toHaveFocus();
+    fireEvent.change(color, { target: { value: 'Цагаан' } });
+    fireEvent.click(next());
+    expect(screen.getByRole('heading', { name: `3/4: ${DICT.mn.form_step_location}` })).toHaveFocus();
     const district = screen.getByLabelText(DICT.mn.district_label);
+    const place = screen.getByLabelText(DICT.mn.place_label_found);
     expect(district).toHaveValue('');
-    fireEvent.change(screen.getByLabelText(DICT.mn.place_label_found), { target: { value: 'Сургуулийн урд' } });
     fireEvent.click(next());
-    expect(screen.getByRole('alert')).toHaveTextContent(DICT.mn.form_district_required);
+    expect(screen.getByText(DICT.mn.form_district_required)).toBeVisible();
+    expect(district).toHaveFocus();
     fireEvent.change(district, { target: { value: 'Хан-Уул' } });
     fireEvent.click(next());
+    expect(place).toHaveFocus();
+    fireEvent.change(place, { target: { value: 'Сургуулийн урд' } });
+    fireEvent.click(next());
+    const contact = screen.getByRole('heading', { name: `4/4: ${DICT.mn.form_step_contact}` });
+    expect(contact).toHaveFocus();
     expect(screen.getByRole('button', { name: DICT.mn.submit_found })).toBeVisible();
     expect(mocks.form.district).toBe('Хан-Уул');
+    fireEvent.submit(screen.getByRole('form', { name: DICT.mn.form_found_aria }));
+    expect(screen.getByRole('textbox', { name: DICT.mn.contact_phone_label })).toHaveFocus();
+    expect(mocks.submit).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: DICT.mn.form_back_plain }));
+    expect(screen.getByRole('heading', { name: `3/4: ${DICT.mn.form_step_location}` })).toHaveFocus();
   });
 });

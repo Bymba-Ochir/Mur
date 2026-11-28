@@ -52,6 +52,7 @@ export default function ListingsPage() {
   const closeLogin = useCallback(() => setShowLogin(false), []);
   const [showPhotoSearch, setShowPhotoSearch] = useState(false);
   const matchAbortRef = useRef<AbortController | null>(null);
+  const searchInput = useRef<HTMLInputElement>(null);
   const requestVersion = useRef(0);
   const restoredScroll = useRef(false);
   const currentResult = results?.query === query ? results : null;
@@ -86,6 +87,11 @@ export default function ListingsPage() {
   }, [activeMatch, pets]);
   const hasImageResults = Boolean(rankedPets?.length);
   const visiblePets = rankedPets?.length ? rankedPets : pets;
+  const emptyTitle = t(hasFilters ? 'empty_no_results_title' : 'empty_no_posts_title');
+  const resultCount = `${visiblePets.length} ${t(visiblePets.length === 1 ? 'results_count_one' : 'results_count')}`;
+  const resultStatus = loading ? t('listings_loading')
+    : loadError !== null ? ''
+    : visiblePets.length === 0 ? emptyTitle : resultCount;
 
   function photoMatchLabel(pet: Pet) {
     if (!hasImageResults) return undefined;
@@ -151,6 +157,11 @@ export default function ListingsPage() {
   function handleLoadMore() {
     if (loadingMore || !currentPage?.hasMore) return;
     void load(currentPage.page + 1);
+  }
+
+  function handleClearFilters() {
+    clearPetFilters();
+    searchInput.current?.focus();
   }
 
   async function handleMatchUpload(e: ChangeEvent<HTMLInputElement>) {
@@ -235,6 +246,7 @@ export default function ListingsPage() {
             <span className="search-control">
               <Icon name="search" size={18} aria-hidden="true" />
               <input
+                ref={searchInput}
                 type="search"
                 placeholder={t('search_placeholder')}
                 value={search}
@@ -268,7 +280,6 @@ export default function ListingsPage() {
               ))}
             </select>
           </label>
-          {district && <p className="selected-district" aria-hidden="true">{district}</p>}
         </div>
       </section>
       <section id="match-upload-panel" className={`match-upload${showPhotoSearch ? ' open' : ''}`} aria-labelledby="match-upload-heading">
@@ -305,6 +316,7 @@ export default function ListingsPage() {
         </div>
       </section>
 
+      <p className="sr-only results-status" role="status">{resultStatus}</p>
       <section className="results-section" aria-label={t('listings_results_region')} aria-busy={loading || loadingMore}>
       {loadError !== null ? (
         <div className="state-panel state-panel--error" role="alert">
@@ -314,12 +326,9 @@ export default function ListingsPage() {
           <Button variant="secondary" onClick={() => void load(0)}>{t('err_retry')}</Button>
         </div>
       ) : loading ? (
-        <>
-          <p className="sr-only" role="status">{t('listings_loading')}</p>
-          <div className="listings-grid" aria-hidden="true">
+        <div className="listings-grid" aria-hidden="true">
           {Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)}
-          </div>
-        </>
+        </div>
       ) : visiblePets.length === 0 ? (
         <div className="empty-state">
           <div className="empty-icon" aria-hidden="true">
@@ -327,15 +336,13 @@ export default function ListingsPage() {
               <ellipse cx="24" cy="30" rx="11" ry="9" /><circle cx="10" cy="18" r="5.5" /><circle cx="38" cy="18" r="5.5" /><circle cx="17" cy="8" r="5" /><circle cx="31" cy="8" r="5" />
             </svg>
           </div>
-          <p className="empty-title">
-            {hasFilters ? t('empty_no_results_title') : t('empty_no_posts_title')}
-          </p>
+          <p className="empty-title">{emptyTitle}</p>
           <p className="empty-desc">
             {hasFilters ? t('empty_no_results_desc') : t('empty_no_posts_desc')}
           </p>
           <div className="empty-actions">
             {hasFilters ? (
-              <Button variant="primary" onClick={clearPetFilters}>{t('listings_clear_filters')}</Button>
+              <Button variant="primary" onClick={handleClearFilters}>{t('listings_clear_filters')}</Button>
             ) : (
               <>
                 <Button as="link" href="/report-lost" variant="primary">{t('hero_btn_lost')}</Button>
@@ -346,7 +353,7 @@ export default function ListingsPage() {
         </div>
       ) : (
         <>
-          {!hasImageResults && <p className="result-count" aria-live="polite">{visiblePets.length} {t(visiblePets.length === 1 ? 'results_count_one' : 'results_count')}</p>}
+          {!hasImageResults && <p className="result-count">{resultCount}</p>}
           {hasImageResults && <p className="match-review">{t('listings_match_review')}</p>}
           <div className="listings-grid">
             {visiblePets.map((pet) => <PetCard key={pet.id} pet={pet} photoMatchLabel={photoMatchLabel(pet)} />)}
@@ -387,7 +394,7 @@ export default function ListingsPage() {
         .page-header h1 { margin-top: 4px; font-weight: 700; }
         .listings-kicker { font-size: var(--text-xs); font-weight: 600; }
         .listings-report-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
-        .listings-mobile-report, .mobile-photo-toggle, .selected-district { display: none; }
+        .listings-mobile-report, .mobile-photo-toggle { display: none; }
         .listings-report-actions :global(.btn-base), .match-actions :global(.btn-base) {
           min-height: var(--touch-target); border-radius: 10px; color: var(--text-primary);
         }
@@ -502,16 +509,14 @@ export default function ListingsPage() {
           .match-status { font-size: 13px; }
         }
         @media (max-width: 480px) {
-          .selected-district { display: block; grid-column: 1 / -1; margin: 0; color: var(--text-secondary); font-size: var(--text-xs); }
-        }
-        @media (max-width: 360px) {
           .filters-panel .filter-bar { grid-template-columns: repeat(2, minmax(0, 1fr)); }
           .filter-field--district { grid-column: 1 / -1; }
+        }
+        @media (max-width: 360px) {
           .filter-field .filter-label {
             position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
             overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap;
           }
-          .selected-district { display: none; }
         }
         .empty-state {
           text-align: center; padding: 40px 24px; margin-top: 8px;

@@ -1,5 +1,5 @@
 'use client';
-import { Suspense, useMemo, useState } from 'react';
+import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import type { ChangeEvent, FormEvent, KeyboardEvent } from 'react';
 import { DISTRICTS } from '../lib/districts';
 import { useLanguage } from '../lib/i18n';
@@ -59,6 +59,8 @@ function AuthenticatedPetForm({ status, userId }: { status: PetStatus; userId: s
   const typeLabels: Record<PetType, string> = { 'Нохой': t('type_dog'), 'Муур': t('type_cat'), 'Бусад': t('type_other') };
   const [step, setStep] = useState(0);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+  const formRef = useRef<HTMLFormElement>(null);
+  const [focusRequest, setFocusRequest] = useState<{ target: keyof FieldErrors | 'heading' } | null>(null);
   const [savedPhotoError, setSavedPhotoError] = useState(false);
   const [form, setForm] = useState<PetFormData>({
     name: '', type: 'Нохой', breed: '', color: '', place: '', district: '', phone: '', phoneHidden: false, hasReward: false, reward: '',
@@ -67,6 +69,17 @@ function AuthenticatedPetForm({ status, userId }: { status: PetStatus; userId: s
   const photo = usePhotoUpload();
   const location = usePetLocation();
   const { coords } = location;
+
+  useEffect(() => {
+    if (!focusRequest) return;
+    const selector = focusRequest.target === 'heading' ? '#pet-step-heading' : `#pet-${focusRequest.target}`;
+    formRef.current?.querySelector<HTMLElement>(selector)?.focus();
+  }, [focusRequest]);
+
+  function changeStep(nextStep: number) {
+    setStep(nextStep);
+    setFocusRequest({ target: 'heading' });
+  }
 
   function resetAll() {
     setForm({ name: '', type: 'Нохой', breed: '', color: '', place: '', district: '', phone: '', phoneHidden: false, hasReward: false, reward: '' });
@@ -91,7 +104,7 @@ function AuthenticatedPetForm({ status, userId }: { status: PetStatus; userId: s
     // Older drafts could have the default district without an explicit selection.
     const needsDistrict = saved.version === 1 && saved.form.district === 'Баянзүрх' && !saved.attempt;
     setForm(needsDistrict ? { ...saved.form, district: '' } : saved.form);
-    setStep(needsDistrict ? Math.min(saved.step, 2) : saved.step);
+    changeStep(needsDistrict ? Math.min(saved.step, 2) : saved.step);
     location.setCoords(saved.coords);
     photo.restore(saved.photos);
     submit.restoreAttempt(saved.attempt);
@@ -125,11 +138,13 @@ function AuthenticatedPetForm({ status, userId }: { status: PetStatus; userId: s
     }
     if (targetStep === 3 && !form.phoneHidden && !/^\d{8}$/.test(form.phone)) errors.phone = t('form_phone_invalid');
     setFieldErrors(errors);
-    return Object.keys(errors).length === 0;
+    const firstError = (Object.keys(errors) as (keyof FieldErrors)[])[0];
+    if (firstError) setFocusRequest({ target: firstError });
+    return !firstError;
   }
 
   function goNext() {
-    if (validateStep(step)) setStep((current) => Math.min(current + 1, steps.length - 1));
+    if (validateStep(step)) changeStep(Math.min(step + 1, steps.length - 1));
   }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -154,6 +169,7 @@ function AuthenticatedPetForm({ status, userId }: { status: PetStatus; userId: s
     submit.reset();
     resetAll();
     draft.restart();
+    setFocusRequest({ target: 'heading' });
   }
 
   if (submit.done && submit.newPetId) {
@@ -196,14 +212,14 @@ function AuthenticatedPetForm({ status, userId }: { status: PetStatus; userId: s
 
   return (
     <div className="form-layout">
-      <form onSubmit={handleSubmit} className="pet-form" aria-label={status === 'lost' ? t('form_lost_aria') : t('form_found_aria')}>
+      <form ref={formRef} onSubmit={handleSubmit} className="pet-form" aria-label={status === 'lost' ? t('form_lost_aria') : t('form_found_aria')}>
         <p className="draft-status" role={draft.error ? 'alert' : 'status'}>
           {t(draft.error || (draft.saving ? 'form_draft_saving' : draft.saved ? 'form_draft_saved' : 'form_draft_hint'))}
         </p>
         {status === 'lost' && <Suspense fallback={null}><MyPetReportPicker onSelect={selectMyPet} /></Suspense>}
         {savedPhotoError && <p className="field-error" role="alert">{t('form_mypet_photo_error')}</p>}
         <PawTrail labels={steps} current={step} ariaLabel={t('form_steps_aria')} />
-        <p className="progress-text" aria-live="polite">{step + 1}/{steps.length}: {steps[step]}</p>
+        <h2 id="pet-step-heading" className="progress-text" tabIndex={-1}>{step + 1}/{steps.length}: {steps[step]}</h2>
 
         {step === 0 && (
           <fieldset className="form-step">
@@ -328,7 +344,7 @@ function AuthenticatedPetForm({ status, userId }: { status: PetStatus; userId: s
         )}
 
         <div className="nav-row">
-          {step > 0 && <Button type="button" onClick={() => { setFieldErrors({}); setStep((current) => current - 1); }} variant="ghost"><Icon name="arrowLeft" size={18} />{t('form_back_plain')}</Button>}
+          {step > 0 && <Button type="button" onClick={() => { setFieldErrors({}); changeStep(step - 1); }} variant="ghost"><Icon name="arrowLeft" size={18} />{t('form_back_plain')}</Button>}
           {step < steps.length - 1 && <Button type="button" onClick={goNext} disabled={photo.compressing} variant="primary">{t('form_next_plain')}<Icon name="arrowRight" size={18} /></Button>}
         </div>
       </form>
@@ -346,7 +362,7 @@ function AuthenticatedPetForm({ status, userId }: { status: PetStatus; userId: s
         .location-review { display: grid; gap: var(--sp-2); margin-block: var(--sp-4); }
         .location-review h2 { font-size: var(--text-base); font-weight: 650; }
         .preview-col { position: sticky; top: 6.5rem; width: 100%; min-width: 0; }
-        .progress-text { margin: 12px 0 20px; color: var(--text-secondary); font-size: var(--text-sm); font-weight: 600; }
+        .progress-text { margin: 12px 0 20px; color: var(--text-secondary); font-family: inherit; font-size: var(--text-sm); font-weight: 600; }
         .pet-form :global(.paw.active), .pet-form :global(.paw.done) {
           background: var(--primary-dark); color: #fff; border-color: var(--primary-dark); box-shadow: none;
         }

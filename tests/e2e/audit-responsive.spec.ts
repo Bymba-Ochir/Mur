@@ -47,7 +47,10 @@ for(const width of [360,390,768,1366]) {
  });
 }
 
-for (const { width, height } of [{ width: 320, height: 568 }, { width: 360, height: 640 }, { width: 390, height: 844 }]) {
+for (const { width, height } of [
+  { width: 320, height: 568 }, { width: 360, height: 640 },
+  { width: 375, height: 667 }, { width: 390, height: 844 },
+]) {
   test(`listings results stay visible with the consent notice at ${width}px`, async ({ page }) => {
     await page.setViewportSize({ width, height });
     await page.addInitScript(() => {
@@ -61,7 +64,10 @@ for (const { width, height } of [{ width: 320, height: 568 }, { width: 360, heig
     const notice = page.locator('[data-floating-notice="analytics"]');
     const emptyTitle = page.locator('.empty-title');
     const filters = page.locator('.filters-panel');
+    const resultsStatus = page.locator('.results-status');
     await expect(emptyTitle).toBeVisible();
+    await expect(resultsStatus).toHaveRole('status');
+    await expect(resultsStatus).toHaveText('Хайлтад тохирох бичлэг олдсонгүй');
     await expect(notice).toBeVisible();
     await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(1);
     const [text, buttons, noticeBox, title, filtersBox] = await Promise.all([
@@ -77,17 +83,15 @@ for (const { width, height } of [{ width: 320, height: 568 }, { width: 360, heig
     expect(title!.y + title!.height).toBeLessThan(noticeBox!.y);
     const type = page.getByRole('combobox', { name: 'Төрлөөр шүүх' });
     const district = page.getByRole('combobox', { name: 'Дүүргээр шүүх' });
-    if (width <= 360) {
-      await page.evaluate(() => document.fonts.ready);
-      const status = page.getByRole('combobox', { name: 'Төлвөөр шүүх' });
-      const [statusBox, typeBox, districtBox] = await Promise.all([status.boundingBox(), type.boundingBox(), district.boundingBox()]);
-      expect(typeBox!.y).toBeCloseTo(statusBox!.y, 0);
-      expect(districtBox!.y).toBeGreaterThan(typeBox!.y + typeBox!.height);
-      expect(districtBox!.width).toBeGreaterThan(typeBox!.width + statusBox!.width);
-      if (width === 320) {
-        await expectFullSelectLabel(type);
-        await expectFullSelectLabel(district);
-      }
+    await page.evaluate(() => document.fonts.ready);
+    const status = page.getByRole('combobox', { name: 'Төлвөөр шүүх' });
+    const [statusBox, typeBox, districtBox] = await Promise.all([status.boundingBox(), type.boundingBox(), district.boundingBox()]);
+    expect(typeBox!.y).toBeCloseTo(statusBox!.y, 0);
+    expect(districtBox!.y).toBeGreaterThan(typeBox!.y + typeBox!.height);
+    expect(districtBox!.width).toBeGreaterThan(typeBox!.width + statusBox!.width);
+    if (width === 320) {
+      await expectFullSelectLabel(type);
+      await expectFullSelectLabel(district);
     }
 
     const photoSearch = page.getByRole('button', { name: 'Зургаар хайх' });
@@ -119,20 +123,18 @@ for (const { width, height } of [{ width: 320, height: 568 }, { width: 360, heig
     await post.click();
 
     await notice.getByRole('button', { name: 'Татгалзах' }).click();
-    await page.getByRole('button', { name: 'Шүүлтүүр цэвэрлэх' }).click();
+    const clear = page.getByRole('button', { name: 'Шүүлтүүр цэвэрлэх' });
+    await clear.focus();
+    await page.keyboard.press('Enter');
+    await expect(page.getByRole('searchbox')).toBeFocused();
     await expect(page).toHaveURL(/\/listings$/);
     await expect(emptyTitle).toHaveText('Одоогоор зар алга');
+    await expect(resultsStatus).toHaveText('Одоогоор зар алга');
     await expect(page.locator('.empty-actions a')).toHaveCount(2);
     for (const action of await page.locator('.empty-actions a').all()) await expect(action).toBeVisible();
     await district.selectOption('Сонгинохайрхан');
     await expect(district).toHaveValue('Сонгинохайрхан');
-    if (width === 320) await expectFullSelectLabel(district);
-    else if (width > 360) {
-      const selectedDistrict = page.locator('.selected-district');
-      await expect(selectedDistrict).toHaveText('Сонгинохайрхан');
-      await expect(selectedDistrict).toBeVisible();
-      expect(await selectedDistrict.evaluate(el => el.scrollWidth - el.clientWidth)).toBeLessThanOrEqual(1);
-    }
+    await expectFullSelectLabel(district);
 
     await page.getByRole('button', { name: 'Хайлтыг хадгалах', exact: true }).click();
     const login = page.getByRole('dialog', { name: 'Нэвтрэх' });
