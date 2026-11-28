@@ -9,7 +9,7 @@ import Modal from './ui/Modal';
 import FieldHint from './ui/FieldHint';
 import styles from './LoginModal.module.css';
 
-export default function LoginModal({ onClose }: { onClose: () => void }) {
+export default function LoginModal({ onClose, description }: { onClose: () => void; description?: string }) {
   const { loginWithEmail, loginWithGoogle } = useAuth();
   const { t } = useLanguage();
   const [openingGoogle, setOpeningGoogle] = useState(false);
@@ -42,11 +42,12 @@ export default function LoginModal({ onClose }: { onClose: () => void }) {
 
   return (
     <Modal open onClose={onClose} title={t('login_title')} closeLabel={t('close')} width="sm" panelClassName={styles.panel}>
+        {!sent && description && <p className={styles.lead}>{description}</p>}
         {sent ? (
           <p className={styles.lead} role="status">{t('login_sent')}</p>
         ) : googleLoginEnabled ? (
           <>
-            <p className={styles.lead}>{t('login_google_hint')}</p>
+            {!description && <p className={styles.lead}>{t('login_google_hint')}</p>}
             <Button className={styles.submit} onClick={handleGoogle} disabled={openingGoogle} aria-busy={openingGoogle}>
               {t(openingGoogle ? 'login_google_opening' : 'login_google')}
             </Button>

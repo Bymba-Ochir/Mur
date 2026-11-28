@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import LoginModal from '../../../components/LoginModal';
 import Button from '../../../components/ui/Button';
 import { useAuth } from '../../../lib/useAuth';
-import { consumeGoogleReturnPath } from '../../../lib/authReturnPath';
+import { consumeAuthReturnPath } from '../../../lib/authReturnPath';
 import { useLanguage } from '../../../lib/i18n';
 import styles from '../../recovery.module.css';
 
@@ -16,11 +16,11 @@ export default function AuthCompletePage() {
   const [showLogin, setShowLogin] = useState(false);
   const destination = useRef<string | null>(null);
 
-  // The shared browser client exchanges the PKCE code during initialization.
+  // The shared browser client processes the sign-in callback during initialization.
   useEffect(() => {
     if (loading) return;
     if (user) {
-      destination.current ??= consumeGoogleReturnPath();
+      destination.current ??= consumeAuthReturnPath();
       router.replace(destination.current);
     } else window.history.replaceState(null, '', '/auth/complete');
   }, [loading, router, user]);

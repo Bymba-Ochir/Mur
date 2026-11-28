@@ -6,7 +6,7 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 import { supabase } from './supabase';
-import { rememberGoogleReturnPath } from './authReturnPath';
+import { rememberGoogleReturnPath, rememberListingEmailReturnPath } from './authReturnPath';
 import type { User } from '@supabase/supabase-js';
 
 interface AuthContextValue {
@@ -40,9 +40,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const loginWithEmail = async (email: string): Promise<void> => {
+    const origin = window.location.origin;
     const { error } = await supabase.auth.signInWithOtp({
       email,
-      options: { emailRedirectTo: typeof window !== 'undefined' ? window.location.origin : undefined },
+      options: { emailRedirectTo: rememberListingEmailReturnPath() ? new URL('/auth/complete', origin).href : origin },
     });
     if (error) throw error;
   };

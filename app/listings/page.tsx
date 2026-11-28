@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ChangeEvent } from 'react';
 import { fetchPets, fetchPetMatches, rankBySimilarity } from '../../lib/petService';
 import { getImageEmbeddings, getImageHash } from '../../lib/similarity';
@@ -9,6 +9,7 @@ import PetCard from '../../components/PetCard';
 import NotifySubscribe from '../../components/NotifySubscribe';
 import VolunteerBadge from '../../components/VolunteerBadge';
 import SkeletonCard from '../../components/SkeletonCard';
+import LoginModal from '../../components/LoginModal';
 import Button from '../../components/ui/Button';
 import Link from 'next/link';
 import { useLanguage } from '../../lib/i18n';
@@ -24,6 +25,7 @@ import { useListingFilters } from '../../lib/useListingFilters';
 
 // Шүүлтүүрийн "Бүгд" сонголт (хоосон) 9 дүүргийн өмнө явна
 const DISTRICTS: (District | '')[] = ['', ...DISTRICT_VALUES];
+const NO_PETS: Pet[] = [];
 
 type ImageMatch = { query: string } & (
   | { phase: 'matching'; progress?: string }
@@ -32,27 +34,36 @@ type ImageMatch = { query: string } & (
   | { phase: 'error'; message: string }
 );
 
+type ListingResult = { query: string } & (
+  | { phase: 'ready'; pets: Pet[]; page: number; hasMore: boolean }
+  | { phase: 'error'; message: string }
+);
+
 export default function ListingsPage() {
   const { t } = useLanguage();
   const { user } = useAuth();
   const showToast = useToast();
   const { status, type, district, search, query, setStatus, setType, setDistrict, setSearch, clearPetFilters } = useListingFilters();
-  const [pets, setPets] = useState<Pet[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [page, setPage] = useState(0);
-  const [hasMore, setHasMore] = useState(false);
+  const [results, setResults] = useState<ListingResult | null>(null);
+  const [pagination, setPagination] = useState<{ query: string; phase: 'loading' | 'error' } | null>(null);
   const [match, setMatch] = useState<ImageMatch | null>(null);
-  const [loadError, setLoadError] = useState('');
-  const [loadMoreFailed, setLoadMoreFailed] = useState(false);
   const [savingSearch, setSavingSearch] = useState(false);
+  const [showLogin, setShowLogin] = useState(false);
+  const closeLogin = useCallback(() => setShowLogin(false), []);
   const [showPhotoSearch, setShowPhotoSearch] = useState(false);
-  const [loadedQuery, setLoadedQuery] = useState<string | null>(null);
   const matchAbortRef = useRef<AbortController | null>(null);
   const requestVersion = useRef(0);
   const restoredScroll = useRef(false);
+  const currentResult = results?.query === query ? results : null;
+  const currentPage = currentResult?.phase === 'ready' ? currentResult : null;
+  const pets = currentPage?.pets ?? NO_PETS;
+  const loading = currentResult === null;
+  const loadError = currentResult?.phase === 'error' ? currentResult.message : null;
+  const currentPagination = pagination?.query === query ? pagination.phase : null;
+  const loadingMore = currentPagination === 'loading';
+  const loadMoreFailed = currentPagination === 'error';
   useEffect(() => {
-    if (loading || loadError || restoredScroll.current) return;
+    if (loading || loadError !== null || restoredScroll.current) return;
     restoredScroll.current = true;
     try {
       const saved = sessionStorage.getItem('mur-listings-scroll:' + query);
@@ -63,6 +74,7 @@ export default function ListingsPage() {
     try { sessionStorage.setItem('mur-listings-scroll:' + query, String(window.scrollY)); } catch { /* optional */ }
   }
   const hasFilters = Boolean(status || type || district || search.trim());
+  if (user && showLogin) setShowLogin(false);
   if (match && match.query !== query) setMatch(null);
   const activeMatch = match?.query === query ? match : null;
   const matching = activeMatch?.phase === 'matching';
@@ -87,16 +99,14 @@ export default function ListingsPage() {
     const timer = setTimeout(() => load(0), 400);
     return () => { clearTimeout(timer); requestVersion.current += 1; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [status, type, district, search]);
+  }, [query]);
 
   useEffect(() => () => matchAbortRef.current?.abort(), [query]);
 
   async function load(pageToLoad = 0) {
     const version = ++requestVersion.current;
-    if (pageToLoad === 0) setLoading(true);
-    else setLoadingMore(true);
-    setLoadError('');
-    setLoadMoreFailed(false);
+    if (pageToLoad === 0) setResults(null);
+    setPagination(pageToLoad > 0 ? { query, phase: 'loading' } : null);
     try {
       const { pets: data, hasMore: more } = await fetchPets({
         status: status || undefined,
@@ -106,21 +116,29 @@ export default function ListingsPage() {
         page: pageToLoad,
       });
       if (version !== requestVersion.current) return;
-      setPets((prev) => (pageToLoad === 0 ? data : [...prev, ...data]));
-      setLoadedQuery(query);
-      setHasMore(more);
-      setPage(pageToLoad);
+      setResults(previous => ({
+        query,
+        phase: 'ready',
+        pets: pageToLoad > 0 && previous?.phase === 'ready' && previous.query === query
+          ? [...previous.pets, ...data]
+          : data,
+        page: pageToLoad,
+        hasMore: more,
+      }));
+      setPagination(null);
     } catch (err) {
       if (version !== requestVersion.current) return;
-      if (pageToLoad === 0) setLoadError(getErrorMessage(err));
-      else setLoadMoreFailed(true);
-    } finally {
-      if (version === requestVersion.current) { setLoading(false); setLoadingMore(false); }
+      if (pageToLoad === 0) setResults({ query, phase: 'error', message: getErrorMessage(err) });
+      else setPagination({ query, phase: 'error' });
     }
   }
 
   async function handleSaveSearch() {
-    if (!user) { showToast(t('listings_save_login'), 'info'); return; }
+    if (!user) {
+      rememberScroll();
+      setShowLogin(true);
+      return;
+    }
     if (!hasFilters) { showToast(t('listings_save_filter_required'), 'info'); return; }
     setSavingSearch(true);
     try {
@@ -131,8 +149,8 @@ export default function ListingsPage() {
   }
 
   function handleLoadMore() {
-    if (loadingMore || loadedQuery !== query) return;
-    void load(page + 1);
+    if (loadingMore || !currentPage?.hasMore) return;
+    void load(currentPage.page + 1);
   }
 
   async function handleMatchUpload(e: ChangeEvent<HTMLInputElement>) {
@@ -144,7 +162,7 @@ export default function ListingsPage() {
     const controller = new AbortController();
     matchAbortRef.current = controller;
     try {
-      const samePhotos = await findSameListingPhotos(file, loadedQuery === query ? pets : [], {
+      const samePhotos = await findSameListingPhotos(file, pets, {
         status: status || undefined,
         type: type || undefined,
         district: district || undefined,
@@ -228,7 +246,7 @@ export default function ListingsPage() {
           <label className="filter-field">
             <span className="filter-label">{t('listings_status_label')}</span>
             <select className="filter" value={status} onChange={(e) => setStatus(e.target.value as PetStatus | '')}>
-              <option value="">{t('filter_all')}</option>
+              <option value="">{t('listings_all_statuses')}</option>
               <option value="lost">{t('filter_lost')}</option>
               <option value="found">{t('filter_found')}</option>
             </select>
@@ -242,7 +260,7 @@ export default function ListingsPage() {
               <option value="Бусад">{t('type_other')}</option>
             </select>
           </label>
-          <label className="filter-field">
+          <label className="filter-field filter-field--district">
             <span className="filter-label">{t('listings_district_label')}</span>
             <select className="filter" value={district} onChange={(e) => setDistrict(e.target.value as District | '')}>
               {DISTRICTS.map((d) => (
@@ -288,7 +306,7 @@ export default function ListingsPage() {
       </section>
 
       <section className="results-section" aria-label={t('listings_results_region')} aria-busy={loading || loadingMore}>
-      {loadError ? (
+      {loadError !== null ? (
         <div className="state-panel state-panel--error" role="alert">
           <span className="state-panel__icon" aria-hidden="true"><Icon name="alert" size={28} /></span>
           <h2>{t('err_title')}</h2>
@@ -333,7 +351,7 @@ export default function ListingsPage() {
           <div className="listings-grid">
             {visiblePets.map((pet) => <PetCard key={pet.id} pet={pet} photoMatchLabel={photoMatchLabel(pet)} />)}
           </div>
-          {hasMore && loadedQuery === query && !(hasImageResults && (activeMatch?.phase === 'database' || activeMatch?.phase === 'same-photos')) && (
+          {currentPage?.hasMore && !(hasImageResults && (activeMatch?.phase === 'database' || activeMatch?.phase === 'same-photos')) && (
             <div className="load-more-wrap">
               {loadMoreFailed && <p className="load-more-error" role="alert">{t('listings_more_error')}</p>}
               <Button onClick={handleLoadMore} disabled={loadingMore} variant="ghost">
@@ -358,6 +376,7 @@ export default function ListingsPage() {
           <NotifySubscribe district={district} />
         </div>
       )}
+      {showLogin && !user && <LoginModal description={t('listings_save_login')} onClose={closeLogin} />}
 
       <style jsx>{`
         .sr-only {
@@ -484,6 +503,15 @@ export default function ListingsPage() {
         }
         @media (max-width: 480px) {
           .selected-district { display: block; grid-column: 1 / -1; margin: 0; color: var(--text-secondary); font-size: var(--text-xs); }
+        }
+        @media (max-width: 360px) {
+          .filters-panel .filter-bar { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+          .filter-field--district { grid-column: 1 / -1; }
+          .filter-field .filter-label {
+            position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+            overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap;
+          }
+          .selected-district { display: none; }
         }
         .empty-state {
           text-align: center; padding: 40px 24px; margin-top: 8px;

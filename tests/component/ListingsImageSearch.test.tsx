@@ -146,3 +146,33 @@ it('passes the typed query to both exact and similar photo matching', async () =
   await waitFor(() => expect(mocks.fetchPetMatches).toHaveBeenCalledWith(expect.objectContaining({ search: 'Lucky' })));
   expect(mocks.findSameListingPhotos.mock.calls[0][2]).toMatchObject({ search: 'Lucky' });
 });
+
+it('shows loading immediately instead of displaying the previous filter’s cards', async () => {
+  mocks.fetchPets
+    .mockResolvedValueOnce({ pets: [pet('lost', 'Lost example')], hasMore: false })
+    .mockResolvedValueOnce({ pets: [pet('found', 'Found example')], hasMore: false });
+  render(<ListingsPage />);
+  await screen.findByText('Lost example');
+
+  fireEvent.change(screen.getByLabelText('listings_status_label'), { target: { value: 'found' } });
+
+  expect(screen.queryByText('Lost example')).not.toBeInTheDocument();
+  expect(screen.getByRole('region', { name: 'listings_results_region' })).toHaveAttribute('aria-busy', 'true');
+  expect(mocks.fetchPets).toHaveBeenCalledOnce();
+  await screen.findByText('Found example');
+  expect(screen.getByRole('region', { name: 'listings_results_region' })).toHaveAttribute('aria-busy', 'false');
+});
+
+it('does not display a previous search error while a different query is loading', async () => {
+  mocks.fetchPets
+    .mockRejectedValueOnce(new Error('Previous search failed'))
+    .mockResolvedValueOnce({ pets: [pet('found', 'Found example')], hasMore: false });
+  render(<ListingsPage />);
+  expect(await screen.findByRole('alert')).toHaveTextContent('Previous search failed');
+
+  fireEvent.change(screen.getByLabelText('listings_status_label'), { target: { value: 'found' } });
+
+  expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  expect(screen.getByText('listings_loading')).toBeInTheDocument();
+  await screen.findByText('Found example');
+});

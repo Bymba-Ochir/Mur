@@ -43,10 +43,8 @@ export function useListingFilters() {
   };
 }
 
-export function listingReturnPath(query: string, route: '/listings' | '/adoptions') {
-  const candidate = new URLSearchParams(query).get('returnTo');
-  if (!candidate || (candidate !== route && !candidate.startsWith(route + '?'))) return route;
-  const parsed = parseListingFilters(candidate.slice(route.length));
+export function listingFilterPath(route: '/listings' | '/adoptions', query: string) {
+  const parsed = parseListingFilters(query);
   const params = new URLSearchParams();
   if (parsed.status && route === '/listings') params.set('status', parsed.status);
   if (parsed.type) params.set('type', parsed.type);
@@ -54,6 +52,12 @@ export function listingReturnPath(query: string, route: '/listings' | '/adoption
   if (parsed.gender && route === '/adoptions') params.set('gender', parsed.gender);
   if (parsed.search) params.set('q', parsed.search);
   return route + (params.size ? '?' + params.toString() : '');
+}
+
+export function listingReturnPath(query: string, route: '/listings' | '/adoptions') {
+  const candidate = new URLSearchParams(query).get('returnTo');
+  if (!candidate || (candidate !== route && !candidate.startsWith(route + '?'))) return route;
+  return listingFilterPath(route, candidate.slice(route.length));
 }
 export function useListingReturnPath(route: '/listings' | '/adoptions') {
   const query = useSyncExternalStore(subscribe, () => window.location.search, () => '');
