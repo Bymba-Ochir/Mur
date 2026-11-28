@@ -29,7 +29,7 @@ export interface PetFormData {
   breed: string;
   color: string;
   place: string;
-  district: District;
+  district: District | '';
   phone: string;
   phoneHidden?: boolean;
   /** "Шагналтай" гэж тэмдэглэх эсэх */
@@ -132,11 +132,12 @@ export function usePhotoUpload() {
 }
 
 // ---------- Байршил: geolocation + ойролцоо дүүрэг ----------
-export function usePetLocation(onDistrictGuess: (d: District) => void) {
+export function usePetLocation(onDistrictGuess?: (district: District) => void) {
   const showToast = useToast();
   const { t } = useLanguage();
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [locating, setLocating] = useState(false);
+  const [districtGuess, setDistrictGuess] = useState<District | null>(null);
 
   function handleUseLocation() {
     if (!navigator.geolocation) {
@@ -149,7 +150,8 @@ export function usePetLocation(onDistrictGuess: (d: District) => void) {
         const { latitude, longitude } = pos.coords;
         setCoords({ lat: latitude, lng: longitude });
         const guessed = nearestDistrict(latitude, longitude);
-        onDistrictGuess(guessed);
+        setDistrictGuess(guessed);
+        onDistrictGuess?.(guessed);
         setLocating(false);
         showToast(`${t('location_success')} ${guessed}`, 'success');
       },
@@ -162,10 +164,11 @@ export function usePetLocation(onDistrictGuess: (d: District) => void) {
 
   function reset() {
     setCoords(null);
+    setDistrictGuess(null);
     setLocating(false);
   }
 
-  return { coords, locating, handleUseLocation, setCoords, reset };
+  return { coords, locating, handleUseLocation, setCoords, districtGuess, reset };
 }
 
 // ---------- Submit: createPetReport + төлөв ----------
@@ -190,6 +193,10 @@ export function usePetSubmit({
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (!form.district) {
+      setError(t('form_district_required'));
+      return;
+    }
     setSubmitting(true);
     setError(null);
     setStatusMsg(t('submitting'));
@@ -201,6 +208,7 @@ export function usePetSubmit({
       const id = await createPetReport(
         {
           ...form,
+          district: form.district,
           name: cleanText(form.name, 100, 'Нэр'),
           breed: cleanText(form.breed, 100, 'Үүлдэр'),
           color: cleanText(form.color, 100, 'Онцгой шинж тэмдэг', true),

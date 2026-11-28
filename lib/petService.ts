@@ -9,7 +9,8 @@ import type { Pet, PetStatus, PetFilters, PetReportInput, UpdatePetFields } from
 import { cleanText, optionalCoordinate, optionalInteger } from './inputValidation';
 import { apiError, authenticatedFetch } from './apiClient';
 import { createIdempotencyKey, idempotentFileName, isIdempotencyKey } from './idempotency';
-import { hydrateListingPhotos, saveListingPhotos } from './photoRepository';
+import { hydrateListingPhotos } from './photoRepository';
+import { DISTRICTS } from './districts';
 import { DEFAULT_PAGE_SIZE, finalizePage, pageWindow } from './pagination';
 
 const TABLE = 'pets';
@@ -26,16 +27,6 @@ async function uploadPetPhoto(file: File, statusFolder: PetStatus, userId: strin
   return data.publicUrl;
 }
 
-async function persistPetPhotoUrls(petId: string, photoUrls: string[]): Promise<void> {
-  const normalized = await saveListingPhotos('pet', petId, photoUrls);
-  if (normalized) return;
-  const { error } = await supabase
-    .from(TABLE)
-    .update({ photo_url: photoUrls[0] ?? null, photo_urls: photoUrls })
-    .eq('id', petId);
-  if (error) throw error;
-}
-
 /**
  * Шинэ алдсан/олдсон амьтны бүртгэл нэмэх
  * @param data - { status, name, type, color, place, district, phone, photoFile, lat, lng }
@@ -49,70 +40,48 @@ export async function createPetReport(
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error('Эхлээд нэвтэрнэ үү.');
   if (!isIdempotencyKey(mutationId)) throw new Error('Үйлдлийн дугаар буруу байна.');
-
-  const files = (data.photoFiles?.length ? data.photoFiles : data.photoFile ? [data.photoFile] : []).slice(0, 4);
-  const { data: existing, error: existingError } = await supabase.from(TABLE).select('id,created_by').eq('id', mutationId).maybeSingle();
-  if (existingError) throw existingError;
-  if (existing) {
-    if (existing.created_by !== user.id) throw new Error('Үйлдлийн дугаар давхардлаа. Дахин оролдоно уу.');
-    if (files.length) {
-      const retryUrls = await Promise.all(files.map((file, index) => uploadPetPhoto(file, data.status, user.id, mutationId, index)));
-      await persistPetPhotoUrls(existing.id, retryUrls);
-    }
-    return existing.id;
-  }
+  if (!DISTRICTS.includes(data.district)) throw new Error('Дүүргээ сонгоно уу.');
 
   const phone = listingPhone(data.phone, data.phoneHidden);
   const reward = data.hasReward
     ? optionalInteger(data.reward, { min: 0, max: 100_000_000, label: 'Шагналын дүн' })
     : null;
-  let photoUrls: string[] = [];
-
-  if (files.length) {
-    onProgress?.(`1/${files.length} зураг хадгалж байна...`);
-    photoUrls = await Promise.all(files.map((file, index) => uploadPetPhoto(file, data.status, user.id, mutationId, index)));
-  }
-
   const payload = {
-      id: mutationId,
-      created_by: user.id,
-      status: data.status, // 'lost' | 'found'
-      name: cleanText(data.name, 100, 'Нэр'),
-      type: data.type, // 'Нохой' | 'Муур' | 'Бусад'
-      breed: cleanText(data.breed, 100, 'Үүлдэр'),
-      color: cleanText(data.color, 100, 'Онцгой шинж тэмдэг', true),
-      place: cleanText(data.place, 300, 'Байршил', true),
-      district: data.district || '',
-      phone,
-      phone_hidden: data.phoneHidden ?? false,
-      has_reward: data.hasReward ?? false,
-      reward,
-      lat: optionalCoordinate(data.lat, 'lat'),
-      lng: optionalCoordinate(data.lng, 'lng'),
+    status: data.status,
+    name: cleanText(data.name, 100, 'Нэр'),
+    type: data.type,
+    breed: cleanText(data.breed, 100, 'Үүлдэр'),
+    color: cleanText(data.color, 100, 'Онцгой шинж тэмдэг', true),
+    place: cleanText(data.place, 300, 'Байршил', true),
+    district: data.district,
+    phone,
+    phone_hidden: data.phoneHidden ?? false,
+    has_reward: data.hasReward ?? false,
+    reward,
+    lat: optionalCoordinate(data.lat, 'lat'),
+    lng: optionalCoordinate(data.lng, 'lng'),
   };
 
-  const result = await supabase.from(TABLE).insert(payload).select().single();
-
-  const { data: inserted, error } = result;
-
+  const files = (data.photoFiles?.length ? data.photoFiles : data.photoFile ? [data.photoFile] : []).slice(0, 4);
+  if (files.length) onProgress?.(`1/${files.length} зураг хадгалж байна...`);
+  const photoUrls = await Promise.all(files.map((file, index) => uploadPetPhoto(file, data.status, user.id, mutationId, index)));
+  const { data: petId, error } = await supabase.rpc('publish_pet_report', {
+    target_id: mutationId,
+    report: payload,
+    target_urls: photoUrls,
+  });
   if (error) {
-    if (error.code === '23505') {
-      const { data: raced, error: racedError } = await supabase.from(TABLE).select('id,created_by').eq('id', mutationId).maybeSingle();
-      if (racedError) throw racedError;
-      if (raced?.created_by === user.id) {
-        if (photoUrls.length) await persistPetPhotoUrls(raced.id, photoUrls);
-        return raced.id;
-      }
-    }
     if (error.message && error.message.includes('RATE_LIMIT:')) {
       throw new Error('Хэт олон удаа мэдээлэл илгээлээ. 1 цагийн дараа дахин оролдоно уу.');
     }
     throw error;
   }
 
-  await persistPetPhotoUrls(inserted.id, photoUrls);
-
-  return inserted.id;
+  if (photoUrls.length) {
+    // The scheduler also processes the image job if the wake-up request fails.
+    void authenticatedFetch(`/api/pets/${encodeURIComponent(petId)}/image-processing`, { method: 'POST' }).catch(() => {});
+  }
+  return petId;
 }
 
 /**

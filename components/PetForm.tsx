@@ -18,10 +18,11 @@ import FieldHint from './ui/FieldHint';
 import AuthRequired from './AuthRequired';
 import PhonePrivacyField from './PhonePrivacyField';
 import { useAuth } from '../lib/useAuth';
+import { googleLoginEnabled } from '../lib/supabaseClient';
 import { usePetDraft } from '../lib/usePetDraft';
 import { loadMyPetPhotoFile } from '../lib/myPetPhoto';
 
-type FieldErrors = Partial<Record<'color' | 'place' | 'phone', string>>;
+type FieldErrors = Partial<Record<'color' | 'district' | 'place' | 'phone', string>>;
 
 export default function PetForm({ status }: { status: PetStatus }) {
   const { lang, t } = useLanguage();
@@ -37,6 +38,7 @@ export default function PetForm({ status }: { status: PetStatus }) {
       <AuthRequired
         title={lang === 'mn' ? 'Зар оруулахын тулд нэвтэрнэ үү' : 'Sign in to create a report'}
         description={lang === 'mn' ? 'Нэвтэрсний дараа энэ хуудаснаас зургаа оруулж, мэдээллээ бөглөнө.' : 'After signing in, continue on this page to add photos and details.'}
+        loginLabel={googleLoginEnabled ? t('login_google_continue') : undefined}
         icon={<Icon name="lock" size={28} />}
       >
         <AuthenticatedPetForm key={`${user?.id}:${status}`} status={status} userId={user?.id ?? ''} />
@@ -59,14 +61,15 @@ function AuthenticatedPetForm({ status, userId }: { status: PetStatus; userId: s
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [savedPhotoError, setSavedPhotoError] = useState(false);
   const [form, setForm] = useState<PetFormData>({
-    name: '', type: 'Нохой', breed: '', color: '', place: '', district: DISTRICTS[0], phone: '', phoneHidden: false, hasReward: false, reward: '',
+    name: '', type: 'Нохой', breed: '', color: '', place: '', district: '', phone: '', phoneHidden: false, hasReward: false, reward: '',
   });
 
   const photo = usePhotoUpload();
-  const location = usePetLocation((district) => setForm((current) => ({ ...current, district })));
+  const location = usePetLocation();
+  const { coords } = location;
 
   function resetAll() {
-    setForm({ name: '', type: 'Нохой', breed: '', color: '', place: '', district: DISTRICTS[0], phone: '', phoneHidden: false, hasReward: false, reward: '' });
+    setForm({ name: '', type: 'Нохой', breed: '', color: '', place: '', district: '', phone: '', phoneHidden: false, hasReward: false, reward: '' });
     setStep(0);
     setFieldErrors({});
     setSavedPhotoError(false);
@@ -85,8 +88,10 @@ function AuthenticatedPetForm({ status, userId }: { status: PetStatus; userId: s
   function resumeDraft() {
     const saved = draft.resume();
     if (!saved) return;
-    setForm(saved.form);
-    setStep(saved.step);
+    // Older drafts could have the default district without an explicit selection.
+    const needsDistrict = saved.version === 1 && saved.form.district === 'Баянзүрх' && !saved.attempt;
+    setForm(needsDistrict ? { ...saved.form, district: '' } : saved.form);
+    setStep(needsDistrict ? Math.min(saved.step, 2) : saved.step);
     location.setCoords(saved.coords);
     photo.restore(saved.photos);
     submit.restoreAttempt(saved.attempt);
@@ -108,13 +113,16 @@ function AuthenticatedPetForm({ status, userId }: { status: PetStatus; userId: s
   function handleChange(event: ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
     const { name, value } = event.target;
     setForm((current) => ({ ...current, [name]: value }) as PetFormData);
-    if (name === 'color' || name === 'place') clearError(name);
+    if (name === 'color' || name === 'district' || name === 'place') clearError(name);
   }
 
   function validateStep(targetStep: number) {
     const errors: FieldErrors = {};
     if (targetStep === 1 && !form.color.trim()) errors.color = t('form_color_required');
-    if (targetStep === 2 && !form.place.trim()) errors.place = t('form_place_required');
+    if (targetStep === 2) {
+      if (!form.district) errors.district = t('form_district_required');
+      if (!form.place.trim()) errors.place = t('form_place_required');
+    }
     if (targetStep === 3 && !form.phoneHidden && !/^\d{8}$/.test(form.phone)) errors.phone = t('form_phone_invalid');
     setFieldErrors(errors);
     return Object.keys(errors).length === 0;
@@ -127,7 +135,7 @@ function AuthenticatedPetForm({ status, userId }: { status: PetStatus; userId: s
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     if (photo.compressing) { event.preventDefault(); return; }
     if (!form.color.trim()) { event.preventDefault(); setStep(1); validateStep(1); return; }
-    if (!form.place.trim()) { event.preventDefault(); setStep(2); validateStep(2); return; }
+    if (!form.district || !form.place.trim()) { event.preventDefault(); setStep(2); validateStep(2); return; }
     if (!validateStep(3)) {
       event.preventDefault();
       return;
@@ -270,7 +278,12 @@ function AuthenticatedPetForm({ status, userId }: { status: PetStatus; userId: s
             <button type="button" onClick={location.handleUseLocation} disabled={location.locating} className="locate-btn"><Icon name="pin" size={18} />{location.locating ? t('locate_loading') : t('locate_btn')}</button>
 
             <label htmlFor="pet-district">{t('district_label')}</label>
-            <select id="pet-district" name="district" value={form.district} onChange={handleChange}>{DISTRICTS.map((district) => <option key={district}>{district}</option>)}</select>
+            <select id="pet-district" name="district" value={form.district} onChange={handleChange} required aria-invalid={Boolean(fieldErrors.district)} aria-describedby={fieldErrors.district ? 'pet-district-error' : undefined}>
+              <option value="" disabled>{t('form_district_select')}</option>
+              {DISTRICTS.map((district) => <option key={district}>{district}</option>)}
+            </select>
+            {location.districtGuess && <p className="coordinates">{t('form_district_guess')} {location.districtGuess}</p>}
+            {fieldErrors.district && <p id="pet-district-error" className="field-error" role="alert"><Icon name="alert" size={16} />{fieldErrors.district}</p>}
 
             <label htmlFor="pet-place">{status === 'lost' ? t('place_label_lost') : t('place_label_found')}</label>
             <FieldHint mn="Хороо, гудамж, дэлгүүр зэрэг хүн танихуйц ойролцоо газрыг бичнэ." en="Enter a recognizable nearby khoroo, street or landmark." />
@@ -297,6 +310,14 @@ function AuthenticatedPetForm({ status, userId }: { status: PetStatus; userId: s
             )}
 
             <PhonePrivacyField id="pet-phone" phone={form.phone} hidden={Boolean(form.phoneHidden)} onPhoneChange={phone => { setForm(current => ({ ...current, phone })); clearError('phone'); }} onHiddenChange={phoneHidden => { setForm(current => ({ ...current, phoneHidden })); clearError('phone'); }} error={fieldErrors.phone} />
+            {coords && (
+              <section className="location-review" aria-labelledby="location-review-title">
+                <h2 id="location-review-title">{t('form_location_review')}</h2>
+                <p>{form.district} · {form.place}</p>
+                <div className="map-wrap"><LocationMap lat={coords.lat} lng={coords.lng} label={t('map_label')} /></div>
+                <p className="coordinates">{coords.lat.toFixed(4)}, {coords.lng.toFixed(4)}</p>
+              </section>
+            )}
             {submit.error && <p className="submit-error" role="alert"><Icon name="alert" size={17} />{submit.error}</p>}
 
             <Button type="submit" disabled={submit.submitting || photo.compressing} variant="primary" fullWidth className="form-submit" aria-busy={submit.submitting || photo.compressing}>
@@ -322,6 +343,8 @@ function AuthenticatedPetForm({ status, userId }: { status: PetStatus; userId: s
         .draft-status { margin: 0 0 var(--sp-4); color: var(--muted); font-size: var(--text-xs); line-height: 1.5; }
         .draft-status[role="alert"] { color: var(--alert); }
         .form-step { display: flex; flex-direction: column; min-width: 0; margin: 0; padding: 0; border: 0; }
+        .location-review { display: grid; gap: var(--sp-2); margin-block: var(--sp-4); }
+        .location-review h2 { font-size: var(--text-base); font-weight: 650; }
         .preview-col { position: sticky; top: 6.5rem; width: 100%; min-width: 0; }
         .progress-text { margin: 12px 0 20px; color: var(--text-secondary); font-size: var(--text-sm); font-weight: 600; }
         .pet-form :global(.paw.active), .pet-form :global(.paw.done) {

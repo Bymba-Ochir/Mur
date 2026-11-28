@@ -24,19 +24,22 @@ export function parseListingFilters(query: string) {
 }
 export function useListingFilters() {
   const query = useSyncExternalStore(subscribe, () => window.location.search, () => '');
-  function update(key: string, value: string) {
+  function update(values: Record<string, string>) {
     const params = new URLSearchParams(window.location.search);
-    if (value) params.set(key, value); else params.delete(key);
+    for (const [key, value] of Object.entries(values)) {
+      if (value) params.set(key, value); else params.delete(key);
+    }
     const search = params.toString();
     window.history.replaceState(window.history.state, '', `${window.location.pathname}${search ? '?' + search : ''}`);
     window.dispatchEvent(new Event(EVENT));
   }
   return { ...parseListingFilters(query), query,
-    setGender: (value: string) => update('gender', value),
-    setStatus: (value: string) => update('status', value),
-    setType: (value: string) => update('type', value),
-    setDistrict: (value: string) => update('district', value),
-    setSearch: (value: string) => update('q', value.slice(0, 100)),
+    setGender: (gender: string) => update({ gender }),
+    setStatus: (status: string) => update({ status }),
+    setType: (type: string) => update({ type }),
+    setDistrict: (district: string) => update({ district }),
+    setSearch: (search: string) => update({ q: search.slice(0, 100) }),
+    clearPetFilters: () => update({ status: '', type: '', district: '', q: '' }),
   };
 }
 
