@@ -8,9 +8,9 @@ import { createPublicClient } from '../../lib/supabaseClient';
 import { ownedPetPhotoStoragePath } from '../../lib/storageObjectPath';
 
 let session: Session;
-let userId: string;
+let userId: string | null = null;
 const image = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aK1cAAAAASUVORK5CYII=', 'base64');
-test.beforeAll(async () => {
+test.beforeEach(async () => {
   loadEnvConfig(resolve(__dirname, '../..'), true);
   if (process.env.NEXT_PUBLIC_SUPABASE_URL !== 'http://127.0.0.1:54321') throw new Error('Local Supabase required');
   const email = `my-pet-identity-${randomUUID()}@example.com`;
@@ -22,17 +22,19 @@ test.beforeAll(async () => {
   if (signedIn.error || !signedIn.data.session) throw new Error('Local test sign-in failed');
   session = signedIn.data.session;
 });
-test.afterAll(async () => {
+test.afterEach(async () => {
   if (!userId) return;
+  const id = userId;
+  userId = null;
   const admin = createAdminClient();
-  const rows = await admin.from('my_pets').select('photo_url').eq('user_id', userId);
+  const rows = await admin.from('my_pets').select('photo_url').eq('user_id', id);
   if (rows.error) throw rows.error;
-  const paths = (rows.data ?? []).map(row => ownedPetPhotoStoragePath(row.photo_url, userId, process.env.NEXT_PUBLIC_SUPABASE_URL)).filter((path): path is string => Boolean(path));
+  const paths = (rows.data ?? []).map(row => ownedPetPhotoStoragePath(row.photo_url, id, process.env.NEXT_PUBLIC_SUPABASE_URL)).filter((path): path is string => Boolean(path));
   if (paths.length) {
     const removed = await admin.storage.from('pet-photos').remove(paths);
     if (removed.error) throw removed.error;
   }
-  const deleted = await admin.auth.admin.deleteUser(userId);
+  const deleted = await admin.auth.admin.deleteUser(id);
   if (deleted.error) throw deleted.error;
 });
 
@@ -49,8 +51,9 @@ for (const scenario of [{ width: 390, theme: 'light' }, { width: 1440, theme: 'd
     }, { token: session, theme: scenario.theme });
     await page.goto('/my-pets');
     const name = 'Туршилт ' + scenario.width;
-    const form = page.locator('.registration-form');
-    if (!await form.isVisible()) await page.getByRole('button', { name: '+ Нэмэх', exact: true }).click();
+    await expect(page.getByText('Одоогоор амьтан бүртгээгүй байна.', { exact: true })).toBeVisible();
+    const form = page.locator('#add-pet-section .registration-form');
+    await expect(form).toBeVisible();
     await form.getByLabel('Амьтны нэр *', { exact: true }).fill(name);
     await form.getByLabel('Онцгой шинж тэмдэг', { exact: true }).fill('Цээж цагаан');
     await form.getByLabel('Зураг', { exact: true }).setInputFiles({ name: 'pet.png', mimeType: 'image/png', buffer: image });
