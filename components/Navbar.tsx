@@ -383,6 +383,13 @@ export default function Navbar() {
                   <Icon name="close" size={19} />
                 </button>
               </div>
+              {!user && (
+                <div className="mobile-menu-account mobile-menu-login">
+                  <Button variant="primary" fullWidth onClick={() => { setShowLogin(true); setShowMobileMenu(false); }}>
+                    {t('nav_login')}
+                  </Button>
+                </div>
+              )}
               <nav className="mobile-nav" aria-label={t('nav_mobile_label')}>
                 {mobileLinks.map((link) => (
                   <Link
@@ -402,8 +409,8 @@ export default function Navbar() {
                   <LanguageToggle />
                   <ThemeToggle />
                 </div>
-                <div className="mobile-menu-account">
-                  {user ? (
+                {user && (
+                  <div className="mobile-menu-account">
                     <div className="mobile-user-section">
                       <div className="mobile-user-info">
                         <span className="user-avatar" aria-hidden="true"><BrandMark size={19} /></span>
@@ -426,12 +433,8 @@ export default function Navbar() {
                         </Button>
                       </div>
                     </div>
-                  ) : (
-                    <Button variant="primary" fullWidth onClick={() => { setShowLogin(true); setShowMobileMenu(false); }}>
-                      {t('nav_login')}
-                    </Button>
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>

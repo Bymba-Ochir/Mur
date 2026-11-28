@@ -126,4 +126,21 @@ describe('lost reports from My pets', () => {
     expect(mocks.fetchMyPets).not.toHaveBeenCalled();
     expect(mocks.fetchMyPetById).not.toHaveBeenCalled();
   });
+
+  it('requires a deliberate district choice before the contact step', () => {
+    mount('found');
+    const next = () => screen.getByRole('button', { name: DICT.mn.form_next_plain });
+    fireEvent.click(next());
+    fireEvent.change(screen.getByLabelText(DICT.mn.color_label), { target: { value: 'Цагаан' } });
+    fireEvent.click(next());
+    const district = screen.getByLabelText(DICT.mn.district_label);
+    expect(district).toHaveValue('');
+    fireEvent.change(screen.getByLabelText(DICT.mn.place_label_found), { target: { value: 'Сургуулийн урд' } });
+    fireEvent.click(next());
+    expect(screen.getByRole('alert')).toHaveTextContent(DICT.mn.form_district_required);
+    fireEvent.change(district, { target: { value: 'Хан-Уул' } });
+    fireEvent.click(next());
+    expect(screen.getByRole('button', { name: DICT.mn.submit_found })).toBeVisible();
+    expect(mocks.form.district).toBe('Хан-Уул');
+  });
 });

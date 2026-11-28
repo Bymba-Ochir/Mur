@@ -17,7 +17,7 @@ export default function PetPreviewCard({
   type: PetType;
   breed?: string;
   color: string;
-  district: District;
+  district: District | '';
   place: string;
   phone: string;
   photoPreview: string | null;

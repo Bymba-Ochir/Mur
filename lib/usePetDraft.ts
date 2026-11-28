@@ -19,7 +19,7 @@ export function usePetDraft(userId: string, status: PetStatus, snapshot: PetDraf
   const signature = fingerprintSubmission({ form: snapshot.form, coords: snapshot.coords, step: snapshot.step }, snapshot.photos);
   const hasProgress = snapshot.step > 0 || snapshot.photos.length > 0 || snapshot.coords !== null
     || Boolean(snapshot.form.name || snapshot.form.breed || snapshot.form.color || snapshot.form.place
-      || snapshot.form.phone || snapshot.form.reward || snapshot.form.hasReward);
+      || snapshot.form.phone || snapshot.form.reward || snapshot.form.hasReward || snapshot.form.district);
 
   const failure = useCallback((reason: unknown) => {
     const conflict = reason instanceof Error && reason.message === 'DRAFT_CONFLICT';
@@ -50,7 +50,7 @@ export function usePetDraft(userId: string, status: PetStatus, snapshot: PetDraf
       if (!editable.current) return;
       const fingerprint = fingerprintSubmission({ status, form: value.form, coords: value.coords }, value.photos);
       const next: PetDraft = {
-        ...value, version: 1, userId, status, revision: createIdempotencyKey(), updatedAt: Date.now(),
+        ...value, version: 2, userId, status, revision: createIdempotencyKey(), updatedAt: Date.now(),
         attempt: currentAttempt?.fingerprint === fingerprint ? currentAttempt : null,
       };
       await writePetDraft(userId, status, revision.current, next);

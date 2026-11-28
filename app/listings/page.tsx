@@ -36,7 +36,7 @@ export default function ListingsPage() {
   const { t } = useLanguage();
   const { user } = useAuth();
   const showToast = useToast();
-  const { status, type, district, search, query, setStatus, setType, setDistrict, setSearch } = useListingFilters();
+  const { status, type, district, search, query, setStatus, setType, setDistrict, setSearch, clearPetFilters } = useListingFilters();
   const [pets, setPets] = useState<Pet[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -45,6 +45,7 @@ export default function ListingsPage() {
   const [match, setMatch] = useState<ImageMatch | null>(null);
   const [loadError, setLoadError] = useState('');
   const [savingSearch, setSavingSearch] = useState(false);
+  const [showPhotoSearch, setShowPhotoSearch] = useState(false);
   const matchAbortRef = useRef<AbortController | null>(null);
   const requestVersion = useRef(0);
   const loadedQuery = useRef<string | null>(null);
@@ -186,11 +187,21 @@ export default function ListingsPage() {
       <div className="page-header">
         <p className="listings-kicker">{t('listings_eyebrow')}</p>
         <h1>{t('listings_title')}</h1>
-        <p>{t('listings_desc')}</p>
+        <p className="listings-intro">{t('listings_desc')}</p>
         <div className="listings-report-actions">
           <Button as="link" href="/report-lost" variant="ghost">{t('hero_btn_lost')}</Button>
           <Button as="link" href="/report-found" variant="ghost">{t('hero_btn_found')}</Button>
         </div>
+        <details className="listings-mobile-report">
+          <summary>{t('listings_post')}</summary>
+          <div className="report-options">
+            <Button as="link" href="/report-lost" variant="ghost">{t('hero_btn_lost')}</Button>
+            <Button as="link" href="/report-found" variant="ghost">{t('hero_btn_found')}</Button>
+          </div>
+        </details>
+        <button type="button" className="mobile-photo-toggle" aria-expanded={showPhotoSearch} aria-controls="match-upload-panel" onClick={() => setShowPhotoSearch(!showPhotoSearch)}>
+          <Icon name="camera" size={16} aria-hidden="true" /> {t('listings_photo_search')}
+        </button>
       </div>
 
       <section className="filters-panel content-panel" aria-labelledby="listings-filters-heading">
@@ -236,22 +247,7 @@ export default function ListingsPage() {
           </label>
         </div>
       </section>
-      <div className="filter-actions">
-        <Button variant="ghost" onClick={() => void handleSaveSearch()} disabled={savingSearch} aria-busy={savingSearch}>
-          <Icon name="heart" size={16} aria-hidden="true" />
-          {savingSearch ? t('listings_saving_search') : t('listings_save_search')}
-        </Button>
-        <Link href="/saved" className="saved-link">{t('listings_saved_link')}</Link>
-      </div>
-
-      {district && (
-        <div className="district-tools">
-          <VolunteerBadge district={district} />
-          <NotifySubscribe district={district} />
-        </div>
-      )}
-
-      <section className="match-upload" aria-labelledby="match-upload-heading">
+      <section id="match-upload-panel" className={`match-upload${showPhotoSearch ? ' open' : ''}`} aria-labelledby="match-upload-heading">
         <div className="match-heading">
           <div>
             <h2 id="match-upload-heading">{t('listings_match_group')}</h2>
@@ -308,14 +304,20 @@ export default function ListingsPage() {
             </svg>
           </div>
           <p className="empty-title">
-            {search || district || status || type ? t('empty_no_results_title') : t('empty_no_posts_title')}
+            {hasFilters ? t('empty_no_results_title') : t('empty_no_posts_title')}
           </p>
           <p className="empty-desc">
-            {search || district || status || type ? t('empty_no_results_desc') : t('empty_no_posts_desc')}
+            {hasFilters ? t('empty_no_results_desc') : t('empty_no_posts_desc')}
           </p>
-          <div className="empty-actions">
-            <Button as="link" href="/report-lost" variant="primary">{t('hero_btn_lost')}</Button>
-            <Button as="link" href="/report-found" variant="ghost">{t('hero_btn_found')}</Button>
+          <div className={`empty-actions${hasFilters ? '' : ' empty-report-actions'}`}>
+            {hasFilters ? (
+              <Button variant="primary" onClick={clearPetFilters}>{t('listings_clear_filters')}</Button>
+            ) : (
+              <>
+                <Button as="link" href="/report-lost" variant="primary">{t('hero_btn_lost')}</Button>
+                <Button as="link" href="/report-found" variant="ghost">{t('hero_btn_found')}</Button>
+              </>
+            )}
           </div>
         </div>
       ) : (
@@ -336,6 +338,20 @@ export default function ListingsPage() {
       )}
       </section>
 
+      <div className="filter-actions">
+        <Button variant="ghost" onClick={() => void handleSaveSearch()} disabled={savingSearch} aria-busy={savingSearch}>
+          <Icon name="heart" size={16} aria-hidden="true" />
+          {savingSearch ? t('listings_saving_search') : t('listings_save_search')}
+        </Button>
+        <Link href="/saved" className="saved-link">{t('listings_saved_link')}</Link>
+      </div>
+      {district && (
+        <div className="district-tools">
+          <VolunteerBadge district={district} />
+          <NotifySubscribe district={district} />
+        </div>
+      )}
+
       <style jsx>{`
         .sr-only {
           position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
@@ -345,6 +361,7 @@ export default function ListingsPage() {
         .page-header h1 { margin-top: 4px; font-weight: 700; }
         .listings-kicker { font-size: var(--text-xs); font-weight: 600; }
         .listings-report-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+        .listings-mobile-report, .mobile-photo-toggle { display: none; }
         .listings-report-actions :global(.btn-base), .match-actions :global(.btn-base) {
           min-height: var(--touch-target); border-radius: 10px; color: var(--text-primary);
         }
@@ -367,7 +384,7 @@ export default function ListingsPage() {
         .search-control .filter:focus-visible { outline: none; box-shadow: none; }
         .filter-actions {
           display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3);
-          flex-wrap: wrap; margin: 0 0 16px;
+          flex-wrap: wrap; margin: 16px 0;
         }
         .saved-link {
           min-height: var(--touch-target); display: inline-flex; align-items: center; color: var(--text-secondary);
@@ -423,12 +440,32 @@ export default function ListingsPage() {
         @media (max-width: 600px) {
           .listings-grid { grid-template-columns: 1fr; }
         }
-        @media (max-width: 560px) {
-          .filters-panel .filter-bar { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-          .filter-field--search, .filter-field:last-child { grid-column: 1 / -1; }
+        @media (max-width: 767px) {
+          .page-header { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-bottom: 8px; padding-bottom: 8px; }
+          .listings-kicker, .listings-intro, .listings-report-actions, .match-upload:not(.open) { display: none; }
+          .page-header h1 { flex-basis: 100%; margin: 0; font-size: clamp(1.25rem, 5vw, 1.75rem); }
+          .listings-mobile-report { display: block; position: relative; z-index: 2; }
+          .listings-mobile-report summary, .mobile-photo-toggle {
+            min-height: var(--touch-target); padding: 8px 10px; cursor: pointer; color: var(--text-primary);
+            border: 1px solid var(--line); border-radius: var(--r-sm); background: var(--card);
+            font-size: var(--text-xs); font-weight: 650;
+          }
+          .listings-mobile-report summary { align-content: center; }
+          .report-options {
+            position: absolute; inset-inline-end: 0; top: calc(100% + 4px); display: grid; padding: 4px;
+            width: max-content; background: var(--card); border: 1px solid var(--line); border-radius: var(--r-sm); box-shadow: var(--shadow-sm);
+          }
+          .filters-panel { padding: 8px; }
+          .filters-panel .filter-bar { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+          .filter-field--search { grid-column: 1 / -1; }
+          .filter-field--search .filter-label {
+            position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+            overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap;
+          }
+          .filter-field select { padding-inline: 5px; text-overflow: ellipsis; font-size: var(--text-xs); }
+          .mobile-photo-toggle { display: inline-flex; align-items: center; gap: 6px; }
           .filter-actions { gap: 4px 8px; }
           .filter-actions :global(.btn-base) { padding-inline: 8px; }
-          .listings-report-actions :global(.btn-base) { flex: 1 1 8rem; padding: 8px; }
           .match-upload { padding: var(--sp-3); border-radius: var(--r-md); }
           .match-actions { align-items: stretch; flex-direction: column; }
           .match-actions :global(.btn-base) { width: 100%; white-space: normal; text-align: center; }
@@ -443,7 +480,8 @@ export default function ListingsPage() {
           .empty-state { padding: 40px 20px; margin-top: var(--sp-3); }
         }
         @media (max-width: 480px) {
-          .empty-state { padding: 32px 16px; }
+          .empty-state { padding: 12px; margin-top: 0; }
+          .empty-state .empty-icon { display: none; }
         }
         .empty-icon {
           position: relative;
@@ -464,6 +502,9 @@ export default function ListingsPage() {
           .empty-desc { font-size: 14px; margin-bottom: var(--sp-5); line-height: 1.6; }
         }
         .empty-actions { display: flex; gap: var(--sp-3); justify-content: center; flex-wrap: wrap; }
+        @media (max-width: 767px) {
+          .empty-report-actions { display: none; }
+        }
         @media (max-width: 480px) {
           .empty-actions { gap: var(--sp-2); flex-direction: column; }
           .empty-actions :global(.btn-base) { width: 100%; justify-content: center; }

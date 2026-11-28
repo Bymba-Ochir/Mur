@@ -6,6 +6,7 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 import { supabase } from './supabase';
+import { rememberGoogleReturnPath } from './authReturnPath';
 import type { User } from '@supabase/supabase-js';
 
 interface AuthContextValue {
@@ -47,6 +48,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const loginWithGoogle = async (): Promise<void> => {
+    rememberGoogleReturnPath();
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: { redirectTo: new URL('/auth/complete', window.location.origin).href },

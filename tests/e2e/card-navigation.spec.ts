@@ -5,10 +5,14 @@ const adoptionId = '5a70755d-d0fb-4123-a074-097719d4c351';
 const sittingId = '5a70755d-d0fb-4123-a074-097719d4c352';
 const photo = '<svg xmlns="http://www.w3.org/2000/svg" width="640" height="480"><rect width="640" height="480" fill="#e9e5ff"/><circle cx="320" cy="240" r="100" fill="#bc935b"/></svg>';
 
-test.beforeEach(async ({ page, baseURL }) => {
+test.beforeEach(async ({ context, baseURL }) => {
   const origin = new URL(baseURL ?? 'http://localhost:3000');
   if (origin.protocol !== 'http:' || !['localhost', '127.0.0.1'].includes(origin.hostname)) throw new Error('Card navigation tests require the local app');
-  await page.addInitScript(() => { localStorage.setItem('mur-lang', 'mn'); localStorage.setItem('mur-analytics-consent', 'declined'); });
+  await context.addInitScript(() => {
+    localStorage.setItem('mur-lang', 'mn');
+    localStorage.setItem('mur-analytics-consent', 'declined');
+    localStorage.setItem('mur-install-dismissed', '1');
+  });
   const records: Record<string, Record<string, unknown>[]> = {
     pets: [{ id: petId, status: 'lost', name: 'Картын туршилт', type: 'Нохой', color: 'хар', district: 'Баянзүрх', place: '22 хороо', phone: '99112233', phone_hidden: false, created_at: '2026-11-07T00:00:00Z' }],
     adoptions: [{ id: adoptionId, name: 'Картын туршилт', type: 'Муур', color: 'бор', district: 'Баянзүрх', place: '22 хороо', phone: '', phone_hidden: true, created_at: '2026-11-07T00:00:00Z' }],
@@ -17,11 +21,11 @@ test.beforeEach(async ({ page, baseURL }) => {
     adoption_photos: [0,1].map(position => ({ adoption_id: adoptionId, position, url: `http://127.0.0.1:54321/storage/v1/object/public/pet-photos/card-navigation-${position}.svg` })),
   };
   for (const [table, data] of Object.entries(records)) {
-    await page.route(`http://127.0.0.1:54321/rest/v1/${table}?**`, route => route.fulfill({
+    await context.route(`http://127.0.0.1:54321/rest/v1/${table}?**`, route => route.fulfill({
       json: route.request().headers().accept?.includes('vnd.pgrst.object') ? data[0] : data,
     }));
   }
-  await page.route('http://127.0.0.1:54321/storage/v1/object/public/pet-photos/card-navigation-**', route => route.fulfill({ contentType: 'image/svg+xml', body: photo }));
+  await context.route('http://127.0.0.1:54321/storage/v1/object/public/pet-photos/card-navigation-**', route => route.fulfill({ contentType: 'image/svg+xml', body: photo }));
 });
 
 for (const scenario of [
@@ -36,6 +40,21 @@ for (const scenario of [
     await expect(card.locator('.detail-link')).toHaveCount(0);
     const link = card.locator('.listing-card-link');
     await expect(link).toHaveAttribute('href', new RegExp(scenario.destination));
+    if (!isMobile) {
+      const [tab] = await Promise.all([
+        context.waitForEvent('page', { timeout: 10000 }),
+        link.click({ modifiers: ['ControlOrMeta'] }),
+      ]);
+      try {
+        const destination = new URL(scenario.destination, page.url());
+        if (scenario.path.includes('?')) destination.searchParams.set('returnTo', scenario.path);
+        // The URL is enough to verify native tab navigation, even while the page loads.
+        await expect(tab).toHaveURL(destination.href);
+        await expect(page).toHaveURL(scenario.path);
+      } finally {
+        await tab.close();
+      }
+    }
     if (scenario.gallery) {
       await card.locator('.gallery .next').click();
       await expect(card.locator('.gallery .counter')).toHaveText('2 / 2');
@@ -65,14 +84,6 @@ for (const scenario of [
 
     await page.goto(scenario.path);
     card = page.locator(scenario.selector).filter({ hasText: 'Картын туршилт' }).first();
-    if (!isMobile) {
-      const opened = context.waitForEvent('page');
-      await card.locator('.listing-card-link').click({ modifiers: ['Control'] });
-      const tab = await opened;
-      await tab.waitForURL(url => url.pathname === scenario.destination);
-      await tab.close();
-      await expect(page).toHaveURL(url => url.pathname === scenario.path.split('?')[0]);
-    }
     await card.click({ position: { x: 70, y: 30 } });
     await expect(page).toHaveURL(url => url.pathname === scenario.destination);
   });

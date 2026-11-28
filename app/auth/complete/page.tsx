@@ -1,10 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import LoginModal from '../../../components/LoginModal';
 import Button from '../../../components/ui/Button';
 import { useAuth } from '../../../lib/useAuth';
+import { consumeGoogleReturnPath } from '../../../lib/authReturnPath';
 import { useLanguage } from '../../../lib/i18n';
 import styles from '../../recovery.module.css';
 
@@ -13,12 +14,15 @@ export default function AuthCompletePage() {
   const { user, loading } = useAuth();
   const { t } = useLanguage();
   const [showLogin, setShowLogin] = useState(false);
+  const destination = useRef<string | null>(null);
 
   // The shared browser client exchanges the PKCE code during initialization.
   useEffect(() => {
     if (loading) return;
-    if (user) router.replace('/');
-    else window.history.replaceState(null, '', '/auth/complete');
+    if (user) {
+      destination.current ??= consumeGoogleReturnPath();
+      router.replace(destination.current);
+    } else window.history.replaceState(null, '', '/auth/complete');
   }, [loading, router, user]);
 
   return (

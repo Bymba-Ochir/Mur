@@ -11,7 +11,7 @@ export interface PetDraftSnapshot {
 }
 
 export interface PetDraft extends PetDraftSnapshot {
-  version: 1;
+  version: 1 | 2;
   userId: string;
   status: PetStatus;
   revision: string;
@@ -38,7 +38,7 @@ export function isPetDraft(value: unknown, userId: string, status: PetStatus): v
   if (!value || typeof value !== 'object') return false;
   const draft = value as PetDraft;
   const form = draft.form;
-  return draft.version === 1 && draft.userId === userId && draft.status === status
+  return (draft.version === 1 || draft.version === 2) && draft.userId === userId && draft.status === status
     && isIdempotencyKey(draft.revision) && Number.isFinite(draft.updatedAt)
     && Date.now() - draft.updatedAt <= MAX_AGE
     && Number.isInteger(draft.step) && draft.step >= 0 && draft.step <= 3
@@ -48,7 +48,7 @@ export function isPetDraft(value: unknown, userId: string, status: PetStatus): v
       return typeof text === 'string' && text.length <= 500;
     })
     && ['Нохой', 'Муур', 'Бусад'].includes(form.type)
-    && DISTRICTS.includes(form.district) && typeof form.hasReward === 'boolean'
+    && (form.district === '' || DISTRICTS.includes(form.district)) && typeof form.hasReward === 'boolean'
     && (form.phoneHidden === undefined || typeof form.phoneHidden === 'boolean')
     && (draft.coords === null || Boolean(draft.coords
       && Number.isFinite(draft.coords.lat) && Math.abs(draft.coords.lat) <= 90

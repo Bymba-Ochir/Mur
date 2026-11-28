@@ -932,6 +932,7 @@ body:has([data-floating-notice='analytics']) [data-floating-notice='install'] {
 .navbar-wrap .mobile-menu-row { display: flex; gap: var(--sp-2); }
 .navbar-wrap .mobile-menu-row > * { flex: 1; min-height: var(--touch-target); }
 .navbar-wrap .mobile-menu-account { display: none; }
+.navbar-wrap .mobile-menu-login { padding: var(--sp-2) var(--sp-3); }
 .navbar-wrap .mobile-user-info {
   display: flex; align-items: center; gap: var(--sp-2);
   min-height: 40px; padding-inline: 10px;
