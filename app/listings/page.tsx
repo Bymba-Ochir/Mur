@@ -44,11 +44,12 @@ export default function ListingsPage() {
   const [hasMore, setHasMore] = useState(false);
   const [match, setMatch] = useState<ImageMatch | null>(null);
   const [loadError, setLoadError] = useState('');
+  const [loadMoreFailed, setLoadMoreFailed] = useState(false);
   const [savingSearch, setSavingSearch] = useState(false);
   const [showPhotoSearch, setShowPhotoSearch] = useState(false);
+  const [loadedQuery, setLoadedQuery] = useState<string | null>(null);
   const matchAbortRef = useRef<AbortController | null>(null);
   const requestVersion = useRef(0);
-  const loadedQuery = useRef<string | null>(null);
   const restoredScroll = useRef(false);
   useEffect(() => {
     if (loading || loadError || restoredScroll.current) return;
@@ -95,6 +96,7 @@ export default function ListingsPage() {
     if (pageToLoad === 0) setLoading(true);
     else setLoadingMore(true);
     setLoadError('');
+    setLoadMoreFailed(false);
     try {
       const { pets: data, hasMore: more } = await fetchPets({
         status: status || undefined,
@@ -105,12 +107,13 @@ export default function ListingsPage() {
       });
       if (version !== requestVersion.current) return;
       setPets((prev) => (pageToLoad === 0 ? data : [...prev, ...data]));
-      loadedQuery.current = query;
+      setLoadedQuery(query);
       setHasMore(more);
       setPage(pageToLoad);
     } catch (err) {
       if (version !== requestVersion.current) return;
-      setLoadError(getErrorMessage(err));
+      if (pageToLoad === 0) setLoadError(getErrorMessage(err));
+      else setLoadMoreFailed(true);
     } finally {
       if (version === requestVersion.current) { setLoading(false); setLoadingMore(false); }
     }
@@ -128,7 +131,8 @@ export default function ListingsPage() {
   }
 
   function handleLoadMore() {
-    load(page + 1);
+    if (loadingMore || loadedQuery !== query) return;
+    void load(page + 1);
   }
 
   async function handleMatchUpload(e: ChangeEvent<HTMLInputElement>) {
@@ -140,7 +144,7 @@ export default function ListingsPage() {
     const controller = new AbortController();
     matchAbortRef.current = controller;
     try {
-      const samePhotos = await findSameListingPhotos(file, loadedQuery.current === query ? pets : [], {
+      const samePhotos = await findSameListingPhotos(file, loadedQuery === query ? pets : [], {
         status: status || undefined,
         type: type || undefined,
         district: district || undefined,
@@ -166,6 +170,7 @@ export default function ListingsPage() {
         status: status || undefined,
         type: type || undefined,
         district: district || undefined,
+        search: search || undefined,
       });
       if (controller.signal.aborted) return;
       setMatch(databaseMatches === null
@@ -245,6 +250,7 @@ export default function ListingsPage() {
               ))}
             </select>
           </label>
+          {district && <p className="selected-district" aria-hidden="true">{district}</p>}
         </div>
       </section>
       <section id="match-upload-panel" className={`match-upload${showPhotoSearch ? ' open' : ''}`} aria-labelledby="match-upload-heading">
@@ -309,7 +315,7 @@ export default function ListingsPage() {
           <p className="empty-desc">
             {hasFilters ? t('empty_no_results_desc') : t('empty_no_posts_desc')}
           </p>
-          <div className={`empty-actions${hasFilters ? '' : ' empty-report-actions'}`}>
+          <div className="empty-actions">
             {hasFilters ? (
               <Button variant="primary" onClick={clearPetFilters}>{t('listings_clear_filters')}</Button>
             ) : (
@@ -327,10 +333,11 @@ export default function ListingsPage() {
           <div className="listings-grid">
             {visiblePets.map((pet) => <PetCard key={pet.id} pet={pet} photoMatchLabel={photoMatchLabel(pet)} />)}
           </div>
-          {hasMore && !(hasImageResults && (activeMatch?.phase === 'database' || activeMatch?.phase === 'same-photos')) && (
+          {hasMore && loadedQuery === query && !(hasImageResults && (activeMatch?.phase === 'database' || activeMatch?.phase === 'same-photos')) && (
             <div className="load-more-wrap">
+              {loadMoreFailed && <p className="load-more-error" role="alert">{t('listings_more_error')}</p>}
               <Button onClick={handleLoadMore} disabled={loadingMore} variant="ghost">
-                {loadingMore ? t('loading_more') : t('load_more')}
+                {t(loadingMore ? 'loading_more' : loadMoreFailed ? 'err_retry' : 'load_more')}
               </Button>
             </div>
           )}
@@ -361,7 +368,7 @@ export default function ListingsPage() {
         .page-header h1 { margin-top: 4px; font-weight: 700; }
         .listings-kicker { font-size: var(--text-xs); font-weight: 600; }
         .listings-report-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
-        .listings-mobile-report, .mobile-photo-toggle { display: none; }
+        .listings-mobile-report, .mobile-photo-toggle, .selected-district { display: none; }
         .listings-report-actions :global(.btn-base), .match-actions :global(.btn-base) {
           min-height: var(--touch-target); border-radius: 10px; color: var(--text-primary);
         }
@@ -452,9 +459,13 @@ export default function ListingsPage() {
           }
           .listings-mobile-report summary { align-content: center; }
           .report-options {
-            position: absolute; inset-inline-end: 0; top: calc(100% + 4px); display: grid; padding: 4px;
-            width: max-content; background: var(--card); border: 1px solid var(--line); border-radius: var(--r-sm); box-shadow: var(--shadow-sm);
+            position: absolute; inset-inline-start: 0; top: calc(100% + 4px);
+            display: grid; grid-template-columns: minmax(0, 1fr); padding: 4px;
+            inline-size: max-content;
+            max-inline-size: calc(100vw - max(var(--sp-4), var(--safe-left)) - max(var(--sp-4), var(--safe-right)));
+            background: var(--card); border: 1px solid var(--line); border-radius: var(--r-sm); box-shadow: var(--shadow-sm);
           }
+          .report-options :global(.btn-base) { justify-content: flex-start; text-align: start; white-space: normal; }
           .filters-panel { padding: 8px; }
           .filters-panel .filter-bar { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
           .filter-field--search { grid-column: 1 / -1; }
@@ -470,6 +481,9 @@ export default function ListingsPage() {
           .match-actions { align-items: stretch; flex-direction: column; }
           .match-actions :global(.btn-base) { width: 100%; white-space: normal; text-align: center; }
           .match-status { font-size: 13px; }
+        }
+        @media (max-width: 480px) {
+          .selected-district { display: block; grid-column: 1 / -1; margin: 0; color: var(--text-secondary); font-size: var(--text-xs); }
         }
         .empty-state {
           text-align: center; padding: 40px 24px; margin-top: 8px;
@@ -502,14 +516,12 @@ export default function ListingsPage() {
           .empty-desc { font-size: 14px; margin-bottom: var(--sp-5); line-height: 1.6; }
         }
         .empty-actions { display: flex; gap: var(--sp-3); justify-content: center; flex-wrap: wrap; }
-        @media (max-width: 767px) {
-          .empty-report-actions { display: none; }
-        }
         @media (max-width: 480px) {
           .empty-actions { gap: var(--sp-2); flex-direction: column; }
           .empty-actions :global(.btn-base) { width: 100%; justify-content: center; }
         }
         .load-more-wrap { text-align: center; margin-top: var(--sp-6); }
+        .load-more-error { margin-bottom: var(--sp-2); color: var(--alert); font-size: var(--text-sm); }
         @media (max-width: 640px) {
           .load-more-wrap { margin-top: var(--sp-5); }
         }

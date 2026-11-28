@@ -86,3 +86,19 @@ it('keeps a mirror-only result in the browser fallback', () => {
   const pet = { id: 'mirror', embedding: [0, 1] } as Pet;
   expect(rankBySimilarity([[1, 0], [0, 1]], [pet])).toEqual([{ ...pet, similarity: 100 }]);
 });
+
+it('filters image candidates by listing text and district before applying the result limit', async () => {
+  const match = (id: string, place: string, district: string, score: number) => ({
+    pet: { ...petPhoto, id, place, district }, image_similarity: score / 100, hybrid_score: score,
+  });
+  mocks.rpc.mockResolvedValue({ data: [
+    match('wrong-text', 'River', 'Хан-Уул', 100),
+    match('wrong-district', 'Old School', 'Баянгол', 95),
+    match('matching', 'Old School', 'Хан-Уул', 80),
+  ], error: null });
+  const matches = await fetchPetMatches({ embeddings: [[1, 0]], search: ' sCHOOL ', district: 'Хан-Уул', limit: 1 });
+
+  expect(matches?.map(pet => pet.id)).toEqual(['matching']);
+  expect(mocks.rpc).toHaveBeenCalledWith('match_pets_hybrid', expect.objectContaining({ match_count: 50 }));
+  expect(mocks.hydrate.mock.calls[0][1].map((row: { id: string }) => row.id)).toEqual(['matching']);
+});

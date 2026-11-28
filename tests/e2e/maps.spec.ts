@@ -319,7 +319,8 @@ test('sightings alone create a map, with overlapping reports readable as text', 
   })).toBe(true);
 });
 
-test('clinic map uses the same working tiles and local marker asset', async ({ page }) => {
+test('clinic map uses the same working tiles and local marker asset', async ({ page, isMobile }) => {
   await page.goto('/clinics');
+  if (isMobile) await page.locator('.clinic-map-toggle').click();
   await expectMapAssets(page.locator('.clinic-map'));
 });

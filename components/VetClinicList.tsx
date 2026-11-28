@@ -1,5 +1,5 @@
 'use client';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useSyncExternalStore } from 'react';
 import { useAuth } from '../lib/useAuth';
 import { useLanguage } from '../lib/i18n';
 import { useToast } from './Toast';
@@ -12,11 +12,13 @@ import LoginModal from './LoginModal';
 import EmptyState from './ui/EmptyState';
 import Button from './ui/Button';
 import Icon from './ui/icons';
+import Modal from './ui/Modal';
 import type { CheckedVetClinic, VetClinic, VetService } from '../lib/types';
 import type { TranslationKey } from '../lib/i18n';
 
 const SERVICE_OPTIONS: VetService[] = ['Үзлэг', 'Вакцин', 'Мэс засал', 'Шүд арчилгаа', 'Рентген', 'ЭХО', 'Цусны шинжилгээ', 'Микрочип', 'Туулгалт', 'Арчилгаа'];
 const PAGE_SIZE = 8;
+const MOBILE_CLINICS = '(max-width: 640px)';
 const DEFAULT_FILTERS = { district: '', service: '' as VetService | '', query: '' };
 const SERVICE_I18N: Record<VetService, TranslationKey> = {
   'Үзлэг': 'service_exam', 'Вакцин': 'service_vaccination', 'Мэс засал': 'service_surgery', 'Шүд арчилгаа': 'service_dental',
@@ -24,11 +26,19 @@ const SERVICE_I18N: Record<VetService, TranslationKey> = {
   'Микрочип': 'service_microchip', 'Туулгалт': 'service_deworming', 'Арчилгаа': 'service_grooming',
 };
 
+function subscribeToClinicViewport(onChange: () => void) {
+  const viewport = window.matchMedia(MOBILE_CLINICS);
+  viewport.addEventListener('change', onChange);
+  return () => viewport.removeEventListener('change', onChange);
+}
+
 export default function VetClinicList({ embedded = false }: { embedded?: boolean }) {
   const { user } = useAuth(); const { t, lang } = useLanguage(); const showToast = useToast();
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
   const { district, service, query } = filters;
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const compact = useSyncExternalStore(subscribeToClinicViewport, () => window.matchMedia(MOBILE_CLINICS).matches, () => false);
+  const [showMap, setShowMap] = useState(false);
   const [userCoords, setUserCoords] = useState<[number, number] | null>(null); const [locating, setLocating] = useState(false); const [selectedId, setSelectedId] = useState<string | null>(null);
   const [bookingClinic, setBookingClinic] = useState<CheckedVetClinic | null>(null); const [showLogin, setShowLogin] = useState(false); const [apptRefreshKey, setApptRefreshKey] = useState(0);
   const hasFilters = Boolean(district || service || query || userCoords);
@@ -39,6 +49,9 @@ export default function VetClinicList({ embedded = false }: { embedded?: boolean
     return [...findNearestClinics(...userCoords, mapped, mapped.length), ...result.filter((clinic) => !isMappedClinic(clinic))];
   }, [filters, userCoords]);
   const mappedClinics = useMemo(() => filtered.filter(isMappedClinic), [filtered]);
+  const mapContent = mappedClinics.length > 0 ? (
+    <ClinicMap clinics={mappedClinics} selectedId={selectedId} userCoords={userCoords} onSelect={setSelectedId} label={t('clinics_map_label')} userLocationLabel={t('clinics_user_location')} />
+  ) : <p>{t('clinics_map_no_locations')}</p>;
 
   function updateFilters(changes: Partial<typeof DEFAULT_FILTERS>) {
     setFilters((current) => ({ ...current, ...changes }));
@@ -52,9 +65,13 @@ export default function VetClinicList({ embedded = false }: { embedded?: boolean
   }
   function resetFilters() { updateFilters(DEFAULT_FILTERS); setUserCoords(null); }
   function handleBook(clinic: CheckedVetClinic) { if (!user) { setShowLogin(true); return; } setBookingClinic(clinic); }
+  function handleClinicMap(clinicId: string) {
+    setSelectedId((current) => !compact && current === clinicId ? null : clinicId);
+    if (compact) setShowMap(true);
+  }
 
   return (
-    <div className={embedded ? 'clinic-embedded' : 'page-shell'}>
+    <div className={embedded ? 'clinic-embedded' : 'clinic-directory page-shell'}>
       {!embedded && <header className="page-header"><p className="eyebrow">{t('clinics_eyebrow')}</p><h1>{t('clinics_title')}</h1><p>{t('clinics_desc')}</p></header>}
       <aside className="data-notice" aria-labelledby="clinic-notice-title"><span><Icon name="info" size={20} /></span><div><h2 id="clinic-notice-title">{t('clinics_data_notice_title')}</h2><p>{t('clinics_data_notice_desc')}</p></div></aside>
 
@@ -65,10 +82,11 @@ export default function VetClinicList({ embedded = false }: { embedded?: boolean
           <label htmlFor="clinic-district"><span>{t('clinics_district_label')}</span><select id="clinic-district" value={district} onChange={(event) => updateFilters({ district: event.target.value })}><option value="">{t('clinics_all_areas')}</option>{CLINIC_AREAS.map((value) => <option key={value}>{value}</option>)}</select></label>
           <label htmlFor="clinic-service"><span>{t('clinics_service_label')}</span><select id="clinic-service" value={service} onChange={(event) => updateFilters({ service: event.target.value as VetService | '' })}><option value="">{t('clinics_service_filter')}</option>{SERVICE_OPTIONS.map((value) => <option key={value} value={value}>{t(SERVICE_I18N[value])}</option>)}</select></label>
           <div className="location-action"><span>{t('clinics_map_title')}</span><Button variant="ghost" onClick={handleLocation} disabled={locating} aria-busy={locating}><Icon name="pin" size={17} />{locating ? t('clinics_locating') : t('clinics_use_location')}</Button></div>
+          {compact && <Button variant="secondary" className="clinic-map-toggle" aria-haspopup="dialog" onClick={() => setShowMap(true)}><Icon name="pin" size={17} aria-hidden="true" />{t('clinics_view_map')}</Button>}
         </div>
       </section>
 
-      <div className="quick-actions" role="group" aria-label={t('clinics_service_label')}>{(['Рентген', 'ЭХО', 'Вакцин'] as VetService[]).map((value) => <Button key={value} variant={service === value ? 'primary' : 'ghost'} aria-pressed={service === value} onClick={() => updateFilters({ service: service === value ? '' : value })}>{t(SERVICE_I18N[value])}</Button>)}</div>
+      <div className="quick-actions clinic-quick-actions" role="group" aria-label={t('clinics_service_label')}>{(['Рентген', 'ЭХО', 'Вакцин'] as VetService[]).map((value) => <Button key={value} variant={service === value ? 'primary' : 'ghost'} aria-pressed={service === value} onClick={() => updateFilters({ service: service === value ? '' : value })}>{t(SERVICE_I18N[value])}</Button>)}</div>
       <div className="clinic-explorer">
         <section className="clinic-results" aria-labelledby="clinic-results-title">
           <div className="results-heading"><h2 id="clinic-results-title">{t('clinics_results_title')}</h2><p aria-live="polite">{filtered.length} {t(filtered.length === 1 ? 'clinics_results_count_one' : 'clinics_results_count')}</p></div>
@@ -82,7 +100,7 @@ export default function VetClinicList({ embedded = false }: { embedded?: boolean
                   clinic={clinic}
                   distanceKm={clinic.distanceKm}
                   selected={selectedId === clinic.id}
-                  onSelect={isMappedClinic(clinic) ? () => setSelectedId(selectedId === clinic.id ? null : clinic.id) : undefined}
+                  onSelect={isMappedClinic(clinic) ? () => handleClinicMap(clinic.id) : undefined}
                   onBook={!clinic.source ? () => handleBook(clinic) : undefined}
                 />
               ))}
@@ -92,13 +110,18 @@ export default function VetClinicList({ embedded = false }: { embedded?: boolean
             </div>
           )}
         </section>
-        <section className="map-panel sticky-sidebar" aria-labelledby="clinic-map-title">
-          <div className="map-heading"><span className="map-icon"><Icon name="pin" size={18} /></span><h2 id="clinic-map-title">{t('clinics_map_title')}</h2></div>
-          {mappedClinics.length > 0 ? (
-            <ClinicMap clinics={mappedClinics} selectedId={selectedId} userCoords={userCoords} onSelect={setSelectedId} label={t('clinics_map_label')} userLocationLabel={t('clinics_user_location')} />
-          ) : <p>{t('clinics_map_no_locations')}</p>}
-        </section>
+        {!compact && (
+          <section className="map-panel sticky-sidebar" aria-labelledby="clinic-map-title">
+            <div className="map-heading"><span className="map-icon"><Icon name="pin" size={18} /></span><h2 id="clinic-map-title">{t('clinics_map_title')}</h2></div>
+            {mapContent}
+          </section>
+        )}
       </div>
+      {compact && showMap && (
+        <Modal open onClose={() => setShowMap(false)} title={t('clinics_map_title')} closeLabel={t('close')}>
+          {mapContent}
+        </Modal>
+      )}
 
       {user && <AppointmentsSection refreshKey={apptRefreshKey} onChange={() => setApptRefreshKey((key) => key + 1)} />}
       {bookingClinic && <AppointmentModal clinic={bookingClinic} onClose={() => setBookingClinic(null)} onCreated={() => setApptRefreshKey((key) => key + 1)} />}
@@ -110,7 +133,23 @@ export default function VetClinicList({ embedded = false }: { embedded?: boolean
         .filter-grid{display:grid;grid-template-columns:minmax(15rem,1.5fr) repeat(2,minmax(10rem,1fr)) minmax(12rem,auto);gap:var(--sp-3);align-items:end}label,.location-action{display:flex;flex-direction:column;gap:var(--sp-2);min-width:0;color:var(--primary);font-size:var(--text-xs);font-weight:700}input,select{width:100%;min-height:var(--touch-target);padding:var(--sp-2) var(--sp-3);color:var(--ink);background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r-sm);font:inherit;font-size:var(--text-sm)}input:focus-visible,select:focus-visible{outline:2px solid var(--border-focus);outline-offset:1px}.input-wrap{position:relative;display:flex;align-items:center}.input-wrap :global(svg){position:absolute;left:var(--sp-3);color:var(--muted);pointer-events:none}.input-wrap input{padding-left:var(--sp-8)}.location-action :global(.btn-base){width:100%;justify-content:center;white-space:nowrap}
         .clinic-explorer{display:grid;grid-template-columns:minmax(0,1.08fr) minmax(22rem,.92fr);gap:var(--sp-5);align-items:start}.results-heading{align-items:center}.results-heading p{margin:0;color:var(--muted);font-size:var(--text-sm)}.clinic-list{display:grid;gap:var(--sp-4)}.map-panel{display:flex;flex-direction:column;max-height:calc(100dvh - var(--sticky-sidebar-top) - var(--sp-4));padding:var(--sp-4);background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);}.map-panel :global(.clinic-map){min-height:0;flex-shrink:1}.map-heading{display:flex;flex-shrink:0;align-items:center;gap:var(--sp-2);margin-bottom:var(--sp-3)}.map-heading h2{font-size:var(--text-lg)}.map-icon{display:flex;padding:var(--sp-2);color:var(--clinic);background:color-mix(in srgb,var(--clinic) 12%,var(--card));border-radius:var(--r-sm)}
         @media(max-width:1100px){.filter-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.clinic-explorer{grid-template-columns:1fr}.map-panel{position:static;max-height:none;grid-row:1}}
-        @media(max-width:640px){.data-notice,.filters-panel,.map-panel{padding:var(--sp-4);border-radius:var(--r-md)}.filter-grid{grid-template-columns:1fr}.filters-heading{align-items:flex-start}.results-heading{align-items:flex-start;flex-direction:column;gap:var(--sp-1)}}
+        @media (max-width: 640px) {
+          .clinic-directory .page-header { margin-bottom: var(--sp-2); padding-bottom: var(--sp-2); }
+          .clinic-directory .eyebrow, .filter-kicker, .clinic-quick-actions, .map-panel, .location-action > span { display: none; }
+          .data-notice { gap: var(--sp-2); align-items: center; margin-bottom: var(--sp-3); padding: var(--sp-2); }
+          .data-notice > span { padding: var(--sp-1); }
+          .data-notice h2 { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); }
+          .data-notice p { margin: 0; }
+          .filters-panel { margin-bottom: var(--sp-3); padding: var(--sp-2); }
+          .filters-heading, .results-heading { align-items: center; gap: var(--sp-2); margin-bottom: var(--sp-2); }
+          .filters-heading h2, .results-heading h2 { font-size: var(--text-base); }
+          .filter-grid { gap: var(--sp-2); }
+          .filter-grid label { gap: var(--sp-1); }
+          .filter-grid label[for="clinic-search"] { grid-column: 1 / -1; }
+          .location-action :global(.btn-base), .filter-grid :global(.clinic-map-toggle) {
+            min-width: 0; padding-inline: var(--sp-2); justify-content: center; white-space: normal; text-align: center;
+          }
+        }
       `}</style>
     </div>
   );

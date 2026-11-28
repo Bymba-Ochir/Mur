@@ -68,8 +68,8 @@ test('clinic sidebar fits short desktop screens without an inner scrollbar', asy
   }
 });
 
-test('clinic map scrolls normally above results on tablet and mobile', async ({ page }) => {
-  for (const width of [1100, 768, 390]) {
+test('clinic map scrolls normally above results on tablet', async ({ page }) => {
+  for (const width of [1100, 768]) {
     await page.setViewportSize({ width, height: 844 });
     await openClinics(page);
     const panel = page.locator('.map-panel');
@@ -80,6 +80,40 @@ test('clinic map scrolls normally above results on tablet and mobile', async ({ 
     await expect.poll(() => panel.evaluate(element => element.getBoundingClientRect().top + window.scrollY)).toBeCloseTo(initial.top, 0);
     expect(await panel.evaluate(element => element.getBoundingClientRect().top)).toBeLessThan(0);
     expect(await panel.evaluate(element => getComputedStyle(element).position)).toBe('static');
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(1);
+  }
+});
+
+test('clinic search leads directly to results and opens the map on request on phones', async ({ page }) => {
+  for (const width of [320, 390]) {
+    await page.setViewportSize({ width, height: 568 });
+    await page.goto('/clinics');
+    const search = page.locator('#clinic-search');
+    const results = page.locator('.clinic-results');
+    const phone = results.locator('a[href^="tel:"]').first();
+    const openMap = page.getByRole('button', { name: 'Газрын зураг харах', exact: true });
+    await expect(openMap).toBeVisible();
+    await expect(page.locator('.clinic-map')).toHaveCount(0);
+    await expect(phone).toBeVisible();
+    const searchBox = (await search.boundingBox())!;
+    const resultsBox = (await results.boundingBox())!;
+    const phoneBox = (await phone.boundingBox())!;
+    expect(resultsBox.y - searchBox.y - searchBox.height).toBeLessThan(210);
+    expect(phoneBox.y - resultsBox.y).toBeLessThan(190);
+
+    await openMap.click();
+    const dialog = page.getByRole('dialog', { name: 'Эмнэлгийн байршил' });
+    await expect(dialog.locator('.leaflet-control-zoom-in')).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(dialog).toHaveCount(0);
+    await expect(openMap).toBeFocused();
+
+    const showClinic = results.getByRole('button', { name: 'Газрын зураг дээр харах', exact: true }).first();
+    const clinicName = await showClinic.locator('xpath=ancestor::article').getAttribute('aria-label');
+    await showClinic.click();
+    await expect(dialog.locator('.leaflet-popup strong')).toHaveText(clinicName!);
+    await page.keyboard.press('Escape');
+    await expect(dialog).toHaveCount(0);
     expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(1);
   }
 });

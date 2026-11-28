@@ -38,6 +38,7 @@ export default function Home() {
               <Icon name="search" size={18} />{t('hero_action_search')}
             </Button>
           </nav>
+          <p className="hero-sighting">{t('hero_sighting_hint')}</p>
           <div className="hero-notes">
             <div className="guide-row">
               <span>{t('how_guide_intro')}</span>
@@ -168,6 +169,7 @@ export default function Home() {
           line-height: 1.6;
         }
         .hero-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+        .hero-sighting { max-width: 36rem; margin: 8px 0 0; color: var(--text-secondary); font-size: var(--text-xs); line-height: 1.55; }
         .hero-actions :global(.btn-base) {
           min-height: max(48px, var(--touch-target));
           padding: 8px 12px;
@@ -419,6 +421,7 @@ export default function Home() {
           .hero-content { display: contents; }
           .hero-kicker, .hero-title, .hero-desc { margin-bottom: 0; }
           .hero-kicker, .hero-title, .hero-desc, .hero-actions { grid-column: 1; }
+          .hero-sighting { margin: -4px 0 0; }
           .hero-notes { display: contents; }
           .guide-row { margin-top: 0; }
           .hero-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }

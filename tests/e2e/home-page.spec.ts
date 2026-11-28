@@ -31,6 +31,7 @@ for (const scenario of scenarios) {
     await expect(page.locator('html')).toHaveAttribute('data-theme', scenario.theme);
     await expect(page.locator('h1')).toHaveCount(1);
     await expect(page.locator('.hero-actions a')).toHaveCount(3);
+    await expect(page.locator('.hero-sighting')).toContainText(scenario.lang === 'mn' ? '«Би харсан»' : '“I saw this”');
     for (const action of await page.locator('.hero-actions a').all()) {
       await expect(action).toBeInViewport();
       // The entrance transform can round 44 CSS pixels to 43.99997 in Chromium.

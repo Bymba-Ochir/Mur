@@ -15,6 +15,12 @@ import { DEFAULT_PAGE_SIZE, finalizePage, pageWindow } from './pagination';
 
 const TABLE = 'pets';
 const BUCKET = 'pet-photos';
+const PET_SEARCH_FIELDS = ['name', 'breed', 'color', 'place', 'type'] as const;
+const HYBRID_CANDIDATE_LIMIT = 50;
+
+function petSearchTerm(search?: string) {
+  return search?.trim().replace(/[%_]/g, '') ?? '';
+}
 
 /**
  * Зураг Storage bucket-д хуулаад, public URL буцаана (зөвхөн дотор ашиглана)
@@ -105,10 +111,8 @@ export async function fetchPets(filters: PetFilters = {}): Promise<{ pets: Pet[]
   if (district) q = q.eq('district', district);
   if (type) q = q.eq('type', type);
   if (!includeResolved) q = q.eq('resolved', false);
-  if (search && search.trim()) {
-    const s = search.trim().replace(/[%_]/g, '');
-    q = q.or(`name.ilike.%${s}%,breed.ilike.%${s}%,color.ilike.%${s}%,place.ilike.%${s}%,type.ilike.%${s}%`);
-  }
+  const term = petSearchTerm(search);
+  if (term) q = q.or(PET_SEARCH_FIELDS.map(field => `${field}.ilike.%${term}%`).join(','));
 
   const window = pageWindow(page, DEFAULT_PAGE_SIZE);
   q = q.range(window.from, window.to);
@@ -189,7 +193,7 @@ export async function fetchPetCoverCandidates(fingerprint: string, filters: PetF
     query_status: filters.status || null,
     query_type: filters.type || null,
     query_district: filters.district || null,
-    query_text: filters.search || null,
+    query_text: petSearchTerm(filters.search) || null,
   }).abortSignal(signal);
   if (error) throw error;
   const ids = ((data ?? []) as { id: string }[]).map(row => row.id);
@@ -207,7 +211,7 @@ export async function fetchPetCoverCandidates(fingerprint: string, filters: PetF
  * Migration ажиллаагүй бол null буцааж UI хуучин browser fallback ашиглана.
  */
 export async function fetchPetMatches({
-  embeddings, imageHash, status, type, breed, color, district, lat, lng, limit = 20, signal,
+  embeddings, imageHash, status, type, breed, color, district, search, lat, lng, limit = 20, signal,
 }: {
   embeddings: number[][];
   imageHash?: string;
@@ -216,11 +220,13 @@ export async function fetchPetMatches({
   breed?: string;
   color?: string;
   district?: Pet['district'];
+  search?: string;
   lat?: number;
   lng?: number;
   limit?: number;
   signal?: AbortSignal;
 }): Promise<Pet[] | null> {
+  const term = petSearchTerm(search).toLowerCase();
   const filters = {
     // The RPC excludes the status supplied by a source listing.
     query_status: status ? (status === 'lost' ? 'found' : 'lost') : null,
@@ -230,7 +236,8 @@ export async function fetchPetMatches({
     query_district: district ?? null,
     query_lat: lat ?? null,
     query_lng: lng ?? null,
-    match_count: limit,
+    // The current RPC scores district and caps candidates before filtering text.
+    match_count: term || district ? HYBRID_CANDIDATE_LIMIT : limit,
     min_image_similarity: MIN_LISTING_PHOTO_SIMILARITY / 100,
   };
   const results = await Promise.all(embeddings.map((embedding, index) => {
@@ -255,6 +262,8 @@ export async function fetchPetMatches({
     }
     for (const row of (data ?? []) as MatchRow[]) {
       if (row.pet.is_hidden === true || row.pet.archived_at != null) continue;
+      if (district && row.pet.district !== district) continue;
+      if (term && !PET_SEARCH_FIELDS.some(field => String(row.pet[field] ?? '').toLowerCase().includes(term))) continue;
       const current = bestById.get(row.pet.id);
       if (!current || row.hybrid_score > current.hybrid_score
         || (row.hybrid_score === current.hybrid_score && row.image_similarity > current.image_similarity)) {

@@ -120,3 +120,29 @@ it('shows a matching cover from outside the loaded page before running the model
   expect(mocks.getImageEmbeddings).not.toHaveBeenCalled();
   expect(mocks.fetchPetMatches).not.toHaveBeenCalled();
 });
+
+it('keeps the current page visible and retries the failed next page', async () => {
+  render(<ListingsPage />);
+  await screen.findByText('Existing dog');
+  mocks.fetchPets.mockRejectedValueOnce(new Error('Page unavailable'));
+  fireEvent.click(screen.getByRole('button', { name: 'load_more' }));
+
+  expect(await screen.findByRole('alert')).toHaveTextContent('listings_more_error');
+  expect(screen.getByText('Existing dog')).toBeVisible();
+  mocks.fetchPets.mockResolvedValueOnce({ pets: [pet('next', 'Next dog')], hasMore: false });
+  fireEvent.click(screen.getByRole('button', { name: 'err_retry' }));
+  await screen.findByText('Next dog');
+  expect(screen.getByText('Existing dog')).toBeVisible();
+  expect(mocks.fetchPets.mock.calls.map(([filters]) => filters.page)).toEqual([0, 1, 1]);
+});
+
+it('passes the typed query to both exact and similar photo matching', async () => {
+  window.history.replaceState(null, '', '/listings?q=Lucky');
+  mocks.fetchPetMatches.mockResolvedValue([]);
+  render(<ListingsPage />);
+  await screen.findByText('Existing dog');
+  uploadPhoto();
+
+  await waitFor(() => expect(mocks.fetchPetMatches).toHaveBeenCalledWith(expect.objectContaining({ search: 'Lucky' })));
+  expect(mocks.findSameListingPhotos.mock.calls[0][2]).toMatchObject({ search: 'Lucky' });
+});

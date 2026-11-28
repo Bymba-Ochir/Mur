@@ -55,13 +55,34 @@ for (const { width, height } of [{ width: 320, height: 568 }, { width: 390, heig
 
     const post = page.getByText('Зар нийтлэх', { exact: true });
     await post.click();
-    await expect(page.locator('.report-options a')).toHaveCount(2);
-    await expect(page.locator('.report-options a').first()).toBeVisible();
+    const reportMenu = page.locator('.report-options');
+    const reportLinks = reportMenu.getByRole('link');
+    await expect(reportLinks).toHaveCount(2);
+    for (const [index, name, href] of [
+      [0, 'Алдсан амьтнаа мэдээлэх', '/report-lost'],
+      [1, 'Олдсон амьтныг мэдээлэх', '/report-found'],
+    ] as const) {
+      const option = reportLinks.nth(index);
+      await expect(option).toHaveText(name);
+      await expect(option).toHaveAttribute('href', href);
+      await expect(option).toBeVisible();
+      const box = (await option.boundingBox())!;
+      expect(box.x).toBeGreaterThanOrEqual(0);
+      expect(box.x + box.width).toBeLessThanOrEqual(width);
+      expect(await option.evaluate(el => el.scrollWidth - el.clientWidth)).toBeLessThanOrEqual(1);
+    }
     await post.click();
 
     await notice.getByRole('button', { name: 'Татгалзах' }).click();
     await page.getByRole('button', { name: 'Шүүлтүүр цэвэрлэх' }).click();
     await expect(page).toHaveURL(/\/listings$/);
     await expect(emptyTitle).toHaveText('Одоогоор зар алга');
+    await expect(page.locator('.empty-actions a')).toHaveCount(2);
+    for (const action of await page.locator('.empty-actions a').all()) await expect(action).toBeVisible();
+    await page.getByRole('combobox', { name: 'Дүүргээр шүүх' }).selectOption('Сонгинохайрхан');
+    const selectedDistrict = page.locator('.selected-district');
+    await expect(selectedDistrict).toHaveText('Сонгинохайрхан');
+    await expect(selectedDistrict).toBeVisible();
+    expect(await selectedDistrict.evaluate(el => el.scrollWidth - el.clientWidth)).toBeLessThanOrEqual(1);
   });
 }
